@@ -143,13 +143,13 @@
                     <label for="class-select" class="font-medium text-xs sm:text-sm uppercase tracking-wider text-indigo-100 hidden xs:inline">Niveau</label>
                     <select id="class-select"
                         class="bg-white text-indigo-900 rounded px-2 sm:px-4 py-1 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold cursor-pointer shadow-sm border-0 text-sm sm:text-base">
-                        <option value="CI" selected>CI</option>
+                        <option value="CI" CI</option>
                         <option value="CP">CP</option>
                         <option value="CE1">CE1</option>
                          <option value="CE2">CE2</option>
                         <option value="CM1">CM1</option>
                         <option value="CM2">CM2</option>
-                        <option value="6ème" >6ème</option>
+                        <option value="6ème"selected> >6ème</option>
                         <option value="5ème">5ème</option>
                         <option value="4ème">4ème</option>
                         <option value="3ème">3ème</option>
@@ -173,6 +173,7 @@
                         class="bg-white/10 text-white border border-white/20 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
                         <option value="1" class="text-slate-800">Semestre 1</option>
                         <option value="2" class="text-slate-800">Semestre 2</option>
+                        <option value="3" class="text-slate-800">Semestre 3</option>
                     </select>
                 </div>
                 <div class="flex items-center gap-1.5">
@@ -396,7 +397,7 @@
     <script>
         // --- ÉTAT ET MIGRATION ---
         const defaultState = { settings: { year: '2023-2024', semester: '1' }, classes: {} };
-        const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2","6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
         classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {} });
 
         let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
