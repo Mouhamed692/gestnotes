@@ -1,0 +1,23 @@
+{
+  "short_name": "GestNotes",
+  "name": "GestNotes – Administration Scolaire",
+  "description": "Système complet de gestion des notes, calcul de moyennes et édition de bulletins.",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/fluency/192/test-passed.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "https://img.icons8.com/fluency/512/test-passed.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./gestnotes.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#4338ca",
+  "background_color": "#f8fafc"
+}
