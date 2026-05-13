@@ -871,11 +871,12 @@ const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4
             students.forEach((s, i) => setTimeout(() => exportCSV(s.id), i * 300));
             showToast("Téléchargement des bulletins lancé");
         };
-
         window.printReportCard = function (studentId) {
-            // Ouvrir le fichier bulletin.html et passer les informations via l'URL
-            window.open(`bulletin.html?class=${encodeURIComponent(currentClass)}&student=${encodeURIComponent(studentId)}`, '_blank');
-        };
+    // Ouvrir le fichier bulletin.html dans la MÊME fenêtre en changeant l'URL
+    window.location.href = `bulletin.html?class=${encodeURIComponent(currentClass)}&student=${encodeURIComponent(studentId)}`;
+};
+
+
 
         window.printAllReportCards = function () {
             const students = appState.classes[currentClass].students;
