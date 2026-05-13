@@ -944,22 +944,20 @@ window.handleAddNewStudent = function() {
         composition: 0,
         notes: [] // Si tu as une structure avec des notes
     };
-
-    // 2. Initialisation sécurisée des données si elles n'existent pas
-    if (!appData.classes[className]) {
-        appData.classes[className] = { students: [] };
+// 2. Vérification de la classe
+    if (!appState.classes[currentClass]) {
+        appState.classes[currentClass] = { students: [], subjects: [], grades: {} };
     }
 
-    // 3. Ajout de l'élève dans l'objet global en mémoire
-    appData.classes[className].students.push(newStudent);
+    // 3. Ajout de l'élève
+    appState.classes[currentClass].students.push(newStudent);
 
-    // 4. SAUVEGARDE LOCALE (C'est ce que le bulletin lira)
-    localStorage.setItem('gestnotes_db', JSON.stringify(appData));
-
-    // 5. MISE À JOUR DE L'INTERFACE SANS RECHARGER
-    // On appelle la fonction qui dessine ton tableau (remplace par le nom de TA fonction)
-  // 5. Mise à jour de l'affichage
-    if (typeof render === 'function') {
+    // 4. SAUVEGARDE (On utilise la même clé qu'au début du script)
+    localStorage.setItem('gestnotes_data', JSON.stringify(appState));
+    
+    // 5. Mise à jour de l'affichage
+    render();
+     if (typeof render === 'function') {
         render(); // Utilise ta fonction globale de rendu
     } else if (typeof renderGradesTable === 'function') {
         renderGradesTable();
