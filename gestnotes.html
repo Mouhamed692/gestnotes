@@ -886,60 +886,67 @@ html += `
             render();
         });
 window.handleAddNewStudent = function() {
+    console.log("Tentative d'ajout...");
     const nameInput = document.getElementById('studentNameInput');
+    const classSelect = document.getElementById('classSelect');
+
+    if (!nameInput || !classSelect) {
+        alert("Erreur technique : Input ou Sélecteur introuvable dans le HTML");
+        return;
+    }
+
     const name = nameInput.value.trim();
-    const classSelect = document.getElementById('classSelect'); 
-    const className = classSelect ? classSelect.value : null;
+    const className = classSelect.value;
 
-    // 1. Vérification du nom
-    if (!name) {
-        alert("Veuillez saisir un nom");
+    if (!name || !className) {
+        alert("Veuillez saisir un nom et choisir une classe");
         return;
     }
 
-    // 2. Vérification de la classe
-    if (!className) {
-        alert("Veuillez sélectionner une classe d'abord");
-        return;
-    }
-
-    // 3. Vérification de la structure appData (Pour éviter le "refus" du bouton)
+    // --- DIAGNOSTIC 1 : Vérifier si appData existe ---
     if (typeof appData === 'undefined') {
-        console.error("Erreur : La variable appData n'est pas définie !");
+        alert("Erreur : La variable globale 'appData' n'existe pas dans votre script.");
         return;
     }
 
-    // Création de l'élève
-    const newStudent = {
-        id: "std-" + Date.now(),
-        name: name,
-        grades: {} // On initialise un objet vide pour les notes
-    };
+    // --- CONSTRUCTION SÉCURISÉE ---
+    try {
+        if (!appData.classes) appData.classes = {};
+        if (!appData.classes[className]) {
+            appData.classes[className] = { students: [], subjects: [] };
+        }
 
-    // 4. Ajout sécurisé dans l'objet
-    if (!appData.classes[className]) {
-        appData.classes[className] = { students: [], subjects: [] };
+        const newStudent = {
+            id: "std-" + Date.now(),
+            name: name,
+            devoir: 0,
+            composition: 0
+        };
+
+        // Ajout
+        appData.classes[className].students.push(newStudent);
+
+        // --- DIAGNOSTIC 2 : Sauvegarde ---
+        const dataToSave = JSON.stringify(appData);
+        localStorage.setItem('gestnotes_db', dataToSave);
+        
+        console.log("Données sauvegardées avec succès !");
+        alert("Élève " + name + " ajouté avec succès !"); // On force une alerte pour confirmer
+
+        // --- MISE À JOUR ---
+        nameInput.value = '';
+        
+        // Si tu as une fonction de rendu, on l'appelle, sinon F5 automatique
+        if (typeof renderGradesTable === 'function') {
+            renderGradesTable();
+        } else {
+            location.reload(); 
+        }
+
+    } catch (error) {
+        alert("Erreur lors de l'enregistrement : " + error.message);
+        console.error(error);
     }
-    
-    appData.classes[className].students.push(newStudent);
-
-    // 5. Sauvegarde immédiate
-    localStorage.setItem('gestnotes_db', JSON.stringify(appData));
-
-    // 6. Mise à jour de l'affichage (C'est souvent ici que ça bloque)
-    // On appelle TA fonction qui affiche la liste. Vérifie bien son nom !
-    if (typeof renderGradesTable === 'function') {
-        renderGradesTable(); 
-    } else if (typeof renderTable === 'function') {
-        renderTable();
-    } else {
-        // Si on ne trouve pas la fonction, on recharge proprement pour voir le résultat
-        location.reload(); 
-    }
-
-    // 7. Reset du champ
-    nameInput.value = '';
-    nameInput.focus();
 };
 
     // 1. Création de l'objet élève avec ID unique local
