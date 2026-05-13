@@ -885,16 +885,62 @@ html += `
             document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
             render();
         });
-        window.handleAddNewStudent = function() {
+window.handleAddNewStudent = function() {
     const nameInput = document.getElementById('studentNameInput');
     const name = nameInput.value.trim();
-    const classSelect = document.getElementById('classSelect'); // Ton sélecteur de classe
-    const className = classSelect ? classSelect.value : "Classe Par Défaut";
+    const classSelect = document.getElementById('classSelect'); 
+    const className = classSelect ? classSelect.value : null;
 
+    // 1. Vérification du nom
     if (!name) {
         alert("Veuillez saisir un nom");
         return;
     }
+
+    // 2. Vérification de la classe
+    if (!className) {
+        alert("Veuillez sélectionner une classe d'abord");
+        return;
+    }
+
+    // 3. Vérification de la structure appData (Pour éviter le "refus" du bouton)
+    if (typeof appData === 'undefined') {
+        console.error("Erreur : La variable appData n'est pas définie !");
+        return;
+    }
+
+    // Création de l'élève
+    const newStudent = {
+        id: "std-" + Date.now(),
+        name: name,
+        grades: {} // On initialise un objet vide pour les notes
+    };
+
+    // 4. Ajout sécurisé dans l'objet
+    if (!appData.classes[className]) {
+        appData.classes[className] = { students: [], subjects: [] };
+    }
+    
+    appData.classes[className].students.push(newStudent);
+
+    // 5. Sauvegarde immédiate
+    localStorage.setItem('gestnotes_db', JSON.stringify(appData));
+
+    // 6. Mise à jour de l'affichage (C'est souvent ici que ça bloque)
+    // On appelle TA fonction qui affiche la liste. Vérifie bien son nom !
+    if (typeof renderGradesTable === 'function') {
+        renderGradesTable(); 
+    } else if (typeof renderTable === 'function') {
+        renderTable();
+    } else {
+        // Si on ne trouve pas la fonction, on recharge proprement pour voir le résultat
+        location.reload(); 
+    }
+
+    // 7. Reset du champ
+    nameInput.value = '';
+    nameInput.focus();
+};
 
     // 1. Création de l'objet élève avec ID unique local
     const newStudent = {
