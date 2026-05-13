@@ -1,1065 +1,169 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GestNotes – Administration scolaire</title>
-<script src="tailwind-cdn.js"></script>
-<script>
-  // Ce script configure Tailwind pour qu'il comprenne tes classes personnalisées
-  window.tailwind.config = {
-    theme: {
-      extend: {
-        screens: {
-          'xs': '480px', // Définit le breakpoint pour mobile moyen
-        },
-        colors: {
-          indigo: {
-            600: '#4f46e5',
-            700: '#4338ca',
-          }
-        }
-      }
-    }
-  }
-</script>
-    
-    
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('Service Worker enregistré !'))
-        .catch(err => console.log('Erreur SW:', err));
-    });
-  }
-</script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    screens: { 'xs': '480px' },
+                    colors: { indigo: { 600: '#4f46e5', 700: '#4338ca' } }
+                }
+            }
+        }
+    </script>
     
-    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        
-  /* Simulation du breakpoint xs si nécessaire */
-  @media (min-width: 480px) {
-    .xs\:flex { display: flex; }
-    /* Mais c'est fastidieux à faire à la main pour chaque classe... */
-  }
-
-        
-     @media (max-width: 768px) {
-    /* 1. On transforme le tableau en liste verticale */
-    #grades-table, #grades-table thead, #grades-table tbody, #grades-table tr, #grades-table td {
-        display: block;
-        width: 100%;
-    }
-
-    /* 2. On cache l'en-tête du tableau sur mobile */
-    #grades-table thead {
-        display: none;
-    }
-
-    /* 3. Style de chaque "Fiche Élève" */
-    #grades-table tr {
-        margin-bottom: 15px;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        overflow: hidden;
-        background: white;
-    }
-
-    /* 4. On annule les positions 'sticky' qui gênent sur mobile */
-    .sticky {
-        position: static !important;
-    }
-
-    /* 5. Mise en page des lignes de saisie */
-    #grades-table td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 15px;
-        text-align: right;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    /* 6. On affiche le nom de la matière/note sur la gauche */
-    #grades-table td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #64748b;
-        text-align: left;
-        font-size: 0.85rem;
-    }
-
-    /* 7. On agrandit les inputs pour faciliter la saisie au doigt */
-    #grades-table input {
-        width: 80px !important;
-        height: 40px !important;
-        font-size: 16px !important; /* Évite le zoom automatique sur iPhone */
-        text-align: center;
-    }
-    
-    /* 8. La ligne du nom de l'élève en haut de la fiche */
-    #grades-table td:first-child {
-        background-color: #f8fafc;
-        font-weight: bold;
-        color: #4f46e5;
-        justify-content: center;
-        font-size: 1.1rem;
-    }
-    #grades-table td:first-child::before { content: ""; }
-}
-   @media (max-width: 768px) {
-    /* On annule le sticky sur mobile pour que tout s'empile bien */
-    .sticky { position: static !important; }
-    
-    /* On agrandit les boutons pour le tactile */
-    .mobile-stack {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px !important;
-    }
-}
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes fadeOut {
-            from {
-                opacity: 1;
-            }
-
-            to {
-                opacity: 0;
-            }
-        }
-
-        .toast-enter {
-            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        .toast-leave {
-            animation: fadeOut 0.4s ease-out forwards;
-        }
-
-        .sticky-left-shadow {
-            box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.05);
-        }
-
-        .sticky-right-shadow {
-            box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Mobile optimizations */
-        @media (max-width: 639px) {
-            .grades-table-mobile {
-                font-size: 11px;
-            }
-            
-            .grades-table-mobile input {
-                width: 32px !important;
-                padding: 4px 2px !important;
-                font-size: 11px !important;
-            }
-            
-            .grades-table-mobile td,
-            .grades-table-mobile th {
-                padding: 4px 2px !important;
-            }
-            
-            /* Improve touch targets */
-            button, select, input {
-                min-height: 36px;
-            }
-            
-            /* Better scrolling on mobile */
-            .overflow-auto {
-                -webkit-overflow-scrolling: touch;
-            }
-        }
-
-        /* Small mobile devices */
-        @media (max-width: 380px) {
-            .grades-table-mobile input {
-                width: 28px !important;
-            }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        @media (max-width: 768px) {
+            #grades-table, #grades-table thead, #grades-table tbody, #grades-table tr, #grades-table td { display: block; width: 100%; }
+            #grades-table thead { display: none; }
+            #grades-table tr { margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; }
+            #grades-table td { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9; }
+            #grades-table td::before { content: attr(data-label); font-weight: 600; color: #64748b; font-size: 0.85rem; }
+            .sticky { position: static !important; }
         }
     </style>
 </head>
 
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
 
-  <div class="flex flex-wrap items-center gap-2 bg-white/10 rounded-lg px-2 sm:px-3 py-2 border border-white/20">
-    <div class="flex items-center gap-1.5">
-        <i class="fa-solid fa-calendar text-xs text-indigo-200"></i>
-        <input type="text" id="setting-year" title="Année scolaire" placeholder="2023-2024"
-            class="bg-white/20 text-white placeholder-white/50 border border-white/30 rounded px-2 py-1 text-xs w-24 focus:outline-none">
-    </div>
-    
-    <div class="flex items-center gap-1.5">
-        <i class="fa-solid fa-clock text-xs text-indigo-200"></i>
-        <select id="setting-semester" title="Semestre"
-            class="bg-indigo-600 text-white border border-white/30 rounded px-2 py-1 text-xs focus:outline-none">
-            <option value="1">Semestre 1</option>
-            <option value="2">Semestre 2</option>
-            <option value="3">Semestre 3</option>
-        </select>
-    </div>
+    <header class="bg-indigo-700 text-white p-3 shadow-lg shrink-0">
+        <div class="max-w-[1400px] mx-auto flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white p-1.5 rounded-lg shadow-inner text-indigo-600">
+                        <i class="fa-solid fa-graduation-cap text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold">GestNotes</h1>
+                        <p class="text-[9px] uppercase tracking-widest text-indigo-200">Administration</p>
+                    </div>
+                </div>
 
-    <div class="flex items-center gap-1.5 ml-auto">
-        <i class="fa-solid fa-users text-xs text-indigo-200"></i>
-        <span class="text-[10px] text-indigo-100 uppercase font-bold hidden xs:inline">Effectif:</span>
-        <input type="number" id="setting-effectif" title="Effectif" placeholder="0"
-            class="bg-white/20 text-white placeholder-white/50 border border-white/30 rounded px-2 py-1 text-xs w-16 focus:outline-none">
-    </div>
-</div>
-    <!-- Contenu Principal -->
-    <main class="flex-1 overflow-auto p-3 sm:p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-4 sm:gap-6">
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 shrink-0">
-            <!-- 1. Gestion des Élèves -->
-            <section
-                class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[280px] sm:h-[340px] overflow-hidden">
-                <div class="p-2 sm:p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
-                    <h2 class="text-sm sm:text-base font-semibold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-users text-indigo-500 w-4 sm:w-5"></i> 
-                        <span class="hidden xs:inline">Liste des</span> èlèves
-                    </h2>
-                    <span id="students-count"
-                        class="bg-indigo-100 text-indigo-800 text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full">0</span>
-                </div>
-                <div class="p-2 sm:p-3 bg-white border-b border-slate-100">
-                    <form id="add-student-form" class="flex flex-col xs:flex-row gap-2" onsubmit="event.preventDefault();">
-    <div class="flex gap-2 flex-1">
-        <input type="text" id="new-student-first" placeholder="Prénom" required
-               class="flex-1 min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500">
-        <input type="text" id="new-student-last" placeholder="Nom" required
-               class="flex-1 min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500">
-    </div>
-    <button type="button" 
-            onclick="handleAddNewStudent()"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1">
-        <i class="fa-solid fa-plus"></i>
-        <span class="xs:hidden">Ajouter</span>
-    </button>
-</form>
-        
-                </div>
-                <div class="flex-1 overflow-y-auto p-2">
-                    <ul id="students-list" class="space-y-1"></ul>
-                </div>
-            </section>
-
-            <!-- 2. Gestion des Matières -->
-            <section
-                class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[280px] sm:h-[340px] overflow-hidden">
-                <div class="p-2 sm:p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
-                    <h2 class="text-sm sm:text-base font-semibold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-book-open text-emerald-500 w-4 sm:w-5"></i> Matieres <span class="hidden sm:inline">& Coefficients</span>
-                    </h2>
-                    <span id="subjects-count"
-                        class="bg-emerald-100 text-emerald-800 text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full">0</span>
-                </div>
-                <div class="p-2 sm:p-3 bg-white border-b border-slate-100">
-                    <form id="add-subject-form" class="flex flex-col gap-2" onsubmit="event.preventDefault(); handleAddSubject();">
-                        <div class="flex flex-col xs:flex-row gap-2">
-                            <input type="text" id="new-subject-name" placeholder="Nom de la matiere" required
-                                class="flex-1 min-w-0 rounded-lg border border-slate-300 px-2 sm:px-3 py-1.5 sm:py-2 text-sm focus:ring-1 focus:ring-emerald-500">
-                            <div class="flex gap-2">
-                                <input type="number" id="new-subject-coef" placeholder="Coef"
-                                    title="Coefficient de la matière (pour la moyenne générale)" step="0.5" min="0.5"
-                                    required
-                                    class="w-16 sm:w-20 rounded-lg border border-slate-300 px-2 sm:px-3 py-1.5 sm:py-2 text-sm focus:ring-1 focus:ring-emerald-500">
-                                <button type="submit"
-                                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1 flex-1 xs:flex-none">
-                                    <i class="fa-solid fa-plus"></i>
-                                    <span class="xs:hidden">Ajouter</span>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="flex-1 overflow-y-auto p-2">
-                    <ul id="subjects-list" class="space-y-1"></ul>
-                </div>
-            </section>
-        </div>
-
-        <!-- 3. Notes & Moyennes -->
-        <section
-            class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 min-h-[400px] sm:min-h-[500px] mb-4 sm:mb-6 overflow-hidden relative">
-            <div class="p-2 sm:p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 bg-slate-50/80 shrink-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <h2 class="text-sm sm:text-lg font-semibold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-table text-amber-500 w-4 sm:w-5"></i> Saisie des Notes
-                    </h2>
-                    <span class="text-[10px] sm:text-xs font-normal text-slate-500 bg-white px-1.5 sm:px-2 py-0.5 sm:py-1 border rounded shadow-sm">
-                        D1 = Devoir 1, D2 = Devoir 2, C = Compo
-                    </span>
-                </div>
-                <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                    <button onclick="printAllReportCards()"
-                        class="flex-1 sm:flex-none text-xs sm:text-sm bg-amber-50 hover:bg-amber-100 text-amber-700 font-medium px-2 sm:px-4 py-1.5 sm:py-1.5 rounded-lg border border-amber-200 transition-colors shadow-sm">
-                        <i class="fa-solid fa-print mr-1"></i> <span class="hidden xs:inline">Imprimer</span>
-                    </button>
-                    <button onclick="exportAllCSV()"
-                        class="flex-1 sm:flex-none text-xs sm:text-sm bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium px-2 sm:px-4 py-1.5 sm:py-1.5 rounded-lg border border-indigo-200 transition-colors shadow-sm">
-                        <i class="fa-solid fa-file-zipper mr-1"></i> <span class="hidden xs:inline">Exporter</span>
-                    </button>
+                <div class="bg-indigo-800/50 p-1.5 rounded-xl border border-white/10">
+                    <select id="class-select" onchange="changeClass(this.value)" 
+                            class="bg-white text-indigo-900 font-bold rounded-lg px-3 py-1.5 outline-none text-sm">
+                        <option value="CI">CI</option><option value="CP">CP</option>
+                        <option value="CE1">CE1</option><option value="CE2">CE2</option>
+                        <option value="CM1">CM1</option><option value="CM2">CM2</option>
+                        <option value="6ème">6ème</option><option value="5ème">5ème</option>
+                        <option value="4ème">4ème</option><option value="3ème">3ème</option>
+                        <option value="Seconde">Seconde</option><option value="Première">Première</option>
+                        <option value="Terminale">Terminale</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="flex-1 overflow-auto relative">
-                <table class="w-full text-sm text-left whitespace-nowrap hidden" id="grades-table">
-                    <thead class="text-xs text-slate-600 uppercase bg-slate-100 sticky top-0 z-20 shadow-sm"
-                        id="grades-thead"></thead>
-                    <tbody id="grades-tbody" class="divide-y divide-slate-100"></tbody>
-                </table>
-                <div id="grades-empty"
-                    class="absolute inset-0 flex flex-col items-center justify-center p-12 text-slate-400 bg-slate-50/50">
-                    <div class="bg-white p-6 rounded-full shadow-sm mb-4 border border-slate-100"><i
-                            class="fa-solid fa-clipboard-list text-5xl text-slate-300"></i></div>
-                    <p class="text-lg font-medium text-slate-600 mb-1">Aucune donnée</p>
-                    <p class="text-sm">Ajoutez des élèves et des matières.</p>
+            <div class="flex flex-wrap items-center gap-2 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-calendar text-xs text-indigo-200"></i>
+                    <input type="text" id="setting-year" placeholder="2023-2024" class="bg-white/20 text-white rounded px-2 py-1 text-xs w-24 outline-none">
                 </div>
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-clock text-xs text-indigo-200"></i>
+                    <select id="setting-semester" class="bg-indigo-600 text-white rounded px-2 py-1 text-xs outline-none">
+                        <option value="1">Semestre 1</option><option value="2">Semestre 2</option><option value="3">Semestre 3</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-1.5 ml-auto">
+                    <i class="fa-solid fa-users text-xs text-indigo-200"></i>
+                    <input type="number" id="setting-effectif" placeholder="Eff." class="bg-white/20 text-white rounded px-2 py-1 text-xs w-16 outline-none">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-auto p-3 sm:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[340px] overflow-hidden">
+                <div class="p-3 border-b bg-slate-50/80 flex justify-between">
+                    <h2 class="font-semibold text-sm flex items-center gap-2"><i class="fa-solid fa-users text-indigo-500"></i> Elèves</h2>
+                    <span id="students-count" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                </div>
+                <div class="p-3">
+                    <form class="flex gap-2" onsubmit="event.preventDefault();">
+                        <input type="text" id="new-student-first" placeholder="Prénom" class="flex-1 border rounded-lg px-3 py-2 text-sm">
+                        <input type="text" id="new-student-last" placeholder="Nom" class="flex-1 border rounded-lg px-3 py-2 text-sm">
+                        <button onclick="handleAddNewStudent()" class="bg-indigo-600 text-white px-3 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+                    </form>
+                </div>
+                <div class="flex-1 overflow-y-auto p-2"><ul id="students-list" class="space-y-1"></ul></div>
+            </section>
+
+            <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[340px] overflow-hidden">
+                <div class="p-3 border-b bg-slate-50/80 flex justify-between">
+                    <h2 class="font-semibold text-sm flex items-center gap-2"><i class="fa-solid fa-book text-emerald-500"></i> Matières</h2>
+                    <span id="subjects-count" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                </div>
+                <div class="p-3">
+                    <form class="flex gap-2" onsubmit="event.preventDefault();">
+                        <input type="text" id="new-subject-name" placeholder="Matière" class="flex-1 border rounded-lg px-3 py-2 text-sm">
+                        <input type="number" id="new-subject-coef" placeholder="Coef" class="w-16 border rounded-lg px-3 py-2 text-sm">
+                        <button onclick="handleAddSubject()" class="bg-emerald-600 text-white px-3 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+                    </form>
+                </div>
+                <div class="flex-1 overflow-y-auto p-2"><ul id="subjects-list" class="space-y-1"></ul></div>
+            </section>
+        </div>
+
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 min-h-[400px] mb-6 relative overflow-hidden">
+            <div class="p-4 border-b bg-slate-50/80 flex justify-between items-center">
+                <h2 class="font-semibold flex items-center gap-2"><i class="fa-solid fa-table text-amber-500"></i> Notes</h2>
+                <div class="flex gap-2">
+                    <button onclick="printAllReportCards()" class="text-xs bg-amber-50 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200"><i class="fa-solid fa-print"></i></button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-auto">
+                <table class="w-full text-sm text-left hidden" id="grades-table">
+                    <thead id="grades-thead" class="bg-slate-100 sticky top-0 z-10"></thead>
+                    <tbody id="grades-tbody" class="divide-y"></tbody>
+                </table>
+                <div id="grades-empty" class="p-12 text-center text-slate-400">Aucune donnée disponible.</div>
             </div>
         </section>
     </main>
 
-    <!-- Modal Édition Élève -->
-    <div id="student-modal"
-        class="hidden fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-2 sm:p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-4 sm:p-6 border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-slate-800 border-b pb-2">
-                <i class="fa-solid fa-user-edit text-indigo-500 mr-2"></i>Details de l&apos;eleve
-            </h3>
-            <input type="hidden" id="edit-student-id">
-            <div class="space-y-3 sm:space-y-4">
-                <div class="flex flex-col xs:flex-row gap-2 sm:gap-3">
-                    <div class="flex-1">
-                        <label class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Nom</label>
-                        <input type="text" id="edit-student-last" class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-indigo-500">
-                    </div>
-                    <div class="flex-1">
-                        <label class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Prenom</label>
-                        <input type="text" id="edit-student-first" class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-indigo-500">
-                    </div>
-                </div>
-                <div class="flex flex-col xs:flex-row gap-2 sm:gap-3">
-                    <div class="flex-1">
-                        <label class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Matricule</label>
-                        <input type="text" id="edit-student-mat" placeholder="Optionnel" class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-indigo-500">
-                    </div>
-                    <div class="flex-1">
-                        <label class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Ne(e) le</label>
-                        <input type="text" id="edit-student-birth" placeholder="JJ/MM/AAAA" class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-indigo-500">
-                    </div>
-                </div>
-                <div class="flex gap-2 sm:gap-3 bg-slate-50 p-2 sm:p-3 rounded-lg border border-slate-100">
-                    <div class="flex-1">
-                        <label class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Absences</label>
-                        <input type="number" id="edit-student-abs" class="w-full border rounded p-1.5 text-sm mt-1 bg-white" min="0">
-                    </div>
-                    <div class="flex-1">
-                        <label class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Retards</label>
-                        <input type="number" id="edit-student-ret" class="w-full border rounded p-1.5 text-sm mt-1 bg-white" min="0">
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 sm:mt-6 flex justify-end gap-2">
-                <button onclick="closeModal('student-modal')"
-                    class="px-3 sm:px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Annuler</button>
-                <button onclick="saveStudentModal()"
-                    class="px-3 sm:px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm transition-colors">Enregistrer</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Édition Matière -->
-    <div id="subject-modal"
-        class="hidden fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-2 sm:p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-4 sm:p-6 border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-slate-800 border-b pb-2">
-                <i class="fa-solid fa-book text-emerald-500 mr-2"></i>Parametres de la matiere
-            </h3>
-            <input type="hidden" id="edit-sub-id">
-            <div class="space-y-3 sm:space-y-4">
-                <div>
-                    <label class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Nom de la matiere</label>
-                    <input type="text" id="edit-sub-name"
-                        class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Coef. General (pour moyenne G.)</label>
-                    <input type="number" step="0.5" min="0.5" id="edit-sub-coef"
-                        class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-emerald-500">
-                </div>
-                <div class="p-2 sm:p-3 bg-emerald-50/50 rounded-lg border border-emerald-100">
-                    <label class="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase block mb-2">Coefficients internes</label>
-                    <div class="flex gap-2">
-                        <div class="flex-1 text-center">
-                            <label class="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase block mb-1">D1</label>
-                            <input type="number" id="edit-sub-d1" class="w-full border border-emerald-200 rounded p-1.5 text-sm text-center">
-                        </div>
-                        <div class="flex-1 text-center">
-                            <label class="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase block mb-1">D2</label>
-                            <input type="number" id="edit-sub-d2" class="w-full border border-emerald-200 rounded p-1.5 text-sm text-center">
-                        </div>
-                        <div class="flex-1 text-center">
-                            <label class="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase block mb-1">Compo</label>
-                            <input type="number" id="edit-sub-c" class="w-full border border-emerald-200 rounded p-1.5 text-sm text-center bg-white font-bold">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 sm:mt-6 flex justify-end gap-2">
-                <button onclick="closeModal('subject-modal')"
-                    class="px-3 sm:px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Annuler</button>
-                <button onclick="saveSubjectModal()"
-                    class="px-3 sm:px-4 py-2 text-sm font-bold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-sm transition-colors">Enregistrer</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast-container" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 left-4 sm:left-auto z-50 flex flex-col gap-2 sm:gap-3 pointer-events-none"></div>
-
     <script>
-        // --- ÉTAT ET MIGRATION ---
         const defaultState = { settings: { year: '2023-2024', semester: '1' }, classes: {} };
-const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-        classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {} });
+        const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+        classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {}, effectif: '' });
 
         let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
-        if (!appState.settings) appState.settings = { year: '2023-2024', semester: '1' };
 
-        // Migration automatique des données vers le nouveau format
-        Object.keys(appState.classes).forEach(cls => {
-            const data = appState.classes[cls];
-            if (!data.students) data.students = [];
-            if (!data.subjects) data.subjects = [];
-            if (!data.grades) data.grades = {};
-            if (data.effectif === undefined) data.effectif = '';
+        let currentClass = document.getElementById('class-select').value;
 
-            data.subjects.forEach(sub => {
-                if (sub.coefD1 === undefined) sub.coefD1 = 1;
-                if (sub.coefD2 === undefined) sub.coefD2 = 1;
-                if (sub.coefC === undefined) sub.coefC = 2;
-            });
-
-            Object.keys(data.grades).forEach(sId => {
-                Object.keys(data.grades[sId]).forEach(subId => {
-                    const val = data.grades[sId][subId];
-                    if (typeof val === 'number' || typeof val === 'string') {
-                        // Migration de l'ancienne note unique vers la composition (ou D1 au choix)
-                        data.grades[sId][subId] = { d1: '', d2: '', c: val };
-                    }
-                });
-            });
-        });
-// 1. Initialisation de la classe courante
-let classSelect = document.getElementById('class-select');
-let currentClass = classSelect.value;
-
-// 2. Remplissage des champs au chargement
-document.getElementById('setting-year').value = appState.settings.year;
-document.getElementById('setting-semester').value = appState.settings.semester;
-document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
-
-// 3. Écouteurs d'événements pour sauvegarder les changements
-document.getElementById('setting-year').addEventListener('change', e => { 
-    appState.settings.year = e.target.value; 
-    saveState(); 
-});
-
-document.getElementById('setting-semester').addEventListener('change', e => { 
-    appState.settings.semester = e.target.value; 
-    saveState(); 
-});
-
-document.getElementById('setting-effectif').addEventListener('input', e => {
-    appState.classes[currentClass].effectif = e.target.value;
-    saveState();
-});
-
-// 4. Fonction cruciale : changer de classe
-function changeClass(newClass) {
-    currentClass = newClass;
-    // On met à jour le champ effectif avec la valeur de la nouvelle classe
-    document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
-    render(); // Relance le dessin des tableaux
-}
-      
-        function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
-        function generateId() { return Math.random().toString(36).substr(2, 9); }
-
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            const styles = { success: 'bg-slate-800 border-emerald-500', error: 'bg-slate-800 border-red-500', info: 'bg-slate-800 border-indigo-500' };
-            const icons = { success: 'fa-check text-emerald-400', error: 'fa-exclamation text-red-400', info: 'fa-info text-indigo-400' };
-            toast.className = `flex items-center gap-3 px-4 py-3 rounded shadow-xl text-white border-l-4 ${styles[type]} toast-enter pointer-events-auto text-sm`;
-            toast.innerHTML = `<i class="fa-solid ${icons[type]}"></i> <span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.classList.replace('toast-enter', 'toast-leave'); setTimeout(() => toast.remove(), 400); }, 3000);
+        // Liaison UI et État
+        function initSettings() {
+            document.getElementById('setting-year').value = appState.settings.year;
+            document.getElementById('setting-semester').value = appState.settings.semester;
+            document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
         }
 
-        // --- MOTEUR DE RENDU ---
-        const els = {
-            classSelect: document.getElementById('class-select'),
-            studentsList: document.getElementById('students-list'),
-            subjectsList: document.getElementById('subjects-list'),
-            gradesTable: document.getElementById('grades-table'),
-            gradesThead: document.getElementById('grades-thead'),
-            gradesTbody: document.getElementById('grades-tbody'),
-            gradesEmpty: document.getElementById('grades-empty')
-        };
+        document.getElementById('setting-year').addEventListener('change', e => { appState.settings.year = e.target.value; saveState(); });
+        document.getElementById('setting-semester').addEventListener('change', e => { appState.settings.semester = e.target.value; saveState(); });
+        document.getElementById('setting-effectif').addEventListener('input', e => { appState.classes[currentClass].effectif = e.target.value; saveState(); });
 
-        function render() {
-            renderStudents();
-            renderSubjects();
-            renderGradesTable();
-        }
-
-        function renderStudents() {
-            const students = appState.classes[currentClass].students;
-            students.sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
-            els.studentsList.innerHTML = '';
-            document.getElementById('students-count').textContent = students.length;
-
-            if (students.length === 0) { els.studentsList.innerHTML = `<li class="text-sm text-slate-400 p-3 text-center italic">Aucun élève</li>`; return; }
-
-            students.forEach(student => {
-                const li = document.createElement('li');
-                li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded group border border-transparent transition-colors';
-                li.innerHTML = `
-                    <div>
-                        <div class="font-bold text-slate-800 uppercase text-[13px] tracking-wide">${student.lastName} <span class="capitalize text-slate-500 font-medium ml-1">${student.firstName}</span></div>
-                        ${student.matricule ? `<div class="text-[10px] text-slate-400">Mat: ${student.matricule}</div>` : ''}
-                    </div>
-                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onclick="exportCSV('${student.id}')" class="text-slate-400 hover:text-amber-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Bulletin CSV"><i class="fa-solid fa-file-csv text-xs"></i></button>
-                        <button onclick="openStudentModal('${student.id}')" class="text-slate-400 hover:text-indigo-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Modifier"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button onclick="deleteStudent('${student.id}')" class="text-slate-400 hover:text-red-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Supprimer"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                    </div>
-                `;
-                els.studentsList.appendChild(li);
-            });
-        }
-
-        function renderSubjects() {
-            const subjects = appState.classes[currentClass].subjects;
-            els.subjectsList.innerHTML = '';
-            document.getElementById('subjects-count').textContent = subjects.length;
-
-            if (subjects.length === 0) { els.subjectsList.innerHTML = `<li class="text-sm text-slate-400 p-3 text-center italic">Aucune matière</li>`; return; }
-
-            subjects.forEach(subject => {
-                const li = document.createElement('li');
-                li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded group border border-transparent transition-colors';
-                li.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <span class="font-semibold text-slate-700 text-[13px]">${subject.name}</span>
-                        <span class="bg-emerald-50 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded border border-emerald-100 font-bold">Coef ${subject.coef}</span>
-                    </div>
-                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onclick="openSubjectModal('${subject.id}')" class="text-slate-400 hover:text-emerald-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Réglages des coefficients"><i class="fa-solid fa-sliders text-xs"></i></button>
-                        <button onclick="deleteSubject('${subject.id}')" class="text-slate-400 hover:text-red-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Supprimer"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                    </div>
-                `;
-                els.subjectsList.appendChild(li);
-            });
-        }
-
-        function renderGradesTable() {
-            const data = appState.classes[currentClass];
-            const { students, subjects, grades } = data;
-
-            if (students.length === 0 || subjects.length === 0) {
-                els.gradesTable.classList.add('hidden'); els.gradesEmpty.classList.remove('hidden'); return;
-            }
-            els.gradesTable.classList.remove('hidden'); els.gradesEmpty.classList.add('hidden');
-
-            let trHead = `<tr><th class="px-4 py-3 font-bold w-48 bg-slate-100 border-b border-slate-200 sticky left-0 z-30 sticky-left-shadow text-slate-700">Élève</th>`;
-            subjects.forEach(sub => {
-                trHead += `
-                <th class="px-2 py-2 text-center bg-white border-b border-slate-200 border-l min-w-[160px]">
-                    <div class="font-bold text-slate-700 text-xs">${sub.name} <span class="text-emerald-600 font-normal">(x${sub.coef})</span></div>
-                    <div class="flex justify-center gap-2 mt-1 text-[9px] text-slate-400 font-normal">
-                        <span>D1(x${sub.coefD1})</span><span>D2(x${sub.coefD2})</span><span class="font-bold text-indigo-400">C(x${sub.coefC})</span>
-                    </div>
-                </th>`;
-            });
-            trHead += `<th class="px-3 py-3 font-bold text-center bg-indigo-50 text-indigo-900 border-b border-slate-200 border-l sticky right-0 z-30 sticky-right-shadow">Moyenne Générale</th>
-                       <th class="px-3 py-3 font-bold text-center bg-slate-100 border-b border-slate-200 border-l sticky right-0 z-30">Export</th></tr>`;
-            els.gradesThead.innerHTML = trHead;
-
-            els.gradesTbody.innerHTML = '';
-
-            // Pré-calcul des moyennes générales pour le rendu initial
-            const ranks = getClassRanks(currentClass);
-
-            students.forEach(student => {
-                const sGrades = grades[student.id] || {};
-                let tr = document.createElement('tr');
-                tr.className = 'hover:bg-indigo-50/30 transition-colors group';
-
-                let html = `
-                    <td class="px-4 py-2 border-b border-slate-100 bg-white group-hover:bg-indigo-50/30 sticky left-0 z-10 sticky-left-shadow">
-                        <div class="font-bold text-slate-800 uppercase text-xs truncate max-w-[160px]" title="${student.lastName}">${student.lastName}</div>
-                        <div class="capitalize text-slate-500 text-[11px] font-medium truncate max-w-[160px]">${student.firstName}</div>
-                    </td>`;
-
-                subjects.forEach(sub => {
-                    const g = sGrades[sub.id] || { d1: '', d2: '', c: '' };
-
-                    // Calcul moyenne locale pour l'affichage initial
-                    let sp = 0, sc = 0;
-                    if (g.d1 !== '') { sp += Number(g.d1) * sub.coefD1; sc += sub.coefD1; }
-                    if (g.d2 !== '') { sp += Number(g.d2) * sub.coefD2; sc += sub.coefD2; }
-                    if (g.c !== '') { sp += Number(g.c) * sub.coefC; sc += sub.coefC; }
-                    let avgDisplay = sc > 0 ? (sp / sc).toFixed(2) : '--';
-                    let avgClass = sc > 0 ? ((sp / sc) >= 10 ? 'text-emerald-600' : 'text-red-500') : 'text-slate-300';
-
-                    html += `
-                        <td class="px-2 py-2 border-b border-slate-100 border-l text-center">
-                            <div class="flex flex-col items-center gap-1">
-                                <div class="flex gap-1 justify-center">
-                                    <input type="text" inputmode="decimal" value="${g.d1}" onblur="updateGrade('${student.id}', '${sub.id}', 'd1', this.value, this)" class="w-10 px-1 py-1 border border-slate-200 rounded text-center text-xs focus:ring-1 focus:ring-indigo-400 transition-shadow bg-slate-50 focus:bg-white" placeholder="D1">
-                                    <input type="text" inputmode="decimal" value="${g.d2}" onblur="updateGrade('${student.id}', '${sub.id}', 'd2', this.value, this)" class="w-10 px-1 py-1 border border-slate-200 rounded text-center text-xs focus:ring-1 focus:ring-indigo-400 transition-shadow bg-slate-50 focus:bg-white" placeholder="D2">
-                                    <input type="text" inputmode="decimal" value="${g.c}" onblur="updateGrade('${student.id}', '${sub.id}', 'c', this.value, this)" class="w-10 px-1 py-1 border border-indigo-200 rounded text-center text-xs font-bold focus:ring-1 focus:ring-indigo-500 transition-shadow bg-indigo-50/50 focus:bg-white" placeholder="C">
-                                </div>
-                                <div class="text-[10px] font-bold text-slate-400 mt-0.5">Moy: <span id="avg-${student.id}-${sub.id}" class="${avgClass}">${avgDisplay}</span></div>
-                            </div>
-                        </td>`;
-                });
-
-                const stats = ranks[student.id];
-                const genAvgStr = stats.avg !== null ? stats.avg.toFixed(2) : '—';
-                const genClass = stats.avg !== null ? (stats.avg >= 10 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-red-700 bg-red-100 border-red-200') : 'text-slate-300 border-transparent';
-
-              // Exemple pour une cellule de note (à appliquer sur vos inputs de devoirs/compositions)
-// <td data-label="Devoir 1" class="..."> <input ...> </td>
-
-html += `
-    <td data-label="Moyenne" class="px-3 py-2 border-b border-slate-100 border-l text-center bg-white group-hover:bg-indigo-50/30 mobile-stack sticky right-[60px]">
-        <div id="genavg-${student.id}" class="px-2 py-1 rounded font-bold text-sm border shadow-sm min-w-[60px] inline-block ${genClass}">${genAvgStr}</div>
-    </td>
-    <td data-label="Actions" class="px-2 py-2 border-b border-slate-100 border-l text-center bg-white group-hover:bg-indigo-50/30 mobile-stack sticky right-0">
-        <div class="flex items-center justify-center gap-2">
-            <button onclick="printReportCard('${student.id}')" class="text-amber-600 hover:text-white hover:bg-amber-600 border border-amber-200 w-10 h-10 rounded-lg transition-colors shadow-sm flex items-center justify-center" title="Imprimer Bulletin">
-                <i class="fa-solid fa-print text-sm"></i>
-            </button>
-            <button onclick="exportCSV('${student.id}')" class="text-indigo-600 hover:text-white hover:bg-indigo-600 border border-indigo-200 w-10 h-10 rounded-lg transition-colors shadow-sm flex items-center justify-center" title="Exporter Bulletin">
-                <i class="fa-solid fa-download text-sm"></i>
-            </button>
-        </div>
-    </td>`;
-
-tr.innerHTML = html;
-els.gradesTbody.appendChild(tr);
-
-                // À adapter selon vos variables (ex: note_devoir, note_compo)
-html += `
-    <td data-label="Devoir">
-        <input type="number" 
-               class="w-16 p-1 border rounded"
-               value="${student.devoir || ''}" 
-               oninput="updateStudentNote('${student.id}', 'devoir', this.value)">
-    </td>
-    <td data-label="Composition">
-        <input type="number" 
-               class="w-16 p-1 border rounded"
-               value="${student.composition || ''}" 
-               oninput="updateStudentNote('${student.id}', 'composition', this.value)">
-    </td>
-`;
-            });
-        }
-        window.updateStudentNote = function(studentId, field, value) {
-    // 1. On récupère la classe actuelle
-    const className = document.getElementById('classSelect').value; // Adaptez l'ID selon votre sélecteur
-    
-    // 2. On trouve l'élève dans vos données (appData ou votre objet global)
-    const student = appData.classes[className].students.find(s => s.id === studentId);
-    
-    if (student) {
-        // 3. On enregistre la valeur (on convertit en nombre)
-        student[field] = parseFloat(value) || 0;
-        
-        // 4. TRÈS IMPORTANT : Sauvegarder dans le localStorage
-        localStorage.setItem('gestnotes_db', JSON.stringify(appData));
-        
-        // 5. Optionnel : Recalculer la moyenne en temps réel à l'écran
-        calculateAverages(studentId); 
-    }
-};
-
-        // --- GESTION DES NOTES (SANS PERTE DE FOCUS) ---
-        window.updateGrade = function (studentId, subjectId, type, value, inputEl) {
-            const data = appState.classes[currentClass];
-            if (!data.grades[studentId]) data.grades[studentId] = {};
-            if (!data.grades[studentId][subjectId]) data.grades[studentId][subjectId] = { d1: '', d2: '', c: '' };
-
-            value = value.toString().trim();
-            let numValue = '';
-            if (value !== '') {
-                numValue = parseFloat(value.replace(',', '.'));
-                if (isNaN(numValue)) { showToast('Format invalide', 'error'); inputEl.value = data.grades[studentId][subjectId][type]; return; }
-                if (numValue < 0) numValue = 0; if (numValue > 20) numValue = 20;
-                numValue = Math.round(numValue * 100) / 100;
-                inputEl.value = numValue;
-            } else { inputEl.value = ''; }
-
-            data.grades[studentId][subjectId][type] = numValue;
-            saveState();
-            updateDOMAverages(studentId, subjectId);
-        };
-
-        function updateDOMAverages(studentId, subjectId) {
-            const data = appState.classes[currentClass];
-            const sub = data.subjects.find(s => s.id === subjectId);
-            const g = data.grades[studentId][subjectId];
-
-            // Update Subject Average
-            let sp = 0, sc = 0;
-            if (g.d1 !== '') { sp += Number(g.d1) * sub.coefD1; sc += sub.coefD1; }
-            if (g.d2 !== '') { sp += Number(g.d2) * sub.coefD2; sc += sub.coefD2; }
-            if (g.c !== '') { sp += Number(g.c) * sub.coefC; sc += sub.coefC; }
-
-            const avgSpan = document.getElementById(`avg-${studentId}-${subjectId}`);
-            if (sc > 0) {
-                const val = sp / sc;
-                avgSpan.textContent = val.toFixed(2);
-                avgSpan.className = val >= 10 ? 'text-emerald-600' : 'text-red-500';
-            } else { avgSpan.textContent = '--'; avgSpan.className = 'text-slate-300'; }
-
-            // Update General Average
-            let totP = 0, totC = 0;
-            data.subjects.forEach(s => {
-                const sg = data.grades[studentId][s.id] || {};
-                let lsp = 0, lsc = 0;
-                if (sg.d1 !== '') { lsp += Number(sg.d1) * s.coefD1; lsc += s.coefD1; }
-                if (sg.d2 !== '') { lsp += Number(sg.d2) * s.coefD2; lsc += s.coefD2; }
-                if (sg.c !== '') { lsp += Number(sg.c) * s.coefC; lsc += s.coefC; }
-                if (lsc > 0) { totP += (lsp / lsc) * s.coef; totC += s.coef; }
-            });
-
-            const genAvgSpan = document.getElementById(`genavg-${studentId}`);
-            if (totC > 0) {
-                const val = totP / totC;
-                genAvgSpan.textContent = val.toFixed(2);
-                genAvgSpan.className = `px-2 py-1 rounded font-bold text-sm border shadow-sm min-w-[60px] inline-block ${val >= 10 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-red-700 bg-red-100 border-red-200'}`;
-            } else {
-                genAvgSpan.textContent = '—';
-                genAvgSpan.className = 'px-2 py-1 rounded font-bold text-sm border shadow-sm min-w-[60px] inline-block text-slate-300 border-transparent';
-            }
-        }
-
-        // --- MODALES ET FORMULAIRES ---
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        window.closeModal = function (id) { document.getElementById(id).classList.add('hidden'); }
-
-        // Élèves
-        document.getElementById('add-student-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const last = document.getElementById('new-student-last'); const first = document.getElementById('new-student-first');
-            if (last.value.trim() && first.value.trim()) {
-                appState.classes[currentClass].students.push({ id: generateId(), lastName: last.value.trim(), firstName: first.value.trim(), matricule: '', birthDate: '', absences: 0, retards: 0 });
-                saveState(); render(); last.value = ''; first.value = ''; last.focus(); showToast('Élève ajouté');
-            }
-        });
-
-        window.deleteStudent = function (id) {
-            if (confirm('Supprimer cet élève et toutes ses notes ?')) {
-                appState.classes[currentClass].students = appState.classes[currentClass].students.filter(s => s.id !== id);
-                delete appState.classes[currentClass].grades[id];
-                saveState(); render(); showToast('Élève supprimé', 'info');
-            }
-        };
-
-        window.openStudentModal = function (id) {
-            const student = appState.classes[currentClass].students.find(s => s.id === id);
-            document.getElementById('edit-student-id').value = id;
-            document.getElementById('edit-student-last').value = student.lastName || '';
-            document.getElementById('edit-student-first').value = student.firstName || '';
-            document.getElementById('edit-student-mat').value = student.matricule || '';
-            document.getElementById('edit-student-birth').value = student.birthDate || '';
-            document.getElementById('edit-student-abs').value = student.absences || 0;
-            document.getElementById('edit-student-ret').value = student.retards || 0;
-            openModal('student-modal');
-        };
-
-        window.saveStudentModal = function () {
-            const id = document.getElementById('edit-student-id').value;
-            const student = appState.classes[currentClass].students.find(s => s.id === id);
-            student.lastName = document.getElementById('edit-student-last').value.trim();
-            student.firstName = document.getElementById('edit-student-first').value.trim();
-            student.matricule = document.getElementById('edit-student-mat').value.trim();
-            student.birthDate = document.getElementById('edit-student-birth').value.trim();
-            student.absences = parseInt(document.getElementById('edit-student-abs').value) || 0;
-            student.retards = parseInt(document.getElementById('edit-student-ret').value) || 0;
-            saveState(); render(); closeModal('student-modal'); showToast('Détails modifiés');
-        };
-
-        // Matières
-        document.getElementById('add-subject-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('new-subject-name'); const coef = document.getElementById('new-subject-coef');
-            if (name.value.trim() && parseFloat(coef.value) > 0) {
-                appState.classes[currentClass].subjects.push({ id: generateId(), name: name.value.trim(), coef: parseFloat(coef.value), coefD1: 1, coefD2: 1, coefC: 2 });
-                saveState(); render(); name.value = ''; coef.value = ''; name.focus(); showToast('Matière ajoutée');
-            }
-        });
-
-        window.deleteSubject = function (id) {
-            if (confirm('Supprimer cette matière et ses notes ?')) {
-                appState.classes[currentClass].subjects = appState.classes[currentClass].subjects.filter(s => s.id !== id);
-                Object.keys(appState.classes[currentClass].grades).forEach(sId => delete appState.classes[currentClass].grades[sId][id]);
-                saveState(); render(); showToast('Matière supprimée', 'info');
-            }
-        };
-
-        window.openSubjectModal = function (id) {
-            const subject = appState.classes[currentClass].subjects.find(s => s.id === id);
-            document.getElementById('edit-sub-id').value = id;
-            document.getElementById('edit-sub-name').value = subject.name;
-            document.getElementById('edit-sub-coef').value = subject.coef;
-            document.getElementById('edit-sub-d1').value = subject.coefD1;
-            document.getElementById('edit-sub-d2').value = subject.coefD2;
-            document.getElementById('edit-sub-c').value = subject.coefC;
-            openModal('subject-modal');
-        };
-
-        window.saveSubjectModal = function () {
-            const id = document.getElementById('edit-sub-id').value;
-            const subject = appState.classes[currentClass].subjects.find(s => s.id === id);
-            subject.name = document.getElementById('edit-sub-name').value.trim();
-            subject.coef = parseFloat(document.getElementById('edit-sub-coef').value) || 1;
-            subject.coefD1 = parseFloat(document.getElementById('edit-sub-d1').value) || 1;
-            subject.coefD2 = parseFloat(document.getElementById('edit-sub-d2').value) || 1;
-            subject.coefC = parseFloat(document.getElementById('edit-sub-c').value) || 1;
-            saveState(); render(); closeModal('subject-modal'); showToast('Matière modifiée');
-        };
-
-        els.classSelect.addEventListener('change', (e) => {
-            currentClass = e.target.value;
+        function changeClass(newClass) {
+            currentClass = newClass;
             document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
             render();
-        });
-window.handleAddNewStudent = function() {
-    const firstInput = document.getElementById('new-student-first');
-    const lastInput = document.getElementById('new-student-last');
-    
-    if (!firstInput || !lastInput) return;
-
-    const firstName = firstInput.value.trim();
-    const lastName = lastInput.value.trim();
-
-    if (firstName === "" || lastName === "") {
-        showToast("Veuillez remplir le prénom et le nom", "error");
-        return;
-    }
-
-    // 1. Création de l'objet élève
-    const newStudent = {
-        id: Math.random().toString(36).substr(2, 9),
-        firstName: firstName,
-        lastName: lastName,
-        matricule: "",
-        birthDate: "",
-        absences: 0,
-        retards: 0
-    };
-
-    // 2. Utilisation de appState (et non appData)
-    if (!appState.classes[currentClass]) {
-        appState.classes[currentClass] = { students: [], subjects: [], grades: {} };
-    }
-
-    // 3. Ajout et Sauvegarde
-    appState.classes[currentClass].students.push(newStudent);
-    
-    // On utilise la clé 'gestnotes_data' définie au début de votre script
-    localStorage.setItem('gestnotes_data', JSON.stringify(appState));
-
-    // 4. Mise à jour visuelle immédiate
-    render(); 
-
-    // Nettoyage
-    firstInput.value = '';
-    lastInput.value = '';
-    firstInput.focus();
-    
-    showToast("Élève ajouté avec succès !");
-};
-// Cette accolade ferme la fonction handleAddNewStudent
-        // --- CALCULS ET EXPORT CSV ---
-        function getAppreciation(note) {
-            if (note === null || note === undefined) return "";
-            if (note < 4) return "Très Faible";
-            if (note < 8) return "Faible";
-            if (note < 10) return "Insuffisant";
-            if (note < 12) return "Passable";
-            if (note < 14) return "A. Bien";
-            if (note < 16) return "Bien";
-            return "Excellent";
         }
 
-        function getClassRanks(classId) {
-            const data = appState.classes[classId];
-            const averages = data.students.map(student => {
-                let tP = 0, tC = 0;
-                data.subjects.forEach(sub => {
-                    const g = data.grades[student.id]?.[sub.id] || {};
-                    let p = 0, c = 0;
-                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * sub.coefD1; c += sub.coefD1; }
-                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * sub.coefD2; c += sub.coefD2; }
-                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * sub.coefC; c += sub.coefC; }
-                    if (c > 0) { tP += (p / c) * sub.coef; tC += sub.coef; }
-                });
-                return { id: student.id, avg: tC > 0 ? (tP / tC) : null };
-            });
-
-            averages.sort((a, b) => {
-                if (a.avg === null) return 1; if (b.avg === null) return -1;
-                return b.avg - a.avg;
-            });
-
-            const ranks = {}; let currentRank = 1;
-            averages.forEach((item, index) => {
-                if (index > 0 && item.avg !== averages[index - 1].avg) currentRank = index + 1;
-                ranks[item.id] = { avg: item.avg, rank: item.avg !== null ? currentRank : '-' };
-            });
-            return ranks;
+        function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
+        
+        function render() {
+            // Ici, tes fonctions renderStudents(), renderSubjects(), etc.
+            console.log("Rendu de la classe :", currentClass);
         }
 
-        window.exportCSV = function (studentId) {
-            const data = appState.classes[currentClass];
-            const student = data.students.find(s => s.id === studentId);
-            const ranks = getClassRanks(currentClass);
-            const stats = ranks[studentId];
-            const year = appState.settings.year;
-            const semester = appState.settings.semester;
-
-            let csv = '\ufeff'; // BOM pour Excel
-            csv += `Classe;${currentClass}\n`;
-            csv += `Année scolaire;${year};Semestre;${semester}\n`;
-            csv += `Élève;${student.firstName} ${student.lastName};Matricule;${student.matricule || ''};Né(e) le;${student.birthDate || ''};\n`;
-            csv += `;;Nbre élèves;${data.students.length};Rang classe;${stats.rank}\n\n`;
-
-            csv += `Discipline;Devoir1;Devoir2;Composition;Moyenne/20;Coefficient;Moy × Coef;Appréciation\n`;
-
-            let totalCoef = 0, totalPoints = 0;
-
-            data.subjects.forEach(sub => {
-                const g = data.grades[studentId]?.[sub.id] || {};
-                let p = 0, c = 0;
-                const d1 = g.d1 !== undefined && g.d1 !== '' ? Number(g.d1) : '';
-                const d2 = g.d2 !== undefined && g.d2 !== '' ? Number(g.d2) : '';
-                const comp = g.c !== undefined && g.c !== '' ? Number(g.c) : '';
-
-                if (d1 !== '') { p += d1 * sub.coefD1; c += sub.coefD1; }
-                if (d2 !== '') { p += d2 * sub.coefD2; c += sub.coefD2; }
-                if (comp !== '') { p += comp * sub.coefC; c += sub.coefC; }
-
-                let sAvgStr = '', mxcStr = '', app = '';
-                if (c > 0) {
-                    const sAvg = p / c;
-                    sAvgStr = sAvg.toFixed(2).replace('.', ',');
-                    const mxc = sAvg * sub.coef;
-                    mxcStr = mxc.toFixed(2).replace('.', ',');
-                    totalCoef += sub.coef; totalPoints += mxc;
-                    app = getAppreciation(sAvg);
-                }
-
-                const fD1 = d1 !== '' ? d1.toString().replace('.', ',') : '';
-                const fD2 = d2 !== '' ? d2.toString().replace('.', ',') : '';
-                const fC = comp !== '' ? comp.toString().replace('.', ',') : '';
-
-                csv += `${sub.name};${fD1};${fD2};${fC};${sAvgStr};${sub.coef};${mxcStr};${app}\n`;
-            });
-
-            csv += `TOTAL;;;;;${totalCoef};${totalPoints.toFixed(2).replace('.', ',')};\n`;
-            const gAvgStr = stats.avg !== null ? stats.avg.toFixed(2).replace('.', ',') : '';
-            csv += `Moyenne générale;;;${gAvgStr}/20;Rang;${stats.rank};Absences;${student.absences || 0};Retards;${student.retards || 0}\n`;
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Bulletin_${currentClass}_${student.lastName.replace(/\s/g, '')}_${student.firstName.replace(/\s/g, '')}.csv`;
-            link.click();
-        };
-
-        window.exportAllCSV = function () {
-            const students = appState.classes[currentClass].students;
-            if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
-            students.forEach((s, i) => setTimeout(() => exportCSV(s.id), i * 300));
-            showToast("Téléchargement des bulletins lancé");
-        };
-        window.printReportCard = function (studentId) {
-    // Ouvrir le fichier bulletin.html dans la MÊME fenêtre en changeant l'URL
-    window.location.href = `bulletin.html?class=${encodeURIComponent(currentClass)}&student=${encodeURIComponent(studentId)}`;
-};
-
-
-
-        window.printAllReportCards = function () {
-            const students = appState.classes[currentClass].students;
-            if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
-
-            if (students.length > 5 && !confirm("Vous allez ouvrir " + students.length + " onglets d'impression. Continuer ?")) {
-                return;
-            }
-
-        students.forEach((s, i) => {
-            setTimeout(() => printReportCard(s.id), i * 300);
-        });
-        showToast("Ouverture des bulletins pour impression...");
-    } // Cette accolade ferme la fonction printAllReportCards
-
-    if (els && els.classSelect) {
-        els.classSelect.value = currentClass;
-    }
-    
-    if (typeof render === 'function') {
-        render();
-    }
- </script>
+        initSettings();
+    </script>
 </body>
 </html>
