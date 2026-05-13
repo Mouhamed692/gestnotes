@@ -287,21 +287,21 @@
                         class="bg-indigo-100 text-indigo-800 text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full">0</span>
                 </div>
                 <div class="p-2 sm:p-3 bg-white border-b border-slate-100">
-                    <form id="add-student-form" class="flex flex-col xs:flex-row gap-2" onsubmit="event.preventDefault(); handleAddNewStudent();">
-                        <div class="flex gap-2 flex-1">
-                            <input type="text" id="new-student-first" placeholder="Prenom" required
-                                class="flex-1 min-w-0 rounded-lg border border-slate-300 px-2 sm:px-3 py-1.5 sm:py-2 text-sm focus:ring-1 focus:ring-indigo-500">
-                            <input type="text" id="new-student-last" placeholder="Nom" required
-                                class="flex-1 min-w-0 rounded-lg border border-slate-300 px-2 sm:px-3 py-1.5 sm:py-2 text-sm focus:ring-1 focus:ring-indigo-500">
-                        </div>
-                        <button type="button" 
-        onclick="handleAddNewStudent()"
-        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1">
-    <i class="fa-solid fa-plus"></i>
-    <span class="xs:hidden">Ajouter</span>
-</button>
-
-                    </form>
+                    <form id="add-student-form" class="flex flex-col xs:flex-row gap-2" onsubmit="event.preventDefault();">
+    <div class="flex gap-2 flex-1">
+        <input type="text" id="new-student-first" placeholder="Prénom" required
+               class="flex-1 min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500">
+        <input type="text" id="new-student-last" placeholder="Nom" required
+               class="flex-1 min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500">
+    </div>
+    <button type="button" 
+            onclick="handleAddNewStudent()"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1">
+        <i class="fa-solid fa-plus"></i>
+        <span class="xs:hidden">Ajouter</span>
+    </button>
+</form>
+        
                 </div>
                 <div class="flex-1 overflow-y-auto p-2">
                     <ul id="students-list" class="space-y-1"></ul>
@@ -885,21 +885,27 @@ html += `
             document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
             render();
         });
-        // Assurez-vous que ces fonctions sont bien AU DÉBUT de votre balise <script>
+        // On déclare la fonction globalement pour que le 'onclick' du HTML la trouve
 window.handleAddNewStudent = function() {
+    console.log("Tentative d'ajout d'élève..."); // Pour vérifier dans la console (F12)
+
     const firstInput = document.getElementById('new-student-first');
     const lastInput = document.getElementById('new-student-last');
     
-    if (!firstInput || !lastInput) return;
+    if (!firstInput || !lastInput) {
+        console.error("Champs introuvables !");
+        return;
+    }
 
     const firstName = firstInput.value.trim();
     const lastName = lastInput.value.trim();
 
-    if (!firstName || !lastName) {
-        alert("Veuillez remplir le prénom et le nom");
+    if (firstName === "" || lastName === "") {
+        showToast("Veuillez remplir le nom et le prénom", "error");
         return;
     }
 
+    // Création de l'élève
     const newStudent = {
         id: Math.random().toString(36).substr(2, 9),
         firstName: firstName,
@@ -910,23 +916,25 @@ window.handleAddNewStudent = function() {
         retards: 0
     };
 
+    // Ajout dans l'état de la classe actuelle
     if (!appState.classes[currentClass].students) {
         appState.classes[currentClass].students = [];
     }
-
+    
     appState.classes[currentClass].students.push(newStudent);
+
+    // Sauvegarde et mise à jour visuelle
     saveState();
-    render(); // Relance l'affichage
+    render(); 
 
-    firstInput.value = '';
-    lastInput.value = '';
+    // Reset des champs et focus
+    firstInput.value = "";
+    lastInput.value = "";
     firstInput.focus();
+
+    showToast(`Élève ajouté : ${lastName}`);
 };
 
-window.changeClass = function() {
-    currentClass = document.getElementById('class-select').value;
-    render();
-};
 
     // 1. Création de l'objet élève avec ID unique local
     const newStudent = {
