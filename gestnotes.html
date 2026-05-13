@@ -281,7 +281,7 @@
                 <div class="p-2 sm:p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
                     <h2 class="text-sm sm:text-base font-semibold text-slate-800 flex items-center gap-2">
                         <i class="fa-solid fa-users text-indigo-500 w-4 sm:w-5"></i> 
-                        <span class="hidden xs:inline">Liste des</span> Eleves
+                        <span class="hidden xs:inline">Liste des</span> èlèves
                     </h2>
                     <span id="students-count"
                         class="bg-indigo-100 text-indigo-800 text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full">0</span>
@@ -294,11 +294,13 @@
                             <input type="text" id="new-student-last" placeholder="Nom" required
                                 class="flex-1 min-w-0 rounded-lg border border-slate-300 px-2 sm:px-3 py-1.5 sm:py-2 text-sm focus:ring-1 focus:ring-indigo-500">
                         </div>
-                        <button type="submit"
-                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-plus"></i>
-                            <span class="xs:hidden">Ajouter</span>
-                        </button>
+                        <button type="button" 
+        onclick="handleAddNewStudent()"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1">
+    <i class="fa-solid fa-plus"></i>
+    <span class="xs:hidden">Ajouter</span>
+</button>
+
                     </form>
                 </div>
                 <div class="flex-1 overflow-y-auto p-2">
@@ -883,6 +885,50 @@ html += `
             document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
             render();
         });
+        window.handleAddNewStudent = function() {
+    const nameInput = document.getElementById('studentNameInput');
+    const name = nameInput.value.trim();
+    const classSelect = document.getElementById('classSelect'); // Ton sélecteur de classe
+    const className = classSelect ? classSelect.value : "Classe Par Défaut";
+
+    if (!name) {
+        alert("Veuillez saisir un nom");
+        return;
+    }
+
+    // 1. Création de l'objet élève avec ID unique local
+    const newStudent = {
+        id: "std-" + Date.now(), // Utilise l'heure pour créer un ID unique sans internet
+        name: name,
+        devoir: 0,
+        composition: 0,
+        notes: [] // Si tu as une structure avec des notes
+    };
+
+    // 2. Initialisation sécurisée des données si elles n'existent pas
+    if (!appData.classes[className]) {
+        appData.classes[className] = { students: [] };
+    }
+
+    // 3. Ajout de l'élève dans l'objet global en mémoire
+    appData.classes[className].students.push(newStudent);
+
+    // 4. SAUVEGARDE LOCALE (C'est ce que le bulletin lira)
+    localStorage.setItem('gestnotes_db', JSON.stringify(appData));
+
+    // 5. MISE À JOUR DE L'INTERFACE SANS RECHARGER
+    // On appelle la fonction qui dessine ton tableau (remplace par le nom de TA fonction)
+    if (typeof renderStudentTable === 'function') {
+        renderStudentTable(); 
+    } else {
+        // Si tu n'as pas de fonction dédiée, on recharge le tableau manuellement
+        location.reload(); // Uniquement si tu n'as pas d'autre choix, mais l'idéal est renderStudentTable()
+    }
+
+    // 6. Nettoyage de l'input
+    nameInput.value = '';
+    nameInput.focus();
+};
 
         // --- CALCULS ET EXPORT CSV ---
         function getAppreciation(note) {
