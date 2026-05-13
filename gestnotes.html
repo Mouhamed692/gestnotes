@@ -74,7 +74,7 @@
                 </div>
                 <div class="flex items-center gap-1.5 ml-auto">
                     <i class="fa-solid fa-users text-xs text-indigo-200"></i>
-                    <input type="number" id="setting-effectif" placeholder="Eff." class="bg-white/20 text-white rounded px-2 py-1 text-xs w-16 outline-none">
+                    <input type="number" id="setting-effectif" placeholder="Effectif" class="bg-white/20 text-white rounded px-2 py-1 text-xs w-16 outline-none">
                 </div>
             </div>
         </div>
@@ -164,6 +164,130 @@
         }
 
         initSettings();
+        // --- ÉTAT ET INITIALISATION ---
+const defaultState = { settings: { year: '2023-2024', semester: '1' }, classes: {} };
+const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {}, effectif: '' });
+
+let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
+let currentClass = document.getElementById('class-select').value;
+
+function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
+function generateId() { return Math.random().toString(36).substr(2, 9); }
+
+// --- GESTION DES ÉLÈVES ---
+function handleAddNewStudent() {
+    const firstName = document.getElementById('new-student-first').value.trim();
+    const lastName = document.getElementById('new-student-last').value.trim();
+    
+    if (!firstName || !lastName) return;
+
+    const newStudent = { id: generateId(), firstName, lastName, matricule: '', birth: '', abs: 0, ret: 0 };
+    appState.classes[currentClass].students.push(newStudent);
+    
+    document.getElementById('new-student-first').value = '';
+    document.getElementById('new-student-last').value = '';
+    
+    saveState();
+    render();
+}
+
+function deleteStudent(id) {
+    if (confirm("Supprimer cet élève ?")) {
+        appState.classes[currentClass].students = appState.classes[currentClass].students.filter(s => s.id !== id);
+        saveState();
+        render();
+    }
+}
+
+// --- GESTION DES MATIÈRES ---
+function handleAddSubject() {
+    const name = document.getElementById('new-subject-name').value.trim();
+    const coef = parseFloat(document.getElementById('new-subject-coef').value) || 1;
+
+    if (!name) return;
+
+    const newSubject = { id: generateId(), name, coef, coefD1: 1, coefD2: 1, coefC: 2 };
+    appState.classes[currentClass].subjects.push(newSubject);
+    
+    document.getElementById('new-subject-name').value = '';
+    document.getElementById('new-subject-coef').value = '';
+
+    saveState();
+    render();
+}
+
+function deleteSubject(id) {
+    if (confirm("Supprimer cette matière ?")) {
+        appState.classes[currentClass].subjects = appState.classes[currentClass].subjects.filter(s => s.id !== id);
+        saveState();
+        render();
+    }
+}
+
+// --- MOTEUR DE RENDU ---
+function render() {
+    renderStudents();
+    renderSubjects();
+    renderGradesTable();
+}
+
+function renderStudents() {
+    const list = document.getElementById('students-list');
+    const students = appState.classes[currentClass].students;
+    document.getElementById('students-count').textContent = students.length;
+    list.innerHTML = '';
+
+    students.forEach(s => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded border-b text-sm';
+        li.innerHTML = `
+            <span class="font-bold uppercase">${s.lastName} <span class="font-normal capitalize text-slate-500">${s.firstName}</span></span>
+            <button onclick="deleteStudent('${s.id}')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash-can"></i></button>
+        `;
+        list.appendChild(li);
+    });
+}
+
+function renderSubjects() {
+    const list = document.getElementById('subjects-list');
+    const subjects = appState.classes[currentClass].subjects;
+    document.getElementById('subjects-count').textContent = subjects.length;
+    list.innerHTML = '';
+
+    subjects.forEach(sub => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded border-b text-sm';
+        li.innerHTML = `
+            <span>${sub.name} <span class="text-emerald-600 font-bold">(x${sub.coef})</span></span>
+            <button onclick="deleteSubject('${sub.id}')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash-can"></i></button>
+        `;
+        list.appendChild(li);
+    });
+}
+
+function renderGradesTable() {
+    const table = document.getElementById('grades-table');
+    const empty = document.getElementById('grades-empty');
+    const { students, subjects } = appState.classes[currentClass];
+
+    if (students.length === 0 || subjects.length === 0) {
+        table.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+    }
+
+    table.classList.remove('hidden');
+    empty.classList.add('hidden');
+    // Le code de génération du tableau (thead/tbody) irait ici
+}
+
+// --- INITIALISATION ---
+document.getElementById('setting-year').value = appState.settings.year;
+document.getElementById('setting-semester').value = appState.settings.semester;
+document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
+
+render();
     </script>
 </body>
 </html>
