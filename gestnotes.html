@@ -474,20 +474,39 @@ const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4
                 });
             });
         });
+// 1. Initialisation de la classe courante
+let classSelect = document.getElementById('class-select');
+let currentClass = classSelect.value;
 
-        let currentClass = document.getElementById('class-select').value;
-        document.getElementById('setting-year').value = appState.settings.year;
-        document.getElementById('setting-semester').value = appState.settings.semester;
+// 2. Remplissage des champs au chargement
+document.getElementById('setting-year').value = appState.settings.year;
+document.getElementById('setting-semester').value = appState.settings.semester;
+document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
 
-        document.getElementById('setting-year').addEventListener('change', e => { appState.settings.year = e.target.value; saveState(); });
-        document.getElementById('setting-semester').addEventListener('change', e => { appState.settings.semester = e.target.value; saveState(); });
+// 3. Écouteurs d'événements pour sauvegarder les changements
+document.getElementById('setting-year').addEventListener('change', e => { 
+    appState.settings.year = e.target.value; 
+    saveState(); 
+});
 
-        document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
-        document.getElementById('setting-effectif').addEventListener('input', e => {
-            appState.classes[currentClass].effectif = e.target.value;
-            saveState();
-        });
+document.getElementById('setting-semester').addEventListener('change', e => { 
+    appState.settings.semester = e.target.value; 
+    saveState(); 
+});
 
+document.getElementById('setting-effectif').addEventListener('input', e => {
+    appState.classes[currentClass].effectif = e.target.value;
+    saveState();
+});
+
+// 4. Fonction cruciale : changer de classe
+function changeClass(newClass) {
+    currentClass = newClass;
+    // On met à jour le champ effectif avec la valeur de la nouvelle classe
+    document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
+    render(); // Relance le dessin des tableaux
+}
+      
         function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
         function generateId() { return Math.random().toString(36).substr(2, 9); }
 
