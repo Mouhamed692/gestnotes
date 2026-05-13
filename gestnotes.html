@@ -958,18 +958,19 @@ window.handleAddNewStudent = function() {
 
     // 5. MISE À JOUR DE L'INTERFACE SANS RECHARGER
     // On appelle la fonction qui dessine ton tableau (remplace par le nom de TA fonction)
-    if (typeof renderStudentTable === 'function') {
-        renderStudentTable(); 
-    } else {
-        // Si tu n'as pas de fonction dédiée, on recharge le tableau manuellement
-        location.reload(); // Uniquement si tu n'as pas d'autre choix, mais l'idéal est renderStudentTable()
+  // 5. Mise à jour de l'affichage
+    if (typeof render === 'function') {
+        render(); // Utilise ta fonction globale de rendu
+    } else if (typeof renderGradesTable === 'function') {
+        renderGradesTable();
     }
 
     // 6. Nettoyage de l'input
-    nameInput.value = '';
-    nameInput.focus();
-};
-
+    if (nameInput) {
+        nameInput.value = '';
+        nameInput.focus();
+    }
+}; // Cette accolade ferme la fonction handleAddNewStudent
         // --- CALCULS ET EXPORT CSV ---
         function getAppreciation(note) {
             if (note === null || note === undefined) return "";
