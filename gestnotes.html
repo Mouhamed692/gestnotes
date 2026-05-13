@@ -148,6 +148,20 @@
                     </div>
                     <h1 class="text-xl sm:text-2xl font-bold">GestNotes</h1>
                 </div>
+                <div class="no-print fixed top-4 left-4 z-50">
+    <a href="gestnotes.html" class="flex items-center justify-center w-10 h-10 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 group">
+        <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+    </a>
+</div>
+
+<style>
+    /* On cache le bouton lors de l'impression du bulletin */
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+    }
+</style>
                 
                 <div class="flex items-center gap-2 sm:gap-3 bg-white/10 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg backdrop-blur-sm border border-white/20">
                     <label for="class-select" class="font-medium text-xs sm:text-sm uppercase tracking-wider text-indigo-100 hidden xs:inline">Niveau</label>
