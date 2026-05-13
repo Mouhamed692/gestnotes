@@ -1089,17 +1089,15 @@ window.handleAddNewStudent = function() {
                 return;
             }
 
-            students.forEach((s, i) => {
-                setTimeout(() => printReportCard(s.id), i * 300);
-            });
-            showToast("Ouverture des bulletins pour impression...");
-        };
+        students.forEach((s, i) => {
+            setTimeout(() => printReportCard(s.id), i * 300);
+        });
+        showToast("Ouverture des bulletins pour impression...");
+    } // Cette accolade ferme la fonction printAllReportCards
 
-        els.classSelect.value = currentClass;
-        render();
-
-
-    </script>
+    // --- INITIALISATION ---
+    els.classSelect.value = currentClass;
+    render();
+</script>
 </body>
-
 </html>
