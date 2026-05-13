@@ -885,27 +885,21 @@ html += `
             document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
             render();
         });
-        // On déclare la fonction globalement pour que le 'onclick' du HTML la trouve
 window.handleAddNewStudent = function() {
-    console.log("Tentative d'ajout d'élève..."); // Pour vérifier dans la console (F12)
-
     const firstInput = document.getElementById('new-student-first');
     const lastInput = document.getElementById('new-student-last');
     
-    if (!firstInput || !lastInput) {
-        console.error("Champs introuvables !");
-        return;
-    }
+    if (!firstInput || !lastInput) return;
 
     const firstName = firstInput.value.trim();
     const lastName = lastInput.value.trim();
 
     if (firstName === "" || lastName === "") {
-        showToast("Veuillez remplir le nom et le prénom", "error");
+        showToast("Veuillez remplir le prénom et le nom", "error");
         return;
     }
 
-    // Création de l'élève
+    // 1. Création de l'objet élève
     const newStudent = {
         id: Math.random().toString(36).substr(2, 9),
         firstName: firstName,
@@ -916,58 +910,27 @@ window.handleAddNewStudent = function() {
         retards: 0
     };
 
-    // Ajout dans l'état de la classe actuelle
-    if (!appState.classes[currentClass].students) {
-        appState.classes[currentClass].students = [];
-    }
-    
-    appState.classes[currentClass].students.push(newStudent);
-
-    // Sauvegarde et mise à jour visuelle
-    saveState();
-    render(); 
-
-    // Reset des champs et focus
-    firstInput.value = "";
-    lastInput.value = "";
-    firstInput.focus();
-
-    showToast(`Élève ajouté : ${lastName}`);
-};
-
-
-    // 1. Création de l'objet élève avec ID unique local
-    const newStudent = {
-        id: "std-" + Date.now(), // Utilise l'heure pour créer un ID unique sans internet
-        name: name,
-        devoir: 0,
-        composition: 0,
-        notes: [] // Si tu as une structure avec des notes
-    };
-// 2. Vérification de la classe
+    // 2. Utilisation de appState (et non appData)
     if (!appState.classes[currentClass]) {
         appState.classes[currentClass] = { students: [], subjects: [], grades: {} };
     }
 
-    // 3. Ajout de l'élève
+    // 3. Ajout et Sauvegarde
     appState.classes[currentClass].students.push(newStudent);
-
-    // 4. SAUVEGARDE (On utilise la même clé qu'au début du script)
-    localStorage.setItem('gestnotes_data', JSON.stringify(appState));
     
-    // 5. Mise à jour de l'affichage
-    render();
-     if (typeof render === 'function') {
-        render(); // Utilise ta fonction globale de rendu
-    } else if (typeof renderGradesTable === 'function') {
-        renderGradesTable();
-    }
+    // On utilise la clé 'gestnotes_data' définie au début de votre script
+    localStorage.setItem('gestnotes_data', JSON.stringify(appState));
 
-    // 6. Nettoyage de l'input
-    if (nameInput) {
-        nameInput.value = '';
-        nameInput.focus();
-    }
+    // 4. Mise à jour visuelle immédiate
+    render(); 
+
+    // Nettoyage
+    firstInput.value = '';
+    lastInput.value = '';
+    firstInput.focus();
+    
+    showToast("Élève ajouté avec succès !");
+};
 // Cette accolade ferme la fonction handleAddNewStudent
         // --- CALCULS ET EXPORT CSV ---
         function getAppreciation(note) {
