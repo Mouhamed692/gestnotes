@@ -885,21 +885,23 @@ html += `
             document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
             render();
         });
+        // Assurez-vous que ces fonctions sont bien AU DÉBUT de votre balise <script>
 window.handleAddNewStudent = function() {
-    const firstNameInput = document.getElementById('new-student-first');
-    const lastNameInput = document.getElementById('new-student-last');
+    const firstInput = document.getElementById('new-student-first');
+    const lastInput = document.getElementById('new-student-last');
     
-    const firstName = firstNameInput.value.trim();
-    const lastName = lastNameInput.value.trim();
+    if (!firstInput || !lastInput) return;
+
+    const firstName = firstInput.value.trim();
+    const lastName = lastInput.value.trim();
 
     if (!firstName || !lastName) {
-        alert("Veuillez saisir le prénom et le nom");
+        alert("Veuillez remplir le prénom et le nom");
         return;
     }
 
-    // 1. Création de l'objet élève avec la structure de ton fichier
     const newStudent = {
-        id: "std-" + Date.now(),
+        id: Math.random().toString(36).substr(2, 9),
         firstName: firstName,
         lastName: lastName,
         matricule: "",
@@ -908,22 +910,22 @@ window.handleAddNewStudent = function() {
         retards: 0
     };
 
-    // 2. Ajout dans la classe actuelle (appState et non appData)
+    if (!appState.classes[currentClass].students) {
+        appState.classes[currentClass].students = [];
+    }
+
     appState.classes[currentClass].students.push(newStudent);
+    saveState();
+    render(); // Relance l'affichage
 
-    // 3. Sauvegarde dans la clé utilisée par ton fichier
-    localStorage.setItem('gestnotes_data', JSON.stringify(appState));
+    firstInput.value = '';
+    lastInput.value = '';
+    firstInput.focus();
+};
 
-    // 4. Mise à jour immédiate de l'affichage
-    renderStudents();      // Met à jour la liste en haut à gauche
-    renderGradesTable();   // Met à jour le grand tableau de saisie
-
-    // 5. Nettoyage des champs
-    firstNameInput.value = '';
-    lastNameInput.value = '';
-    firstNameInput.focus();
-    
-    showToast(`Élève ${lastName} ajouté !`, 'success');
+window.changeClass = function() {
+    currentClass = document.getElementById('class-select').value;
+    render();
 };
 
     // 1. Création de l'objet élève avec ID unique local
