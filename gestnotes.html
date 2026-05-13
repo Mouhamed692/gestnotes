@@ -207,65 +207,39 @@
 
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
 
-    <!-- En-tête -->
-    <header class="bg-indigo-700 text-white shadow-md z-20 shrink-0">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex flex-col gap-3 sm:gap-4">
-            <!-- Ligne 1: Logo + Titre + Selecteur de classe -->
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2 sm:gap-4">
-                    <div class="bg-white/20 p-2 sm:p-2.5 rounded-lg">
-                        <i class="fa-solid fa-graduation-cap text-lg sm:text-xl"></i>
-                    </div>
-                    <h1 class="text-xl sm:text-2xl font-bold">GestNotes</h1>
+  <header class="bg-indigo-700 text-white shadow-md z-20 shrink-0">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex flex-col gap-3 sm:gap-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2 sm:gap-4">
+                <div class="bg-white/20 p-2 sm:p-2.5 rounded-lg">
+                    <i class="fa-solid fa-graduation-cap text-lg sm:text-xl"></i>
                 </div>
-                
-                <div class="flex items-center gap-2 sm:gap-3 bg-white/10 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg backdrop-blur-sm border border-white/20">
-                    <label for="class-select" class="font-medium text-xs sm:text-sm uppercase tracking-wider text-indigo-100 hidden xs:inline">Niveau</label>
-                    <select id="class-select"
-                        class="bg-white text-indigo-900 rounded px-2 sm:px-4 py-1 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold cursor-pointer shadow-sm border-0 text-sm sm:text-base">
-                        <option value="CI" CI</option>
-                        <option value="CP">CP</option>
-                        <option value="CE1">CE1</option>
-                         <option value="CE2">CE2</option>
-                        <option value="CM1">CM1</option>
-                        <option value="CM2">CM2</option>
-                        <option value="6ème"selected> >6ème</option>
-                        <option value="5ème">5ème</option>
-                        <option value="4ème">4ème</option>
-                        <option value="3ème">3ème</option>
-                        <option value="Seconde">Seconde</option>
-                        <option value="Première">Première</option>
-                        <option value="Terminale">Terminale</option>
-                    </select>
-                </div>
+                <h1 class="text-xl sm:text-2xl font-bold">GestNotes</h1>
             </div>
             
-            <!-- Ligne 2: Parametres (annee, semestre, effectif) -->
-            <div class="flex flex-wrap items-center gap-2 bg-white/5 rounded-lg px-2 sm:px-3 py-2 border border-white/10">
-                <div class="flex items-center gap-1.5">
-                    <i class="fa-solid fa-calendar text-xs text-indigo-200"></i>
-                    <input type="text" id="setting-year" title="Année scolaire" placeholder="2023-2024"
-                        class="bg-white/10 text-white placeholder-white/50 border border-white/20 rounded px-2 py-1 text-xs w-20 sm:w-24 focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <i class="fa-solid fa-clock text-xs text-indigo-200 hidden sm:inline"></i>
-                    <select id="setting-semester" title="Semestre"
-                        class="bg-white/10 text-white border border-white/20 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
-                        <option value="1" class="text-slate-800">Semestre 1</option>
-                        <option value="2" class="text-slate-800">Semestre 2</option>
-                        <option value="3" class="text-slate-800">Semestre 3</option>
-                    </select>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <i class="fa-solid fa-users text-xs text-indigo-200 hidden sm:inline"></i>
-                    <input type="number" id="setting-effectif" title="Nombre total d'élèves (Effectif)"
-                        placeholder="Effectif"
-                        class="bg-white/10 text-white placeholder-white/50 border border-white/20 rounded px-2 py-1 text-xs w-16 sm:w-20 focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
-                </div>
+            <div class="flex items-center gap-2 sm:gap-3 bg-white/10 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg backdrop-blur-sm border border-white/20">
+                <label for="class-select" class="font-medium text-xs sm:text-sm uppercase tracking-wider text-indigo-100 hidden sm:inline">Niveau</label>
+                <select id="class-select" class="bg-white text-indigo-900 rounded px-2 py-1 font-bold shadow-sm text-sm sm:text-base">
+                    <option value="CI">CI</option>
+                    <option value="CP">CP</option>
+                    <option value="CE1">CE1</option>
+                    <option value="CE2">CE2</option>
+                    <option value="CM1">CM1</option>
+                    <option value="CM2">CM2</option>
+                    <option value="6ème" selected>6ème</option>
+                    <option value="5ème">5ème</option>
+                    <option value="4ème">4ème</option>
+                    <option value="3ème">3ème</option>
+                </select>
             </div>
         </div>
-    </header>
-
+        <div class="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2 border border-white/10">
+            <i class="fa-solid fa-calendar text-xs text-indigo-200"></i>
+            <span class="text-xs text-indigo-100">Session : </span>
+            <input type="text" id="setting-year" class="bg-transparent text-white text-xs border-none focus:ring-0 w-20" placeholder="2023-2024">
+        </div>
+    </div>
+</header>
     <!-- Contenu Principal -->
     <main class="flex-1 overflow-auto p-3 sm:p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-4 sm:gap-6">
 
