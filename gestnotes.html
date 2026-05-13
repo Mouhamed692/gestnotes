@@ -886,67 +886,44 @@ html += `
             render();
         });
 window.handleAddNewStudent = function() {
-    console.log("Tentative d'ajout...");
-    const nameInput = document.getElementById('studentNameInput');
-    const classSelect = document.getElementById('classSelect');
+    const firstNameInput = document.getElementById('new-student-first');
+    const lastNameInput = document.getElementById('new-student-last');
+    
+    const firstName = firstNameInput.value.trim();
+    const lastName = lastNameInput.value.trim();
 
-    if (!nameInput || !classSelect) {
-        alert("Erreur technique : Input ou Sélecteur introuvable dans le HTML");
+    if (!firstName || !lastName) {
+        alert("Veuillez saisir le prénom et le nom");
         return;
     }
 
-    const name = nameInput.value.trim();
-    const className = classSelect.value;
+    // 1. Création de l'objet élève avec la structure de ton fichier
+    const newStudent = {
+        id: "std-" + Date.now(),
+        firstName: firstName,
+        lastName: lastName,
+        matricule: "",
+        birthDate: "",
+        absences: 0,
+        retards: 0
+    };
 
-    if (!name || !className) {
-        alert("Veuillez saisir un nom et choisir une classe");
-        return;
-    }
+    // 2. Ajout dans la classe actuelle (appState et non appData)
+    appState.classes[currentClass].students.push(newStudent);
 
-    // --- DIAGNOSTIC 1 : Vérifier si appData existe ---
-    if (typeof appData === 'undefined') {
-        alert("Erreur : La variable globale 'appData' n'existe pas dans votre script.");
-        return;
-    }
+    // 3. Sauvegarde dans la clé utilisée par ton fichier
+    localStorage.setItem('gestnotes_data', JSON.stringify(appState));
 
-    // --- CONSTRUCTION SÉCURISÉE ---
-    try {
-        if (!appData.classes) appData.classes = {};
-        if (!appData.classes[className]) {
-            appData.classes[className] = { students: [], subjects: [] };
-        }
+    // 4. Mise à jour immédiate de l'affichage
+    renderStudents();      // Met à jour la liste en haut à gauche
+    renderGradesTable();   // Met à jour le grand tableau de saisie
 
-        const newStudent = {
-            id: "std-" + Date.now(),
-            name: name,
-            devoir: 0,
-            composition: 0
-        };
-
-        // Ajout
-        appData.classes[className].students.push(newStudent);
-
-        // --- DIAGNOSTIC 2 : Sauvegarde ---
-        const dataToSave = JSON.stringify(appData);
-        localStorage.setItem('gestnotes_db', dataToSave);
-        
-        console.log("Données sauvegardées avec succès !");
-        alert("Élève " + name + " ajouté avec succès !"); // On force une alerte pour confirmer
-
-        // --- MISE À JOUR ---
-        nameInput.value = '';
-        
-        // Si tu as une fonction de rendu, on l'appelle, sinon F5 automatique
-        if (typeof renderGradesTable === 'function') {
-            renderGradesTable();
-        } else {
-            location.reload(); 
-        }
-
-    } catch (error) {
-        alert("Erreur lors de l'enregistrement : " + error.message);
-        console.error(error);
-    }
+    // 5. Nettoyage des champs
+    firstNameInput.value = '';
+    lastNameInput.value = '';
+    firstNameInput.focus();
+    
+    showToast(`Élève ${lastName} ajouté !`, 'success');
 };
 
     // 1. Création de l'objet élève avec ID unique local
