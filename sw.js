@@ -1,3 +1,5 @@
+
+
 const CACHE_NAME = 'gestnotes-pro-v1';
 
 // Liste des fichiers à mettre en cache pour le mode hors-ligne
@@ -41,4 +43,3 @@ self.addEventListener('fetch', (e) => {
     })
   );
 });
-
