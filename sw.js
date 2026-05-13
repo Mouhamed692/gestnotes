@@ -7,8 +7,8 @@ const ASSETS = [
   './',
   './gestnotes.html',
   './bulletin.html',
+  './tailwind.min.css', // On ajoute le fichier local ici
   './manifest.json'
-  // On retire les liens HTTPS externes (Tailwind et FontAwesome)
 ];
 
 // Installation : Le robot télécharge et stocke les fichiers
