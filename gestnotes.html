@@ -970,7 +970,7 @@ window.handleAddNewStudent = function() {
         nameInput.value = '';
         nameInput.focus();
     }
-}; // Cette accolade ferme la fonction handleAddNewStudent
+// Cette accolade ferme la fonction handleAddNewStudent
         // --- CALCULS ET EXPORT CSV ---
         function getAppreciation(note) {
             if (note === null || note === undefined) return "";
@@ -1095,9 +1095,13 @@ window.handleAddNewStudent = function() {
         showToast("Ouverture des bulletins pour impression...");
     } // Cette accolade ferme la fonction printAllReportCards
 
-    // --- INITIALISATION ---
-    els.classSelect.value = currentClass;
-    render();
-</script>
+    if (els && els.classSelect) {
+        els.classSelect.value = currentClass;
+    }
+    
+    if (typeof render === 'function') {
+        render();
+    }
+ </script>
 </body>
 </html>
