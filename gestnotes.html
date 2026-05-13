@@ -100,7 +100,17 @@
     }
     #grades-table td:first-child::before { content: ""; }
 }
-   
+   @media (max-width: 768px) {
+    /* On annule le sticky sur mobile pour que tout s'empile bien */
+    .sticky { position: static !important; }
+    
+    /* On agrandit les boutons pour le tactile */
+    .mobile-stack {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px !important;
+    }
+}
 
         body {
             font-family: 'Inter', sans-serif;
@@ -684,8 +694,42 @@ html += `
 
 tr.innerHTML = html;
 els.gradesTbody.appendChild(tr);
+
+                // À adapter selon vos variables (ex: note_devoir, note_compo)
+html += `
+    <td data-label="Devoir">
+        <input type="number" 
+               class="w-16 p-1 border rounded"
+               value="${student.devoir || ''}" 
+               oninput="updateStudentNote('${student.id}', 'devoir', this.value)">
+    </td>
+    <td data-label="Composition">
+        <input type="number" 
+               class="w-16 p-1 border rounded"
+               value="${student.composition || ''}" 
+               oninput="updateStudentNote('${student.id}', 'composition', this.value)">
+    </td>
+`;
             });
         }
+        window.updateStudentNote = function(studentId, field, value) {
+    // 1. On récupère la classe actuelle
+    const className = document.getElementById('classSelect').value; // Adaptez l'ID selon votre sélecteur
+    
+    // 2. On trouve l'élève dans vos données (appData ou votre objet global)
+    const student = appData.classes[className].students.find(s => s.id === studentId);
+    
+    if (student) {
+        // 3. On enregistre la valeur (on convertit en nombre)
+        student[field] = parseFloat(value) || 0;
+        
+        // 4. TRÈS IMPORTANT : Sauvegarder dans le localStorage
+        localStorage.setItem('gestnotes_db', JSON.stringify(appData));
+        
+        // 5. Optionnel : Recalculer la moyenne en temps réel à l'écran
+        calculateAverages(studentId); 
+    }
+};
 
         // --- GESTION DES NOTES (SANS PERTE DE FOCUS) ---
         window.updateGrade = function (studentId, subjectId, type, value, inputEl) {
