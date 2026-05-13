@@ -265,19 +265,21 @@
 </head>
 
 <body>
-     <button onclick="window.history.back()" class="no-print fixed top-4 left-4 z-50 flex items-center justify-center w-10 h-10 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 active:scale-95 transition-all shadow-indigo-200">
-    <i class="fas fa-arrow-left"></i>
-</button>
+    <a href="gestnotes.html" class="no-print fixed top-6 left-6 z-[9999] flex items-center justify-center w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl hover:bg-indigo-700 active:scale-90 transition-all border-2 border-white">
+    <i class="fas fa-arrow-left fa-xl"></i>
+</a>
 
 <style>
-    /* CSS pour garantir que le bouton ne gâche pas l'impression */
-    @media print {
-        .no-print {
-            display: none !important;
-        }
+    /* On s'assure que rien ne cache le bouton et qu'il disparaît à l'impression */
+    .no-print {
+        cursor: pointer !important;
+        -webkit-print-color-adjust: exact;
     }
-
+    @media print {
+        .no-print { display: none !important; }
+    }
 </style>
+
 
     <div id="error-msg" class="no-print">Données introuvables. Veuillez générer le bulletin depuis la page principale.
     </div>
