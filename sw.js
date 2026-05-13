@@ -7,10 +7,8 @@ const ASSETS = [
   './',
   './gestnotes.html',
   './bulletin.html',
-  './manifest.json',
-  // Mise en cache des bibliothèques externes pour le design hors-ligne
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+  './manifest.json'
+  // On retire les liens HTTPS externes (Tailwind et FontAwesome)
 ];
 
 // Installation : Le robot télécharge et stocke les fichiers
