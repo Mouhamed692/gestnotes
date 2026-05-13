@@ -5,13 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GestNotes – Administration scolaire</title>
-<script src="https://cdn.tailwindcss.com"></script>
-    <script>
-  tailwind.config = {
+<script src="tailwind-cdn.js"></script>
+<script>
+  // Ce script configure Tailwind pour qu'il comprenne tes classes personnalisées
+  window.tailwind.config = {
     theme: {
       extend: {
         screens: {
-          'xs': '480px',
+          'xs': '480px', // Définit le breakpoint pour mobile moyen
+        },
+        colors: {
+          indigo: {
+            600: '#4f46e5',
+            700: '#4338ca',
+          }
         }
       }
     }
