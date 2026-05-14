@@ -1,18 +1,6 @@
 {
   "name": "gestnotes",
-  "version": "1.0.0",
-  "description": "Application de gestion de notes scolaires",
-  "main": "gestnotes.html",
-  "scripts": {
-    "start": "npx serve .",
-    "dev": "npx serve . -l 3000"
-  },
-  "keywords": [
-    "gestion",
-    "notes",
-    "scolaire",
-    "bulletin"
-  ],
-  "author": "",
-  "license": "ISC"
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {}
 }
