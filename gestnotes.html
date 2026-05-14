@@ -235,118 +235,46 @@
         }
 
         // --- 5. ÉCOUTEURS D'ÉVÉNEMENTS GÉNÉRAUX ---
-        if (els.yearInput) els.yearInput.addEventListener('change', e => { appState.settings.year = e.target.value; saveState(); });
-        if (els.semesterSelect) els.semesterSelect.addEventListener('change', e => { appState.settings.semester = e.target.value; saveState(); });
-        
-        if (els.effectifInput) {
-            els.effectifInput.addEventListener('input', e => { 
-                appState.classes[currentClass].effectif = e.target.value; 
-                saveState(); 
-            });
-        }
-            });
-}
+if (els.yearInput) els.yearInput.addEventListener('change', e => {
+    appState.settings.year = e.target.value;
+    saveState();
+});
 
-if (els.addStudentForm) {
-    els.addStudentForm.addEventListener('submit', e => {
-        e.preventDefault();
-        const first = document.getElementById('new-student-first').value.trim();
-        const last = document.getElementById('new-student-last').value.trim();
-        if (!first ||!last) return;
+if (els.semesterSelect) els.semesterSelect.addEventListener('change', e => {
+    appState.settings.semester = e.target.value;
+    saveState();
+});
 
-        const id = Date.now().toString();
-        appState.classes[currentClass].students.push({ id, first, last });
-        appState.classes[currentClass].grades[id] = {};
+if (els.effectifInput) {
+    els.effectifInput.addEventListener('input', e => {
+        appState.classes[currentClass].effectif = e.target.value;
         saveState();
-        render();
-        e.target.reset();
     });
 }
 
-if (els.addSubjectForm) {
-    els.addSubjectForm.addEventListener('submit', e => {
-        e.preventDefault();
-        const name = document.getElementById('new-subject-name').value.trim();
-        const coef = parseFloat(document.getElementById('new-subject-coef').value);
-        if (!name || isNaN(coef)) return;
-
-        const id = Date.now().toString();
-        appState.classes[currentClass].subjects.push({
-            id, name, coef, coefD1: 1, coefD2: 1, coefC: 2
-        });
-        saveState();
+if (els.classSelect) {
+    els.classSelect.addEventListener('change', (e) => {
+        currentClass = e.target.value;
+        if (els.effectifInput) els.effectifInput.value = appState.classes[currentClass].effectif || '';
         render();
-        e.target.reset();
+    });
+}
+if (els.classSelect) {
+    els.classSelect.addEventListener('change', (e) => {
+        currentClass = e.target.value;
+        if (els.effectifInput) els.effectifInput.value = appState.classes[currentClass].effectif || '';
+        render(); // Important : recharge le tableau quand tu changes de classe
     });
 }
 
+// --- 6. FONCTIONS PRINCIPALES ---
 function saveState() {
     localStorage.setItem('gestnotes_data', JSON.stringify(appState));
 }
 
-function render() {
-    const data = appState.classes[currentClass];
+// Colle ici toutes les autres fonctions : render(), updateGrade(), etc. que je t'ai données
 
-    // Compteurs
-    document.getElementById('students-count').textContent = data.students.length;
-    document.getElementById('subjects-count').textContent = data.subjects.length;
-
-    // Liste élèves
-    els.studentsList.innerHTML = data.students.map(s =>
-        `<li class="flex justify-between items-center p-2 hover:bg-slate-50 rounded">
-            <span class="text-sm">${s.first} ${s.last}</span>
-            <button onclick="deleteStudent('${s.id}')" class="text-red-500 hover:text-red-700">
-                <i class="fa-solid fa-trash text-xs"></i>
-            </button>
-        </li>`
-    ).join('');
-
-    // Liste matières
-    els.subjectsList.innerHTML = data.subjects.map(s =>
-        `<li class="flex justify-between items-center p-2 hover:bg-slate-50 rounded">
-            <span class="text-sm">${s.name}</span>
-            <span class="text-xs bg-slate-100 px-2 py-0.5 rounded">Coef ${s.coef}</span>
-        </li>`
-    ).join('');
-
-    // Tableau notes : à compléter selon ton besoin
-    if (data.students.length === 0 || data.subjects.length === 0) {
-        els.gradesTable.classList.add('hidden');
-        els.gradesEmpty.classList.remove('hidden');
-    } else {
-        els.gradesTable.classList.remove('hidden');
-        els.gradesEmpty.classList.add('hidden');
-        // Ici tu génères thead + tbody avec les inputs de notes
-    }
-}
-
-function deleteStudent(id) {
-    const data = appState.classes[currentClass];
-    data.students = data.students.filter(s => s.id!== id);
-    delete data.grades[id];
-    saveState();
-    render();
-}
-
-function exportAllCSV() {
-    alert('Fonction export à implémenter');
-}
-
-function showToast(msg) {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = 'toast-enter bg-slate-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm';
-    toast.textContent = msg;
-    container.appendChild(toast);
-    setTimeout(() => {
-        toast.classList.add('toast-leave');
-        setTimeout(() => toast.remove(), 400);
-    }, 3000);
-}
-
-initUI();
+initUI(); // Lancement
 </script>
 </body>
 </html>
-
-    
