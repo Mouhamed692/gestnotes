@@ -290,6 +290,25 @@ function renderGradesTable() {
 document.getElementById('setting-year').value = appState.settings.year;
 document.getElementById('setting-semester').value = appState.settings.semester;
 document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
+        function updateGrade(studentId, subjectId, type, value) {
+    const data = appState.classes[currentClass];
+    
+    // Si l'objet de note n'existe pas encore pour cet élève/matière, on le crée
+    if (!data.grades[studentId]) data.grades[studentId] = {};
+    if (!data.grades[studentId][subjectId]) {
+        data.grades[studentId][subjectId] = { d1: '', d2: '', c: '' };
+    }
+
+    // On enregistre la valeur (d1, d2 ou c)
+    data.grades[studentId][subjectId][type] = value;
+    
+    saveState();
+    // On ne relance pas render() ici pour ne pas perdre le focus de l'input pendant la saisie
+    // Mais on peut recalculer la moyenne visuellement si besoin
+}
+        // Force l'affichage des réglages au chargement
+document.getElementById('setting-year').value = appState.settings.year || '2023-2024';
+document.getElementById('setting-semester').value = appState.settings.semester || '1';
 
 render();
     </script>
