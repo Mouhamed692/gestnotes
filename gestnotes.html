@@ -8,14 +8,13 @@
     <style>
         @media print {
             .no-print { display: none !important; }
-            .print-only { display: block !important; }
             body { background: white; }
-            .card { border: none !important; shadow: none !important; }
         }
         .grade-input::-webkit-inner-spin-button, .grade-input::-webkit-outer-spin-button {
             -webkit-appearance: none; margin: 0;
         }
-        input:focus { border-color: #4f46e5 !important; ring: 2px #c7d2fe; }
+        /* Style pour les champs focus */
+        input:focus { border-color: #4f46e5 !important; outline: none; box-shadow: 0 0 0 3px rgba(199, 210, 254, 0.5); }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen font-sans text-slate-900">
@@ -30,7 +29,7 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-3 bg-indigo-800/50 p-2 rounded-xl border border-white/10">
-                <input type="text" id="setting-year" oninput="updateSettings()" placeholder="Année" class="bg-indigo-900/40 text-white border border-white/20 rounded px-3 py-1 text-sm w-32 outline-none">
+                <input type="text" id="setting-year" oninput="updateSettings()" placeholder="Année (ex: 2023-2024)" class="bg-indigo-900/40 text-white border border-white/20 rounded px-3 py-1 text-sm w-40 outline-none">
                 <select id="setting-semester" onchange="updateSettings()" class="bg-indigo-900/40 text-white border border-white/20 rounded px-3 py-1 text-sm outline-none cursor-pointer">
                     <option value="1">Semestre 1</option>
                     <option value="2">Semestre 2</option>
@@ -46,51 +45,45 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
             <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-bold flex items-center gap-2 text-slate-700">
-                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        Élèves (<span id="students-count">0</span>)
-                    </h2>
-                </div>
+                <h2 class="font-bold flex items-center gap-2 text-slate-700 mb-4 uppercase text-xs tracking-widest">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    Élèves (<span id="students-count">0</span>)
+                </h2>
                 <div class="flex gap-2 mb-4">
-                    <input type="text" id="new-student-first" placeholder="Prénom" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 ring-indigo-100">
-                    <input type="text" id="new-student-last" placeholder="NOM" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 ring-indigo-100">
-                    <button onclick="handleAddNewStudent()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-bold text-sm">+</button>
+                    <input type="text" id="new-student-first" placeholder="Prénom" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                    <input type="text" id="new-student-last" placeholder="NOM" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                    <button onclick="handleAddNewStudent()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-bold text-sm">+</button>
                 </div>
-                <ul id="students-list" class="space-y-2 max-h-60 overflow-y-auto pr-2"></ul>
+                <ul id="students-list" class="space-y-2 max-h-48 overflow-y-auto pr-2"></ul>
             </section>
 
             <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                <h2 class="font-bold flex items-center gap-2 mb-4 text-slate-700">
+                <h2 class="font-bold flex items-center gap-2 mb-4 text-slate-700 uppercase text-xs tracking-widest">
                     <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                    Matières & Coeffs
+                    Matières & Coefficients
                 </h2>
                 <div class="flex gap-2 mb-4">
-                    <input type="text" id="new-subject-name" placeholder="Nom matière" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 ring-emerald-100">
-                    <input type="number" id="new-subject-coef" placeholder="Coef" class="w-20 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 ring-emerald-100">
-                    <button onclick="handleAddSubject()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition font-bold text-sm">+</button>
+                    <input type="text" id="new-subject-name" placeholder="Matière" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                    <input type="number" id="new-subject-coef" placeholder="Coef" class="w-20 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                    <button onclick="handleAddSubject()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 font-bold text-sm">+</button>
                 </div>
-                <ul id="subjects-list" class="space-y-2 max-h-60 overflow-y-auto pr-2"></ul>
+                <ul id="subjects-list" class="space-y-2 max-h-48 overflow-y-auto pr-2"></ul>
             </section>
         </div>
 
         <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <h2 class="font-bold text-slate-700 flex items-center gap-2 uppercase tracking-wider text-sm">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z"></path></svg>
-                    Saisie des Notes (D1, D2, Compo)
-                </h2>
+                <h2 class="font-bold text-slate-700 uppercase tracking-widest text-xs">Saisie des notes</h2>
                 <div class="flex gap-2 no-print">
-                    <button onclick="exportData()" class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-300 font-semibold transition">Exporter JSON</button>
-                    <button onclick="window.print()" class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg hover:bg-indigo-200 font-bold transition">Imprimer PDF</button>
+                    <button onclick="exportData()" class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-300 font-semibold">Exporter</button>
+                    <button onclick="window.print()" class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg hover:bg-indigo-200 font-bold">Imprimer Liste</button>
                 </div>
             </div>
             
             <div class="overflow-x-auto">
-                <table id="main-table" class="w-full text-left border-collapse">
-                    </table>
+                <table id="main-table" class="w-full text-left border-collapse"></table>
                 <div id="empty-state" class="p-20 text-center text-slate-400 hidden">
-                    Veuillez ajouter au moins un élève et une matière pour commencer.
+                    Veuillez ajouter des élèves et des matières.
                 </div>
             </div>
         </section>
@@ -98,56 +91,27 @@
 
     <script>
         const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-        const defaultState = { 
-            settings: { year: '2023-2024', semester: '1' }, 
-            classes: {} 
-        };
+        const defaultState = { settings: { year: '2023-2024', semester: '1' }, classes: {} };
         classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {} });
 
         let appState = JSON.parse(localStorage.getItem('gestnotes_pro_db')) || defaultState;
         let currentClass = "6ème";
 
-        function save() { 
-            localStorage.setItem('gestnotes_pro_db', JSON.stringify(appState)); 
-        }
+        function save() { localStorage.setItem('gestnotes_pro_db', JSON.stringify(appState)); }
 
         function calculateSubjectAvg(d1, d2, c) {
-            const n1 = parseFloat(d1) || 0;
-            const n2 = parseFloat(d2) || 0;
-            const n3 = parseFloat(c) || 0;
-            return (n1 + n2 + (n3 * 2)) / 4;
+            return ((parseFloat(d1)||0) + (parseFloat(d2)||0) + ((parseFloat(c)||0) * 2)) / 4;
         }
 
         function calculateGeneralAvg(studentId) {
             const data = appState.classes[currentClass];
-            let totalPoints = 0;
-            let totalCoefs = 0;
+            let pts = 0, coefs = 0;
             data.subjects.forEach(sub => {
                 const g = (data.grades[studentId] && data.grades[studentId][sub.id]) ? data.grades[studentId][sub.id] : {d1:0, d2:0, c:0};
-                totalPoints += calculateSubjectAvg(g.d1, g.d2, g.c) * sub.coef;
-                totalCoefs += sub.coef;
+                pts += calculateSubjectAvg(g.d1, g.d2, g.c) * sub.coef;
+                coefs += sub.coef;
             });
-            return totalCoefs > 0 ? (totalPoints / totalCoefs) : 0;
-        }
-
-        function handleAddNewStudent() {
-            const f = document.getElementById('new-student-first');
-            const l = document.getElementById('new-student-last');
-            if(!f.value || !l.value) return;
-            const id = "std_" + Date.now();
-            appState.classes[currentClass].students.push({ id, firstName: f.value, lastName: l.value });
-            f.value = ''; l.value = '';
-            save(); render();
-        }
-
-        function handleAddSubject() {
-            const n = document.getElementById('new-subject-name');
-            const c = document.getElementById('new-subject-coef');
-            if(!n.value) return;
-            const id = "sub_" + Date.now();
-            appState.classes[currentClass].subjects.push({ id, name: n.value, coef: parseFloat(c.value) || 1 });
-            n.value = ''; c.value = '';
-            save(); render();
+            return coefs > 0 ? (pts / coefs) : 0;
         }
 
         function updateGrade(studentId, subjectId, type, val) {
@@ -156,80 +120,135 @@
             if(!data.grades[studentId][subjectId]) data.grades[studentId][subjectId] = {d1:0, d2:0, c:0};
             data.grades[studentId][subjectId][type] = val;
             save();
-            const avgCell = document.getElementById(`avg-${studentId}`);
-            const newAvg = calculateGeneralAvg(studentId);
-            avgCell.textContent = newAvg.toFixed(2);
-            avgCell.className = `p-4 font-black text-center ${getScoreClass(newAvg)} border-l border-indigo-100`;
+            const avg = calculateGeneralAvg(studentId);
+            const cell = document.getElementById(`avg-${studentId}`);
+            if(cell) {
+                cell.textContent = avg.toFixed(2);
+                cell.className = `p-4 font-black text-center ${getScoreClass(avg)} border-l border-indigo-100`;
+            }
         }
 
-        function getScoreClass(score) {
-            if(score < 10) return 'text-red-600 bg-red-50';
-            if(score < 12) return 'text-orange-600 bg-orange-50';
+        function getScoreClass(s) {
+            if(s < 10) return 'text-red-600 bg-red-50';
+            if(s < 12) return 'text-orange-600 bg-orange-50';
             return 'text-emerald-600 bg-emerald-50';
         }
 
         function render() {
-            renderHeader();
-            renderLists();
-            renderTable();
-        }
-
-        function renderHeader() {
+            const data = appState.classes[currentClass];
+            
+            // Header & Settings
             const sel = document.getElementById('class-select');
-            sel.innerHTML = classNames.map(c => `<option value="${c}" ${c === currentClass ? 'selected' : ''}>Classe : ${c}</option>`).join('');
+            sel.innerHTML = classNames.map(c => `<option value="${c}" ${c === currentClass ? 'selected' : ''}>${c}</option>`).join('');
             document.getElementById('setting-year').value = appState.settings.year;
             document.getElementById('setting-semester').value = appState.settings.semester;
-        }
 
-        function renderLists() {
-            const sList = document.getElementById('students-list');
-            const subList = document.getElementById('subjects-list');
-            const data = appState.classes[currentClass];
+            // Lists
             document.getElementById('students-count').textContent = data.students.length;
-            sList.innerHTML = data.students.map(s => `
-                <li class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100 text-sm group">
-                    <span class="font-bold text-slate-700"> ${s.lastName.toUpperCase()} <span class="font-normal text-slate-500">${s.firstName}</span></span>
-                    <button onclick="deleteItem('students', '${s.id}')" class="text-red-300 hover:text-red-600 opacity-0 group-hover:opacity-100 transition">✕</button>
-                </li>
-            `).join('');
-            subList.innerHTML = data.subjects.map(s => `
-                <li class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100 text-sm group">
-                    <span class="text-slate-700 font-medium">${s.name} <b class="text-emerald-600 ml-1">(x${s.coef})</b></span>
-                    <button onclick="deleteItem('subjects', '${s.id}')" class="text-red-300 hover:text-red-600 opacity-0 group-hover:opacity-100 transition">✕</button>
-                </li>
-            `).join('');
-        }
+            document.getElementById('students-list').innerHTML = data.students.map(s => `
+                <li class="flex justify-between items-center p-2 bg-slate-50 rounded border text-sm group">
+                    <span><b>${s.lastName.toUpperCase()}</b> ${s.firstName}</span>
+                    <button onclick="deleteItem('students', '${s.id}')" class="text-red-400 opacity-0 group-hover:opacity-100">✕</button>
+                </li>`).join('');
 
-        function renderTable() {
+            document.getElementById('subjects-list').innerHTML = data.subjects.map(s => `
+                <li class="flex justify-between items-center p-2 bg-slate-50 rounded border text-sm group">
+                    <span>${s.name} <b class="text-indigo-600">(x${s.coef})</b></span>
+                    <button onclick="deleteItem('subjects', '${s.id}')" class="text-red-400 opacity-0 group-hover:opacity-100">✕</button>
+                </li>`).join('');
+
+            // Table
             const table = document.getElementById('main-table');
-            const empty = document.getElementById('empty-state');
-            const data = appState.classes[currentClass];
-
             if(data.students.length === 0 || data.subjects.length === 0) {
                 table.innerHTML = "";
-                empty.classList.remove('hidden');
+                document.getElementById('empty-state').classList.remove('hidden');
                 return;
             }
-            empty.classList.add('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
 
-            let html = `<thead class="bg-slate-100 text-slate-600 text-[10px] uppercase font-bold border-b border-slate-200"><tr>
-                <th class="p-4 sticky left-0 bg-slate-100 z-10 w-48">Élève</th>`;
-            
-            data.subjects.forEach(s => {
-                html += `<th class="p-2 border-l border-slate-200 text-center w-40">
-                    <div class="text-indigo-700">${s.name}</div>
-                    <div class="flex justify-center gap-4 text-[9px] mt-1 text-slate-400"><span>D1</span><span>D2</span><span>CP</span></div>
-                </th>`;
-            });
-            
-            html += `<th class="p-4 border-l border-indigo-200 bg-indigo-50 text-indigo-700 text-center">MOYENNE</th>
-                     <th class="p-4 bg-slate-100 text-center no-print w-20">Bulletin</th></tr></thead><tbody>`;
+            let html = `<thead class="bg-slate-100 text-[10px] uppercase font-bold"><tr>
+                <th class="p-4 sticky left-0 bg-slate-100 z-10">Élève</th>`;
+            data.subjects.forEach(s => html += `<th class="p-2 border-l text-center w-32">${s.name}<br><span class="text-[8px] text-slate-400">D1 | D2 | CP</span></th>`);
+            html += `<th class="p-4 border-l bg-indigo-50 text-indigo-700 text-center">MOY</th>
+                     <th class="p-4 text-center no-print">BULLETIN</th></tr></thead><tbody>`;
 
             data.students.forEach(student => {
-                html += `<tr class="border-b border-slate-100 hover:bg-slate-50/80 transition">
-                    <td class="p-4 font-bold text-slate-800 text-xs sticky left-0 bg-white shadow-[2px_0_5px_rgba(0,0,0,0.05)]">${student.lastName.toUpperCase()} ${student.firstName}</td>`;
-                
+                html += `<tr class="border-b hover:bg-slate-50">
+                    <td class="p-4 font-bold text-xs sticky left-0 bg-white shadow-md">${student.lastName.toUpperCase()} ${student.firstName}</td>`;
                 data.subjects.forEach(sub => {
                     const g = (data.grades[student.id] && data.grades[student.id][sub.id]) ? data.grades[student.id][sub.id] : {d1:'', d2:'', c:''};
-                    html += `<td class="p-2 border-l border-slate-100">
-                        <div class="flex gap-1 justify-center">
+                    html += `<td class="p-2 border-l"><div class="flex gap-1 justify-center">
+                        <input type="number" value="${g.d1}" oninput="updateGrade('${student.id}','${sub.id}','d1',this.value)" class="w-8 h-7 border rounded text-center text-xs">
+                        <input type="number" value="${g.d2}" oninput="updateGrade('${student.id}','${sub.id}','d2',this.value)" class="w-8 h-7 border rounded text-center text-xs">
+                        <input type="number" value="${g.c}" oninput="updateGrade('${student.id}','${sub.id}','c',this.value)" class="w-8 h-7 border border-indigo-300 bg-indigo-50 rounded text-center text-xs font-bold">
+                    </div></td>`;
+                });
+                const avg = calculateGeneralAvg(student.id);
+                html += `<td id="avg-${student.id}" class="p-4 font-black text-center ${getScoreClass(avg)} border-l">${avg.toFixed(2)}</td>
+                         <td class="p-4 text-center no-print border-l">
+                            <button onclick="openBulletin('${student.id}')" class="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            </button>
+                         </td></tr>`;
+            });
+            table.innerHTML = html + "</tbody>";
+        }
+
+        // Actions
+        function handleAddNewStudent() {
+            const f = document.getElementById('new-student-first'), l = document.getElementById('new-student-last');
+            if(f.value && l.value) {
+                appState.classes[currentClass].students.push({ id: "std_"+Date.now(), firstName: f.value, lastName: l.value });
+                f.value = ''; l.value = ''; save(); render();
+            }
+        }
+
+        function handleAddSubject() {
+            const n = document.getElementById('new-subject-name'), c = document.getElementById('new-subject-coef');
+            if(n.value) {
+                appState.classes[currentClass].subjects.push({ id: "sub_"+Date.now(), name: n.value, coef: parseFloat(c.value)||1 });
+                n.value = ''; c.value = ''; save(); render();
+            }
+        }
+
+        function deleteItem(type, id) {
+            if(confirm("Supprimer ?")) {
+                appState.classes[currentClass][type] = appState.classes[currentClass][type].filter(x => x.id !== id);
+                save(); render();
+            }
+        }
+
+        function updateSettings() {
+            appState.settings.year = document.getElementById('setting-year').value;
+            appState.settings.semester = document.getElementById('setting-semester').value;
+            save();
+        }
+
+        function changeClass(v) { currentClass = v; render(); }
+
+        function openBulletin(studentId) {
+            const data = appState.classes[currentClass];
+            const student = data.students.find(s => s.id === studentId);
+            const reportData = {
+                student: student,
+                subjects: data.subjects,
+                grades: data.grades[studentId] || {},
+                settings: appState.settings,
+                className: currentClass
+            };
+            localStorage.setItem('current_bulletin_data', JSON.stringify(reportData));
+            window.open(`bulletin.html?class=${encodeURIComponent(currentClass)}&student=${studentId}`, '_blank');
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify(appState, null, 2)], {type : 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `gestnotes_backup.json`;
+            a.click();
+        }
+
+        window.onload = render;
+    </script>
+</body>
+</html>
