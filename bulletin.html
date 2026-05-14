@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 
-<head> 
+<head>
     <meta charset="UTF-8">
     <title>Bulletin de Notes</title>
     <style>
@@ -265,28 +265,6 @@
 </head>
 
 <body>
-    <a href="gestnotes.html" class="no-print" style="
-    position: absolute; 
-    top: 15px; 
-    left: 15px; 
-    width: 40px; 
-    height: 40px; 
-    background: #4f46e5 !important; 
-    color: white !important; 
-    border-radius: 50%; 
-    display: flex !important; 
-    align-items: center; 
-    justify-content: center; 
-    z-index: 1000000; 
-    text-decoration: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    border: 1.5px solid white;">
-    <span style="font-size: 20px; font-weight: bold; line-height: 0;">&larr;</span>
-</a>
-
-<style>
-    @media print { .no-print { display: none !important; } }
-</style>
 
     <div id="error-msg" class="no-print">Données introuvables. Veuillez générer le bulletin depuis la page principale.
     </div>
@@ -295,10 +273,9 @@
     <div class="bulletin-wrapper no-print" id="setup-panel">
         <div class="input-panel">
             <label for="header-input">Modifier l'en-tête de l'établissement (IEF, École, etc.) :</label>
-            <textarea id="header-input" rows="3">
-                IA PIKINE / GUEDIAWAYE
-                IEF PIKINE 
-                Sangomar RENOVATION</textarea>
+            <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE
+IEF PIKINE
+RENOVATION</textarea>
             <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Les modifications s'appliquent en direct
                 ci-dessous.</p>
             <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
@@ -319,7 +296,7 @@
                 <div id="header-text-display">
                     IA PIKINE / GUEDIAWAYE<br>
                     IEF PIKINE<br>
-                 Sangomar RENOVATION
+                    RENOVATION
                 </div>
             </div>
             <div class="header-center">
@@ -431,150 +408,168 @@
             </table>
         </div>
 
-               <!-- Section Observations en bas à droite -->
-<div class="observations-container">
-    <p><strong>Observations du conseil des professeurs :</strong></p>
-    <div class="observations-box">
+        <div class="observations">
+            <div>Observations du conseil des professeurs</div>
+            <div class="obs-right">Le Chef d'Etablissement</div>
         </div>
-</div>
-
-<style>
-    .observations-container {
-        margin-top: 20px;
-    }
-    .observations-box {
-        border: 2px solid black;
-        padding: 10px;
-        width: 350px; /* Légèrement plus large pour les commentaires */
-        min-height: 60px;
-        font-style: italic;
-    }
-</style>
-
-    
-        
-  
+    </div>
 
     <script>
         function getAppreciation(note) {
-    if (note === null || note === undefined || note === '') return "";
-    if (note < 4) return "Très Faible";
-    if (note < 8) return "Faible";
-    if (note < 10) return "Insuffisant";
-    if (note < 12) return "Passable";
-    if (note < 14) return "A. Bien";
-    if (note < 16) return "Bien";
-    return "Excellent";
-}
+            if (note === null || note === undefined || note === '') return "";
+            if (note < 4) return "Très Faible";
+            if (note < 8) return "Faible";
+            if (note < 10) return "Insuffisant";
+            if (note < 12) return "Passable";
+            if (note < 14) return "A. Bien";
+            if (note < 16) return "Bien";
+            return "Excellent";
+        }
 
-window.onload = function () {
-    // --- GESTION DE L'EN-TÊTE DYNAMIQUE ---
-    const headerInput = document.getElementById('header-input');
-    const headerDisplay = document.getElementById('header-text-display');
+        window.onload = function () {
+            // --- GESTION DE L'EN-TÊTE DYNAMIQUE ---
+            const headerInput = document.getElementById('header-input');
+            const headerDisplay = document.getElementById('header-text-display');
 
-    headerInput.addEventListener('input', function () {
-        headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
-    });
+            headerInput.addEventListener('input', function () {
+                headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
+            });
 
-    // --- CHARGEMENT DES DONNÉES ---
-    const urlParams = new URLSearchParams(window.location.search);
-    const classId = urlParams.get('class');
-    const studentId = urlParams.get('student');
+            // --- CHARGEMENT DES DONNÉES ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const classId = urlParams.get('class');
+            const studentId = urlParams.get('student');
 
-    // Utilisation de la base de données Pro
-    const rawData = localStorage.getItem('gestnotes_pro_db');
-    
-    if (!rawData || !classId || !studentId) {
-        document.getElementById('error-msg').style.display = 'block';
-        document.getElementById('setup-panel').style.display = 'none';
-        return;
-    }
+            const rawData = localStorage.getItem('gestnotes_data');
+            if (!rawData || !classId || !studentId) {
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('setup-panel').style.display = 'none';
+                return;
+            }
 
-    const appState = JSON.parse(rawData);
-    const classData = appState.classes[classId];
-    if (!classData) return;
+            const appState = JSON.parse(rawData);
+            const classData = appState.classes[classId];
+            if (!classData) return;
 
-    const student = classData.students.find(s => s.id === studentId);
-    if (!student) return;
+            const student = classData.students.find(s => s.id === studentId);
+            if (!student) return;
 
-    document.getElementById('bulletin-content').style.display = 'block';
-    document.title = "Bulletin - " + student.lastName.toUpperCase() + " " + student.firstName;
+            document.getElementById('bulletin-content').style.display = 'block';
+            document.title = "Bulletin - " + student.lastName + " " + student.firstName;
 
-    // Remplissage des infos de base
-    document.getElementById('lbl-year').textContent = appState.settings.year;
-    document.getElementById('lbl-semester').textContent = appState.settings.semester == '1' ? '1er' : appState.settings.semester + 'ème';
-    document.getElementById('lbl-firstname').textContent = student.firstName;
-    document.getElementById('lbl-lastname').textContent = student.lastName.toUpperCase();
-    document.getElementById('lbl-class').textContent = classId;
-    document.getElementById('lbl-effectif').textContent = classData.students.length;
-    document.getElementById('lbl-abs').textContent = student.abs || 0;
-    document.getElementById('lbl-ret').textContent = student.ret || 0;
+            document.getElementById('lbl-year').textContent = appState.settings.year;
+            document.getElementById('lbl-semester').textContent = appState.settings.semester == '1' ? '1er' : '2ème';
+            document.getElementById('lbl-firstname').textContent = student.firstName;
+            document.getElementById('lbl-lastname').textContent = student.lastName;
+            document.getElementById('lbl-class').textContent = classId;
+            document.getElementById('lbl-birth').textContent = student.birthDate || '';
+            document.getElementById('lbl-matricule').textContent = student.matricule || '';
+            document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
+            document.getElementById('lbl-abs').textContent = student.absences || 0;
+            document.getElementById('lbl-ret').textContent = student.retards || 0;
 
-    // --- LOGIQUE DE CALCUL DES MOYENNES ---
-    const tbody = document.getElementById('grades-body');
-    let totalCoef = 0;
-    let totalPoints = 0;
+            // Calcul des moyennes par matière pour le rang
+            const subjectRanks = {};
+            classData.subjects.forEach(sub => {
+                let subAvgs = [];
+                classData.students.forEach(s => {
+                    const g = classData.grades[s.id]?.[sub.id] || {};
+                    let p = 0, c = 0;
+                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * sub.coefD1; c += sub.coefD1; }
+                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * sub.coefD2; c += sub.coefD2; }
+                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * sub.coefC; c += sub.coefC; }
+                    if (c > 0) subAvgs.push({ id: s.id, avg: p / c });
+                });
+                subAvgs.sort((a, b) => b.avg - a.avg);
+                subjectRanks[sub.id] = {};
+                let currentRank = 1;
+                subAvgs.forEach((item, idx) => {
+                    if (idx > 0 && item.avg < subAvgs[idx - 1].avg) currentRank = idx + 1;
+                    subjectRanks[sub.id][item.id] = currentRank;
+                });
+            });
 
-    classData.subjects.forEach(sub => {
-        const g = classData.grades[studentId]?.[sub.id] || { d1: '', d2: '', c: '' };
-        
-        const d1 = g.d1 !== '' ? parseFloat(g.d1) : 0;
-        const d2 = g.d2 !== '' ? parseFloat(g.d2) : 0;
-        const comp = g.c !== '' ? parseFloat(g.c) : 0;
+            // Calcul Moyenne Générale
+            const generalAvgs = classData.students.map(s => {
+                let tP = 0, tC = 0;
+                classData.subjects.forEach(sub => {
+                    const g = classData.grades[s.id]?.[sub.id] || {};
+                    let p = 0, c = 0;
+                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * sub.coefD1; c += sub.coefD1; }
+                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * sub.coefD2; c += sub.coefD2; }
+                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * sub.coefC; c += sub.coefC; }
+                    if (c > 0) { tP += (p / c) * sub.coef; tC += sub.coef; }
+                });
+                return { id: s.id, avg: tC > 0 ? (tP / tC) : null };
+            });
 
-        // Formule Professionnelle : (D1 + D2 + Compo*2) / 4
-        const subjectAvg = (d1 + d2 + (comp * 2)) / 4;
-        const mxc = subjectAvg * sub.coef;
+            generalAvgs.sort((a, b) => (b.avg || 0) - (a.avg || 0));
 
-        totalCoef += sub.coef;
-        totalPoints += mxc;
+            let genRank = '-', studentGenAvg = null;
+            let currentGenRank = 1;
+            generalAvgs.forEach((item, index) => {
+                if (index > 0 && item.avg !== generalAvgs[index - 1].avg) currentGenRank = index + 1;
+                if (item.id === studentId) {
+                    genRank = item.avg !== null ? currentGenRank : '-';
+                    studentGenAvg = item.avg;
+                }
+            });
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td class="col-discipline">${sub.name}</td>
-            <td>${g.d1 || '-'}</td>
-            <td>${g.d2 || '-'}</td>
-            <td>${g.c || '-'}</td>
-            <td style="font-weight:bold">${subjectAvg.toFixed(2)}</td>
-            <td>${sub.coef}</td>
-            <td style="font-weight:bold">${mxc.toFixed(2)}</td>
-            <td>-</td>
-            <td>-</td>
-            <td style="font-size:10px italic">${getAppreciation(subjectAvg)}</td>
-        `;
-        tbody.appendChild(tr);
-    });
+            // Remplissage tableau
+            const tbody = document.getElementById('grades-body');
+            let totalCoef = 0, totalPoints = 0;
 
-    // --- RÉSUMÉ FINAL ---
-    const moyGen = totalPoints / totalCoef;
-    document.getElementById('lbl-tot-coef').textContent = totalCoef;
-    document.getElementById('lbl-tot-pts').textContent = totalPoints.toFixed(2);
-    document.getElementById('lbl-moy-gen').textContent = moyGen.toFixed(2);
+            classData.subjects.forEach(sub => {
+                const g = classData.grades[studentId]?.[sub.id] || {};
+                let p = 0, c = 0;
+                const d1 = g.d1 !== undefined && g.d1 !== '' ? Number(g.d1) : '';
+                const d2 = g.d2 !== undefined && g.d2 !== '' ? Number(g.d2) : '';
+                const comp = g.c !== undefined && g.c !== '' ? Number(g.c) : '';
 
-    // --- COCHAGE AUTOMATIQUE DES DÉCISIONS ---
-    const resetChecks = () => {
-        ['satisfaisant', 'peut-mieux', 'insuffisant', 'risque-redoubler', 'risque-exclusion', 
-         'felicitations', 'encouragement', 'tableau-honneur', 'avertissement', 'blame']
-        .forEach(id => {
-            const el = document.getElementById('chk-' + id);
-            if(el) el.textContent = '';
-        });
-    };
+                if (d1 !== '') { p += d1 * sub.coefD1; c += sub.coefD1; }
+                if (d2 !== '') { p += d2 * sub.coefD2; c += sub.coefD2; }
+                if (comp !== '') { p += comp * sub.coefC; c += sub.coefC; }
 
-    resetChecks();
-    if (moyGen >= 12) {
-        document.getElementById('chk-satisfaisant').textContent = 'X';
-        if (moyGen >= 14) document.getElementById('chk-felicitations').textContent = 'X';
-        else if (moyGen >= 13) document.getElementById('chk-encouragement').textContent = 'X';
-        else document.getElementById('chk-tableau-honneur').textContent = 'X';
-    } else if (moyGen >= 10) {
-        document.getElementById('chk-peut-mieux').textContent = 'X';
-    } else if (moyGen >= 8) {
-        document.getElementById('chk-insuffisant').textContent = 'X';
-    } else {
-        document.getElementById('chk-risque-redoubler').textContent = 'X';
-    }
-};
+                let sAvgStr = '', mxcStr = '', app = '', rankSub = '';
+                if (c > 0) {
+                    const sAvg = p / c;
+                    sAvgStr = sAvg.toFixed(2).replace('.', ',');
+                    const mxc = sAvg * sub.coef;
+                    mxcStr = mxc.toFixed(2).replace('.', ',');
+                    totalCoef += sub.coef;
+                    totalPoints += mxc;
+                    app = getAppreciation(sAvg);
+                    rankSub = subjectRanks[sub.id]?.[studentId] || '';
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="col-discipline">${sub.name}</td>
+                    <td>${d1}</td><td>${d2}</td><td>${comp}</td>
+                    <td>${sAvgStr}</td><td>${sub.coef}</td><td>${mxcStr}</td>
+                    <td>TH</td><td>${rankSub}</td><td>${app}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('lbl-tot-coef').textContent = totalCoef || '';
+            document.getElementById('lbl-tot-pts').textContent = totalPoints ? totalPoints.toFixed(2).replace('.', ',') : '';
+            document.getElementById('lbl-moy-gen').textContent = studentGenAvg !== null ? studentGenAvg.toFixed(2).replace('.', ',') : '-';
+            document.getElementById('lbl-rank').textContent = genRank;
+
+            // Cocher auto
+            if (studentGenAvg !== null) {
+                if (studentGenAvg >= 12) {
+                    document.getElementById('chk-satisfaisant').textContent = 'X';
+                    if (studentGenAvg >= 14) document.getElementById('chk-felicitations').textContent = 'X';
+                    else if (studentGenAvg >= 13) document.getElementById('chk-encouragement').textContent = 'X';
+                    else document.getElementById('chk-tableau-honneur').textContent = 'X';
+                } else if (studentGenAvg >= 10) { document.getElementById('chk-peut-mieux').textContent = 'X'; }
+                else if (studentGenAvg >= 8) { document.getElementById('chk-insuffisant').textContent = 'X'; }
+                else if (studentGenAvg >= 5) { document.getElementById('chk-risque-redoubler').textContent = 'X'; }
+                else { document.getElementById('chk-risque-exclusion').textContent = 'X'; }
+            }
+        };
     </script>
 </body>
 
