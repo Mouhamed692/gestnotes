@@ -214,26 +214,41 @@ const els = {
     effectifInput: document.getElementById('setting-effectif')
 };
 
-// --- INITIALISATION DES RÉGLAGES ---
-els.yearInput.value = appState.settings.year;
-els.semesterSelect.value = appState.settings.semester;
-// On vérifie d'abord que l'élément HTML existe ET que la classe existe dans les données
+// --- INITIALISATION SÉCURISÉE DES VALEURS ---
+if (els.yearInput) els.yearInput.value = appState.settings.year;
+if (els.semesterSelect) els.semesterSelect.value = appState.settings.semester;
+
 if (els.effectifInput && appState.classes[currentClass]) {
     els.effectifInput.value = appState.classes[currentClass].effectif || '';
-} else {
-    console.warn(`Impossible d'assigner l'effectif : l'élément input ou la classe "${currentClass}" est introuvable.`);
 }
 
 // --- ÉCOUTEURS D'ÉVÉNEMENTS GÉNÉRAUX ---
-els.yearInput.addEventListener('change', e => { appState.settings.year = e.target.value; saveState(); });
-els.semesterSelect.addEventListener('change', e => { appState.settings.semester = e.target.value; saveState(); });
-els.effectifInput.addEventListener('input', e => { appState.classes[currentClass].effectif = e.target.value; saveState(); });
-els.classSelect.addEventListener('change', (e) => {
-    currentClass = e.target.value;
-    els.effectifInput.value = appState.classes[currentClass].effectif || '';
-    render();
-});
+// On n'ajoute l'écouteur que si l'élément existe réellement
+if (els.yearInput) {
+    els.yearInput.addEventListener('change', e => { appState.settings.year = e.target.value; saveState(); });
+}
 
+if (els.semesterSelect) {
+    els.semesterSelect.addEventListener('change', e => { appState.settings.semester = e.target.value; saveState(); });
+}
+
+if (els.effectifInput) {
+    els.effectifInput.addEventListener('input', e => { 
+        appState.classes[currentClass].effectif = e.target.value; 
+        saveState(); 
+    });
+}
+
+if (els.classSelect) {
+    els.classSelect.addEventListener('change', (e) => {
+        currentClass = e.target.value;
+        // Mise à jour sécurisée de l'affichage de l'effectif lors du changement de classe
+        if (els.effectifInput) {
+            els.effectifInput.value = appState.classes[currentClass].effectif || '';
+        }
+        render();
+    });
+}
 // --- FONCTIONS UTILITAIRES ---
 function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
 function generateId() { return Math.random().toString(36).substr(2, 9); }
