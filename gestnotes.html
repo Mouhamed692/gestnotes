@@ -138,40 +138,7 @@
     </main>
 
     <script>
-        const defaultState = { settings: { year: '2023-2024', semester: '1' }, classes: {} };
-        const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-        classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {}, effectif: '' });
-
-        let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
-
-        let currentClass = document.getElementById('class-select').value;
-
-        // Liaison UI et État
-        function initSettings() {
-            document.getElementById('setting-year').value = appState.settings.year;
-            document.getElementById('setting-semester').value = appState.settings.semester;
-            document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
-        }
-
-        document.getElementById('setting-year').addEventListener('change', e => { appState.settings.year = e.target.value; saveState(); });
-        document.getElementById('setting-semester').addEventListener('change', e => { appState.settings.semester = e.target.value; saveState(); });
-        document.getElementById('setting-effectif').addEventListener('input', e => { appState.classes[currentClass].effectif = e.target.value; saveState(); });
-
-        function changeClass(newClass) {
-            currentClass = newClass;
-            document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
-            render();
-        }
-
-        function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
-        
-        function render() {
-            // Ici, tes fonctions renderStudents(), renderSubjects(), etc.
-            console.log("Rendu de la classe :", currentClass);
-        }
-
-        initSettings();
-        // --- ÉTAT ET INITIALISATION ---
+        // --- 1. ÉTAT GLOBAL (Une seule déclaration ici) ---
 const defaultState = { settings: { year: '2023-2024', semester: '1' }, classes: {} };
 const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
 classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {}, effectif: '' });
@@ -179,22 +146,19 @@ classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], 
 let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
 let currentClass = document.getElementById('class-select').value;
 
+// --- 2. FONCTIONS DE SAUVEGARDE ET UTILITAIRES ---
 function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
 function generateId() { return Math.random().toString(36).substr(2, 9); }
 
-// --- GESTION DES ÉLÈVES ---
+// --- 3. GESTION DES ÉLÈVES ---
 function handleAddNewStudent() {
     const firstName = document.getElementById('new-student-first').value.trim();
     const lastName = document.getElementById('new-student-last').value.trim();
-    
     if (!firstName || !lastName) return;
-
     const newStudent = { id: generateId(), firstName, lastName, matricule: '', birth: '', abs: 0, ret: 0 };
     appState.classes[currentClass].students.push(newStudent);
-    
     document.getElementById('new-student-first').value = '';
     document.getElementById('new-student-last').value = '';
-    
     saveState();
     render();
 }
@@ -207,19 +171,15 @@ function deleteStudent(id) {
     }
 }
 
-// --- GESTION DES MATIÈRES ---
+// --- 4. GESTION DES MATIÈRES ---
 function handleAddSubject() {
     const name = document.getElementById('new-subject-name').value.trim();
     const coef = parseFloat(document.getElementById('new-subject-coef').value) || 1;
-
     if (!name) return;
-
-    const newSubject = { id: generateId(), name, coef, coefD1: 1, coefD2: 1, coefC: 2 };
+    const newSubject = { id: generateId(), name, coef };
     appState.classes[currentClass].subjects.push(newSubject);
-    
     document.getElementById('new-subject-name').value = '';
     document.getElementById('new-subject-coef').value = '';
-
     saveState();
     render();
 }
@@ -232,11 +192,11 @@ function deleteSubject(id) {
     }
 }
 
-// --- MOTEUR DE RENDU ---
+// --- 5. MOTEUR DE RENDU ---
 function render() {
     renderStudents();
     renderSubjects();
-    renderGradesTable();
+    // On peut ajouter renderGradesTable() ici si tu as déjà le code du tableau
 }
 
 function renderStudents() {
@@ -244,12 +204,11 @@ function renderStudents() {
     const students = appState.classes[currentClass].students;
     document.getElementById('students-count').textContent = students.length;
     list.innerHTML = '';
-
     students.forEach(s => {
         const li = document.createElement('li');
         li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded border-b text-sm';
         li.innerHTML = `
-            <span class="font-bold uppercase">${s.lastName} <span class="font-normal capitalize text-slate-500">${s.firstName}</span></span>
+            <span class="font-bold uppercase text-slate-800">${s.lastName} <span class="font-normal capitalize text-slate-500">${s.firstName}</span></span>
             <button onclick="deleteStudent('${s.id}')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash-can"></i></button>
         `;
         list.appendChild(li);
@@ -261,62 +220,30 @@ function renderSubjects() {
     const subjects = appState.classes[currentClass].subjects;
     document.getElementById('subjects-count').textContent = subjects.length;
     list.innerHTML = '';
-
     subjects.forEach(sub => {
         const li = document.createElement('li');
         li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded border-b text-sm';
         li.innerHTML = `
-          // Dans ta fonction renderSubjects(), remplace la ligne du span Coef par celle-ci :
-<span class="bg-emerald-100 text-emerald-900 text-[11px] px-2 py-0.5 rounded border border-emerald-200 font-bold">
-    Coef ${subject.coef}
-</span>
+            <span class="text-slate-800">${sub.name} <span class="bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded ml-2 font-bold text-[10px]">Coef ${sub.coef}</span></span>
             <button onclick="deleteSubject('${sub.id}')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash-can"></i></button>
         `;
         list.appendChild(li);
     });
 }
 
-function renderGradesTable() {
-    const table = document.getElementById('grades-table');
-    const empty = document.getElementById('grades-empty');
-    const { students, subjects } = appState.classes[currentClass];
-
-    if (students.length === 0 || subjects.length === 0) {
-        table.classList.add('hidden');
-        empty.classList.remove('hidden');
-        return;
-    }
-
-    table.classList.remove('hidden');
-    empty.classList.add('hidden');
-    // Le code de génération du tableau (thead/tbody) irait ici
+function changeClass(newClass) {
+    currentClass = newClass;
+    document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
+    render();
 }
 
-// --- INITIALISATION ---
-document.getElementById('setting-year').value = appState.settings.year;
-document.getElementById('setting-semester').value = appState.settings.semester;
-document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
-        function updateGrade(studentId, subjectId, type, value) {
-    const data = appState.classes[currentClass];
-    
-    // Si l'objet de note n'existe pas encore pour cet élève/matière, on le crée
-    if (!data.grades[studentId]) data.grades[studentId] = {};
-    if (!data.grades[studentId][subjectId]) {
-        data.grades[studentId][subjectId] = { d1: '', d2: '', c: '' };
-    }
-
-    // On enregistre la valeur (d1, d2 ou c)
-    data.grades[studentId][subjectId][type] = value;
-    
-    saveState();
-    // On ne relance pas render() ici pour ne pas perdre le focus de l'input pendant la saisie
-    // Mais on peut recalculer la moyenne visuellement si besoin
-}
-        // Force l'affichage des réglages au chargement
-document.getElementById('setting-year').value = appState.settings.year || '2023-2024';
-document.getElementById('setting-semester').value = appState.settings.semester || '1';
-
-render();
+// --- 6. INITIALISATION AU CHARGEMENT ---
+window.onload = function() {
+    document.getElementById('setting-year').value = appState.settings.year || '2023-2024';
+    document.getElementById('setting-semester').value = appState.settings.semester || '1';
+    document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
+    render();
+};
     </script>
 </body>
 </html>
