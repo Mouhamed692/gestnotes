@@ -167,6 +167,494 @@
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
     <script>
+          // --- ÉTAT ET MIGRATION ---
+        const defaultState = { settings: { year: '2023-2024', semester: '1' }, classes: {} };
+        const classNames = ["6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+        classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {} });
+
+        let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
+        if (!appState.settings) appState.settings = { year: '2023-2024', semester: '1' };
+
+        // Migration automatique des données vers le nouveau format
+        Object.keys(appState.classes).forEach(cls => {
+            const data = appState.classes[cls];
+            if (!data.students) data.students = [];
+            if (!data.subjects) data.subjects = [];
+            if (!data.grades) data.grades = {};
+            if (data.effectif === undefined) data.effectif = '';
+
+            data.subjects.forEach(sub => {
+                if (sub.coefD1 === undefined) sub.coefD1 = 1;
+                if (sub.coefD2 === undefined) sub.coefD2 = 1;
+                if (sub.coefC === undefined) sub.coefC = 2;
+            });
+
+            Object.keys(data.grades).forEach(sId => {
+                Object.keys(data.grades[sId]).forEach(subId => {
+                    const val = data.grades[sId][subId];
+                    if (typeof val === 'number' || typeof val === 'string') {
+                        // Migration de l'ancienne note unique vers la composition (ou D1 au choix)
+                        data.grades[sId][subId] = { d1: '', d2: '', c: val };
+                    }
+                });
+            });
+        });
+
+        let currentClass = document.getElementById('class-select').value;
+        document.getElementById('setting-year').value = appState.settings.year;
+        document.getElementById('setting-semester').value = appState.settings.semester;
+
+        document.getElementById('setting-year').addEventListener('change', e => { appState.settings.year = e.target.value; saveState(); });
+        document.getElementById('setting-semester').addEventListener('change', e => { appState.settings.semester = e.target.value; saveState(); });
+
+        document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
+        document.getElementById('setting-effectif').addEventListener('input', e => {
+            appState.classes[currentClass].effectif = e.target.value;
+            saveState();
+        });
+
+        function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
+        function generateId() { return Math.random().toString(36).substr(2, 9); }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const styles = { success: 'bg-slate-800 border-emerald-500', error: 'bg-slate-800 border-red-500', info: 'bg-slate-800 border-indigo-500' };
+            const icons = { success: 'fa-check text-emerald-400', error: 'fa-exclamation text-red-400', info: 'fa-info text-indigo-400' };
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded shadow-xl text-white border-l-4 ${styles[type]} toast-enter pointer-events-auto text-sm`;
+            toast.innerHTML = `<i class="fa-solid ${icons[type]}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.replace('toast-enter', 'toast-leave'); setTimeout(() => toast.remove(), 400); }, 3000);
+        }
+
+        // --- MOTEUR DE RENDU ---
+        const els = {
+            classSelect: document.getElementById('class-select'),
+            studentsList: document.getElementById('students-list'),
+            subjectsList: document.getElementById('subjects-list'),
+            gradesTable: document.getElementById('grades-table'),
+            gradesThead: document.getElementById('grades-thead'),
+            gradesTbody: document.getElementById('grades-tbody'),
+            gradesEmpty: document.getElementById('grades-empty')
+        };
+
+        function render() {
+            renderStudents();
+            renderSubjects();
+            renderGradesTable();
+        }
+
+        function renderStudents() {
+            const students = appState.classes[currentClass].students;
+            students.sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
+            els.studentsList.innerHTML = '';
+            document.getElementById('students-count').textContent = students.length;
+
+            if (students.length === 0) { els.studentsList.innerHTML = `<li class="text-sm text-slate-400 p-3 text-center italic">Aucun élève</li>`; return; }
+
+            students.forEach(student => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded group border border-transparent transition-colors';
+                li.innerHTML = `
+                    <div>
+                        <div class="font-bold text-slate-800 uppercase text-[13px] tracking-wide">${student.lastName} <span class="capitalize text-slate-500 font-medium ml-1">${student.firstName}</span></div>
+                        ${student.matricule ? `<div class="text-[10px] text-slate-400">Mat: ${student.matricule}</div>` : ''}
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="exportCSV('${student.id}')" class="text-slate-400 hover:text-amber-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Bulletin CSV"><i class="fa-solid fa-file-csv text-xs"></i></button>
+                        <button onclick="openStudentModal('${student.id}')" class="text-slate-400 hover:text-indigo-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Modifier"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="deleteStudent('${student.id}')" class="text-slate-400 hover:text-red-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Supprimer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>
+                `;
+                els.studentsList.appendChild(li);
+            });
+        }
+
+        function renderSubjects() {
+            const subjects = appState.classes[currentClass].subjects;
+            els.subjectsList.innerHTML = '';
+            document.getElementById('subjects-count').textContent = subjects.length;
+
+            if (subjects.length === 0) { els.subjectsList.innerHTML = `<li class="text-sm text-slate-400 p-3 text-center italic">Aucune matière</li>`; return; }
+
+            subjects.forEach(subject => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded group border border-transparent transition-colors';
+                li.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold text-slate-700 text-[13px]">${subject.name}</span>
+                        <span class="bg-emerald-50 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded border border-emerald-100 font-bold">Coef ${subject.coef}</span>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="openSubjectModal('${subject.id}')" class="text-slate-400 hover:text-emerald-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Réglages des coefficients"><i class="fa-solid fa-sliders text-xs"></i></button>
+                        <button onclick="deleteSubject('${subject.id}')" class="text-slate-400 hover:text-red-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Supprimer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>
+                `;
+                els.subjectsList.appendChild(li);
+            });
+        }
+
+        function renderGradesTable() {
+            const data = appState.classes[currentClass];
+            const { students, subjects, grades } = data;
+
+            if (students.length === 0 || subjects.length === 0) {
+                els.gradesTable.classList.add('hidden'); els.gradesEmpty.classList.remove('hidden'); return;
+            }
+            els.gradesTable.classList.remove('hidden'); els.gradesEmpty.classList.add('hidden');
+
+            let trHead = `<tr><th class="px-4 py-3 font-bold w-48 bg-slate-100 border-b border-slate-200 sticky left-0 z-30 sticky-left-shadow text-slate-700">Élève</th>`;
+            subjects.forEach(sub => {
+                trHead += `
+                <th class="px-2 py-2 text-center bg-white border-b border-slate-200 border-l min-w-[160px]">
+                    <div class="font-bold text-slate-700 text-xs">${sub.name} <span class="text-emerald-600 font-normal">(x${sub.coef})</span></div>
+                    <div class="flex justify-center gap-2 mt-1 text-[9px] text-slate-400 font-normal">
+                        <span>D1(x${sub.coefD1})</span><span>D2(x${sub.coefD2})</span><span class="font-bold text-indigo-400">C(x${sub.coefC})</span>
+                    </div>
+                </th>`;
+            });
+            trHead += `<th class="px-3 py-3 font-bold text-center bg-indigo-50 text-indigo-900 border-b border-slate-200 border-l sticky right-0 z-30 sticky-right-shadow">Moyenne Générale</th>
+                       <th class="px-3 py-3 font-bold text-center bg-slate-100 border-b border-slate-200 border-l sticky right-0 z-30">Export</th></tr>`;
+            els.gradesThead.innerHTML = trHead;
+
+            els.gradesTbody.innerHTML = '';
+
+            // Pré-calcul des moyennes générales pour le rendu initial
+            const ranks = getClassRanks(currentClass);
+
+            students.forEach(student => {
+                const sGrades = grades[student.id] || {};
+                let tr = document.createElement('tr');
+                tr.className = 'hover:bg-indigo-50/30 transition-colors group';
+
+                let html = `
+                    <td class="px-4 py-2 border-b border-slate-100 bg-white group-hover:bg-indigo-50/30 sticky left-0 z-10 sticky-left-shadow">
+                        <div class="font-bold text-slate-800 uppercase text-xs truncate max-w-[160px]" title="${student.lastName}">${student.lastName}</div>
+                        <div class="capitalize text-slate-500 text-[11px] font-medium truncate max-w-[160px]">${student.firstName}</div>
+                    </td>`;
+
+                subjects.forEach(sub => {
+                    const g = sGrades[sub.id] || { d1: '', d2: '', c: '' };
+
+                    // Calcul moyenne locale pour l'affichage initial
+                    let sp = 0, sc = 0;
+                    if (g.d1 !== '') { sp += Number(g.d1) * sub.coefD1; sc += sub.coefD1; }
+                    if (g.d2 !== '') { sp += Number(g.d2) * sub.coefD2; sc += sub.coefD2; }
+                    if (g.c !== '') { sp += Number(g.c) * sub.coefC; sc += sub.coefC; }
+                    let avgDisplay = sc > 0 ? (sp / sc).toFixed(2) : '--';
+                    let avgClass = sc > 0 ? ((sp / sc) >= 10 ? 'text-emerald-600' : 'text-red-500') : 'text-slate-300';
+
+                    html += `
+                        <td class="px-2 py-2 border-b border-slate-100 border-l text-center">
+                            <div class="flex flex-col items-center gap-1">
+                                <div class="flex gap-1 justify-center">
+                                    <input type="text" inputmode="decimal" value="${g.d1}" onblur="updateGrade('${student.id}', '${sub.id}', 'd1', this.value, this)" class="w-10 px-1 py-1 border border-slate-200 rounded text-center text-xs focus:ring-1 focus:ring-indigo-400 transition-shadow bg-slate-50 focus:bg-white" placeholder="D1">
+                                    <input type="text" inputmode="decimal" value="${g.d2}" onblur="updateGrade('${student.id}', '${sub.id}', 'd2', this.value, this)" class="w-10 px-1 py-1 border border-slate-200 rounded text-center text-xs focus:ring-1 focus:ring-indigo-400 transition-shadow bg-slate-50 focus:bg-white" placeholder="D2">
+                                    <input type="text" inputmode="decimal" value="${g.c}" onblur="updateGrade('${student.id}', '${sub.id}', 'c', this.value, this)" class="w-10 px-1 py-1 border border-indigo-200 rounded text-center text-xs font-bold focus:ring-1 focus:ring-indigo-500 transition-shadow bg-indigo-50/50 focus:bg-white" placeholder="C">
+                                </div>
+                                <div class="text-[10px] font-bold text-slate-400 mt-0.5">Moy: <span id="avg-${student.id}-${sub.id}" class="${avgClass}">${avgDisplay}</span></div>
+                            </div>
+                        </td>`;
+                });
+
+                const stats = ranks[student.id];
+                const genAvgStr = stats.avg !== null ? stats.avg.toFixed(2) : '—';
+                const genClass = stats.avg !== null ? (stats.avg >= 10 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-red-700 bg-red-100 border-red-200') : 'text-slate-300 border-transparent';
+
+                html += `
+                    <td class="px-3 py-2 border-b border-slate-100 border-l text-center bg-white group-hover:bg-indigo-50/30 sticky right-[60px] sticky-right-shadow">
+                        <div id="genavg-${student.id}" class="px-2 py-1 rounded font-bold text-sm border shadow-sm min-w-[60px] inline-block ${genClass}">${genAvgStr}</div>
+                    </td>
+                    <td class="px-2 py-2 border-b border-slate-100 border-l text-center bg-white group-hover:bg-indigo-50/30 sticky right-0">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="printReportCard('${student.id}')" class="text-amber-600 hover:text-white hover:bg-amber-600 border border-amber-200 w-8 h-8 rounded transition-colors shadow-sm" title="Imprimer Bulletin"><i class="fa-solid fa-print text-xs"></i></button>
+                            <button onclick="exportCSV('${student.id}')" class="text-indigo-600 hover:text-white hover:bg-indigo-600 border border-indigo-200 w-8 h-8 rounded transition-colors shadow-sm" title="Exporter Bulletin"><i class="fa-solid fa-download text-xs"></i></button>
+                        </div>
+                    </td>`;
+
+                tr.innerHTML = html;
+                els.gradesTbody.appendChild(tr);
+            });
+        }
+
+        // --- GESTION DES NOTES (SANS PERTE DE FOCUS) ---
+        window.updateGrade = function (studentId, subjectId, type, value, inputEl) {
+            const data = appState.classes[currentClass];
+            if (!data.grades[studentId]) data.grades[studentId] = {};
+            if (!data.grades[studentId][subjectId]) data.grades[studentId][subjectId] = { d1: '', d2: '', c: '' };
+
+            value = value.toString().trim();
+            let numValue = '';
+            if (value !== '') {
+                numValue = parseFloat(value.replace(',', '.'));
+                if (isNaN(numValue)) { showToast('Format invalide', 'error'); inputEl.value = data.grades[studentId][subjectId][type]; return; }
+                if (numValue < 0) numValue = 0; if (numValue > 20) numValue = 20;
+                numValue = Math.round(numValue * 100) / 100;
+                inputEl.value = numValue;
+            } else { inputEl.value = ''; }
+
+            data.grades[studentId][subjectId][type] = numValue;
+            saveState();
+            updateDOMAverages(studentId, subjectId);
+        };
+
+        function updateDOMAverages(studentId, subjectId) {
+            const data = appState.classes[currentClass];
+            const sub = data.subjects.find(s => s.id === subjectId);
+            const g = data.grades[studentId][subjectId];
+
+            // Update Subject Average
+            let sp = 0, sc = 0;
+            if (g.d1 !== '') { sp += Number(g.d1) * sub.coefD1; sc += sub.coefD1; }
+            if (g.d2 !== '') { sp += Number(g.d2) * sub.coefD2; sc += sub.coefD2; }
+            if (g.c !== '') { sp += Number(g.c) * sub.coefC; sc += sub.coefC; }
+
+            const avgSpan = document.getElementById(`avg-${studentId}-${subjectId}`);
+            if (sc > 0) {
+                const val = sp / sc;
+                avgSpan.textContent = val.toFixed(2);
+                avgSpan.className = val >= 10 ? 'text-emerald-600' : 'text-red-500';
+            } else { avgSpan.textContent = '--'; avgSpan.className = 'text-slate-300'; }
+
+            // Update General Average
+            let totP = 0, totC = 0;
+            data.subjects.forEach(s => {
+                const sg = data.grades[studentId][s.id] || {};
+                let lsp = 0, lsc = 0;
+                if (sg.d1 !== '') { lsp += Number(sg.d1) * s.coefD1; lsc += s.coefD1; }
+                if (sg.d2 !== '') { lsp += Number(sg.d2) * s.coefD2; lsc += s.coefD2; }
+                if (sg.c !== '') { lsp += Number(sg.c) * s.coefC; lsc += s.coefC; }
+                if (lsc > 0) { totP += (lsp / lsc) * s.coef; totC += s.coef; }
+            });
+
+            const genAvgSpan = document.getElementById(`genavg-${studentId}`);
+            if (totC > 0) {
+                const val = totP / totC;
+                genAvgSpan.textContent = val.toFixed(2);
+                genAvgSpan.className = `px-2 py-1 rounded font-bold text-sm border shadow-sm min-w-[60px] inline-block ${val >= 10 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-red-700 bg-red-100 border-red-200'}`;
+            } else {
+                genAvgSpan.textContent = '—';
+                genAvgSpan.className = 'px-2 py-1 rounded font-bold text-sm border shadow-sm min-w-[60px] inline-block text-slate-300 border-transparent';
+            }
+        }
+
+        // --- MODALES ET FORMULAIRES ---
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        window.closeModal = function (id) { document.getElementById(id).classList.add('hidden'); }
+
+        // Élèves
+        document.getElementById('add-student-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const last = document.getElementById('new-student-last'); const first = document.getElementById('new-student-first');
+            if (last.value.trim() && first.value.trim()) {
+                appState.classes[currentClass].students.push({ id: generateId(), lastName: last.value.trim(), firstName: first.value.trim(), matricule: '', birthDate: '', absences: 0, retards: 0 });
+                saveState(); render(); last.value = ''; first.value = ''; last.focus(); showToast('Élève ajouté');
+            }
+        });
+
+        window.deleteStudent = function (id) {
+            if (confirm('Supprimer cet élève et toutes ses notes ?')) {
+                appState.classes[currentClass].students = appState.classes[currentClass].students.filter(s => s.id !== id);
+                delete appState.classes[currentClass].grades[id];
+                saveState(); render(); showToast('Élève supprimé', 'info');
+            }
+        };
+
+        window.openStudentModal = function (id) {
+            const student = appState.classes[currentClass].students.find(s => s.id === id);
+            document.getElementById('edit-student-id').value = id;
+            document.getElementById('edit-student-last').value = student.lastName || '';
+            document.getElementById('edit-student-first').value = student.firstName || '';
+            document.getElementById('edit-student-mat').value = student.matricule || '';
+            document.getElementById('edit-student-birth').value = student.birthDate || '';
+            document.getElementById('edit-student-abs').value = student.absences || 0;
+            document.getElementById('edit-student-ret').value = student.retards || 0;
+            openModal('student-modal');
+        };
+
+        window.saveStudentModal = function () {
+            const id = document.getElementById('edit-student-id').value;
+            const student = appState.classes[currentClass].students.find(s => s.id === id);
+            student.lastName = document.getElementById('edit-student-last').value.trim();
+            student.firstName = document.getElementById('edit-student-first').value.trim();
+            student.matricule = document.getElementById('edit-student-mat').value.trim();
+            student.birthDate = document.getElementById('edit-student-birth').value.trim();
+            student.absences = parseInt(document.getElementById('edit-student-abs').value) || 0;
+            student.retards = parseInt(document.getElementById('edit-student-ret').value) || 0;
+            saveState(); render(); closeModal('student-modal'); showToast('Détails modifiés');
+        };
+
+        // Matières
+        document.getElementById('add-subject-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('new-subject-name'); const coef = document.getElementById('new-subject-coef');
+            if (name.value.trim() && parseFloat(coef.value) > 0) {
+                appState.classes[currentClass].subjects.push({ id: generateId(), name: name.value.trim(), coef: parseFloat(coef.value), coefD1: 1, coefD2: 1, coefC: 2 });
+                saveState(); render(); name.value = ''; coef.value = ''; name.focus(); showToast('Matière ajoutée');
+            }
+        });
+
+        window.deleteSubject = function (id) {
+            if (confirm('Supprimer cette matière et ses notes ?')) {
+                appState.classes[currentClass].subjects = appState.classes[currentClass].subjects.filter(s => s.id !== id);
+                Object.keys(appState.classes[currentClass].grades).forEach(sId => delete appState.classes[currentClass].grades[sId][id]);
+                saveState(); render(); showToast('Matière supprimée', 'info');
+            }
+        };
+
+        window.openSubjectModal = function (id) {
+            const subject = appState.classes[currentClass].subjects.find(s => s.id === id);
+            document.getElementById('edit-sub-id').value = id;
+            document.getElementById('edit-sub-name').value = subject.name;
+            document.getElementById('edit-sub-coef').value = subject.coef;
+            document.getElementById('edit-sub-d1').value = subject.coefD1;
+            document.getElementById('edit-sub-d2').value = subject.coefD2;
+            document.getElementById('edit-sub-c').value = subject.coefC;
+            openModal('subject-modal');
+        };
+
+        window.saveSubjectModal = function () {
+            const id = document.getElementById('edit-sub-id').value;
+            const subject = appState.classes[currentClass].subjects.find(s => s.id === id);
+            subject.name = document.getElementById('edit-sub-name').value.trim();
+            subject.coef = parseFloat(document.getElementById('edit-sub-coef').value) || 1;
+            subject.coefD1 = parseFloat(document.getElementById('edit-sub-d1').value) || 1;
+            subject.coefD2 = parseFloat(document.getElementById('edit-sub-d2').value) || 1;
+            subject.coefC = parseFloat(document.getElementById('edit-sub-c').value) || 1;
+            saveState(); render(); closeModal('subject-modal'); showToast('Matière modifiée');
+        };
+
+        els.classSelect.addEventListener('change', (e) => {
+            currentClass = e.target.value;
+            document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
+            render();
+        });
+
+        // --- CALCULS ET EXPORT CSV ---
+        function getAppreciation(note) {
+            if (note === null || note === undefined) return "";
+            if (note < 4) return "Très Faible";
+            if (note < 8) return "Faible";
+            if (note < 10) return "Insuffisant";
+            if (note < 12) return "Passable";
+            if (note < 14) return "A. Bien";
+            if (note < 16) return "Bien";
+            return "Excellent";
+        }
+
+        function getClassRanks(classId) {
+            const data = appState.classes[classId];
+            const averages = data.students.map(student => {
+                let tP = 0, tC = 0;
+                data.subjects.forEach(sub => {
+                    const g = data.grades[student.id]?.[sub.id] || {};
+                    let p = 0, c = 0;
+                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * sub.coefD1; c += sub.coefD1; }
+                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * sub.coefD2; c += sub.coefD2; }
+                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * sub.coefC; c += sub.coefC; }
+                    if (c > 0) { tP += (p / c) * sub.coef; tC += sub.coef; }
+                });
+                return { id: student.id, avg: tC > 0 ? (tP / tC) : null };
+            });
+
+            averages.sort((a, b) => {
+                if (a.avg === null) return 1; if (b.avg === null) return -1;
+                return b.avg - a.avg;
+            });
+
+            const ranks = {}; let currentRank = 1;
+            averages.forEach((item, index) => {
+                if (index > 0 && item.avg !== averages[index - 1].avg) currentRank = index + 1;
+                ranks[item.id] = { avg: item.avg, rank: item.avg !== null ? currentRank : '-' };
+            });
+            return ranks;
+        }
+
+        window.exportCSV = function (studentId) {
+            const data = appState.classes[currentClass];
+            const student = data.students.find(s => s.id === studentId);
+            const ranks = getClassRanks(currentClass);
+            const stats = ranks[studentId];
+            const year = appState.settings.year;
+            const semester = appState.settings.semester;
+
+            let csv = '\ufeff'; // BOM pour Excel
+            csv += `Classe;${currentClass}\n`;
+            csv += `Année scolaire;${year};Semestre;${semester}\n`;
+            csv += `Élève;${student.firstName} ${student.lastName};Matricule;${student.matricule || ''};Né(e) le;${student.birthDate || ''};\n`;
+            csv += `;;Nbre élèves;${data.students.length};Rang classe;${stats.rank}\n\n`;
+
+            csv += `Discipline;Devoir1;Devoir2;Composition;Moyenne/20;Coefficient;Moy × Coef;Appréciation\n`;
+
+            let totalCoef = 0, totalPoints = 0;
+
+            data.subjects.forEach(sub => {
+                const g = data.grades[studentId]?.[sub.id] || {};
+                let p = 0, c = 0;
+                const d1 = g.d1 !== undefined && g.d1 !== '' ? Number(g.d1) : '';
+                const d2 = g.d2 !== undefined && g.d2 !== '' ? Number(g.d2) : '';
+                const comp = g.c !== undefined && g.c !== '' ? Number(g.c) : '';
+
+                if (d1 !== '') { p += d1 * sub.coefD1; c += sub.coefD1; }
+                if (d2 !== '') { p += d2 * sub.coefD2; c += sub.coefD2; }
+                if (comp !== '') { p += comp * sub.coefC; c += sub.coefC; }
+
+                let sAvgStr = '', mxcStr = '', app = '';
+                if (c > 0) {
+                    const sAvg = p / c;
+                    sAvgStr = sAvg.toFixed(2).replace('.', ',');
+                    const mxc = sAvg * sub.coef;
+                    mxcStr = mxc.toFixed(2).replace('.', ',');
+                    totalCoef += sub.coef; totalPoints += mxc;
+                    app = getAppreciation(sAvg);
+                }
+
+                const fD1 = d1 !== '' ? d1.toString().replace('.', ',') : '';
+                const fD2 = d2 !== '' ? d2.toString().replace('.', ',') : '';
+                const fC = comp !== '' ? comp.toString().replace('.', ',') : '';
+
+                csv += `${sub.name};${fD1};${fD2};${fC};${sAvgStr};${sub.coef};${mxcStr};${app}\n`;
+            });
+
+            csv += `TOTAL;;;;;${totalCoef};${totalPoints.toFixed(2).replace('.', ',')};\n`;
+            const gAvgStr = stats.avg !== null ? stats.avg.toFixed(2).replace('.', ',') : '';
+            csv += `Moyenne générale;;;${gAvgStr}/20;Rang;${stats.rank};Absences;${student.absences || 0};Retards;${student.retards || 0}\n`;
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Bulletin_${currentClass}_${student.lastName.replace(/\s/g, '')}_${student.firstName.replace(/\s/g, '')}.csv`;
+            link.click();
+        };
+
+        window.exportAllCSV = function () {
+            const students = appState.classes[currentClass].students;
+            if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
+            students.forEach((s, i) => setTimeout(() => exportCSV(s.id), i * 300));
+            showToast("Téléchargement des bulletins lancé");
+        };
+
+        window.printReportCard = function (studentId) {
+            // Ouvrir le fichier bulletin.html et passer les informations via l'URL
+            window.open(`bulletin.html?class=${encodeURIComponent(currentClass)}&student=${encodeURIComponent(studentId)}`, '_blank');
+        };
+
+        window.printAllReportCards = function () {
+            const students = appState.classes[currentClass].students;
+            if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
+
+            if (students.length > 5 && !confirm("Vous allez ouvrir " + students.length + " onglets d'impression. Continuer ?")) {
+                return;
+            }
+
+            students.forEach((s, i) => {
+                setTimeout(() => printReportCard(s.id), i * 300);
+            });
+            showToast("Ouverture des bulletins pour impression...");
+        };
+
+        els.classSelect.value = currentClass;
+        render();
         // Ta logique JS actuelle s'intègre ici parfaitement.
         // Pense juste à ajouter les classes 'sticky-left-column' aux <td> de noms d'élèves 
         // dans ta fonction renderGradesTable() pour un meilleur confort sur PC.
