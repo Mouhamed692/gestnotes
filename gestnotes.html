@@ -13,6 +13,49 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+@media (max-width: 640px) {
+    /* On transforme le tableau en une liste de cartes */
+    .saisie-table thead {
+        display: none; /* Cache l'en-tête du tableau sur mobile */
+    }
+    
+    .saisie-table tr {
+        display: block;
+        margin-bottom: 1rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .saisie-table td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 5px 0;
+        border: none;
+    }
+
+    /* Ajoute un libellé devant chaque note pour savoir ce qu'on saisit */
+    .saisie-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #4b5563;
+        font-size: 0.85rem;
+    }
+
+    /* Agrandir les inputs pour le doigt */
+    .saisie-table input {
+        width: 60px !important;
+        height: 45px !important;
+        font-size: 1.1rem !important;
+        text-align: center;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+    }
+}
+        
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
