@@ -3,247 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GestNotes – Administration scolaire</title>
+    <title>GestNotes Pro - Gestion Scolaire</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    screens: { 'xs': '480px' },
-                    colors: { indigo: { 600: '#4f46e5', 700: '#4338ca' } }
-                }
-            }
-        }
-    </script>
-    
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        @media (max-width: 768px) {
-            #grades-table, #grades-table thead, #grades-table tbody, #grades-table tr, #grades-table td { display: block; width: 100%; }
-            #grades-table thead { display: none; }
-            #grades-table tr { margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; }
-            #grades-table td { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f1f5f9; }
-            #grades-table td::before { content: attr(data-label); font-weight: 600; color: #64748b; font-size: 0.85rem; }
-            .sticky { position: static !important; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; }
+            .card { border: none !important; shadow: none !important; }
         }
+        .grade-input::-webkit-inner-spin-button, .grade-input::-webkit-outer-spin-button {
+            -webkit-appearance: none; margin: 0;
+        }
+        input:focus { border-color: #4f46e5 !important; ring: 2px #c7d2fe; }
     </style>
 </head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-900">
 
-<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
-
-    <header class="bg-indigo-700 text-white p-3 shadow-lg shrink-0">
-        <div class="max-w-[1400px] mx-auto flex flex-col gap-3">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="bg-white p-1.5 rounded-lg shadow-inner text-indigo-600">
-                        <i class="fa-solid fa-graduation-cap text-xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-lg font-bold">GestNotes</h1>
-                        <p class="text-[9px] uppercase tracking-widest text-indigo-200">Administration</p>
-                    </div>
+    <header class="bg-indigo-700 text-white shadow-lg no-print">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-2 rounded-lg shadow-inner">
+                    <svg class="w-8 h-8 text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                 </div>
-
-                <div class="bg-indigo-800/50 p-1.5 rounded-xl border border-white/10">
-                    <select id="class-select" onchange="changeClass(this.value)" 
-                            class="bg-white text-indigo-900 font-bold rounded-lg px-3 py-1.5 outline-none text-sm">
-                        <option value="CI">CI</option><option value="CP">CP</option>
-                        <option value="CE1">CE1</option><option value="CE2">CE2</option>
-                        <option value="CM1">CM1</option><option value="CM2">CM2</option>
-                        <option value="6ème">6ème</option><option value="5ème">5ème</option>
-                        <option value="4ème">4ème</option><option value="3ème">3ème</option>
-                        <option value="Seconde">Seconde</option><option value="Première">Première</option>
-                        <option value="Terminale">Terminale</option>
-                    </select>
-                </div>
+                <h1 class="text-2xl font-bold tracking-tight">GestNotes <span class="text-indigo-200 font-light italic text-sm">v2.0 Pro</span></h1>
             </div>
 
-       <div class="flex flex-wrap items-center gap-2 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
-    <div class="flex items-center gap-1.5">
-        <i class="fa-solid fa-calendar text-xs text-indigo-200"></i>
-        <input type="text" id="setting-year" placeholder="2023-2024" 
-               class="bg-indigo-800/40 text-white placeholder-indigo-200 rounded px-2 py-1 text-xs w-28 outline-none border border-white/10 focus:border-white/40">
-    </div>
-    
-    <div class="flex items-center gap-1.5">
-        <i class="fa-solid fa-clock text-xs text-indigo-200"></i>
-        <select id="setting-semester" 
-                class="bg-indigo-800/40 text-white rounded px-2 py-1 text-xs outline-none border border-white/10 cursor-pointer">
-            <option value="1" class="bg-indigo-700 text-white">Semestre 1</option>
-            <option value="2" class="bg-indigo-700 text-white">Semestre 2</option>
-            <option value="3" class="bg-indigo-700 text-white">Semestre 3</option>
-        </select>
-    </div>
-
-    <div class="flex items-center gap-1.5 ml-auto">
-        <i class="fa-solid fa-users text-xs text-indigo-200"></i>
-        <input type="number" id="setting-effectif" placeholder="Eff." 
-               class="bg-indigo-800/40 text-white placeholder-indigo-200 rounded px-2 py-1 text-xs w-16 outline-none border border-white/10">
-    </div>
-</div>
+            <div class="flex flex-wrap items-center gap-3 bg-indigo-800/50 p-2 rounded-xl border border-white/10">
+                <input type="text" id="setting-year" placeholder="Année" class="bg-indigo-900/40 text-white border border-white/20 rounded px-3 py-1 text-sm w-32 outline-none">
+                <select id="setting-semester" onchange="updateSettings()" class="bg-indigo-900/40 text-white border border-white/20 rounded px-3 py-1 text-sm outline-none cursor-pointer">
+                    <option value="1">Semestre 1</option>
+                    <option value="2">Semestre 2</option>
+                    <option value="3">Semestre 3</option>
+                </select>
+                <select id="class-select" onchange="changeClass(this.value)" class="bg-white text-indigo-900 font-bold rounded px-4 py-1 text-sm outline-none shadow-sm">
+                    </select>
+            </div>
         </div>
     </header>
 
-    <main class="flex-1 overflow-auto p-3 sm:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[340px] overflow-hidden">
-                <div class="p-3 border-b bg-slate-50/80 flex justify-between">
-                    <h2 class="font-semibold text-sm flex items-center gap-2"><i class="fa-solid fa-users text-indigo-500"></i> Elèves</h2>
-                    <span id="students-count" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-bold flex items-center gap-2 text-slate-700">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        Élèves (<span id="students-count">0</span>)
+                    </h2>
                 </div>
-                <div class="p-3">
-                    <form class="flex gap-2" onsubmit="event.preventDefault();">
-                        <input type="text" id="new-student-first" placeholder="Prénom" class="flex-1 border rounded-lg px-3 py-2 text-sm">
-                        <input type="text" id="new-student-last" placeholder="Nom" class="flex-1 border rounded-lg px-3 py-2 text-sm">
-                        <button onclick="handleAddNewStudent()" class="bg-indigo-600 text-white px-3 rounded-lg"><i class="fa-solid fa-plus"></i></button>
-                    </form>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="new-student-first" placeholder="Prénom" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 ring-indigo-100">
+                    <input type="text" id="new-student-last" placeholder="NOM" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 ring-indigo-100">
+                    <button onclick="handleAddNewStudent()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-bold text-sm">+</button>
                 </div>
-                <div class="flex-1 overflow-y-auto p-2"><ul id="students-list" class="space-y-1"></ul></div>
+                <ul id="students-list" class="space-y-2 max-h-60 overflow-y-auto pr-2"></ul>
             </section>
 
-            <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[340px] overflow-hidden">
-                <div class="p-3 border-b bg-slate-50/80 flex justify-between">
-                    <h2 class="font-semibold text-sm flex items-center gap-2"><i class="fa-solid fa-book text-emerald-500"></i> Matières</h2>
-                    <span id="subjects-count" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                <h2 class="font-bold flex items-center gap-2 mb-4 text-slate-700">
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    Matières & Coeffs
+                </h2>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="new-subject-name" placeholder="Nom matière" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 ring-emerald-100">
+                    <input type="number" id="new-subject-coef" placeholder="Coef" class="w-20 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 ring-emerald-100">
+                    <button onclick="handleAddSubject()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition font-bold text-sm">+</button>
                 </div>
-                <div class="p-3">
-                    <form class="flex gap-2" onsubmit="event.preventDefault();">
-                        <input type="text" id="new-subject-name" placeholder="Matière" class="flex-1 border rounded-lg px-3 py-2 text-sm">
-                        <input type="number" id="new-subject-coef" placeholder="Coef" class="w-16 border rounded-lg px-3 py-2 text-sm">
-                        <button onclick="handleAddSubject()" class="bg-emerald-600 text-white px-3 rounded-lg"><i class="fa-solid fa-plus"></i></button>
-                    </form>
-                </div>
-                <div class="flex-1 overflow-y-auto p-2"><ul id="subjects-list" class="space-y-1"></ul></div>
+                <ul id="subjects-list" class="space-y-2 max-h-60 overflow-y-auto pr-2"></ul>
             </section>
         </div>
 
-        <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 min-h-[400px] mb-6 relative overflow-hidden">
-            <div class="p-4 border-b bg-slate-50/80 flex justify-between items-center">
-                <h2 class="font-semibold flex items-center gap-2"><i class="fa-solid fa-table text-amber-500"></i> Notes</h2>
-                <div class="flex gap-2">
-                    <button onclick="printAllReportCards()" class="text-xs bg-amber-50 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200"><i class="fa-solid fa-print"></i></button>
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 class="font-bold text-slate-700 flex items-center gap-2 uppercase tracking-wider text-sm">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z"></path></svg>
+                    Saisie des Notes (D1, D2, Compo)
+                </h2>
+                <div class="flex gap-2 no-print">
+                    <button onclick="exportData()" class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-300 font-semibold transition">Exporter JSON</button>
+                    <button onclick="window.print()" class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg hover:bg-indigo-200 font-bold transition">Imprimer PDF</button>
                 </div>
             </div>
-            <div class="flex-1 overflow-auto">
-                <table class="w-full text-sm text-left hidden" id="grades-table">
-                    <thead id="grades-thead" class="bg-slate-100 sticky top-0 z-10"></thead>
-                    <tbody id="grades-tbody" class="divide-y"></tbody>
-                </table>
-                <div id="grades-empty" class="p-12 text-center text-slate-400">Aucune donnée disponible.</div>
+            
+            <div class="overflow-x-auto">
+                <table id="main-table" class="w-full text-left border-collapse">
+                    </table>
+                <div id="empty-state" class="p-20 text-center text-slate-400 hidden">
+                    Veuillez ajouter au moins un élève et une matière pour commencer.
+                </div>
             </div>
         </section>
     </main>
 
     <script>
-        // --- 1. ÉTAT GLOBAL (Une seule déclaration ici) ---
-const defaultState = { settings: { year: '2023-2024', semester: '1' }, classes: {} };
-const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {}, effectif: '' });
+        // --- CONFIGURATION & DONNÉES ---
+        const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+        const defaultState = { 
+            settings: { year: '2023-2024', semester: '1' }, 
+            classes: {} 
+        };
+        classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {}, effectif: '' });
 
-let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
-let currentClass = document.getElementById('class-select').value;
+        let appState = JSON.parse(localStorage.getItem('gestnotes_pro_db')) || defaultState;
+        let currentClass = "6ème";
 
-// --- 2. FONCTIONS DE SAUVEGARDE ET UTILITAIRES ---
-function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
-function generateId() { return Math.random().toString(36).substr(2, 9); }
+        // --- MOTEUR DE CALCUL ---
+        function calculateSubjectAvg(d1, d2, c) {
+            const n1 = parseFloat(d1) || 0;
+            const n2 = parseFloat(d2) || 0;
+            const n3 = parseFloat(c) || 0;
+            // Formule : (D1 + D2 + Compo*2) / 4
+            return (n1 + n2 + (n3 * 2)) / 4;
+        }
 
-// --- 3. GESTION DES ÉLÈVES ---
-function handleAddNewStudent() {
-    const firstName = document.getElementById('new-student-first').value.trim();
-    const lastName = document.getElementById('new-student-last').value.trim();
-    if (!firstName || !lastName) return;
-    const newStudent = { id: generateId(), firstName, lastName, matricule: '', birth: '', abs: 0, ret: 0 };
-    appState.classes[currentClass].students.push(newStudent);
-    document.getElementById('new-student-first').value = '';
-    document.getElementById('new-student-last').value = '';
-    saveState();
-    render();
-}
+        function calculateGeneralAvg(studentId) {
+            const data = appState.classes[currentClass];
+            let totalPoints = 0;
+            let totalCoefs = 0;
 
-function deleteStudent(id) {
-    if (confirm("Supprimer cet élève ?")) {
-        appState.classes[currentClass].students = appState.classes[currentClass].students.filter(s => s.id !== id);
-        saveState();
-        render();
-    }
-}
+            data.subjects.forEach(sub => {
+                const g = (data.grades[studentId] && data.grades[studentId][sub.id]) ? data.grades[studentId][sub.id] : {d1:0, d2:0, c:0};
+                totalPoints += calculateSubjectAvg(g.d1, g.d2, g.c) * sub.coef;
+                totalCoefs += sub.coef;
+            });
 
-// --- 4. GESTION DES MATIÈRES ---
-function handleAddSubject() {
-    const name = document.getElementById('new-subject-name').value.trim();
-    const coef = parseFloat(document.getElementById('new-subject-coef').value) || 1;
-    if (!name) return;
-    const newSubject = { id: generateId(), name, coef };
-    appState.classes[currentClass].subjects.push(newSubject);
-    document.getElementById('new-subject-name').value = '';
-    document.getElementById('new-subject-coef').value = '';
-    saveState();
-    render();
-}
+            return totalCoefs > 0 ? (totalPoints / totalCoefs) : 0;
+        }
 
-function deleteSubject(id) {
-    if (confirm("Supprimer cette matière ?")) {
-        appState.classes[currentClass].subjects = appState.classes[currentClass].subjects.filter(s => s.id !== id);
-        saveState();
-        render();
-    }
-}
+        // --- ACTIONS ---
+        function save() { 
+            localStorage.setItem('gestnotes_pro_db', JSON.stringify(appState)); 
+        }
 
-// --- 5. MOTEUR DE RENDU ---
-function render() {
-    renderStudents();
-    renderSubjects();
-    // On peut ajouter renderGradesTable() ici si tu as déjà le code du tableau
-}
+        function handleAddNewStudent() {
+            const f = document.getElementById('new-student-first');
+            const l = document.getElementById('new-student-last');
+            if(!f.value || !l.value) return;
+            
+            const id = "std_" + Date.now();
+            appState.classes[currentClass].students.push({ id, firstName: f.value, lastName: l.value });
+            f.value = ''; l.value = '';
+            save(); render();
+        }
 
-function renderStudents() {
-    const list = document.getElementById('students-list');
-    const students = appState.classes[currentClass].students;
-    document.getElementById('students-count').textContent = students.length;
-    list.innerHTML = '';
-    students.forEach(s => {
-        const li = document.createElement('li');
-        li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded border-b text-sm';
-        li.innerHTML = `
-            <span class="font-bold uppercase text-slate-800">${s.lastName} <span class="font-normal capitalize text-slate-500">${s.firstName}</span></span>
-            <button onclick="deleteStudent('${s.id}')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash-can"></i></button>
-        `;
-        list.appendChild(li);
-    });
-}
+        function handleAddSubject() {
+            const n = document.getElementById('new-subject-name');
+            const c = document.getElementById('new-subject-coef');
+            if(!n.value) return;
 
-function renderSubjects() {
-    const list = document.getElementById('subjects-list');
-    const subjects = appState.classes[currentClass].subjects;
-    document.getElementById('subjects-count').textContent = subjects.length;
-    list.innerHTML = '';
-    subjects.forEach(sub => {
-        const li = document.createElement('li');
-        li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded border-b text-sm';
-        li.innerHTML = `
-            <span class="text-slate-800">${sub.name} <span class="bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded ml-2 font-bold text-[10px]">Coef ${sub.coef}</span></span>
-            <button onclick="deleteSubject('${sub.id}')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash-can"></i></button>
-        `;
-        list.appendChild(li);
-    });
-}
+            const id = "sub_" + Date.now();
+            appState.classes[currentClass].subjects.push({ id, name: n.value, coef: parseFloat(c.value) || 1 });
+            n.value = ''; c.value = '';
+            save(); render();
+        }
 
-function changeClass(newClass) {
-    currentClass = newClass;
-    document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
-    render();
-}
+        function updateGrade(studentId, subjectId, type, val) {
+            if(!appState.classes[currentClass].grades[studentId]) appState.classes[currentClass].grades[studentId] = {};
+            if(!appState.classes[currentClass].grades[studentId][subjectId]) appState.classes[currentClass].grades[studentId][subjectId] = {d1:0, d2:0, c:0};
+            
+            appState.classes[currentClass].grades[studentId][subjectId][type] = val;
+            save();
+            
+            // Mise à jour visuelle immédiate sans recharger tout le tableau (plus fluide)
+            const avgCell = document.getElementById(`avg-${studentId}`);
+            const newAvg = calculateGeneralAvg(studentId);
+            avgCell.textContent = newAvg.toFixed(2);
+            avgCell.className = `p-4 font-black text-center ${getScoreClass(newAvg)}`;
+        }
 
-// --- 6. INITIALISATION AU CHARGEMENT ---
-window.onload = function() {
-    document.getElementById('setting-year').value = appState.settings.year || '2023-2024';
-    document.getElementById('setting-semester').value = appState.settings.semester || '1';
-    document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
-    render();
-};
+        function getScoreClass(score) {
+            if(score < 10) return 'text-red-600 bg-red-50';
+            if(score < 12) return 'text-orange-600 bg-orange-50';
+            return 'text-emerald-600 bg-emerald-50';
+        }
+
+        // --- RENDU ---
+        function render() {
+            renderHeader();
+            renderLists();
+            renderTable();
+        }
+
+        function renderHeader() {
+            const sel = document.getElementById('class-select');
+            sel.innerHTML = classNames.map(c => `<option value="${c}" ${c === currentClass ? 'selected' : ''}>Classe : ${c}</option>`).join('');
+            document.getElementById('setting-year').value = appState.settings.year;
+            document.getElementById('setting-semester').value = appState.settings.semester;
+        }
+
+        function renderLists() {
+            const sList = document.getElementById('students-list');
+            const subList = document.getElementById('subjects-list');
+            const data = appState.classes[currentClass];
+
+            document.getElementById('students-count').textContent = data.students.length;
+
+            sList.innerHTML = data.students.map(s => `
+                <li class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100 text-sm group">
+                    <span class="font-bold text-slate-700 underline decoration-indigo-200"> ${s.lastName.toUpperCase()} <span class="font-normal text-slate-500">${s.firstName}</span></span>
+                    <button onclick="deleteItem('students', '${s.id}')" class="text-red-300 hover:text-red-600 opacity-0 group-hover:opacity-100 transition">✕</button>
+                </li>
+            `).join('');
+
+            subList.innerHTML = data.subjects.map(s => `
+                <li class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100 text-sm group">
+                    <span class="text-slate-700 font-medium">${s.name} <b class="text-emerald-600 ml-1">(x${s.coef})</b></span>
+                    <button onclick="deleteItem('subjects', '${s.id}')" class="text-red-300 hover:text-red-600 opacity-0 group-hover:opacity-100 transition">✕</button>
+                </li>
+            `).join('');
+        }
+
+        function renderTable() {
+            const table = document.getElementById('main-table');
+            const empty = document.getElementById('empty-state');
+            const data = appState.classes[currentClass];
+
+            if(data.students.length === 0 || data.subjects.length === 0) {
+                table.innerHTML = "";
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            let html = `<thead class="bg-slate-100 text-slate-600 text-[10px] uppercase font-bold border-b border-slate-200"><tr>
+                <th class="p-4 sticky left-0 bg-slate-100 z-10 w-48">Élève</th>`;
+            
+            data.subjects.forEach(s => {
+                html += `<th class="p-2 border-l border-slate-200 text-center w-40">
+                    <div class="text-indigo-700">${s.name}</div>
+                    <div class="flex justify-center gap-4 text-[9px] mt-1 text-slate-400"><span>D1</span><span>D2</span><span>CP</span></div>
+                </th>`;
+            });
+            
+            html += `<th class="p-4 border-l border-indigo-200 bg-indigo-50 text-indigo-700 text-center">MOYENNE GÉNÉRALE</th></tr></thead><tbody>`;
+
+            data.students.forEach(student => {
+                html += `<tr class="border-b border-slate-100 hover:bg-slate-50/80 transition">
+                    <td class="p-4 font-bold text-slate-800 text-xs sticky left-0 bg-white shadow-[2px_0_5px_rgba(0,0,0,0.05)]">${student.lastName.toUpperCase()} ${student.firstName}</td>`;
+                
+                data.subjects.forEach(sub => {
+                    const g = (data.grades[student.id] && data.grades[student.id][sub.id]) ? data.grades[student.id][sub.id] : {d1:'', d2:'', c:''};
+                    html += `<td class="p-2 border-l border-slate-100">
+                        <div class="flex gap-1 justify-center">
+                            <input type="number" value="${g.d1}" oninput="updateGrade('${student.id}', '${sub.id}', 'd1', this.value)" class="grade-input w-9 h-8 border border-slate-200 rounded text-center text-xs focus:bg-white bg-slate-50/50" placeholder="-">
+                            <input type="number" value="${g.d2}" oninput="updateGrade('${student.id}', '${sub.id}', 'd2', this.value)" class="grade-input w-9 h-8 border border-slate-200 rounded text-center text-xs focus:bg-white bg-slate-50/50" placeholder="-">
+                            <input type="number" value="${g.c}" oninput="updateGrade('${student.id}', '${sub.id}', 'c', this.value)" class="grade-input w-9 h-8 border border-indigo-200 rounded text-center text-xs font-bold bg-indigo-50/30 focus:bg-white" placeholder="-">
+                        </div>
+                    </td>`;
+                });
+
+                const avg = calculateGeneralAvg(student.id);
+                html += `<td id="avg-${student.id}" class="p-4 font-black text-center ${getScoreClass(avg)} border-l border-indigo-100">
+                    ${avg.toFixed(2)}
+                </td></tr>`;
+            });
+
+            html += `</tbody>`;
+            table.innerHTML = html;
+        }
+
+        // --- UTILITAIRES ---
+        function changeClass(val) { currentClass = val; render(); }
+        
+        function deleteItem(type, id) {
+            if(!confirm("Supprimer définitivement ?")) return;
+            appState.classes[currentClass][type] = appState.classes[currentClass][type].filter(x => x.id !== id);
+            save(); render();
+        }
+
+        function updateSettings() {
+            appState.settings.year = document.getElementById('setting-year').value;
+            appState.settings.semester = document.getElementById('setting-semester').value;
+            save();
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify(appState, null, 2)], {type : 'application/json'});
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `gestnotes_sauvegarde_${currentClass}.json`;
+            a.click();
+        }
+
+        // Initialisation
+        window.onload = render;
     </script>
 </body>
 </html>
