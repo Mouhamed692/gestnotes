@@ -1,0 +1,33 @@
+{
+  "name": "gestnotes",
+  "version": "1.0.0",
+  "description": "Système complet de gestion des notes scolaires avec calcul de moyennes et édition de bulletins",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js,.jsx",
+    "lint:fix": "eslint src --ext .js,.jsx --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,html,css,json}\"",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "gestion-notes",
+    "education",
+    "bulletin-scolaire",
+    "pwa",
+    "offline-first"
+  ],
+  "author": "Mouhamed692",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
+    "prettier": "^3.2.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.1.0"
+  }
+}
