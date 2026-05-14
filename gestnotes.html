@@ -217,7 +217,12 @@ const els = {
 // --- INITIALISATION DES RÉGLAGES ---
 els.yearInput.value = appState.settings.year;
 els.semesterSelect.value = appState.settings.semester;
-els.effectifInput.value = appState.classes[currentClass].effectif || '';
+// On vérifie d'abord que l'élément HTML existe ET que la classe existe dans les données
+if (els.effectifInput && appState.classes[currentClass]) {
+    els.effectifInput.value = appState.classes[currentClass].effectif || '';
+} else {
+    console.warn(`Impossible d'assigner l'effectif : l'élément input ou la classe "${currentClass}" est introuvable.`);
+}
 
 // --- ÉCOUTEURS D'ÉVÉNEMENTS GÉNÉRAUX ---
 els.yearInput.addEventListener('change', e => { appState.settings.year = e.target.value; saveState(); });
