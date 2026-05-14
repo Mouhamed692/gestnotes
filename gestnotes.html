@@ -24,33 +24,33 @@
         /* Animations Toasts */
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-        .toast-enter { animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-        .toast-leave { animation: fadeOut 0.4s ease-out forwards; }
+       .toast-enter { animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+       .toast-leave { animation: fadeOut 0.4s ease-out forwards; }
 
         /* Fixation de la colonne élève sur desktop uniquement */
         @media (min-width: 768px) {
-            .sticky-left-column {
+           .sticky-left-column {
                 position: sticky;
                 left: 0;
                 z-index: 20;
-                background-color: white !important;
+                background-color: white!important;
                 box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.1);
             }
-            .sticky-header-first {
+           .sticky-header-first {
                 position: sticky;
                 left: 0;
                 z-index: 40;
-                background-color: #f1f5f9 !important;
+                background-color: #f1f5f9!important;
                 box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.1);
             }
         }
 
         /* Mode Impression */
         @media print {
-            .no-print { display: none !important; }
-            body { background: white; overflow: visible !important; }
-            main { padding: 0 !important; }
-            .sticky-left-column, .sticky-header-first { position: static !important; box-shadow: none !important; }
+           .no-print { display: none!important; }
+            body { background: white; overflow: visible!important; }
+            main { padding: 0!important; }
+           .sticky-left-column,.sticky-header-first { position: static!important; box-shadow: none!important; }
         }
     </style>
 </head>
@@ -66,8 +66,8 @@
                 <div>
                     <h1 class="text-xl font-bold leading-tight">GestNotes</h1>
                     <div class="flex items-center gap-2 mt-1">
-                        <input type="text" id="setting-year" placeholder="2023-2024" class="bg-white/10 text-white border border-white/20 rounded px-2 py-0.5 text-[10px] w-20 outline-none focus:bg-white/20">
-                        <select id="setting-semester" class="bg-white/10 text-white border border-white/20 rounded px-1 py-0.5 text-[10px] outline-none">
+                        <input type="text" id="setting-year" placeholder="2023-2024" class="bg-white/10 text-white border border-white/20 rounded px-2 py-0.5 text- w-20 outline-none focus:bg-white/20">
+                        <select id="setting-semester" class="bg-white/10 text-white border border-white/20 rounded px-1 py-0.5 text- outline-none">
                             <option value="1" class="text-slate-800">Semestre 1</option>
                             <option value="2" class="text-slate-800">Semestre 2</option>
                         </select>
@@ -76,7 +76,7 @@
             </div>
 
             <div class="flex items-center gap-3 w-full md:w-auto bg-white/10 p-2 rounded-xl border border-white/20 backdrop-blur-sm">
-                <label for="class-select" class="text-[10px] font-bold uppercase tracking-wider text-indigo-100 ml-1">Niveau</label>
+                <label for="class-select" class="text- font-bold uppercase tracking-wider text-indigo-100 ml-1">Niveau</label>
                 <select id="class-select" class="flex-1 md:w-32 bg-white text-indigo-900 rounded-lg px-3 py-1.5 font-bold text-sm outline-none cursor-pointer">
                     <option value="CI">CI</option>
                     <option value="CP">CP</option>
@@ -95,21 +95,21 @@
 
                 <div class="h-6 w-px bg-white/20 mx-1"></div>
 
-                <label for="setting-effectif" class="text-[10px] font-bold uppercase tracking-wider text-indigo-100">Effectif</label>
+                <label for="setting-effectif" class="text- font-bold uppercase tracking-wider text-indigo-100">Effectif</label>
                 <input type="number" id="setting-effectif" placeholder="0" class="w-16 bg-white/10 text-white border border-white/20 rounded-lg px-2 py-1.5 text-sm font-bold outline-none focus:bg-white/20 text-center">
             </div>
         </div>
     </header>
 
-    <main class="flex-1 overflow-auto p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
+    <main class="flex-1 overflow-auto p-4 md:p-6 max-w- mx-auto w-full flex flex-col gap-6">
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0 no-print">
-            <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[300px] md:h-[340px] overflow-hidden">
+            <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h- md:h- overflow-hidden">
                 <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
                     <h2 class="text-sm font-semibold text-slate-800 flex items-center gap-2">
                         <i class="fa-solid fa-users text-indigo-500 w-5"></i> Liste des élèves
                     </h2>
-                    <span id="students-count" class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                    <span id="students-count" class="bg-indigo-100 text-indigo-800 text- font-bold px-2 py-0.5 rounded-full">0</span>
                 </div>
                 <div class="p-3 bg-white border-b border-slate-100">
                     <form id="add-student-form" class="flex flex-col sm:flex-row gap-2">
@@ -123,12 +123,12 @@
                 </div>
             </section>
 
-            <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[300px] md:h-[340px] overflow-hidden">
+            <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h- md:h- overflow-hidden">
                 <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
                     <h2 class="text-sm font-semibold text-slate-800 flex items-center gap-2">
                         <i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Matières & Coefficients
                     </h2>
-                    <span id="subjects-count" class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                    <span id="subjects-count" class="bg-emerald-100 text-emerald-800 text- font-bold px-2 py-0.5 rounded-full">0</span>
                 </div>
                 <div class="p-3 bg-white border-b border-slate-100">
                     <form id="add-subject-form" class="flex flex-col sm:flex-row gap-2">
@@ -143,7 +143,7 @@
             </section>
         </div>
 
-        <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 min-h-[400px] mb-6 overflow-hidden">
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 min-h- mb-6 overflow-hidden">
             <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/80 no-print">
                 <h2 class="text-base font-semibold text-slate-800 flex items-center gap-2">
                     <i class="fa-solid fa-table text-amber-500 w-5"></i> Saisie des Notes
@@ -159,8 +159,8 @@
             </div>
 
             <div class="flex-1 overflow-auto relative">
-                <table class="w-full text-sm text-left whitespace-nowrap min-w-[800px] hidden" id="grades-table">
-                    <thead class="text-[10px] text-slate-600 uppercase bg-slate-100 sticky top-0 z-30" id="grades-thead"></thead>
+                <table class="w-full text-sm text-left whitespace-nowrap min-w- hidden" id="grades-table">
+                    <thead class="text- text-slate-600 uppercase bg-slate-100 sticky top-0 z-30" id="grades-thead"></thead>
                     <tbody id="grades-tbody" class="divide-y divide-slate-100"></tbody>
                 </table>
                 <div id="grades-empty" class="absolute inset-0 flex flex-col items-center justify-center p-12 text-slate-400">
@@ -190,91 +190,4 @@
             if (!data.grades) data.grades = {};
             if (data.effectif === undefined) data.effectif = '';
 
-            data.subjects.forEach(sub => {
-                if (sub.coefD1 === undefined) sub.coefD1 = 1;
-                if (sub.coefD2 === undefined) sub.coefD2 = 1;
-                if (sub.coefC === undefined) sub.coefC = 2;
-                if (sub.coef === undefined) sub.coef = 1;
-            });
-            Object.keys(data.grades).forEach(sId => {
-                Object.keys(data.grades[sId]).forEach(subId => {
-                    const val = data.grades[sId][subId];
-                    if (typeof val === 'number' || typeof val === 'string') {
-                        data.grades[sId][subId] = { d1: '', d2: '', c: val };
-                    }
-                });
-            });
-        });
-
-        // --- 3. VARIABLES GLOBALES & ÉLÉMENTS DOM ---
-        const els = {
-            classSelect: document.getElementById('class-select'),
-            studentsList: document.getElementById('students-list'),
-            subjectsList: document.getElementById('subjects-list'),
-            gradesTable: document.getElementById('grades-table'),
-            gradesThead: document.getElementById('grades-thead'),
-            gradesTbody: document.getElementById('grades-tbody'),
-            gradesEmpty: document.getElementById('grades-empty'),
-            yearInput: document.getElementById('setting-year'),
-            semesterSelect: document.getElementById('setting-semester'),
-            effectifInput: document.getElementById('setting-effectif'),
-            addStudentForm: document.getElementById('add-student-form'),
-            addSubjectForm: document.getElementById('add-subject-form')
-        };
-        
-        let currentClass = els.classSelect ? els.classSelect.value : "6ème";
-
-        // --- 4. INITIALISATION DE L'INTERFACE ---
-        function initUI() {
-            if (els.yearInput) els.yearInput.value = appState.settings.year;
-            if (els.semesterSelect) els.semesterSelect.value = appState.settings.semester;
-            if (els.effectifInput && appState.classes[currentClass]) {
-                els.effectifInput.value = appState.classes[currentClass].effectif || '';
-            }
-            render();
-        }
-
-        // --- 5. ÉCOUTEURS D'ÉVÉNEMENTS GÉNÉRAUX ---
-if (els.yearInput) els.yearInput.addEventListener('change', e => {
-    appState.settings.year = e.target.value;
-    saveState();
-});
-
-if (els.semesterSelect) els.semesterSelect.addEventListener('change', e => {
-    appState.settings.semester = e.target.value;
-    saveState();
-});
-
-if (els.effectifInput) {
-    els.effectifInput.addEventListener('input', e => {
-        appState.classes[currentClass].effectif = e.target.value;
-        saveState();
-    });
-}
-
-if (els.classSelect) {
-    els.classSelect.addEventListener('change', (e) => {
-        currentClass = e.target.value;
-        if (els.effectifInput) els.effectifInput.value = appState.classes[currentClass].effectif || '';
-        render();
-    });
-}
-if (els.classSelect) {
-    els.classSelect.addEventListener('change', (e) => {
-        currentClass = e.target.value;
-        if (els.effectifInput) els.effectifInput.value = appState.classes[currentClass].effectif || '';
-        render(); // Important : recharge le tableau quand tu changes de classe
-    });
-}
-
-// --- 6. FONCTIONS PRINCIPALES ---
-function saveState() {
-    localStorage.setItem('gestnotes_data', JSON.stringify(appState));
-}
-
-// Colle ici toutes les autres fonctions : render(), updateGrade(), etc. que je t'ai données
-
-initUI(); // Lancement
-</script>
-</body>
-</html>
+            data.subjects.forEach
