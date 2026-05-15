@@ -8,56 +8,56 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
-        /* --- Ajoute ceci pour les icônes de suppression --- */
-/* Style pour la liste des élèves avec suppression */
-.student-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.2s;
-}
+        
+        /* Style pour la liste des élèves avec suppression */
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
 
-.btn-delete-student {
-    display: none; /* Cache la croix par défaut */
-    color: #f87171;
-    padding: 4px;
-    border-radius: 6px;
-}
+        .btn-delete-student {
+            display: none; /* Cache la croix par défaut */
+            color: #f87171;
+            padding: 4px;
+            border-radius: 6px;
+        }
 
-.student-item:hover .btn-delete-student {
-    display: block; /* Affiche la croix uniquement au survol de l'élève */
-}
+        .student-item:hover .btn-delete-student {
+            display: block; /* Affiche la croix uniquement au survol de l'élève */
+        }
 
-/* Optimisation des champs de notes pour la saisie mobile et clavier */
-.grade-input {
-    width: 60px;
-    height: 45px;
-    border: 2px solid #e2e8f0;
-    background: #f8fafc;
-    text-align: center;
-    font-weight: 800;
-    font-size: 16px;
-    border-radius: 10px;
-    transition: all 0.2s;
-}
+        /* Optimisation des champs de notes pour la saisie mobile et clavier */
+        .grade-input {
+            width: 60px;
+            height: 45px;
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            text-align: center;
+            font-weight: 800;
+            font-size: 16px;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
 
-.grade-input:focus {
-    border-color: #4f46e5;
-    background: white;
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-    outline: none;
-}
+        .grade-input:focus {
+            border-color: #4f46e5;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
 
-/* Supprime les flèches par défaut des nombres pour gagner de la place */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
+        /* Supprime les flèches par défaut des nombres pour gagner de la place */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
-   
+    
     <nav class="bg-indigo-950 text-white p-4 shadow-xl sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -159,10 +159,9 @@ input::-webkit-inner-spin-button {
                 appState.classes[currentClassId] = { 
                     students: [], 
                     subjects: [], 
-                    grades: { "1": {}, "2": {}, "3": {} } // Grades séparés par période
+                    grades: { "1": {}, "2": {}, "3": {} } 
                 };
             }
-            // Migration pour les anciennes données si nécessaire
             if(!appState.classes[currentClassId].grades["1"]) {
                 appState.classes[currentClassId].grades = { "1": {}, "2": {}, "3": {} };
             }
@@ -215,90 +214,48 @@ input::-webkit-inner-spin-button {
             
             periodGrades[currentStudentId][subId][type] = val;
             saveToStorage();
-            renderGradesFields();
+            
+            // LA CORRECTION EST ICI : On ne rappelle PLUS renderGradesFields()
+            // pour ne pas perdre le focus (le curseur) pendant la saisie.
             renderStats();
         }
 
-function renderGradesFields() {
-    const container = document.getElementById('grades-grid');
-    const classData = appState.classes[currentClassId];
-    const periodGrades = classData.grades[currentPeriod];
+        function renderGradesFields() {
+            const container = document.getElementById('grades-grid');
+            const classData = appState.classes[currentClassId];
+            const periodGrades = classData.grades[currentPeriod];
 
-    container.innerHTML = classData.subjects.map(sub => {
-        const g = periodGrades[currentStudentId]?.[sub.id] || { d1: '', d2: '', c: '' };
-        return `
-            <div class="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name}</div>
-                <div class="flex gap-2">
-                    <input type="number" step="0.25" inputmode="decimal" class="grade-input" placeholder="D1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value)">
-                    <input type="number" step="0.25" inputmode="decimal" class="grade-input" placeholder="D2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value)">
-                    <input type="number" step="0.25" inputmode="decimal" class="grade-input bg-indigo-50" placeholder="CP" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value)">
-                </div>
-            </div>`;
-    }).join('');
+            container.innerHTML = classData.subjects.map(sub => {
+                const g = periodGrades[currentStudentId]?.[sub.id] || { d1: '', d2: '', c: '' };
+                return `
+                    <div class="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                        <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name}</div>
+                        <div class="flex gap-2">
+                            <input type="number" step="0.25" inputmode="decimal" class="grade-input" placeholder="D1" value="${g.d1}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd1', this.value)">
+                            <input type="number" step="0.25" inputmode="decimal" class="grade-input" placeholder="D2" value="${g.d2}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd2', this.value)">
+                            <input type="number" step="0.25" inputmode="decimal" class="grade-input bg-indigo-50" placeholder="CP" value="${g.c}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'c', this.value)">
+                        </div>
+                    </div>`;
+            }).join('');
 
-    const inputs = document.querySelectorAll('.grade-input');
-    inputs.forEach((input, index) => {
-        // Permet d'écraser la note existante en commençant à taper
-        input.addEventListener('focus', () => input.select());
-
-        input.addEventListener('keydown', (e) => {
-            // ON NE CHANGE DE CASE QUE SUR CES TOUCHES PRÉCISES :
-            if (e.key === "Enter") {
-                e.preventDefault();
-                inputs[index + 1]?.focus(); // Passe simplement au champ suivant (D1 -> D2 -> CP -> Matière suivante)
-            }
-            
-            // Flèches pour naviguer comme dans Excel
-            if (e.key === "ArrowDown") {
-                e.preventDefault();
-                inputs[index + 3]?.focus(); // Saute à la ligne du dessous
-            }
-            if (e.key === "ArrowUp") {
-                e.preventDefault();
-                inputs[index - 3]?.focus(); // Saute à la ligne du dessus
-            }
-        });
-    });
-}
-// Fonction pour vider l'input et l'état
-function clearInput(element, subId, type) {
-    const input = element.previousElementSibling;
-    input.value = '';
-    updateVal(subId, type, ''); // Met à jour le localStorage
-    input.focus();
-}
-
-// Navigation ultra-rapide (Flèches et Entrée)
-function setupSmartNavigation() {
-    const inputs = document.querySelectorAll('.grade-input');
-    
-    inputs.forEach((input, index) => {
-        input.addEventListener('keydown', (e) => {
-            // "Entrée" ou "Flèche Bas" -> vers le bas
-            if (e.key === "Enter" || e.key === "ArrowDown") {
-                e.preventDefault();
-                inputs[index + 3]?.focus(); // Saute à la matière suivante (si 3 colonnes)
-            }
-            // "Flèche Haut" -> vers le haut
-            if (e.key === "ArrowUp") {
-                e.preventDefault();
-                inputs[index - 3]?.focus();
-            }
-            // "Flèche Droite" -> champ suivant
-            if (e.key === "ArrowRight" && input.selectionEnd === input.value.length) {
-                inputs[index + 1]?.focus();
-            }
-            // "Flèche Gauche" -> champ précédent
-            if (e.key === "ArrowLeft" && input.selectionStart === 0) {
-                inputs[index - 1]?.focus();
-            }
-        });
-
-        // Auto-sélection du texte au focus pour écraser rapidement
-        input.addEventListener('focus', () => input.select());
-    });
-}
+            const inputs = document.querySelectorAll('.grade-input');
+            inputs.forEach((input, index) => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        inputs[index + 1]?.focus();
+                    }
+                    if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        inputs[index + 3]?.focus();
+                    }
+                    if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        inputs[index - 3]?.focus();
+                    }
+                });
+            });
+        }
 
         function renderStats() {
             const classData = appState.classes[currentClassId];
@@ -342,29 +299,33 @@ function setupSmartNavigation() {
             renderGradesFields();
             renderStudents();
         }
-function renderStudents() {
-    const list = document.getElementById('student-list');
-    const students = appState.classes[currentClassId]?.students || [];
-    list.innerHTML = students.map(s => `
-        <li class="student-item p-3 rounded-xl cursor-pointer mb-2 ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
-            <span onclick="selectStudent('${s.id}')" class="font-bold text-[11px] uppercase flex-1">${s.lastName}</span>
-            <button onclick="deleteStudent('${s.id}')" class="btn-delete-student hover:bg-red-50">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </li>
-    `).join('');
-}
 
-function deleteStudent(id) {
-    if(confirm("Supprimer cet élève ?")) {
-        appState.classes[currentClassId].students = appState.classes[currentClassId].students.filter(s => s.id !== id);
-        if(currentStudentId === id) currentStudentId = null;
-        saveToStorage();
-        renderStudents();
-    }
-}
-    
+        function renderStudents() {
+            const list = document.getElementById('student-list');
+            const students = appState.classes[currentClassId]?.students || [];
+            list.innerHTML = students.map(s => `
+                <li class="student-item p-3 rounded-xl cursor-pointer mb-2 ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
+                    <span onclick="selectStudent('${s.id}')" class="font-bold text-[11px] uppercase flex-1">${s.lastName}</span>
+                    <button onclick="deleteStudent('${s.id}')" class="btn-delete-student hover:bg-red-50">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </li>
+            `).join('');
+        }
 
+        function deleteStudent(id) {
+            if(confirm("Supprimer cet élève ?")) {
+                appState.classes[currentClassId].students = appState.classes[currentClassId].students.filter(s => s.id !== id);
+                if(currentStudentId === id) {
+                    currentStudentId = null;
+                    document.getElementById('welcome-msg').classList.remove('hidden');
+                    document.getElementById('editor-panel').classList.add('hidden');
+                }
+                saveToStorage();
+                renderStudents();
+            }
+        }
+        
         function saveToStorage() { localStorage.setItem('gestnotes_v4', JSON.stringify(appState)); }
         function exportData() { const blob = new Blob([JSON.stringify(appState)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "gestnotes_backup.json"; a.click(); }
         function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { appState = JSON.parse(ev.target.result); changeLevel(); }; reader.readAsText(e.target.files[0]); }
