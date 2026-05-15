@@ -5,48 +5,6 @@
     <meta charset="UTF-8">
     <title>Bulletin de Notes</title>
     <style>
-        @media (max-width: 640px) {
-    /* On transforme le tableau en une liste de cartes */
-    .saisie-table thead {
-        display: none; /* Cache l'en-tête du tableau sur mobile */
-    }
-    
-    .saisie-table tr {
-        display: block;
-        margin-bottom: 1rem;
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .saisie-table td {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 5px 0;
-        border: none;
-    }
-
-    /* Ajoute un libellé devant chaque note pour savoir ce qu'on saisit */
-    .saisie-table td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        color: #4b5563;
-        font-size: 0.85rem;
-    }
-
-    /* Agrandir les inputs pour le doigt */
-    .saisie-table input {
-        width: 60px !important;
-        height: 45px !important;
-        font-size: 1.1rem !important;
-        text-align: center;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-    }
-}
         /* Styles de base pour l'écran */
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -307,28 +265,6 @@
 </head>
 
 <body>
-    <a href="gestnotes.html" class="no-print" style="
-    position: absolute; 
-    top: 15px; 
-    left: 15px; 
-    width: 40px; 
-    height: 40px; 
-    background: #4f46e5 !important; 
-    color: white !important; 
-    border-radius: 50%; 
-    display: flex !important; 
-    align-items: center; 
-    justify-content: center; 
-    z-index: 1000000; 
-    text-decoration: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    border: 1.5px solid white;">
-    <span style="font-size: 20px; font-weight: bold; line-height: 0;">&larr;</span>
-</a>
-
-<style>
-    @media print { .no-print { display: none !important; } }
-</style>
 
     <div id="error-msg" class="no-print">Données introuvables. Veuillez générer le bulletin depuis la page principale.
     </div>
@@ -339,7 +275,7 @@
             <label for="header-input">Modifier l'en-tête de l'établissement (IEF, École, etc.) :</label>
             <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE
 IEF PIKINE
-Sangomar  RENOVATION</textarea>
+RENOVATION</textarea>
             <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Les modifications s'appliquent en direct
                 ci-dessous.</p>
             <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
@@ -360,7 +296,7 @@ Sangomar  RENOVATION</textarea>
                 <div id="header-text-display">
                     IA PIKINE / GUEDIAWAYE<br>
                     IEF PIKINE<br>
-                 Sangomar RENOVATION
+                    RENOVATION
                 </div>
             </div>
             <div class="header-center">
