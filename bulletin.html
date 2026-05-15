@@ -3,151 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bulletin de Notes - GestNotes</title>
+    <title>Bulletin Officiel - GestNotes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
         
-        /* Styles spécifiques pour l'impression PDF */
+        /* Style du drapeau (Sénégal) */
+        .flag-bar {
+            display: flex;
+            height: 6px;
+            width: 100%;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+        .flag-green { background: #00853f; flex: 1; }
+        .flag-yellow { background: #fdef42; flex: 1; }
+        .flag-red { background: #e31b23; flex: 1; }
+
         @media print {
             body { background-color: white; padding: 0; }
             .no-print { display: none; }
-            .print-shadow-none { shadow: none; border: 1px solid #e2e8f0; }
             .container { max-width: 100%; width: 100%; margin: 0; }
-            @page { margin: 1.5cm; }
+            #bulletin-content { box-shadow: none !important; border: 1px solid #eee !important; border-radius: 0 !important; }
+            @page { margin: 1cm; }
         }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="p-4 md:p-8">
 
     <div class="max-w-4xl mx-auto mb-6 flex justify-between items-center no-print">
-        <a href="gestnotes.html" class="text-sm font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-2">
-            ← Retour à la saisie
-        </a>
-        <button onclick="window.print()" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-lg hover:bg-indigo-700 transition">
+        <button onclick="history.back()" class="text-sm font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-2">
+            ← Retour
+        </button>
+        <button onclick="window.print()" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-lg">
             Imprimer le Bulletin
         </button>
     </div>
 
-    <div id="bulletin-content" class="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-[2rem] shadow-2xl border border-slate-200 relative overflow-hidden">
-        
-        <div class="flex justify-between items-start border-b-4 border-indigo-950 pb-8 mb-8">
-            <div>
-                <div class="bg-indigo-950 text-white w-12 h-12 flex items-center justify-center rounded-xl font-black italic mb-4">GN</div>
-                <h1 class="text-3xl font-black text-slate-900 tracking-tighter">BULLETIN DE NOTES</h1>
-                <p id="label-periode" class="text-indigo-600 font-extrabold uppercase tracking-widest text-xs mt-1">Période : ---</p>
-            </div>
-            <div class="text-right">
-                <h2 id="student-name" class="text-2xl font-black text-slate-900 uppercase">---</h2>
-                <p id="student-id" class="text-slate-400 font-bold text-sm tracking-widest mt-1">---</p>
-                <div id="class-tag" class="inline-block bg-slate-100 text-slate-600 px-4 py-1 rounded-full text-[10px] font-black mt-3 uppercase tracking-wider">
-                    ---
-                </div>
-            </div>
+    <div id="bulletin-content" class="max-w-4xl mx-auto bg-white rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden">
+        <div class="flag-bar">
+            <div class="flag-green"></div>
+            <div class="flag-yellow"></div>
+            <div class="flag-red"></div>
         </div>
 
-        <table class="w-full mb-8">
-            <thead>
-                <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                    <th class="py-4 text-left">Matières</th>
-                    <th class="py-4 text-center">Coef</th>
-                    <th class="py-4 text-center">Moy. Devoir</th>
-                    <th class="py-4 text-center">Composition</th>
-                    <th class="py-4 text-right">Moyenne / 20</th>
-                    <th class="py-4 text-right">Points</th>
-                </tr>
-            </thead>
-            <tbody id="grades-table-body" class="text-sm font-bold text-slate-700">
-                </tbody>
-        </table>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-end border-t border-slate-100 pt-8">
-            <div class="space-y-4">
-                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Observations du professeur</p>
-                    <div class="h-20 border-b-2 border-dotted border-slate-300"></div>
+        <div class="p-8 md:p-12">
+            <div class="flex justify-between items-start border-b-2 border-slate-100 pb-8 mb-8">
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">République du Sénégal</p>
+                    <h1 class="text-4xl font-black text-slate-900 tracking-tighter">BULLETIN <br><span class="text-indigo-600">DE NOTES</span></h1>
+                    <div id="label-periode" class="mt-4 inline-block bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg font-black text-[10px] uppercase tracking-wider">
+                        ---
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="bg-slate-900 text-white inline-block p-2 rounded-lg font-black italic mb-4">GN</div>
+                    <h2 id="student-name" class="text-2xl font-black text-slate-900 uppercase">---</h2>
+                    <p id="student-id" class="text-slate-400 font-bold text-xs tracking-widest mt-1">---</p>
+                    <p id="class-tag" class="text-indigo-600 font-black text-sm mt-1 uppercase">---</p>
                 </div>
             </div>
-            
-            <div class="bg-indigo-950 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
-                <div class="relative z-10">
-                    <p class="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-1">Moyenne Générale</p>
-                    <h3 id="final-avg" class="text-5xl font-black tracking-tighter">--.--</h3>
-                </div>
-                <div class="absolute -right-4 -bottom-4 bg-white/5 w-32 h-32 rounded-full"></div>
-            </div>
-        </div>
 
-        <div class="mt-12 flex justify-end">
-            <div class="text-center w-64 border-t-2 border-slate-100 pt-4">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Le Chef d'Établissement</p>
-                <div class="h-20"></div>
+            <table class="w-full mb-8">
+                <thead>
+                    <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                        <th class="py-4 text-left">Matières</th>
+                        <th class="py-4 text-center">Coef</th>
+                        <th class="py-4 text-center">Moy. Dev</th>
+                        <th class="py-4 text-center">Comp</th>
+                        <th class="py-4 text-right">Moyenne</th>
+                        <th class="py-4 text-right">Points</th>
+                    </tr>
+                </thead>
+                <tbody id="grades-table-body" class="text-sm font-bold text-slate-700">
+                    </tbody>
+            </table>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t-2 border-slate-100">
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Observations & Visa</p>
+                    <div class="space-y-3">
+                        <div class="h-4 border-b border-slate-200"></div>
+                        <div class="h-4 border-b border-slate-200"></div>
+                        <p class="text-[10px] text-slate-400 italic mt-4 text-right">Le Chef d'Établissement</p>
+                    </div>
+                </div>
+                
+                <div class="bg-indigo-950 text-white p-8 rounded-[2.5rem] shadow-xl flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-1">Moyenne Générale</p>
+                        <h3 id="final-avg" class="text-5xl font-black tracking-tighter">--.--</h3>
+                    </div>
+                    <div id="mention-badge" class="bg-white/10 px-4 py-2 rounded-xl text-[10px] font-black uppercase">
+                        ---
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Récupération des données depuis le localStorage
         const appState = JSON.parse(localStorage.getItem('gestnotes_v4'));
-        
-        // Lecture des paramètres d'URL
         const params = new URLSearchParams(window.location.search);
         const classId = params.get('class');
         const studentId = params.get('student');
         const period = params.get('period');
 
-        function generateBulletin() {
-            if (!appState || !classId || !studentId) {
-                alert("Données manquantes");
-                return;
-            }
+        function generate() {
+            if (!appState || !classId || !studentId) return;
 
             const classData = appState.classes[classId];
             const student = classData.students.find(s => s.id === studentId);
             const periodGrades = classData.grades[period];
             const tbody = document.getElementById('grades-table-body');
 
-            // En-tête
             document.getElementById('student-name').textContent = student.lastName;
             document.getElementById('student-id').textContent = student.matricule;
             document.getElementById('class-tag').textContent = classId.replace('_', ' ');
-            document.getElementById('label-periode').textContent = `Période : ${period}${period == "1" ? "er" : "ème"} Semestre`;
+            document.getElementById('label-periode').textContent = `${period}${period == "1" ? "er" : "ème"} SEMESTRE`;
 
-            let totalPoints = 0;
-            let totalCoefs = 0;
+            let tPts = 0, tCoef = 0;
 
             tbody.innerHTML = classData.subjects.map(sub => {
                 const g = periodGrades[studentId]?.[sub.id] || { d1: '', d2: '', c: '' };
-                
-                const d1 = parseFloat(g.d1) || 0;
-                const d2 = parseFloat(g.d2) || d1;
-                const cp = parseFloat(g.c) || 0;
-                
-                const moyD = (d1 + d2) / 2;
-                const moyMat = (moyD + (cp * 2)) / 3;
-                const points = moyMat * sub.coef;
-
-                totalPoints += points;
-                totalCoefs += sub.coef;
+                const d1 = parseFloat(g.d1) || 0, d2 = parseFloat(g.d2) || d1, cp = parseFloat(g.c) || 0;
+                const mMat = (((d1 + d2) / 2) + (cp * 2)) / 3;
+                const pts = mMat * sub.coef;
+                tPts += pts; tCoef += sub.coef;
 
                 return `
-                    <tr class="border-b border-slate-50">
-                        <td class="py-4 text-indigo-900 font-extrabold uppercase text-xs">${sub.name}</td>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                        <td class="py-4 text-indigo-950 font-extrabold uppercase text-[11px]">${sub.name}</td>
                         <td class="py-4 text-center text-slate-400 font-black">${sub.coef}</td>
-                        <td class="py-4 text-center">${moyD.toFixed(2)}</td>
+                        <td class="py-4 text-center">${((d1+d2)/2).toFixed(2)}</td>
                         <td class="py-4 text-center">${cp.toFixed(2)}</td>
-                        <td class="py-4 text-right font-black text-slate-900">${moyMat.toFixed(2)}</td>
-                        <td class="py-4 text-right font-black text-indigo-600">${points.toFixed(2)}</td>
+                        <td class="py-4 text-right font-black text-slate-900">${mMat.toFixed(2)}</td>
+                        <td class="py-4 text-right font-black text-indigo-600">${pts.toFixed(2)}</td>
                     </tr>
                 `;
             }).join('');
 
-            const finalAvg = totalPoints / totalCoefs;
-            document.getElementById('final-avg').textContent = finalAvg.toFixed(2);
+            const avg = tPts / tCoef;
+            document.getElementById('final-avg').textContent = avg.toFixed(2);
+            
+            // Mention automatique
+            let mention = "Insuffisant";
+            if(avg >= 16) mention = "Très Bien";
+            else if(avg >= 14) mention = "Bien";
+            else if(avg >= 12) mention = "Assez Bien";
+            else if(avg >= 10) mention = "Passable";
+            document.getElementById('mention-badge').textContent = mention;
         }
 
-        window.onload = generateBulletin;
+        window.onload = generate;
     </script>
 </body>
 </html>
