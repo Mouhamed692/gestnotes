@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GestNotes Intégral - Système Académique</title>
+    <title>GestNotes Pro - 3 Semestres</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
-        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
     </style>
 </head>
 <body>
@@ -17,11 +16,11 @@
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="bg-emerald-500 p-2 rounded-lg font-black italic">GN</div>
-                <h1 class="text-sm font-black uppercase tracking-widest">SYSTÈME ACADÉMIQUE INTÉGRÉ</h1>
+                <h1 class="text-sm font-black uppercase tracking-widest text-emerald-400">Multi-Périodes</h1>
             </div>
             <div class="flex gap-2">
-                <button onclick="exportData()" class="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-[10px] font-bold">SAUVEGARDER</button>
-                <button onclick="document.getElementById('importFile').click()" class="bg-indigo-600 px-3 py-2 rounded-lg text-[10px] font-bold">RESTAURER</button>
+                <button onclick="exportData()" class="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-[10px] font-bold">EXPORTER</button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-indigo-600 px-3 py-2 rounded-lg text-[10px] font-bold">IMPORTER</button>
                 <input type="file" id="importFile" class="hidden" onchange="importData(event)">
             </div>
         </div>
@@ -31,148 +30,170 @@
         
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Cycle & Niveau</label>
-                <select id="class-level" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 appearance-none">
-                    <optgroup label="LYCÉE">
-                        <option value="TLE">Terminale</option><option value="1ERE">Première</option><option value="2NDE">Seconde</option>
-                    </optgroup>
-                    <optgroup label="MOYEN">
-                        <option value="3EME">3ème</option><option value="4EME">4ème</option><option value="5EME">5ème</option><option value="6EME">6ème</option>
-                    </optgroup>
-                    <optgroup label="PRIMAIRE">
-                        <option value="CM2">CM2</option><option value="CM1">CM1</option><option value="CI">CI</option>
-                    </optgroup>
-                </select>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Classe / Niveau</label>
+                <input type="text" id="class-level" value="TERMINALE" oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
             </div>
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Série / Identifiant</label>
-                <input type="text" id="class-section" placeholder="Ex: S1, L2, A..." oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
+                <input type="text" id="class-section" value="S2" oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Semestre</label>
-                <select id="semester" onchange="saveSettings()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold">
-                    <option value="1">1er Semestre</option><option value="2">2ème Semestre</option>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Période (Semestre/Trimestre)</label>
+                <select id="semester" onchange="updatePeriod()" class="w-full bg-indigo-600 text-white border-none rounded-2xl p-3 text-sm font-black shadow-lg">
+                    <option value="1">1er Semestre</option>
+                    <option value="2">2ème Semestre</option>
+                    <option value="3">3ème Semestre</option>
                 </select>
             </div>
-            <div class="bg-indigo-50 rounded-2xl p-3 flex flex-col justify-center text-center border border-indigo-100">
-                <p class="text-[9px] font-black text-indigo-400 uppercase">Moyenne Générale</p>
-                <p id="class-avg-display" class="text-2xl font-black text-indigo-900">0.00/20</p>
+            <div class="bg-emerald-50 rounded-2xl p-3 flex flex-col justify-center text-center border border-emerald-100">
+                <p class="text-[9px] font-black text-emerald-500 uppercase">Moyenne Période</p>
+                <p id="class-avg-display" class="text-2xl font-black text-emerald-900">0.00</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                        <h2 class="font-extrabold text-slate-800 text-xs uppercase tracking-tighter">Élèves Inscrits</h2>
-                        <span id="badge-count" class="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full">0</span>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="font-black text-slate-800 text-xs uppercase mb-4 tracking-widest">Élèves</h2>
+                    <div class="flex gap-2 mb-6">
+                        <input type="text" id="new-student-name" placeholder="Nom Prénom" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button onclick="addStudent()" class="bg-indigo-600 text-white w-12 h-12 rounded-xl font-black shadow-lg hover:bg-indigo-700 transition">+</button>
                     </div>
-                    <div class="p-6">
-                        <div class="flex gap-2 mb-6">
-                            <input type="text" id="new-student-name" placeholder="Nom et Prénom" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-sm outline-none focus:ring-1 focus:ring-emerald-500">
-                            <button onclick="addStudent()" class="bg-emerald-500 text-white w-12 h-12 rounded-xl font-black shadow-lg hover:bg-emerald-600 transition">+</button>
-                        </div>
-                        <ul id="student-list" class="space-y-2 max-h-[450px] overflow-y-auto pr-2"></ul>
-                    </div>
+                    <ul id="student-list" class="space-y-2 max-h-[500px] overflow-y-auto pr-2"></ul>
                 </div>
             </div>
 
             <div class="lg:col-span-8">
-                <div id="welcome-msg" class="bg-white rounded-3xl p-24 text-center border-2 border-dashed border-slate-200">
-                    <p class="text-slate-400 font-bold uppercase text-xs tracking-widest">Sélectionnez un élève pour calculer</p>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 mb-6">
+                    <h2 class="font-black text-slate-800 text-xs uppercase mb-4 tracking-widest">Configuration des Matières</h2>
+                    <div class="flex flex-wrap gap-2 mb-4" id="subjects-config-list"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-sub-name" placeholder="Matière" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold outline-none">
+                        <input type="number" id="new-sub-coef" placeholder="Coef" class="w-20 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-center outline-none">
+                        <button onclick="addSubject()" class="bg-emerald-500 text-white px-6 rounded-xl font-black text-[10px] uppercase shadow-lg">Ajouter</button>
+                    </div>
                 </div>
 
                 <div id="editor-panel" class="hidden">
                     <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-                        <div class="p-6 bg-indigo-950 text-white flex justify-between items-center">
+                        <div class="p-6 bg-slate-900 text-white flex justify-between items-center border-b border-white/10">
                             <div>
-                                <h2 id="current-student-display" class="text-xl font-black uppercase">---</h2>
-                                <p id="current-class-display" class="text-emerald-400 text-[10px] font-black uppercase"></p>
+                                <h2 id="current-student-display" class="text-xl font-black uppercase tracking-tight">---</h2>
+                                <p id="current-class-display" class="text-indigo-400 text-[10px] font-black uppercase tracking-widest"></p>
                             </div>
-                            <button onclick="printReport()" class="bg-emerald-500 hover:bg-emerald-400 px-5 py-2 rounded-lg font-black text-[10px] uppercase shadow-lg transition">Imprimer Bulletin</button>
+                            <button onclick="printReport()" class="bg-indigo-500 hover:bg-indigo-400 px-6 py-3 rounded-xl font-black text-xs transition uppercase">Imprimer Bulletin</button>
                         </div>
-                        
                         <div class="p-6 grid grid-cols-1 gap-3 bg-slate-50" id="grades-grid"></div>
                     </div>
+                </div>
+
+                <div id="welcome-msg" class="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-slate-200">
+                    <p class="text-slate-400 font-bold uppercase text-[10px] tracking-widest italic">Veuillez cliquer sur un élève</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let appState = JSON.parse(localStorage.getItem('gestnotes_full')) || {
-            settings: { year: '2025-2026', semester: '1' },
+        let appState = JSON.parse(localStorage.getItem('gestnotes_v4')) || {
             classes: {}
         };
 
         let currentClassId = "";
         let currentStudentId = null;
-
-        function getSubjectsByLevel(level, section) {
-            const isS = section.toUpperCase().includes('S');
-            if(['CI','CP','CE1','CM1','CM2'].includes(level)) {
-                return [
-                    { id: 'lang', name: 'Langue & Communication', coef: 2 },
-                    { id: 'math', name: 'Mathématiques', coef: 2 },
-                    { id: 'esac', name: 'ESAC', coef: 1 },
-                    { id: 'env', name: 'Découverte Monde', coef: 1 }
-                ];
-            }
-            return [
-                { id: 'fr', name: 'Français', coef: isS ? 3 : 5 },
-                { id: 'math', name: 'Mathématiques', coef: isS ? 6 : 2 },
-                { id: 'pc', name: 'Physique-Chimie', coef: isS ? 6 : 0 },
-                { id: 'phi', name: 'Philosophie', coef: level === 'TLE' ? (isS ? 2 : 4) : 0 },
-                { id: 'ang', name: 'Anglais', coef: 3 }
-            ].filter(s => s.coef > 0);
-        }
+        let currentPeriod = "1";
 
         function changeLevel() {
-            const level = document.getElementById('class-level').value;
-            const section = document.getElementById('class-section').value.toUpperCase() || "A";
+            const level = document.getElementById('class-level').value.toUpperCase() || "NIVEAU";
+            const section = document.getElementById('class-section').value.toUpperCase() || "SECTION";
             currentClassId = `${level}_${section}`;
+            currentPeriod = document.getElementById('semester').value;
 
             if (!appState.classes[currentClassId]) {
-                appState.classes[currentClassId] = { students: [], subjects: getSubjectsByLevel(level, section), grades: {} };
+                appState.classes[currentClassId] = { 
+                    students: [], 
+                    subjects: [], 
+                    grades: { "1": {}, "2": {}, "3": {} } // Grades séparés par période
+                };
             }
+            // Migration pour les anciennes données si nécessaire
+            if(!appState.classes[currentClassId].grades["1"]) {
+                appState.classes[currentClassId].grades = { "1": {}, "2": {}, "3": {} };
+            }
+
+            renderSubjectsConfig();
             renderStudents();
             renderStats();
             if(currentStudentId) renderGradesFields();
         }
 
-        function updateVal(subId, type, val) {
-            if(!appState.classes[currentClassId].grades[currentStudentId]) appState.classes[currentClassId].grades[currentStudentId] = {};
-            if(!appState.classes[currentClassId].grades[currentStudentId][subId]) appState.classes[currentClassId].grades[currentStudentId][subId] = {d1:'', d2:'', c:''};
-            
-            appState.classes[currentClassId].grades[currentStudentId][subId][type] = val;
+        function updatePeriod() {
+            currentPeriod = document.getElementById('semester').value;
+            if(currentStudentId) renderGradesFields();
+            renderStats();
             saveToStorage();
-            renderGradesFields(); // Rafraîchit le calcul vert instantanément
-            renderStats();        // Rafraîchit la moyenne générale
+        }
+
+        // --- GESTION MATIÈRES ---
+        function addSubject() {
+            const name = document.getElementById('new-sub-name').value.trim();
+            const coef = parseFloat(document.getElementById('new-sub-coef').value) || 1;
+            if(!name) return;
+            appState.classes[currentClassId].subjects.push({ id: 'sub_' + Date.now(), name, coef });
+            saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields();
+            document.getElementById('new-sub-name').value = ''; document.getElementById('new-sub-coef').value = '';
+        }
+
+        function removeSubject(subId) {
+            if(!confirm("Supprimer cette matière ?")) return;
+            appState.classes[currentClassId].subjects = appState.classes[currentClassId].subjects.filter(s => s.id !== subId);
+            saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields(); renderStats();
+        }
+
+        function renderSubjectsConfig() {
+            const list = document.getElementById('subjects-config-list');
+            const subjects = appState.classes[currentClassId]?.subjects || [];
+            list.innerHTML = subjects.map(s => `
+                <div class="flex items-center bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 gap-2">
+                    <span class="text-[10px] font-black text-indigo-900 uppercase">${s.name} (x${s.coef})</span>
+                    <button onclick="removeSubject('${s.id}')" class="text-red-500 font-bold hover:text-red-700">×</button>
+                </div>
+            `).join('');
+        }
+
+        // --- GESTION NOTES ---
+        function updateVal(subId, type, val) {
+            const periodGrades = appState.classes[currentClassId].grades[currentPeriod];
+            if(!periodGrades[currentStudentId]) periodGrades[currentStudentId] = {};
+            if(!periodGrades[currentStudentId][subId]) periodGrades[currentStudentId][subId] = {d1:'', d2:'', c:''};
+            
+            periodGrades[currentStudentId][subId][type] = val;
+            saveToStorage();
+            renderGradesFields();
+            renderStats();
         }
 
         function renderGradesFields() {
             const classData = appState.classes[currentClassId];
             const container = document.getElementById('grades-grid');
+            const periodGrades = classData.grades[currentPeriod];
             
             container.innerHTML = classData.subjects.map(sub => {
-                const g = classData.grades[currentStudentId]?.[sub.id] || { d1:'', d2:'', c:'' };
-                
-                // CALCUL EN DIRECT POUR L'INTERFACE
-                const d1 = parseFloat(g.d1);
-                const d2 = parseFloat(g.d2);
-                const cp = parseFloat(g.c);
-                let moyD = !isNaN(d1) && !isNaN(d2) ? (d1+d2)/2 : (!isNaN(d1) ? d1 : (!isNaN(d2) ? d2 : 0));
-                let moyMat = (moyD + (nc = !isNaN(cp) ? cp*2 : 0)) / (cp ? 3 : 1);
-                if(isNaN(moyMat)) moyMat = 0;
+                const g = periodGrades[currentStudentId]?.[sub.id] || { d1:'', d2:'', c:'' };
+                const d1 = parseFloat(g.d1) || 0;
+                const d2 = parseFloat(g.d2) || d1;
+                const cp = parseFloat(g.c) || 0;
+                const moyD = (d1 + d2) / 2;
+                const moyMat = (moyD + (cp * 2)) / 3;
 
                 return `
                 <div class="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name} <span class="text-indigo-400 text-[9px] ml-1">Coef ${sub.coef}</span></div>
+                    <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name}</div>
                     <div class="flex gap-2 items-center">
-                        <input type="number" placeholder="D1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none focus:ring-1 focus:ring-indigo-400">
-                        <input type="number" placeholder="D2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none focus:ring-1 focus:ring-indigo-400">
-                        <input type="number" placeholder="CP" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value)" class="w-14 p-2 bg-indigo-50 text-indigo-900 rounded-lg text-center font-black text-xs outline-none focus:ring-1 focus:ring-indigo-400">
-                        <div class="w-14 p-2 bg-emerald-500 text-white rounded-lg text-center font-black text-xs shadow-inner">
+                        <input type="number" step="0.1" placeholder="D1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none">
+                        <input type="number" step="0.1" placeholder="D2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none">
+                        <input type="number" step="0.1" placeholder="CP" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value)" class="w-14 p-2 bg-indigo-50 text-indigo-900 rounded-lg text-center font-black text-xs outline-none">
+                        <div class="w-14 p-2 ${moyMat >= 10 ? 'bg-emerald-500' : 'bg-rose-500'} text-white rounded-lg text-center font-black text-xs">
                             ${moyMat > 0 ? moyMat.toFixed(2) : '--'}
                         </div>
                     </div>
@@ -184,17 +205,21 @@
             const classData = appState.classes[currentClassId];
             if(!classData || !classData.students.length) return;
             let totalMoy = 0;
+            const periodGrades = classData.grades[currentPeriod];
+
             classData.students.forEach(s => {
                 let p = 0, c = 0;
                 classData.subjects.forEach(sub => {
-                    const g = classData.grades[s.id]?.[sub.id] || {d1:0,d2:0,c:0};
-                    const mD = (parseFloat(g.d1)+parseFloat(g.d2)) / (g.d1&&g.d2?2:1) || 0;
-                    const mS = (mD + (parseFloat(g.c||0)*2)) / 3;
+                    const g = periodGrades[s.id]?.[sub.id] || {d1:0,d2:0,c:0};
+                    const d1 = parseFloat(g.d1) || 0;
+                    const d2 = parseFloat(g.d2) || d1;
+                    const cp = parseFloat(g.c) || 0;
+                    const mS = (( (d1+d2)/2 ) + (cp*2)) / 3;
                     p += mS * sub.coef; c += sub.coef;
                 });
                 totalMoy += (c > 0 ? p/c : 0);
             });
-            document.getElementById('class-avg-display').textContent = (totalMoy / classData.students.length || 0).toFixed(2) + "/20";
+            document.getElementById('class-avg-display').textContent = (totalMoy / classData.students.length || 0).toFixed(2);
         }
 
         function addStudent() {
@@ -203,8 +228,7 @@
             appState.classes[currentClassId].students.push({
                 id: 'std_' + Date.now(),
                 lastName: input.value.toUpperCase(),
-                firstName: '',
-                matricule: 'REG-' + Math.floor(1000 + Math.random() * 9000)
+                matricule: 'REG-' + Math.floor(1000+Math.random()*9000)
             });
             input.value = ''; saveToStorage(); renderStudents();
         }
@@ -215,7 +239,7 @@
             document.getElementById('welcome-msg').classList.add('hidden');
             document.getElementById('editor-panel').classList.remove('hidden');
             document.getElementById('current-student-display').textContent = student.lastName;
-            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ');
+            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ') + " - Période " + currentPeriod;
             renderGradesFields();
             renderStudents();
         }
@@ -223,7 +247,6 @@
         function renderStudents() {
             const list = document.getElementById('student-list');
             const students = appState.classes[currentClassId]?.students || [];
-            document.getElementById('badge-count').textContent = students.length;
             list.innerHTML = students.map(s => `
                 <li onclick="selectStudent('${s.id}')" class="p-3 rounded-xl cursor-pointer transition ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
                     <span class="font-bold text-[11px] uppercase">${s.lastName}</span>
@@ -231,11 +254,10 @@
             `).join('');
         }
 
-        function saveToStorage() { localStorage.setItem('gestnotes_full', JSON.stringify(appState)); }
-        function saveSettings() { appState.settings.semester = document.getElementById('semester').value; saveToStorage(); }
-        function printReport() { window.open(`bulletin.html?class=${currentClassId}&student=${currentStudentId}`, '_blank'); }
-        function exportData() { const blob = new Blob([JSON.stringify(appState)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "backup.json"; a.click(); }
+        function saveToStorage() { localStorage.setItem('gestnotes_v4', JSON.stringify(appState)); }
+        function exportData() { const blob = new Blob([JSON.stringify(appState)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "gestnotes_backup.json"; a.click(); }
         function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { appState = JSON.parse(ev.target.result); changeLevel(); }; reader.readAsText(e.target.files[0]); }
+        function printReport() { window.open(`bulletin.html?class=${currentClassId}&student=${currentStudentId}&period=${currentPeriod}`, '_blank'); }
 
         window.onload = () => changeLevel();
     </script>
