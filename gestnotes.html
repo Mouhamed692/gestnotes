@@ -3,110 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GestNotes Pro - Administration</title>
+    <title>GestNotes Intégral - Primaire, Moyen, Lycée</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        @media print { .no-print { display: none !important; } }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .stat-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body>
 
-    <!-- NAVIGATION -->
-    <nav class="bg-indigo-900 text-white p-4 shadow-2xl no-print sticky top-0 z-50">
+    <nav class="bg-indigo-950 text-white p-4 shadow-xl sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="bg-gradient-to-br from-indigo-400 to-indigo-600 p-2 rounded-xl font-black text-xl shadow-lg">GN</div>
-                <div>
-                    <h1 class="text-lg font-extrabold tracking-tight">GestNotes Pro</h1>
-                    <p class="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">IA Pikine / Guédiawaye</p>
-                </div>
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-500 p-2 rounded-lg font-black italic">GN</div>
+                <h1 class="text-sm font-black uppercase tracking-widest">Système Académique Intégré</h1>
             </div>
             <div class="flex gap-2">
-                <button onclick="exportData()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-xs font-bold transition">📥 Backup</button>
-                <button onclick="document.getElementById('importFile').click()" class="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded-xl text-xs font-bold transition shadow-lg">📤 Restaurer</button>
-                <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
+                <button onclick="exportData()" class="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-[10px] font-bold">SAUVEGARDER</button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-indigo-600 px-3 py-2 rounded-lg text-[10px] font-bold">RESTAURER</button>
+                <input type="file" id="importFile" class="hidden" onchange="importData(event)">
             </div>
         </div>
     </nav>
 
     <div class="container mx-auto p-4 lg:p-8">
         
-        <!-- HEADER & DASHBOARD -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 no-print">
-            <!-- Config -->
-            <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Année Scolaire</label>
-                    <input type="text" id="school-year" onchange="saveSettings()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Semestre</label>
-                    <select id="semester" onchange="saveSettings()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500">
-                        <option value="1">1er Semestre</option>
-                        <option value="2">2ème Semestre</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Classe</label>
-                    <input type="text" id="class-name" onchange="saveSettings()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500">
-                </div>
+        <!-- SÉLECTEUR DE CYCLE -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Cycle & Niveau</label>
+                <select id="class-level" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500">
+                    <optgroup label="LYCÉE">
+                        <option value="TLE">Terminale</option><option value="1ERE">Première</option><option value="2NDE">Seconde</option>
+                    </optgroup>
+                    <optgroup label="MOYEN (Collège)">
+                        <option value="3EME">3ème</option><option value="4EME">4ème</option><option value="5EME">5ème</option><option value="6EME">6ème</option>
+                    </optgroup>
+                    <optgroup label="PRIMAIRE">
+                        <option value="CM2">CM2</option><option value="CM1">CM1</option><option value="CE2">CE2</option><option value="CE1">CE1</option><option value="CP">CP</option><option value="CI">CI</option>
+                    </optgroup>
+                </select>
             </div>
-            
-            <!-- Dynamic Stats -->
-            <div id="stats-summary" class="bg-indigo-950 rounded-3xl p-6 text-white shadow-2xl stat-card relative overflow-hidden">
-                <!-- JS Inject -->
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Série / Identifiant</label>
+                <input type="text" id="class-section" placeholder="Ex: S1, L', A, B..." onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Semestre</label>
+                <select id="semester" onchange="saveSettings()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold">
+                    <option value="1">1er Semestre</option><option value="2">2ème Semestre</option>
+                </select>
+            </div>
+            <div id="stats-box" class="bg-indigo-50 rounded-2xl p-3 flex flex-col justify-center text-center">
+                <p class="text-[9px] font-black text-indigo-400 uppercase">Moyenne Générale</p>
+                <p id="class-avg-display" class="text-xl font-black text-indigo-900">--/20</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- LISTE ELEVES -->
-            <div class="lg:col-span-4 no-print">
+            <!-- LISTE ÉLÈVES -->
+            <div class="lg:col-span-4">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                        <h2 class="font-extrabold text-slate-800">Élèves</h2>
-                        <span id="badge-count" class="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md">0</span>
+                    <div class="p-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                        <h2 class="font-extrabold text-slate-800 text-sm uppercase">Liste des élèves</h2>
+                        <span id="badge-count" class="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full">0</span>
                     </div>
                     <div class="p-6">
                         <div class="flex gap-2 mb-6">
-                            <input type="text" id="new-student-name" placeholder="NOM Prénom" class="flex-1 bg-slate-100 border-none rounded-2xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium">
-                            <button onclick="addStudent()" class="bg-emerald-500 hover:bg-emerald-400 text-white w-12 h-12 rounded-2xl font-black transition shadow-lg shadow-emerald-200 text-xl">+</button>
+                            <input type="text" id="new-student-name" placeholder="NOM Prénom" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-sm outline-none">
+                            <button onclick="addStudent()" class="bg-emerald-500 text-white w-12 h-12 rounded-xl font-black shadow-lg">+</button>
                         </div>
-                        <ul id="student-list" class="space-y-3 max-h-[450px] overflow-y-auto pr-2"></ul>
+                        <ul id="student-list" class="space-y-2 max-h-[450px] overflow-y-auto pr-2"></ul>
                     </div>
                 </div>
             </div>
 
-            <!-- SAISIE NOTES -->
+            <!-- ÉDITEUR -->
             <div class="lg:col-span-8">
                 <div id="welcome-msg" class="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-slate-200">
-                    <div class="text-6xl mb-6 opacity-40">📝</div>
-                    <h2 class="text-2xl font-black text-slate-800">Prêt pour la saisie ?</h2>
-                    <p class="text-slate-400 mt-2 font-medium">Cliquez sur un élève pour gérer ses notes.</p>
+                    <p class="text-slate-400 font-bold uppercase text-xs tracking-widest">Veuillez sélectionner un élève</p>
                 </div>
 
-                <div id="editor-panel" class="hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div id="editor-panel" class="hidden">
                     <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-                        <div class="p-8 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white flex justify-between items-center">
+                        <div class="p-6 bg-indigo-950 text-white flex justify-between items-center">
                             <div>
-                                <p class="text-[10px] font-black opacity-60 uppercase tracking-[0.2em] mb-1">Fiche de notes</p>
-                                <h2 id="current-student-display" class="text-3xl font-black italic tracking-tight">---</h2>
+                                <h2 id="current-student-display" class="text-xl font-black uppercase tracking-tight">---</h2>
+                                <p id="current-class-display" class="text-emerald-400 text-[10px] font-black uppercase"></p>
                             </div>
-                            <button onclick="printReport()" class="bg-white text-indigo-700 hover:bg-emerald-500 hover:text-white px-6 py-3 rounded-2xl font-black transition shadow-xl no-print text-sm uppercase tracking-wider">
-                                Imprimer Bulletin
-                            </button>
+                            <button onclick="printReport()" class="bg-emerald-500 px-5 py-2 rounded-lg font-black text-[10px] uppercase shadow-lg">Imprimer Bulletin</button>
                         </div>
-                        
-                        <div class="p-8 grid grid-cols-1 gap-4" id="grades-grid"></div>
-                        
-                        <div class="p-6 bg-slate-50 border-t border-slate-100 flex justify-center no-print">
-                             <button onclick="printAllReports()" class="text-orange-600 font-black text-xs uppercase tracking-widest hover:underline">
-                                📚 Générer toute la classe
-                             </button>
-                        </div>
+                        <div class="p-6 grid grid-cols-1 gap-2 bg-slate-50" id="grades-grid"></div>
                     </div>
                 </div>
             </div>
@@ -114,67 +101,92 @@
     </div>
 
     <script>
-        let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || {
-            settings: { year: '2025-2026', semester: '1', currentClass: '6ème A' },
-            classes: {
-                "6ème A": { 
-                    students: [], 
-                    subjects: [
-                        { id: 'math', name: 'Mathématiques', coef: 4 },
-                        { id: 'fr', name: 'Français', coef: 5 },
-                        { id: 'svt', name: 'S.V.T', coef: 2 },
-                        { id: 'hg', name: 'Hist-Géo', coef: 2 },
-                        { id: 'pc', name: 'Physique-Chimie', coef: 3 }
-                    ], 
-                    grades: {} 
-                }
-            }
+        let appState = JSON.parse(localStorage.getItem('gestnotes_full')) || {
+            settings: { year: '2025-2026', semester: '1' },
+            classes: {}
         };
 
-        let currentClassId = appState.settings.currentClass || "6ème A";
+        let currentClassId = "";
         let currentStudentId = null;
 
-        function saveToStorage() {
-            localStorage.setItem('gestnotes_data', JSON.stringify(appState));
-            renderStats();
+        function getSubjectsByLevel(level, section) {
+            const isS = section.toUpperCase().includes('S');
+            
+            // PRIMAIRE
+            if(['CI','CP','CE1','CE2','CM1','CM2'].includes(level)) {
+                return [
+                    { id: 'lang', name: 'Langage/Lecture', coef: 2 },
+                    { id: 'math', name: 'Calcul', coef: 2 },
+                    { id: 'obs', name: 'Observation', coef: 1 },
+                    { id: 'esac', name: 'E.S.A.C', coef: 1 }
+                ];
+            }
+            // MOYEN
+            if(['6EME','5EME','4EME','3EME'].includes(level)) {
+                return [
+                    { id: 'fr', name: 'Français', coef: 5 },
+                    { id: 'math', name: 'Mathématiques', coef: 4 },
+                    { id: 'ang', name: 'Anglais', coef: 3 },
+                    { id: 'pc', name: 'Physique-Chimie', coef: level === '3EME' || level === '4EME' ? 2 : 0 },
+                    { id: 'hg', name: 'Hist-Géo', coef: 2 },
+                    { id: 'svt', name: 'S.V.T', coef: 2 },
+                    { id: 'eps', name: 'E.P.S', coef: 1 }
+                ].filter(s => s.coef > 0);
+            }
+            // LYCÉE
+            return [
+                { id: 'fr', name: 'Français', coef: isS ? 3 : 5 },
+                { id: 'math', name: 'Mathématiques', coef: isS ? 6 : 2 },
+                { id: 'pc', name: 'Physique-Chimie', coef: isS ? 6 : 0 },
+                { id: 'svt', name: 'S.V.T', coef: isS ? 4 : 0 },
+                { id: 'phi', name: 'Philosophie', coef: level === 'TLE' ? (isS ? 2 : 4) : 0 },
+                { id: 'hg', name: 'Hist-Géo', coef: isS ? 2 : 4 },
+                { id: 'ang', name: 'Anglais', coef: isS ? 2 : 4 },
+                { id: 'eps', name: 'E.P.S', coef: 1 }
+            ].filter(s => s.coef > 0);
         }
 
-        function saveSettings() {
-            appState.settings.year = document.getElementById('school-year').value;
-            appState.settings.semester = document.getElementById('semester').value;
-            currentClassId = document.getElementById('class-name').value;
-            appState.settings.currentClass = currentClassId;
-            if(!appState.classes[currentClassId]) {
-                appState.classes[currentClassId] = { students: [], subjects: appState.classes["6ème A"].subjects, grades: {} };
+        function changeLevel() {
+            const level = document.getElementById('class-level').value;
+            const section = document.getElementById('class-section').value.toUpperCase() || "A";
+            currentClassId = `${level}_${section}`;
+
+            if (!appState.classes[currentClassId]) {
+                appState.classes[currentClassId] = {
+                    students: [],
+                    subjects: getSubjectsByLevel(level, section),
+                    grades: {}
+                };
             }
-            saveToStorage();
+            currentStudentId = null;
+            document.getElementById('editor-panel').classList.add('hidden');
+            document.getElementById('welcome-msg').classList.remove('hidden');
             renderStudents();
+            renderStats();
+            saveToStorage();
         }
+
+        function saveToStorage() { localStorage.setItem('gestnotes_full', JSON.stringify(appState)); }
 
         function addStudent() {
             const input = document.getElementById('new-student-name');
             if(!input.value.trim()) return;
-            const names = input.value.split(' ');
+            const id = 'std_' + Date.now();
             appState.classes[currentClassId].students.push({
-                id: 'std_' + Date.now(),
-                lastName: names[0].toUpperCase(),
-                firstName: names.slice(1).join(' ') || '-',
-                matricule: 'REG-' + Math.floor(1000 + Math.random() * 9000),
-                birthDate: '2010-01-01'
+                id, lastName: input.value.split(' ')[0].toUpperCase(),
+                firstName: input.value.split(' ').slice(1).join(' ') || '-',
+                matricule: 'REG-' + Math.floor(Math.random()*10000)
             });
-            input.value = '';
-            saveToStorage();
-            renderStudents();
+            input.value = ''; saveToStorage(); renderStudents();
         }
 
         function renderStudents() {
             const list = document.getElementById('student-list');
-            const students = appState.classes[currentClassId].students;
+            const students = appState.classes[currentClassId]?.students || [];
             document.getElementById('badge-count').textContent = students.length;
             list.innerHTML = students.map(s => `
-                <li onclick="selectStudent('${s.id}')" class="group p-4 rounded-2xl cursor-pointer transition-all ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-xl translate-x-2' : 'bg-white hover:bg-indigo-50 border border-slate-100'} flex justify-between items-center">
-                    <span class="font-extrabold text-sm">${s.lastName} ${s.firstName}</span>
-                    <button onclick="event.stopPropagation(); deleteStudent('${s.id}')" class="opacity-0 group-hover:opacity-100 text-[10px] font-bold text-red-400 hover:text-red-600 px-2">SUPPR.</button>
+                <li onclick="selectStudent('${s.id}')" class="p-3 rounded-xl cursor-pointer transition ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
+                    <span class="font-bold text-xs uppercase">${s.lastName} ${s.firstName}</span>
                 </li>
             `).join('');
         }
@@ -185,6 +197,7 @@
             document.getElementById('welcome-msg').classList.add('hidden');
             document.getElementById('editor-panel').classList.remove('hidden');
             document.getElementById('current-student-display').textContent = `${student.lastName} ${student.firstName}`;
+            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ');
             renderGradesFields();
             renderStudents();
         }
@@ -195,15 +208,12 @@
             container.innerHTML = classData.subjects.map(sub => {
                 const g = classData.grades[currentStudentId]?.[sub.id] || { d1:'', d2:'', c:'' };
                 return `
-                <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div class="flex-1">
-                        <h4 class="font-extrabold text-slate-800">${sub.name}</h4>
-                        <p class="text-[9px] font-black text-indigo-400 uppercase">Coeff ${sub.coef}</p>
-                    </div>
+                <div class="flex items-center gap-4 p-3 bg-white rounded-xl border border-slate-100">
+                    <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name} <span class="text-indigo-400 text-[9px] ml-1">Coef ${sub.coef}</span></div>
                     <div class="flex gap-2">
-                        <input type="number" step="0.5" placeholder="D1" value="${g.d1}" onchange="updateVal('${sub.id}', 'd1', this.value)" class="w-14 p-2 rounded-xl border-none text-center font-bold text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500">
-                        <input type="number" step="0.5" placeholder="D2" value="${g.d2}" onchange="updateVal('${sub.id}', 'd2', this.value)" class="w-14 p-2 rounded-xl border-none text-center font-bold text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500">
-                        <input type="number" step="0.5" placeholder="C" value="${g.c}" onchange="updateVal('${sub.id}', 'c', this.value)" class="w-16 p-2 rounded-xl border-none text-center font-black text-indigo-700 bg-white shadow-md focus:ring-2 focus:ring-indigo-500">
+                        <input type="number" placeholder="D1" value="${g.d1}" onchange="updateVal('${sub.id}', 'd1', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs">
+                        <input type="number" placeholder="D2" value="${g.d2}" onchange="updateVal('${sub.id}', 'd2', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs">
+                        <input type="number" placeholder="CP" value="${g.c}" onchange="updateVal('${sub.id}', 'c', this.value)" class="w-14 p-2 bg-indigo-50 text-indigo-900 rounded-lg text-center font-black text-xs">
                     </div>
                 </div>`;
             }).join('');
@@ -213,77 +223,30 @@
             if(!appState.classes[currentClassId].grades[currentStudentId]) appState.classes[currentClassId].grades[currentStudentId] = {};
             if(!appState.classes[currentClassId].grades[currentStudentId][subId]) appState.classes[currentClassId].grades[currentStudentId][subId] = {};
             appState.classes[currentClassId].grades[currentStudentId][subId][type] = val;
-            saveToStorage();
+            saveToStorage(); renderStats();
         }
 
         function renderStats() {
             const classData = appState.classes[currentClassId];
-            const display = document.getElementById('stats-summary');
-            if(!classData.students.length) return display.innerHTML = "...";
-
-            let moys = classData.students.map(s => {
-                let pts = 0, coefs = 0;
+            if(!classData || !classData.students.length) return;
+            let totalMoy = 0;
+            classData.students.forEach(s => {
+                let p = 0, c = 0;
                 classData.subjects.forEach(sub => {
-                    const g = classData.grades[s.id]?.[sub.id] || {};
-                    if(g.c !== '') { pts += Number(g.c) * sub.coef; coefs += sub.coef; }
+                    const g = classData.grades[s.id]?.[sub.id] || {d1:0,d2:0,c:0};
+                    const mD = (Number(g.d1)+Number(g.d2))/ (g.d2?2:1);
+                    p += ((mD + (Number(g.c)*2))/3) * sub.coef; c += sub.coef;
                 });
-                return coefs > 0 ? pts/coefs : 0;
+                totalMoy += (c > 0 ? p/c : 0);
             });
-
-            const avg = (moys.reduce((a,b)=>a+b,0)/moys.length).toFixed(2);
-            const success = ((moys.filter(m=>m>=10).length / moys.length)*100).toFixed(0);
-            
-            display.innerHTML = `
-                <div class="relative z-10">
-                    <p class="text-[9px] font-black uppercase opacity-60 tracking-widest mb-1">Moyenne Classe</p>
-                    <h2 class="text-4xl font-black mb-4">${avg}</h2>
-                    <div class="flex justify-between text-[10px] font-black mb-2">
-                        <span>RÉUSSITE</span>
-                        <span>${success}%</span>
-                    </div>
-                    <div class="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                        <div class="h-full bg-emerald-400 transition-all duration-1000" style="width: ${success}%"></div>
-                    </div>
-                </div>
-                <div class="absolute -right-4 -bottom-4 text-white/5 text-8xl font-black">GN</div>
-            `;
-        }
-
-        function deleteStudent(id) {
-            if(confirm("Supprimer ?")) {
-                appState.classes[currentClassId].students = appState.classes[currentClassId].students.filter(s => s.id !== id);
-                saveToStorage(); renderStudents();
-            }
-        }
-
-        function exportData() {
-            const blob = new Blob([JSON.stringify(appState)], {type:'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = "gestnotes_data.json"; a.click();
-        }
-
-        function importData(e) {
-            const reader = new FileReader();
-            reader.onload = (ev) => { appState = JSON.parse(ev.target.result); saveToStorage(); location.reload(); };
-            reader.readAsText(e.target.files[0]);
+            document.getElementById('class-avg-display').textContent = (totalMoy / classData.students.length).toFixed(2) + "/20";
         }
 
         function printReport() {
-            window.open(`bulletin.html?class=${encodeURIComponent(currentClassId)}&student=${encodeURIComponent(currentStudentId)}`, '_blank');
+            window.open(`bulletin.html?class=${currentClassId}&student=${currentStudentId}`, '_blank');
         }
 
-        function printAllReports() {
-            appState.classes[currentClassId].students.forEach((s, i) => {
-                setTimeout(() => window.open(`bulletin.html?class=${encodeURIComponent(currentClassId)}&student=${encodeURIComponent(s.id)}`, '_blank'), i*500);
-            });
-        }
-
-        window.onload = () => {
-            document.getElementById('school-year').value = appState.settings.year;
-            document.getElementById('semester').value = appState.settings.semester;
-            document.getElementById('class-name').value = currentClassId;
-            renderStudents(); renderStats();
-        };
+        window.onload = () => changeLevel();
     </script>
 </body>
 </html>
