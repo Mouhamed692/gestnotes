@@ -8,10 +8,54 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        /* --- Ajoute ceci pour les icônes de suppression --- */
+.input-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* On ajuste l'input pour laisser de la place à la croix */
+.grade-input {
+    padding-right: 20px !important; 
+}
+
+/* La petite croix qui apparaît au survol */
+.clear-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #cbd5e1;
+    font-size: 16px;
+    font-weight: bold;
+    display: none; /* Caché par défaut */
+    line-height: 1;
+}
+
+/* Affiche la croix quand on passe la souris sur la case */
+.input-wrapper:hover .clear-btn {
+    display: block;
+}
+
+.clear-btn:hover {
+    color: #ef4444; /* Devient rouge au survol */
+}
+
+/* Style pour la poubelle de suppression d'élève */
+.delete-student-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: #fda4af;
+}
+
+li:hover .delete-student-btn {
+    opacity: 1;
+}
     </style>
 </head>
 <body>
-
+   
     <nav class="bg-indigo-950 text-white p-4 shadow-xl sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -173,33 +217,79 @@
             renderStats();
         }
 
-        function renderGradesFields() {
-            const classData = appState.classes[currentClassId];
-            const container = document.getElementById('grades-grid');
-            const periodGrades = classData.grades[currentPeriod];
-            
-            container.innerHTML = classData.subjects.map(sub => {
-                const g = periodGrades[currentStudentId]?.[sub.id] || { d1:'', d2:'', c:'' };
-                const d1 = parseFloat(g.d1) || 0;
-                const d2 = parseFloat(g.d2) || d1;
-                const cp = parseFloat(g.c) || 0;
-                const moyD = (d1 + d2) / 2;
-                const moyMat = (moyD + (cp * 2)) / 3;
+       function renderGradesFields() {
+    const container = document.getElementById('grades-grid');
+    const classData = appState.classes[currentClassId];
+    const periodGrades = classData.grades[currentPeriod];
 
-                return `
-                <div class="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name}</div>
-                    <div class="flex gap-2 items-center">
-                        <input type="number" step="0.1" placeholder="D1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none">
-                        <input type="number" step="0.1" placeholder="D2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none">
-                        <input type="number" step="0.1" placeholder="CP" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value)" class="w-14 p-2 bg-indigo-50 text-indigo-900 rounded-lg text-center font-black text-xs outline-none">
-                        <div class="w-14 p-2 ${moyMat >= 10 ? 'bg-emerald-500' : 'bg-rose-500'} text-white rounded-lg text-center font-black text-xs">
-                            ${moyMat > 0 ? moyMat.toFixed(2) : '--'}
-                        </div>
-                    </div>
-                </div>`;
-            }).join('');
-        }
+    container.innerHTML = classData.subjects.map(sub => {
+        const g = periodGrades[currentStudentId]?.[sub.id] || { d1: '', d2: '', c: '' };
+        
+        // Fonction helper pour générer un champ avec bouton de vidage
+        const createInput = (type, value, placeholder) => `
+            <div class="input-wrapper">
+                <input type="number" step="0.1" inputmode="decimal"
+                    placeholder="${placeholder}" 
+                    value="${value}" 
+                    class="grade-input w-14 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none focus:ring-2 focus:ring-indigo-500"
+                    oninput="updateVal('${sub.id}', '${type}', this.value)"
+                >
+                <span class="clear-btn" onclick="clearInput(this, '${sub.id}', '${type}')">×</span>
+            </div>
+        `;
+
+        return `
+            <div class="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name}</div>
+                <div class="flex gap-2 items-center">
+                    ${createInput('d1', g.d1, 'D1')}
+                    ${createInput('d2', g.d2, 'D2')}
+                    ${createInput('c', g.c, 'CP')}
+                </div>
+            </div>`;
+    }).join('');
+
+    setupSmartNavigation();
+}
+
+// Fonction pour vider l'input et l'état
+function clearInput(element, subId, type) {
+    const input = element.previousElementSibling;
+    input.value = '';
+    updateVal(subId, type, ''); // Met à jour le localStorage
+    input.focus();
+}
+
+// Navigation ultra-rapide (Flèches et Entrée)
+function setupSmartNavigation() {
+    const inputs = document.querySelectorAll('.grade-input');
+    
+    inputs.forEach((input, index) => {
+        input.addEventListener('keydown', (e) => {
+            // "Entrée" ou "Flèche Bas" -> vers le bas
+            if (e.key === "Enter" || e.key === "ArrowDown") {
+                e.preventDefault();
+                inputs[index + 3]?.focus(); // Saute à la matière suivante (si 3 colonnes)
+            }
+            // "Flèche Haut" -> vers le haut
+            if (e.key === "ArrowUp") {
+                e.preventDefault();
+                inputs[index - 3]?.focus();
+            }
+            // "Flèche Droite" -> champ suivant
+            if (e.key === "ArrowRight" && input.selectionEnd === input.value.length) {
+                inputs[index + 1]?.focus();
+            }
+            // "Flèche Gauche" -> champ précédent
+            if (e.key === "ArrowLeft" && input.selectionStart === 0) {
+                inputs[index - 1]?.focus();
+            }
+        });
+
+        // Auto-sélection du texte au focus pour écraser rapidement
+        input.addEventListener('focus', () => input.select());
+    });
+}
 
         function renderStats() {
             const classData = appState.classes[currentClassId];
