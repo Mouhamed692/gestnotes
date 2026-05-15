@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GestNotes Pro - Entièrement Configurable</title>
+    <title>GestNotes Pro - 3 Semestres</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -18,11 +16,11 @@
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="bg-emerald-500 p-2 rounded-lg font-black italic">GN</div>
-                <h1 class="text-sm font-black uppercase tracking-widest text-emerald-400">Configurable Edition</h1>
+                <h1 class="text-sm font-black uppercase tracking-widest text-emerald-400">Multi-Périodes</h1>
             </div>
             <div class="flex gap-2">
-                <button onclick="exportData()" class="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-[10px] font-bold tracking-widest">EXPORTER</button>
-                <button onclick="document.getElementById('importFile').click()" class="bg-indigo-600 px-3 py-2 rounded-lg text-[10px] font-bold tracking-widest">IMPORTER</button>
+                <button onclick="exportData()" class="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-[10px] font-bold">EXPORTER</button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-indigo-600 px-3 py-2 rounded-lg text-[10px] font-bold">IMPORTER</button>
                 <input type="file" id="importFile" class="hidden" onchange="importData(event)">
             </div>
         </div>
@@ -40,110 +38,116 @@
                 <input type="text" id="class-section" value="S2" oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Période</label>
-                <select id="semester" onchange="saveSettings()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold">
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Période (Semestre/Trimestre)</label>
+                <select id="semester" onchange="updatePeriod()" class="w-full bg-indigo-600 text-white border-none rounded-2xl p-3 text-sm font-black shadow-lg">
                     <option value="1">1er Semestre</option>
                     <option value="2">2ème Semestre</option>
+                    <option value="3">3ème Semestre</option>
                 </select>
             </div>
-            <div class="bg-indigo-50 rounded-2xl p-3 flex flex-col justify-center text-center border border-indigo-100">
-                <p class="text-[9px] font-black text-indigo-400 uppercase">Moyenne Promotion</p>
-                <p id="class-avg-display" class="text-2xl font-black text-indigo-900">0.00</p>
+            <div class="bg-emerald-50 rounded-2xl p-3 flex flex-col justify-center text-center border border-emerald-100">
+                <p class="text-[9px] font-black text-emerald-500 uppercase">Moyenne Période</p>
+                <p id="class-avg-display" class="text-2xl font-black text-emerald-900">0.00</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
-                    <h2 class="font-black text-slate-800 text-xs uppercase mb-4 tracking-widest">Élèves de la classe</h2>
+                    <h2 class="font-black text-slate-800 text-xs uppercase mb-4 tracking-widest">Élèves</h2>
                     <div class="flex gap-2 mb-6">
-                        <input type="text" id="new-student-name" placeholder="Nom Prénom" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-sm outline-none">
+                        <input type="text" id="new-student-name" placeholder="Nom Prénom" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                         <button onclick="addStudent()" class="bg-indigo-600 text-white w-12 h-12 rounded-xl font-black shadow-lg hover:bg-indigo-700 transition">+</button>
                     </div>
-                    <ul id="student-list" class="space-y-2 max-h-[500px] overflow-y-auto custom-scroll pr-2"></ul>
+                    <ul id="student-list" class="space-y-2 max-h-[500px] overflow-y-auto pr-2"></ul>
                 </div>
             </div>
 
             <div class="lg:col-span-8">
-                
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 mb-6">
                     <h2 class="font-black text-slate-800 text-xs uppercase mb-4 tracking-widest">Configuration des Matières</h2>
                     <div class="flex flex-wrap gap-2 mb-4" id="subjects-config-list"></div>
                     <div class="flex gap-2">
-                        <input type="text" id="new-sub-name" placeholder="Nom Matière" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold outline-none">
+                        <input type="text" id="new-sub-name" placeholder="Matière" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold outline-none">
                         <input type="number" id="new-sub-coef" placeholder="Coef" class="w-20 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-center outline-none">
-                        <button onclick="addSubject()" class="bg-emerald-500 text-white px-6 rounded-xl font-black text-[10px] uppercase shadow-lg hover:bg-emerald-600">Ajouter Matière</button>
+                        <button onclick="addSubject()" class="bg-emerald-500 text-white px-6 rounded-xl font-black text-[10px] uppercase shadow-lg">Ajouter</button>
                     </div>
                 </div>
 
                 <div id="editor-panel" class="hidden">
                     <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-                        <div class="p-6 bg-slate-900 text-white flex justify-between items-center">
+                        <div class="p-6 bg-slate-900 text-white flex justify-between items-center border-b border-white/10">
                             <div>
                                 <h2 id="current-student-display" class="text-xl font-black uppercase tracking-tight">---</h2>
-                                <p id="current-class-display" class="text-indigo-400 text-[10px] font-black uppercase"></p>
+                                <p id="current-class-display" class="text-indigo-400 text-[10px] font-black uppercase tracking-widest"></p>
                             </div>
-                            <button onclick="printReport()" class="bg-indigo-500 hover:bg-indigo-400 px-6 py-3 rounded-xl font-black text-xs transition uppercase">Bulletin</button>
+                            <button onclick="printReport()" class="bg-indigo-500 hover:bg-indigo-400 px-6 py-3 rounded-xl font-black text-xs transition uppercase">Imprimer Bulletin</button>
                         </div>
                         <div class="p-6 grid grid-cols-1 gap-3 bg-slate-50" id="grades-grid"></div>
                     </div>
                 </div>
 
                 <div id="welcome-msg" class="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-slate-200">
-                    <p class="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Sélectionnez un élève pour noter</p>
+                    <p class="text-slate-400 font-bold uppercase text-[10px] tracking-widest italic">Veuillez cliquer sur un élève</p>
                 </div>
-
             </div>
         </div>
     </div>
 
     <script>
-        let appState = JSON.parse(localStorage.getItem('gestnotes_v3')) || {
-            settings: { year: '2025-2026', semester: '1' },
+        let appState = JSON.parse(localStorage.getItem('gestnotes_v4')) || {
             classes: {}
         };
 
         let currentClassId = "";
         let currentStudentId = null;
+        let currentPeriod = "1";
 
         function changeLevel() {
             const level = document.getElementById('class-level').value.toUpperCase() || "NIVEAU";
             const section = document.getElementById('class-section').value.toUpperCase() || "SECTION";
             currentClassId = `${level}_${section}`;
+            currentPeriod = document.getElementById('semester').value;
 
             if (!appState.classes[currentClassId]) {
-                appState.classes[currentClassId] = { students: [], subjects: [], grades: {} };
+                appState.classes[currentClassId] = { 
+                    students: [], 
+                    subjects: [], 
+                    grades: { "1": {}, "2": {}, "3": {} } // Grades séparés par période
+                };
             }
+            // Migration pour les anciennes données si nécessaire
+            if(!appState.classes[currentClassId].grades["1"]) {
+                appState.classes[currentClassId].grades = { "1": {}, "2": {}, "3": {} };
+            }
+
             renderSubjectsConfig();
             renderStudents();
             renderStats();
             if(currentStudentId) renderGradesFields();
         }
 
-        // --- GESTION DES MATIÈRES ---
+        function updatePeriod() {
+            currentPeriod = document.getElementById('semester').value;
+            if(currentStudentId) renderGradesFields();
+            renderStats();
+            saveToStorage();
+        }
+
+        // --- GESTION MATIÈRES ---
         function addSubject() {
             const name = document.getElementById('new-sub-name').value.trim();
             const coef = parseFloat(document.getElementById('new-sub-coef').value) || 1;
             if(!name) return;
-
-            const newSub = { id: 'sub_' + Date.now(), name: name, coef: coef };
-            appState.classes[currentClassId].subjects.push(newSub);
-            
-            document.getElementById('new-sub-name').value = '';
-            document.getElementById('new-sub-coef').value = '';
-            
-            saveToStorage();
-            renderSubjectsConfig();
-            if(currentStudentId) renderGradesFields();
+            appState.classes[currentClassId].subjects.push({ id: 'sub_' + Date.now(), name, coef });
+            saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields();
+            document.getElementById('new-sub-name').value = ''; document.getElementById('new-sub-coef').value = '';
         }
 
         function removeSubject(subId) {
-            if(!confirm("Supprimer cette matière et toutes les notes associées ?")) return;
+            if(!confirm("Supprimer cette matière ?")) return;
             appState.classes[currentClassId].subjects = appState.classes[currentClassId].subjects.filter(s => s.id !== subId);
-            saveToStorage();
-            renderSubjectsConfig();
-            if(currentStudentId) renderGradesFields();
-            renderStats();
+            saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields(); renderStats();
         }
 
         function renderSubjectsConfig() {
@@ -155,16 +159,15 @@
                     <button onclick="removeSubject('${s.id}')" class="text-red-500 font-bold hover:text-red-700">×</button>
                 </div>
             `).join('');
-            if(subjects.length === 0) list.innerHTML = '<p class="text-[10px] italic text-slate-400">Aucune matière. Ajoutez-en une ci-dessous.</p>';
         }
 
-        // --- GESTION DES NOTES ---
+        // --- GESTION NOTES ---
         function updateVal(subId, type, val) {
-            const grades = appState.classes[currentClassId].grades;
-            if(!grades[currentStudentId]) grades[currentStudentId] = {};
-            if(!grades[currentStudentId][subId]) grades[currentStudentId][subId] = {d1:'', d2:'', c:''};
+            const periodGrades = appState.classes[currentClassId].grades[currentPeriod];
+            if(!periodGrades[currentStudentId]) periodGrades[currentStudentId] = {};
+            if(!periodGrades[currentStudentId][subId]) periodGrades[currentStudentId][subId] = {d1:'', d2:'', c:''};
             
-            grades[currentStudentId][subId][type] = val;
+            periodGrades[currentStudentId][subId][type] = val;
             saveToStorage();
             renderGradesFields();
             renderStats();
@@ -173,9 +176,10 @@
         function renderGradesFields() {
             const classData = appState.classes[currentClassId];
             const container = document.getElementById('grades-grid');
+            const periodGrades = classData.grades[currentPeriod];
             
             container.innerHTML = classData.subjects.map(sub => {
-                const g = classData.grades[currentStudentId]?.[sub.id] || { d1:'', d2:'', c:'' };
+                const g = periodGrades[currentStudentId]?.[sub.id] || { d1:'', d2:'', c:'' };
                 const d1 = parseFloat(g.d1) || 0;
                 const d2 = parseFloat(g.d2) || d1;
                 const cp = parseFloat(g.c) || 0;
@@ -186,9 +190,9 @@
                 <div class="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
                     <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name}</div>
                     <div class="flex gap-2 items-center">
-                        <input type="number" placeholder="D1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none focus:ring-1 focus:ring-indigo-400">
-                        <input type="number" placeholder="D2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none focus:ring-1 focus:ring-indigo-400">
-                        <input type="number" placeholder="CP" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value)" class="w-14 p-2 bg-indigo-50 text-indigo-900 rounded-lg text-center font-black text-xs outline-none focus:ring-1 focus:ring-indigo-400">
+                        <input type="number" step="0.1" placeholder="D1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none">
+                        <input type="number" step="0.1" placeholder="D2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none">
+                        <input type="number" step="0.1" placeholder="CP" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value)" class="w-14 p-2 bg-indigo-50 text-indigo-900 rounded-lg text-center font-black text-xs outline-none">
                         <div class="w-14 p-2 ${moyMat >= 10 ? 'bg-emerald-500' : 'bg-rose-500'} text-white rounded-lg text-center font-black text-xs">
                             ${moyMat > 0 ? moyMat.toFixed(2) : '--'}
                         </div>
@@ -197,7 +201,27 @@
             }).join('');
         }
 
-        // --- LOGIQUE COMMUNE ---
+        function renderStats() {
+            const classData = appState.classes[currentClassId];
+            if(!classData || !classData.students.length) return;
+            let totalMoy = 0;
+            const periodGrades = classData.grades[currentPeriod];
+
+            classData.students.forEach(s => {
+                let p = 0, c = 0;
+                classData.subjects.forEach(sub => {
+                    const g = periodGrades[s.id]?.[sub.id] || {d1:0,d2:0,c:0};
+                    const d1 = parseFloat(g.d1) || 0;
+                    const d2 = parseFloat(g.d2) || d1;
+                    const cp = parseFloat(g.c) || 0;
+                    const mS = (( (d1+d2)/2 ) + (cp*2)) / 3;
+                    p += mS * sub.coef; c += sub.coef;
+                });
+                totalMoy += (c > 0 ? p/c : 0);
+            });
+            document.getElementById('class-avg-display').textContent = (totalMoy / classData.students.length || 0).toFixed(2);
+        }
+
         function addStudent() {
             const input = document.getElementById('new-student-name');
             if(!input.value.trim()) return;
@@ -207,6 +231,17 @@
                 matricule: 'REG-' + Math.floor(1000+Math.random()*9000)
             });
             input.value = ''; saveToStorage(); renderStudents();
+        }
+
+        function selectStudent(id) {
+            currentStudentId = id;
+            const student = appState.classes[currentClassId].students.find(s => s.id === id);
+            document.getElementById('welcome-msg').classList.add('hidden');
+            document.getElementById('editor-panel').classList.remove('hidden');
+            document.getElementById('current-student-display').textContent = student.lastName;
+            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ') + " - Période " + currentPeriod;
+            renderGradesFields();
+            renderStudents();
         }
 
         function renderStudents() {
@@ -219,41 +254,10 @@
             `).join('');
         }
 
-        function selectStudent(id) {
-            currentStudentId = id;
-            const student = appState.classes[currentClassId].students.find(s => s.id === id);
-            document.getElementById('welcome-msg').classList.add('hidden');
-            document.getElementById('editor-panel').classList.remove('hidden');
-            document.getElementById('current-student-display').textContent = student.lastName;
-            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ');
-            renderGradesFields();
-            renderStudents();
-        }
-
-        function renderStats() {
-            const classData = appState.classes[currentClassId];
-            if(!classData || !classData.students.length) return;
-            let totalMoy = 0;
-            classData.students.forEach(s => {
-                let p = 0, c = 0;
-                classData.subjects.forEach(sub => {
-                    const g = classData.grades[s.id]?.[sub.id] || {d1:0,d2:0,c:0};
-                    const d1 = parseFloat(g.d1) || 0;
-                    const d2 = parseFloat(g.d2) || d1;
-                    const cp = parseFloat(g.c) || 0;
-                    const mS = (( (d1+d2)/2 ) + (cp*2)) / 3;
-                    p += mS * sub.coef; c += sub.coef;
-                });
-                totalMoy += (c > 0 ? p/c : 0);
-            });
-            document.getElementById('class-avg-display').textContent = (totalMoy / classData.students.length || 0).toFixed(2);
-        }
-
-        function saveToStorage() { localStorage.setItem('gestnotes_v3', JSON.stringify(appState)); }
-        function saveSettings() { appState.settings.semester = document.getElementById('semester').value; saveToStorage(); }
+        function saveToStorage() { localStorage.setItem('gestnotes_v4', JSON.stringify(appState)); }
         function exportData() { const blob = new Blob([JSON.stringify(appState)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "gestnotes_backup.json"; a.click(); }
         function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { appState = JSON.parse(ev.target.result); changeLevel(); }; reader.readAsText(e.target.files[0]); }
-        function printReport() { window.open(`bulletin.html?class=${currentClassId}&student=${currentStudentId}`, '_blank'); }
+        function printReport() { window.open(`bulletin.html?class=${currentClassId}&student=${currentStudentId}&period=${currentPeriod}`, '_blank'); }
 
         window.onload = () => changeLevel();
     </script>
