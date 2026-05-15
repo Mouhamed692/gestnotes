@@ -273,45 +273,133 @@ RENOVATION</textarea>
     </div>
 
     <script>
-        // Logique de récupération et calcul (inchangée mais intégrée proprement)
-        window.onload = function () {
-            const headerInput = document.getElementById('header-input');
-            const headerDisplay = document.getElementById('header-text-display');
-            headerInput.addEventListener('input', () => {
-                headerDisplay.innerHTML = headerInput.value.replace(/\n/g, '<br>');
-            });
+window.onload = function () {
+    // Gestion de l'en-tête dynamique
+    const headerInput = document.getElementById('header-input');
+    const headerDisplay = document.getElementById('header-text-display');
+    headerInput.addEventListener('input', function () {
+        headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
+    });
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const classId = urlParams.get('class');
-            const studentId = urlParams.get('student');
-            const rawData = localStorage.getItem('gestnotes_data');
+    // Récupération des paramètres URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const classId = urlParams.get('class');
+    const studentId = urlParams.get('student');
+    const period = urlParams.get('period') || "1";
+    const rawData = localStorage.getItem('gestnotes_v4');
 
-            if (!rawData || !classId || !studentId) {
-                document.getElementById('error-msg').style.display = 'block';
-                document.getElementById('bulletin-content').style.display = 'none';
-                return;
+    if (!rawData || !classId || !studentId) {
+        document.getElementById('error-msg').style.display = 'block';
+        document.getElementById('bulletin-content').style.display = 'none';
+        return;
+    }
+
+    const appState = JSON.parse(rawData);
+    const classData = appState.classes[classId];
+    const student = classData.students.find(s => s.id === studentId);
+    const periodGrades = classData.grades[period] || {};
+
+    // Remplissage des informations de base
+    document.getElementById('lbl-semester').textContent = period == "1" ? "1er" : period + "ème";
+    document.getElementById('lbl-firstname').textContent = student.firstName || "";
+    document.getElementById('lbl-lastname').textContent = student.lastName;
+    document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
+    document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
+
+    // --- 1. CALCUL DES MOYENNES GÉNÉRALES DE TOUS LES ÉLÈVES (Pour le Rang) ---
+    let allStudentsAverages = classData.students.map(s => {
+        let totalPoints = 0;
+        let totalCoefs = 0;
+
+        classData.subjects.forEach(sub => {
+            const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
+            const d1 = parseFloat(g.d1);
+            const d2 = g.d2 !== '' ? parseFloat(g.d2) : d1;
+            const cp = parseFloat(g.c);
+
+            if (!isNaN(d1) && !isNaN(cp)) {
+                const moyMatiere = (((d1 + d2) / 2) + (cp * 2)) / 3;
+                totalPoints += moyMatiere * sub.coef;
+                totalCoefs += sub.coef;
             }
+        });
 
-            const appState = JSON.parse(rawData);
-            const classData = appState.classes[classId];
-            const student = classData.students.find(s => s.id === studentId);
-
-            if (!student) return;
-
-            // Remplissage des labels
-            document.getElementById('lbl-year').textContent = appState.settings.year;
-            document.getElementById('lbl-semester').textContent = appState.settings.semester == '1' ? '1er' : '2ème';
-            document.getElementById('lbl-firstname').textContent = student.firstName;
-            document.getElementById('lbl-lastname').textContent = student.lastName;
-            document.getElementById('lbl-class').textContent = classId;
-            document.getElementById('lbl-birth').textContent = student.birthDate;
-            document.getElementById('lbl-birthplace').textContent = student.birthPlace;
-            document.getElementById('lbl-matricule').textContent = student.matricule;
-            document.getElementById('lbl-effectif').textContent = classData.students.length;
-
-            // (Ici insérer votre logique de calcul des notes pour remplir #grades-body)
-            // ...
+        return {
+            id: s.id,
+            avg: totalCoefs > 0 ? totalPoints / totalCoefs : null
         };
+    });
+
+    // Tri pour le classement
+    allStudentsAverages.sort((a, b) => (b.avg || 0) - (a.avg || 0));
+    
+    const studentEntry = allStudentsAverages.find(a => a.id === studentId);
+    const studentGenAvg = studentEntry ? studentEntry.avg : null;
+    const rank = studentGenAvg !== null ? allStudentsAverages.findIndex(a => a.id === studentId) + 1 : "-";
+
+    // --- 2. REMPLISSAGE DU TABLEAU DES NOTES ---
+    const tbody = document.getElementById('grades-body');
+    let totalCoef = 0;
+    let totalPoints = 0;
+
+    classData.subjects.forEach(sub => {
+        const g = periodGrades[studentId]?.[sub.id] || { d1: '', d2: '', c: '' };
+        const d1 = g.d1 !== '' ? parseFloat(g.d1) : '';
+        const d2 = g.d2 !== '' ? parseFloat(g.d2) : '';
+        const cp = g.c !== '' ? parseFloat(g.c) : '';
+
+        let moyMatStr = "", mxcStr = "", appreciation = "";
+
+        if (d1 !== '' && cp !== '') {
+            const valD1 = parseFloat(d1);
+            const valD2 = d2 !== '' ? parseFloat(d2) : valD1;
+            const valCP = parseFloat(cp);
+            
+            const moyMat = (((valD1 + valD2) / 2) + (valCP * 2)) / 3;
+            moyMatStr = moyMat.toFixed(2);
+            const mxc = moyMat * sub.coef;
+            mxcStr = mxc.toFixed(2);
+            
+            totalPoints += mxc;
+            totalCoef += sub.coef;
+            
+            // Appréciation simple
+            if(moyMat >= 16) appreciation = "Excellent";
+            else if(moyMat >= 14) appreciation = "Bien";
+            else if(moyMat >= 12) appreciation = "A. Bien";
+            else if(moyMat >= 10) appreciation = "Passable";
+            else appreciation = "Insuffisant";
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="col-discipline">${sub.name}</td>
+            <td>${d1}</td><td>${d2}</td><td>${cp}</td>
+            <td style="font-weight:bold">${moyMatStr}</td>
+            <td>${sub.coef}</td>
+            <td style="font-weight:bold">${mxcStr}</td>
+            <td>-</td>
+            <td>${appreciation}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // --- 3. AFFICHAGE DES RÉSULTATS FINAUX ---
+    document.getElementById('lbl-moy-gen').textContent = studentGenAvg ? studentGenAvg.toFixed(2) : "-";
+    document.getElementById('lbl-rank').textContent = rank + (rank === 1 ? "er" : "");
+
+    // Cochage automatique des cases de décision
+    if (studentGenAvg !== null) {
+        if (studentGenAvg >= 12) {
+            document.getElementById('chk-satisfaisant').textContent = "X";
+            if (studentGenAvg >= 14) document.getElementById('chk-felicitations').textContent = "X";
+        } else if (studentGenAvg >= 10) {
+            document.getElementById('chk-peut-mieux').textContent = "X";
+        } else {
+            document.getElementById('chk-insuffisant').textContent = "X";
+        }
+    }
+};
     </script>
 </body>
 </html>
