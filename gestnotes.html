@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GestNotes Intégral - Primaire, Moyen, Lycée</title>
+    <title>GestNotes Intégral - Système Académique</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
     </style>
 </head>
 <body>
@@ -16,7 +17,7 @@
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="bg-emerald-500 p-2 rounded-lg font-black italic">GN</div>
-                <h1 class="text-sm font-black uppercase tracking-widest">Système Académique Intégré</h1>
+                <h1 class="text-sm font-black uppercase tracking-widest">SYSTÈME ACADÉMIQUE INTÉGRÉ</h1>
             </div>
             <div class="flex gap-2">
                 <button onclick="exportData()" class="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-[10px] font-bold">SAUVEGARDER</button>
@@ -28,25 +29,24 @@
 
     <div class="container mx-auto p-4 lg:p-8">
         
-        <!-- SÉLECTEUR DE CYCLE -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Cycle & Niveau</label>
-                <select id="class-level" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500">
+                <select id="class-level" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 appearance-none">
                     <optgroup label="LYCÉE">
                         <option value="TLE">Terminale</option><option value="1ERE">Première</option><option value="2NDE">Seconde</option>
                     </optgroup>
-                    <optgroup label="MOYEN (Collège)">
+                    <optgroup label="MOYEN">
                         <option value="3EME">3ème</option><option value="4EME">4ème</option><option value="5EME">5ème</option><option value="6EME">6ème</option>
                     </optgroup>
                     <optgroup label="PRIMAIRE">
-                        <option value="CM2">CM2</option><option value="CM1">CM1</option><option value="CE2">CE2</option><option value="CE1">CE1</option><option value="CP">CP</option><option value="CI">CI</option>
+                        <option value="CM2">CM2</option><option value="CM1">CM1</option><option value="CI">CI</option>
                     </optgroup>
                 </select>
             </div>
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Série / Identifiant</label>
-                <input type="text" id="class-section" placeholder="Ex: S1, L', A, B..." onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
+                <input type="text" id="class-section" placeholder="Ex: S1, L2, A..." oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
             </div>
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Semestre</label>
@@ -54,46 +54,45 @@
                     <option value="1">1er Semestre</option><option value="2">2ème Semestre</option>
                 </select>
             </div>
-            <div id="stats-box" class="bg-indigo-50 rounded-2xl p-3 flex flex-col justify-center text-center">
+            <div class="bg-indigo-50 rounded-2xl p-3 flex flex-col justify-center text-center border border-indigo-100">
                 <p class="text-[9px] font-black text-indigo-400 uppercase">Moyenne Générale</p>
-                <p id="class-avg-display" class="text-xl font-black text-indigo-900">--/20</p>
+                <p id="class-avg-display" class="text-2xl font-black text-indigo-900">0.00/20</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- LISTE ÉLÈVES -->
             <div class="lg:col-span-4">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                        <h2 class="font-extrabold text-slate-800 text-sm uppercase">Liste des élèves</h2>
+                        <h2 class="font-extrabold text-slate-800 text-xs uppercase tracking-tighter">Élèves Inscrits</h2>
                         <span id="badge-count" class="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full">0</span>
                     </div>
                     <div class="p-6">
                         <div class="flex gap-2 mb-6">
-                            <input type="text" id="new-student-name" placeholder="NOM Prénom" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-sm outline-none">
-                            <button onclick="addStudent()" class="bg-emerald-500 text-white w-12 h-12 rounded-xl font-black shadow-lg">+</button>
+                            <input type="text" id="new-student-name" placeholder="Nom et Prénom" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-sm outline-none focus:ring-1 focus:ring-emerald-500">
+                            <button onclick="addStudent()" class="bg-emerald-500 text-white w-12 h-12 rounded-xl font-black shadow-lg hover:bg-emerald-600 transition">+</button>
                         </div>
                         <ul id="student-list" class="space-y-2 max-h-[450px] overflow-y-auto pr-2"></ul>
                     </div>
                 </div>
             </div>
 
-            <!-- ÉDITEUR -->
             <div class="lg:col-span-8">
-                <div id="welcome-msg" class="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-slate-200">
-                    <p class="text-slate-400 font-bold uppercase text-xs tracking-widest">Veuillez sélectionner un élève</p>
+                <div id="welcome-msg" class="bg-white rounded-3xl p-24 text-center border-2 border-dashed border-slate-200">
+                    <p class="text-slate-400 font-bold uppercase text-xs tracking-widest">Sélectionnez un élève pour calculer</p>
                 </div>
 
                 <div id="editor-panel" class="hidden">
                     <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
                         <div class="p-6 bg-indigo-950 text-white flex justify-between items-center">
                             <div>
-                                <h2 id="current-student-display" class="text-xl font-black uppercase tracking-tight">---</h2>
+                                <h2 id="current-student-display" class="text-xl font-black uppercase">---</h2>
                                 <p id="current-class-display" class="text-emerald-400 text-[10px] font-black uppercase"></p>
                             </div>
-                            <button onclick="printReport()" class="bg-emerald-500 px-5 py-2 rounded-lg font-black text-[10px] uppercase shadow-lg">Imprimer Bulletin</button>
+                            <button onclick="printReport()" class="bg-emerald-500 hover:bg-emerald-400 px-5 py-2 rounded-lg font-black text-[10px] uppercase shadow-lg transition">Imprimer Bulletin</button>
                         </div>
-                        <div class="p-6 grid grid-cols-1 gap-2 bg-slate-50" id="grades-grid"></div>
+                        
+                        <div class="p-6 grid grid-cols-1 gap-3 bg-slate-50" id="grades-grid"></div>
                     </div>
                 </div>
             </div>
@@ -111,38 +110,20 @@
 
         function getSubjectsByLevel(level, section) {
             const isS = section.toUpperCase().includes('S');
-            
-            // PRIMAIRE
-            if(['CI','CP','CE1','CE2','CM1','CM2'].includes(level)) {
+            if(['CI','CP','CE1','CM1','CM2'].includes(level)) {
                 return [
-                    { id: 'lang', name: 'Langage/Lecture', coef: 2 },
-                    { id: 'math', name: 'Calcul', coef: 2 },
-                    { id: 'obs', name: 'Observation', coef: 1 },
-                    { id: 'esac', name: 'E.S.A.C', coef: 1 }
+                    { id: 'lang', name: 'Langue & Communication', coef: 2 },
+                    { id: 'math', name: 'Mathématiques', coef: 2 },
+                    { id: 'esac', name: 'ESAC', coef: 1 },
+                    { id: 'env', name: 'Découverte Monde', coef: 1 }
                 ];
             }
-            // MOYEN
-            if(['6EME','5EME','4EME','3EME'].includes(level)) {
-                return [
-                    { id: 'fr', name: 'Français', coef: 5 },
-                    { id: 'math', name: 'Mathématiques', coef: 4 },
-                    { id: 'ang', name: 'Anglais', coef: 3 },
-                    { id: 'pc', name: 'Physique-Chimie', coef: level === '3EME' || level === '4EME' ? 2 : 0 },
-                    { id: 'hg', name: 'Hist-Géo', coef: 2 },
-                    { id: 'svt', name: 'S.V.T', coef: 2 },
-                    { id: 'eps', name: 'E.P.S', coef: 1 }
-                ].filter(s => s.coef > 0);
-            }
-            // LYCÉE
             return [
                 { id: 'fr', name: 'Français', coef: isS ? 3 : 5 },
                 { id: 'math', name: 'Mathématiques', coef: isS ? 6 : 2 },
                 { id: 'pc', name: 'Physique-Chimie', coef: isS ? 6 : 0 },
-                { id: 'svt', name: 'S.V.T', coef: isS ? 4 : 0 },
                 { id: 'phi', name: 'Philosophie', coef: level === 'TLE' ? (isS ? 2 : 4) : 0 },
-                { id: 'hg', name: 'Hist-Géo', coef: isS ? 2 : 4 },
-                { id: 'ang', name: 'Anglais', coef: isS ? 2 : 4 },
-                { id: 'eps', name: 'E.P.S', coef: 1 }
+                { id: 'ang', name: 'Anglais', coef: 3 }
             ].filter(s => s.coef > 0);
         }
 
@@ -152,78 +133,51 @@
             currentClassId = `${level}_${section}`;
 
             if (!appState.classes[currentClassId]) {
-                appState.classes[currentClassId] = {
-                    students: [],
-                    subjects: getSubjectsByLevel(level, section),
-                    grades: {}
-                };
+                appState.classes[currentClassId] = { students: [], subjects: getSubjectsByLevel(level, section), grades: {} };
             }
-            currentStudentId = null;
-            document.getElementById('editor-panel').classList.add('hidden');
-            document.getElementById('welcome-msg').classList.remove('hidden');
             renderStudents();
             renderStats();
+            if(currentStudentId) renderGradesFields();
+        }
+
+        function updateVal(subId, type, val) {
+            if(!appState.classes[currentClassId].grades[currentStudentId]) appState.classes[currentClassId].grades[currentStudentId] = {};
+            if(!appState.classes[currentClassId].grades[currentStudentId][subId]) appState.classes[currentClassId].grades[currentStudentId][subId] = {d1:'', d2:'', c:''};
+            
+            appState.classes[currentClassId].grades[currentStudentId][subId][type] = val;
             saveToStorage();
-        }
-
-        function saveToStorage() { localStorage.setItem('gestnotes_full', JSON.stringify(appState)); }
-
-        function addStudent() {
-            const input = document.getElementById('new-student-name');
-            if(!input.value.trim()) return;
-            const id = 'std_' + Date.now();
-            appState.classes[currentClassId].students.push({
-                id, lastName: input.value.split(' ')[0].toUpperCase(),
-                firstName: input.value.split(' ').slice(1).join(' ') || '-',
-                matricule: 'REG-' + Math.floor(Math.random()*10000)
-            });
-            input.value = ''; saveToStorage(); renderStudents();
-        }
-
-        function renderStudents() {
-            const list = document.getElementById('student-list');
-            const students = appState.classes[currentClassId]?.students || [];
-            document.getElementById('badge-count').textContent = students.length;
-            list.innerHTML = students.map(s => `
-                <li onclick="selectStudent('${s.id}')" class="p-3 rounded-xl cursor-pointer transition ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
-                    <span class="font-bold text-xs uppercase">${s.lastName} ${s.firstName}</span>
-                </li>
-            `).join('');
-        }
-
-        function selectStudent(id) {
-            currentStudentId = id;
-            const student = appState.classes[currentClassId].students.find(s => s.id === id);
-            document.getElementById('welcome-msg').classList.add('hidden');
-            document.getElementById('editor-panel').classList.remove('hidden');
-            document.getElementById('current-student-display').textContent = `${student.lastName} ${student.firstName}`;
-            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ');
-            renderGradesFields();
-            renderStudents();
+            renderGradesFields(); // Rafraîchit le calcul vert instantanément
+            renderStats();        // Rafraîchit la moyenne générale
         }
 
         function renderGradesFields() {
             const classData = appState.classes[currentClassId];
             const container = document.getElementById('grades-grid');
+            
             container.innerHTML = classData.subjects.map(sub => {
                 const g = classData.grades[currentStudentId]?.[sub.id] || { d1:'', d2:'', c:'' };
+                
+                // CALCUL EN DIRECT POUR L'INTERFACE
+                const d1 = parseFloat(g.d1);
+                const d2 = parseFloat(g.d2);
+                const cp = parseFloat(g.c);
+                let moyD = !isNaN(d1) && !isNaN(d2) ? (d1+d2)/2 : (!isNaN(d1) ? d1 : (!isNaN(d2) ? d2 : 0));
+                let moyMat = (moyD + (nc = !isNaN(cp) ? cp*2 : 0)) / (cp ? 3 : 1);
+                if(isNaN(moyMat)) moyMat = 0;
+
                 return `
-                <div class="flex items-center gap-4 p-3 bg-white rounded-xl border border-slate-100">
+                <div class="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
                     <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name} <span class="text-indigo-400 text-[9px] ml-1">Coef ${sub.coef}</span></div>
-                    <div class="flex gap-2">
-                        <input type="number" placeholder="D1" value="${g.d1}" onchange="updateVal('${sub.id}', 'd1', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs">
-                        <input type="number" placeholder="D2" value="${g.d2}" onchange="updateVal('${sub.id}', 'd2', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs">
-                        <input type="number" placeholder="CP" value="${g.c}" onchange="updateVal('${sub.id}', 'c', this.value)" class="w-14 p-2 bg-indigo-50 text-indigo-900 rounded-lg text-center font-black text-xs">
+                    <div class="flex gap-2 items-center">
+                        <input type="number" placeholder="D1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none focus:ring-1 focus:ring-indigo-400">
+                        <input type="number" placeholder="D2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none focus:ring-1 focus:ring-indigo-400">
+                        <input type="number" placeholder="CP" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value)" class="w-14 p-2 bg-indigo-50 text-indigo-900 rounded-lg text-center font-black text-xs outline-none focus:ring-1 focus:ring-indigo-400">
+                        <div class="w-14 p-2 bg-emerald-500 text-white rounded-lg text-center font-black text-xs shadow-inner">
+                            ${moyMat > 0 ? moyMat.toFixed(2) : '--'}
+                        </div>
                     </div>
                 </div>`;
             }).join('');
-        }
-
-        function updateVal(subId, type, val) {
-            if(!appState.classes[currentClassId].grades[currentStudentId]) appState.classes[currentClassId].grades[currentStudentId] = {};
-            if(!appState.classes[currentClassId].grades[currentStudentId][subId]) appState.classes[currentClassId].grades[currentStudentId][subId] = {};
-            appState.classes[currentClassId].grades[currentStudentId][subId][type] = val;
-            saveToStorage(); renderStats();
         }
 
         function renderStats() {
@@ -234,17 +188,54 @@
                 let p = 0, c = 0;
                 classData.subjects.forEach(sub => {
                     const g = classData.grades[s.id]?.[sub.id] || {d1:0,d2:0,c:0};
-                    const mD = (Number(g.d1)+Number(g.d2))/ (g.d2?2:1);
-                    p += ((mD + (Number(g.c)*2))/3) * sub.coef; c += sub.coef;
+                    const mD = (parseFloat(g.d1)+parseFloat(g.d2)) / (g.d1&&g.d2?2:1) || 0;
+                    const mS = (mD + (parseFloat(g.c||0)*2)) / 3;
+                    p += mS * sub.coef; c += sub.coef;
                 });
                 totalMoy += (c > 0 ? p/c : 0);
             });
-            document.getElementById('class-avg-display').textContent = (totalMoy / classData.students.length).toFixed(2) + "/20";
+            document.getElementById('class-avg-display').textContent = (totalMoy / classData.students.length || 0).toFixed(2) + "/20";
         }
 
-        function printReport() {
-            window.open(`bulletin.html?class=${currentClassId}&student=${currentStudentId}`, '_blank');
+        function addStudent() {
+            const input = document.getElementById('new-student-name');
+            if(!input.value.trim()) return;
+            appState.classes[currentClassId].students.push({
+                id: 'std_' + Date.now(),
+                lastName: input.value.toUpperCase(),
+                firstName: '',
+                matricule: 'REG-' + Math.floor(1000 + Math.random() * 9000)
+            });
+            input.value = ''; saveToStorage(); renderStudents();
         }
+
+        function selectStudent(id) {
+            currentStudentId = id;
+            const student = appState.classes[currentClassId].students.find(s => s.id === id);
+            document.getElementById('welcome-msg').classList.add('hidden');
+            document.getElementById('editor-panel').classList.remove('hidden');
+            document.getElementById('current-student-display').textContent = student.lastName;
+            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ');
+            renderGradesFields();
+            renderStudents();
+        }
+
+        function renderStudents() {
+            const list = document.getElementById('student-list');
+            const students = appState.classes[currentClassId]?.students || [];
+            document.getElementById('badge-count').textContent = students.length;
+            list.innerHTML = students.map(s => `
+                <li onclick="selectStudent('${s.id}')" class="p-3 rounded-xl cursor-pointer transition ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
+                    <span class="font-bold text-[11px] uppercase">${s.lastName}</span>
+                </li>
+            `).join('');
+        }
+
+        function saveToStorage() { localStorage.setItem('gestnotes_full', JSON.stringify(appState)); }
+        function saveSettings() { appState.settings.semester = document.getElementById('semester').value; saveToStorage(); }
+        function printReport() { window.open(`bulletin.html?class=${currentClassId}&student=${currentStudentId}`, '_blank'); }
+        function exportData() { const blob = new Blob([JSON.stringify(appState)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "backup.json"; a.click(); }
+        function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { appState = JSON.parse(ev.target.result); changeLevel(); }; reader.readAsText(e.target.files[0]); }
 
         window.onload = () => changeLevel();
     </script>
