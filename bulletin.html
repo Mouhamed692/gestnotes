@@ -13,7 +13,6 @@
             padding: 20px;
             font-size: 13px;
             background-color: #f1f5f9;
-            /* Fond gris clair pour l'interface */
         }
 
         .bulletin-wrapper {
@@ -29,7 +28,6 @@
             background: #ffffff;
             padding: 15px;
             border: 2px solid #fbbf24;
-            /* Couleur Ambre */
             border-radius: 8px;
             margin-bottom: 20px;
         }
@@ -97,7 +95,7 @@
             }
         }
 
-        /* Styles du bulletin (inchangés) */
+        /* Styles du bulletin */
         .header-container {
             display: flex;
             justify-content: space-between;
@@ -121,11 +119,7 @@
             border: 1px solid #000;
         }
 
-        .flag .green {
-            background-color: #00853f;
-            flex: 1;
-        }
-
+        .flag .green { background-color: #00853f; flex: 1; }
         .flag .yellow {
             background-color: #fdef42;
             flex: 1;
@@ -133,21 +127,10 @@
             justify-content: center;
             align-items: center;
         }
+        .flag .red { background-color: #e31b23; flex: 1; }
+        .flag .star { color: #00853f; font-size: 12px; }
 
-        .flag .red {
-            background-color: #e31b23;
-            flex: 1;
-        }
-
-        .flag .star {
-            color: #00853f;
-            font-size: 12px;
-        }
-
-        .header-center {
-            text-align: center;
-        }
-
+        .header-center { text-align: center; }
         .header-center h1 {
             margin: 0;
             font-size: 22px;
@@ -205,9 +188,7 @@
             width: 25%;
         }
 
-        .total-row td {
-            font-weight: bold;
-        }
+        .total-row td { font-weight: bold; }
 
         .summary-row td {
             font-weight: bold;
@@ -219,20 +200,20 @@
             display: flex;
             justify-content: space-between;
             gap: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .decision-table,
         .sanction-table {
             border-collapse: collapse;
             width: 300px;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .decision-table td,
         .sanction-table td {
             border: 1px solid #000;
-            padding: 4px 8px;
+            padding: 3px 8px;
         }
 
         .check-box {
@@ -241,17 +222,24 @@
             font-weight: bold;
         }
 
-        .observations {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-weight: bold;
-            font-size: 13px;
+        /* --- NOUVEAUX STYLES OBSERVATIONS (RECTANGLE) --- */
+        .observations-container {
+            border: 2px solid #000;
+            padding: 10px;
+            margin-top: 15px;
+            min-height: 80px;
         }
 
-        .obs-right {
-            text-align: center;
-            width: 300px;
+        .obs-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 40px; /* Espace pour la signature */
+        }
+
+        .obs-title {
+            text-transform: uppercase;
         }
 
         #error-msg {
@@ -266,23 +254,18 @@
 
 <body>
 
-    <div id="error-msg" class="no-print">Données introuvables. Veuillez générer le bulletin depuis la page principale.
-    </div>
+    <div id="error-msg" class="no-print">Données introuvables. Veuillez générer le bulletin depuis la page principale.</div>
 
-    <!-- PANNEAU DE SAISIE AVANT IMPRESSION -->
     <div class="bulletin-wrapper no-print" id="setup-panel">
         <div class="input-panel">
-            <label for="header-input">Modifier l'en-tête de l'établissement (IEF, École, etc.) :</label>
+            <label for="header-input">Modifier l'en-tête de l'établissement :</label>
             <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE
 IEF PIKINE
 RENOVATION</textarea>
-            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Les modifications s'appliquent en direct
-                ci-dessous.</p>
             <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
         </div>
     </div>
 
-    <!-- CONTENU DU BULLETIN -->
     <div class="bulletin-wrapper" id="bulletin-content" style="display: none;">
 
         <div class="header-container">
@@ -292,11 +275,8 @@ RENOVATION</textarea>
                     <div class="yellow"><span class="star">★</span></div>
                     <div class="red"></div>
                 </div>
-                <!-- ZONE DYNAMIQUE DE L'EN-TÊTE -->
                 <div id="header-text-display">
-                    IA PIKINE / GUEDIAWAYE<br>
-                    IEF PIKINE<br>
-                    RENOVATION
+                    IA PIKINE / GUEDIAWAYE<br>IEF PIKINE<br>RENOVATION
                 </div>
             </div>
             <div class="header-center">
@@ -311,15 +291,14 @@ RENOVATION</textarea>
         <div class="student-info">
             <div class="student-col">
                 <div><span class="field">Prénoms</span> <strong><span id="lbl-firstname"></span></strong></div>
-                <div><span class="field">Né(e) le</span> <strong id="lbl-birth"></strong> à <strong
-                        id="lbl-birthplace"></strong></div>
+                <div><span class="field">Né(e) le</span> <strong id="lbl-birth"></strong> à <strong id="lbl-birthplace"></strong></div>
                 <div><span class="field">Matricule:</span> <strong id="lbl-matricule"></strong></div>
             </div>
             <div class="student-col">
                 <div><span class="field">Nom</span> <strong><span id="lbl-lastname"></span></strong></div>
                 <div><span class="field">Classe:</span> <strong><span id="lbl-class"></span></strong></div>
                 <div><span class="field">Nbre d'élèves:</span> <strong id="lbl-effectif"></strong>
-                    &nbsp;&nbsp;&nbsp;&nbsp; Classe Redoublée <strong id="lbl-redouble">0</strong></div>
+                    &nbsp;&nbsp;&nbsp;&nbsp; Redoublant(e): <strong id="lbl-redouble">NON</strong></div>
             </div>
         </div>
 
@@ -344,15 +323,13 @@ RENOVATION</textarea>
             <tbody id="grades-body"></tbody>
             <tfoot>
                 <tr class="total-row">
-                    <td colspan="5" class="lbl-total">TOTAL</td>
+                    <td colspan="5">TOTAL</td>
                     <td id="lbl-tot-coef"></td>
                     <td id="lbl-tot-pts"></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td></td><td></td><td></td>
                 </tr>
                 <tr class="summary-row">
-                    <td colspan="5" class="lbl-moy">Moyenne <span id="lbl-moy-gen"></span> /20</td>
+                    <td colspan="5">Moyenne <span id="lbl-moy-gen"></span> /20</td>
                     <td colspan="2">Rang <span id="lbl-rank"></span></td>
                     <td colspan="2">Retards <span id="lbl-ret"></span></td>
                     <td>Absences <span id="lbl-abs"></span></td>
@@ -362,55 +339,27 @@ RENOVATION</textarea>
 
         <div class="footer-sections">
             <table class="decision-table">
-                <tr>
-                    <td>Satisfaisant doit continuer</td>
-                    <td class="check-box" id="chk-satisfaisant"></td>
-                </tr>
-                <tr>
-                    <td>Peut Mieux Faire</td>
-                    <td class="check-box" id="chk-peut-mieux"></td>
-                </tr>
-                <tr>
-                    <td>Insuffisant</td>
-                    <td class="check-box" id="chk-insuffisant"></td>
-                </tr>
-                <tr>
-                    <td>Risque de Redoubler</td>
-                    <td class="check-box" id="chk-risque-redoubler"></td>
-                </tr>
-                <tr>
-                    <td>Risque l'exclusion</td>
-                    <td class="check-box" id="chk-risque-exclusion"></td>
-                </tr>
+                <tr><td>Satisfaisant doit continuer</td><td class="check-box" id="chk-satisfaisant"></td></tr>
+                <tr><td>Peut Mieux Faire</td><td class="check-box" id="chk-peut-mieux"></td></tr>
+                <tr><td>Insuffisant</td><td class="check-box" id="chk-insuffisant"></td></tr>
+                <tr><td>Risque de Redoubler</td><td class="check-box" id="chk-risque-redoubler"></td></tr>
+                <tr><td>Risque l'exclusion</td><td class="check-box" id="chk-risque-exclusion"></td></tr>
             </table>
 
             <table class="sanction-table">
-                <tr>
-                    <td>Félicitations</td>
-                    <td class="check-box" id="chk-felicitations"></td>
-                </tr>
-                <tr>
-                    <td>Encouragement</td>
-                    <td class="check-box" id="chk-encouragement"></td>
-                </tr>
-                <tr>
-                    <td>Tableau d'honneur</td>
-                    <td class="check-box" id="chk-tableau-honneur"></td>
-                </tr>
-                <tr>
-                    <td>Avertissement</td>
-                    <td class="check-box" id="chk-avertissement"></td>
-                </tr>
-                <tr>
-                    <td>Blâme</td>
-                    <td class="check-box" id="chk-blame"></td>
-                </tr>
+                <tr><td>Félicitations</td><td class="check-box" id="chk-felicitations"></td></tr>
+                <tr><td>Encouragement</td><td class="check-box" id="chk-encouragement"></td></tr>
+                <tr><td>Tableau d'honneur</td><td class="check-box" id="chk-tableau-honneur"></td></tr>
+                <tr><td>Avertissement</td><td class="check-box" id="chk-avertissement"></td></tr>
+                <tr><td>Blâme</td><td class="check-box" id="chk-blame"></td></tr>
             </table>
         </div>
 
-        <div class="observations">
-            <div>Observations du conseil des professeurs</div>
-            <div class="obs-right">Le Chef d'Etablissement</div>
+        <div class="observations-container">
+            <div class="obs-header">
+                <div class="obs-title"><strong>Observations du conseil des professeurs</strong></div>
+                <div class="obs-title"><strong>Le Chef d'Etablissement</strong></div>
+            </div>
         </div>
     </div>
 
@@ -427,20 +376,17 @@ RENOVATION</textarea>
         }
 
         window.onload = function () {
-            // --- GESTION DE L'EN-TÊTE DYNAMIQUE ---
             const headerInput = document.getElementById('header-input');
             const headerDisplay = document.getElementById('header-text-display');
-
             headerInput.addEventListener('input', function () {
                 headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
             });
 
-            // --- CHARGEMENT DES DONNÉES ---
             const urlParams = new URLSearchParams(window.location.search);
             const classId = urlParams.get('class');
             const studentId = urlParams.get('student');
-
             const rawData = localStorage.getItem('gestnotes_data');
+
             if (!rawData || !classId || !studentId) {
                 document.getElementById('error-msg').style.display = 'block';
                 document.getElementById('setup-panel').style.display = 'none';
@@ -463,12 +409,16 @@ RENOVATION</textarea>
             document.getElementById('lbl-lastname').textContent = student.lastName;
             document.getElementById('lbl-class').textContent = classId;
             document.getElementById('lbl-birth').textContent = student.birthDate || '';
+            document.getElementById('lbl-birthplace').textContent = student.birthPlace || '';
             document.getElementById('lbl-matricule').textContent = student.matricule || '';
             document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
             document.getElementById('lbl-abs').textContent = student.absences || 0;
             document.getElementById('lbl-ret').textContent = student.retards || 0;
 
-            // Calcul des moyennes par matière pour le rang
+            // Calculs des rangs et moyennes (Logique identique à votre version)
+            // ... [Le reste de votre script de calcul reste inchangé] ...
+            
+            // Note: Assurez-vous que la logique de remplissage du tbody est présente ici
             const subjectRanks = {};
             classData.subjects.forEach(sub => {
                 let subAvgs = [];
@@ -489,7 +439,6 @@ RENOVATION</textarea>
                 });
             });
 
-            // Calcul Moyenne Générale
             const generalAvgs = classData.students.map(s => {
                 let tP = 0, tC = 0;
                 classData.subjects.forEach(sub => {
@@ -504,7 +453,6 @@ RENOVATION</textarea>
             });
 
             generalAvgs.sort((a, b) => (b.avg || 0) - (a.avg || 0));
-
             let genRank = '-', studentGenAvg = null;
             let currentGenRank = 1;
             generalAvgs.forEach((item, index) => {
@@ -515,7 +463,6 @@ RENOVATION</textarea>
                 }
             });
 
-            // Remplissage tableau
             const tbody = document.getElementById('grades-body');
             let totalCoef = 0, totalPoints = 0;
 
@@ -547,7 +494,7 @@ RENOVATION</textarea>
                     <td class="col-discipline">${sub.name}</td>
                     <td>${d1}</td><td>${d2}</td><td>${comp}</td>
                     <td>${sAvgStr}</td><td>${sub.coef}</td><td>${mxcStr}</td>
-                    <td>TH</td><td>${rankSub}</td><td>${app}</td>
+                    <td></td><td>${rankSub}</td><td>${app}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -557,17 +504,16 @@ RENOVATION</textarea>
             document.getElementById('lbl-moy-gen').textContent = studentGenAvg !== null ? studentGenAvg.toFixed(2).replace('.', ',') : '-';
             document.getElementById('lbl-rank').textContent = genRank;
 
-            // Cocher auto
             if (studentGenAvg !== null) {
                 if (studentGenAvg >= 12) {
                     document.getElementById('chk-satisfaisant').textContent = 'X';
                     if (studentGenAvg >= 14) document.getElementById('chk-felicitations').textContent = 'X';
                     else if (studentGenAvg >= 13) document.getElementById('chk-encouragement').textContent = 'X';
                     else document.getElementById('chk-tableau-honneur').textContent = 'X';
-                } else if (studentGenAvg >= 10) { document.getElementById('chk-peut-mieux').textContent = 'X'; }
-                else if (studentGenAvg >= 8) { document.getElementById('chk-insuffisant').textContent = 'X'; }
-                else if (studentGenAvg >= 5) { document.getElementById('chk-risque-redoubler').textContent = 'X'; }
-                else { document.getElementById('chk-risque-exclusion').textContent = 'X'; }
+                } else if (studentGenAvg >= 10) document.getElementById('chk-peut-mieux').textContent = 'X';
+                else if (studentGenAvg >= 8) document.getElementById('chk-insuffisant').textContent = 'X';
+                else if (studentGenAvg >= 5) document.getElementById('chk-risque-redoubler').textContent = 'X';
+                else document.getElementById('chk-risque-exclusion').textContent = 'X';
             }
         };
     </script>
