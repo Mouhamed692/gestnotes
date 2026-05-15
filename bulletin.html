@@ -1,217 +1,354 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
-    <title>Bulletin Scolaire Officiel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Bulletin de Notes - Impression</title>
     <style>
-        @media print {
-            @page { size: A4 landscape; margin: 10mm; }
-            body { -webkit-print-color-adjust: exact; }
-            .no-print { display: none; }
+        /* Styles de base */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 20px;
+            font-size: 13px;
+            background-color: #f1f5f9;
         }
-        body { font-family: 'Times New Roman', serif; background-color: #f1f5f9; }
-        .page-container { width: 277mm; min-height: 190mm; padding: 15px; margin: 0 auto; background: white; border: 2px solid #000; position: relative; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid black; padding: 6px; text-align: center; font-size: 13px; }
-        th { background: #e2e8f0 !important; font-weight: bold; text-transform: uppercase; }
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 80px; opacity: 0.03; font-weight: 900; pointer-events: none; z-index: 0; }
+
+        .bulletin-wrapper {
+            max-width: 1000px;
+            margin: 0 auto 20px auto;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border-radius: 8px;
+        }
+
+        /* Bouton Retour Stylisé */
+        .btn-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: color 0.2s;
+            width: fit-content;
+        }
+
+        .btn-back:hover {
+            color: #4f46e5;
+        }
+
+        .btn-back svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Panneau de configuration (En-tête) */
+        .input-panel {
+            background: #fffbeb;
+            padding: 20px;
+            border: 2px solid #fbbf24;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-panel label {
+            font-weight: 800;
+            display: block;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 11px;
+            color: #92400e;
+        }
+
+        .input-panel textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d97706;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: none;
+        }
+
+        .btn-print {
+            margin-top: 15px;
+            padding: 12px 25px;
+            background-color: #059669;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Gestion de l'impression */
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white; padding: 0; }
+            .bulletin-wrapper { box-shadow: none; margin: 0; padding: 10mm; max-width: 100%; border-radius: 0; }
+            @page { size: A4 landscape; margin: 10mm; }
+        }
+
+        /* Design du Bulletin Personnel */
+        .header-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .header-left { display: flex; align-items: center; gap: 15px; font-weight: bold; line-height: 1.4; }
+        .flag { width: 60px; height: 40px; display: flex; border: 1px solid #000; }
+        .flag .green { background-color: #00853f; flex: 1; }
+        .flag .yellow { background-color: #fdef42; flex: 1; display: flex; justify-content: center; align-items: center; }
+        .flag .red { background-color: #e31b23; flex: 1; }
+        .flag .star { color: #00853f; font-size: 14px; }
+        
+        .header-center h1 { margin: 0; font-size: 26px; text-decoration: underline; text-align: center; font-weight: 900; }
+        .header-right { text-align: right; font-weight: bold; }
+
+        .student-box { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 10px; }
+        .field-label { display: inline-block; min-width: 100px; color: #64748b; font-weight: normal; }
+        .field-value { font-weight: 800; text-transform: uppercase; }
+
+        table.grades-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        table.grades-table th, table.grades-table td { border: 1px solid #000; padding: 6px; text-align: center; }
+        table.grades-table th { background-color: #f8fafc; text-transform: uppercase; font-size: 10px; }
+        .col-discipline { text-align: left !important; font-weight: 800; background-color: #f8fafc; }
+
+        .moyenne-generale-row { background-color: #f1f5f9; font-weight: 900; font-size: 15px; }
+
+        .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
+        .check-table { width: 100%; border-collapse: collapse; }
+        .check-table td { border: 1px solid #000; padding: 4px 8px; font-size: 11px; }
+        .check-box { width: 25px; text-align: center; font-weight: bold; font-size: 14px; }
+
+        .signature-area { display: flex; justify-content: space-between; margin-top: 30px; font-weight: bold; }
+        .obs-zone { border: 1px solid #000; padding: 10px; height: 50px; margin-top: 5px; font-style: italic; color: #475569; }
+
+        #error-msg { display: none; color: #ef4444; text-align: center; padding: 100px; font-weight: bold; }
     </style>
 </head>
-<body class="p-4">
 
-    <!-- Bouton de commande (caché à l'impression) -->
-    <div class="no-print flex justify-center mb-6">
-        <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-full font-black shadow-xl transition transform hover:scale-105">
-            🖨️ LANCER L'IMPRESSION DU BULLETIN
-        </button>
+<body>
+
+    <div class="bulletin-wrapper no-print" style="background: transparent; box-shadow: none; padding: 0;">
+        <a href="gestnotes.html" class="btn-back">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Retour au Tableau de Bord
+        </a>
     </div>
 
-    <div id="bulletin" class="page-container shadow-2xl">
-        <div class="watermark">DOCUMENT OFFICIEL</div>
+    <div id="error-msg">⚠️ Erreur : Données de l'élève introuvables.</div>
 
-        <!-- ENTÊTE GOUVERNEMENTALE -->
-        <div class="flex justify-between items-start border-b-4 border-double border-black pb-4 mb-4">
-            <div class="text-[11px] font-black leading-tight uppercase">
-                RÉPUBLIQUE DU SÉNÉGAL<br>
-                Ministère de l'Éducation Nationale<br>
-                Inspection de l'Éducation et de la Formation<br>
-                <span class="text-indigo-700 italic">Établissement Scolaire GestNotes Pro</span>
-            </div>
-            
-            <div class="text-center">
-                <h1 class="text-2xl font-black underline uppercase tracking-tighter">Bulletin de Notes</h1>
-                <p id="v-sem" class="bg-black text-white px-4 py-1 text-xs font-bold mt-2 inline-block rounded"></p>
-            </div>
+    <div class="bulletin-wrapper no-print" id="setup-panel">
+        <div class="input-panel">
+            <label>Modifier l'en-tête de l'école :</label>
+            <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE&#10;IEF PIKINE&#10;ÉCOLE PRIVÉE RENOVATION</textarea>
+            <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
+        </div>
+    </div>
 
-            <div class="text-right text-[11px] font-black leading-tight uppercase">
-                Année Scolaire : <span id="v-year"></span><br>
-                Date d'édition : <span id="v-date"></span><br>
-                Code G-Notes : 00482/INS
+    <div class="bulletin-wrapper" id="bulletin-content" style="display: none;">
+        <div class="header-container">
+            <div class="header-left">
+                <div class="flag">
+                    <div class="green"></div>
+                    <div class="yellow"><span class="star">★</span></div>
+                    <div class="red"></div>
+                </div>
+                <div id="header-text-display">IA PIKINE / GUEDIAWAYE<br>IEF PIKINE<br>ÉCOLE PRIVÉE RENOVATION</div>
+            </div>
+            <div class="header-center">
+                <h1>BULLETIN DE NOTES</h1>
+            </div>
+            <div class="header-right">
+                Année Scolaire: 2025-2026<br>
+                <span id="lbl-period-title" style="text-transform: uppercase; color: #4f46e5;"></span>
             </div>
         </div>
 
-        <!-- INFORMATIONS ÉLÈVE -->
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="border border-black p-3 rounded-lg bg-slate-50">
-                <p class="text-[10px] text-slate-500 font-bold uppercase">Nom & Prénom de l'élève</p>
-                <p id="v-name" class="text-lg font-black text-indigo-900"></p>
-                <p class="text-[10px] mt-2 italic text-slate-500">Matricule : <span id="v-mat" class="text-black font-bold"></span></p>
+        <div class="student-box">
+            <div>
+                <p><span class="field-label">Élève :</span> <span class="field-value" id="lbl-name"></span></p>
+                <p><span class="field-label">Matricule :</span> <span class="field-value" id="lbl-mat"></span></p>
             </div>
-            <div class="border border-black p-3 rounded-lg bg-slate-50 text-right">
-                <p class="text-[10px] text-slate-500 font-bold uppercase">Classe & Série</p>
-                <p id="v-class" class="text-lg font-black"></p>
-                <p class="text-[10px] mt-2 italic text-slate-500">Effectif de la classe : <span id="v-total-students" class="text-black font-bold"></span></p>
+            <div>
+                <p><span class="field-label">Classe :</span> <span class="field-value" id="lbl-class"></span></p>
+                <p><span class="field-label">Effectif :</span> <span class="field-value" id="lbl-eff"></span></p>
             </div>
         </div>
 
-        <!-- TABLEAU DES NOTES -->
-        <table>
+        <table class="grades-table">
             <thead>
                 <tr>
-                    <th rowspan="2" class="w-1/4">Disciplines d'enseignement</th>
-                    <th colspan="3">Contrôle Continu</th>
-                    <th rowspan="2" class="w-20">Compo. /20</th>
-                    <th rowspan="2" class="w-20 bg-blue-50">Moy. /20</th>
-                    <th rowspan="2" class="w-16">Coef</th>
-                    <th rowspan="2" class="w-20">Points</th>
-                    <th rowspan="2">Appréciation des Professeurs</th>
+                    <th rowspan="2">Disciplines</th>
+                    <th colspan="2">Devoirs</th>
+                    <th rowspan="2">Composition</th>
+                    <th rowspan="2">Moyenne /20</th>
+                    <th rowspan="2">Coef</th>
+                    <th rowspan="2">Points</th>
+                    <th rowspan="2">Appréciations</th>
                 </tr>
                 <tr>
-                    <th class="w-14">Dev. 1</th>
-                    <th class="w-14">Dev. 2</th>
-                    <th class="w-14 bg-slate-100">Moy. D</th>
+                    <th>D1</th>
+                    <th>D2</th>
                 </tr>
             </thead>
-            <tbody id="v-body">
-                <!-- Les lignes seront injectées par JS -->
-            </tbody>
-            <tfoot class="bg-slate-100 font-black">
-                <tr>
-                    <td colspan="6" class="text-right px-4 uppercase text-xs">Totaux & Moyenne Générale du Semestre</td>
-                    <td id="v-tot-coef" class="text-lg"></td>
-                    <td id="v-tot-pts" class="text-lg"></td>
-                    <td class="bg-indigo-950 text-white text-xl" id="v-final-moy"></td>
+            <tbody id="grades-body"></tbody>
+            <tfoot>
+                <tr style="font-weight: bold;">
+                    <td colspan="5">TOTAUX</td>
+                    <td id="lbl-total-coef"></td>
+                    <td id="lbl-total-pts"></td>
+                    <td></td>
+                </tr>
+                <tr class="moyenne-generale-row">
+                    <td colspan="5" style="text-align: right; padding-right: 20px;">MOYENNE GÉNÉRALE :</td>
+                    <td colspan="2" id="lbl-moy-gen" style="text-align: center; font-size: 18px;"></td>
+                    <td id="lbl-rank-final">RANG : </td>
                 </tr>
             </tfoot>
         </table>
 
-        <!-- RÉSULTATS DÉTAILLÉS & DÉCISION -->
-        <div class="grid grid-cols-3 gap-4 mt-6">
-            <div class="border border-black p-2 text-center">
-                <p class="text-[10px] font-bold uppercase border-b pb-1">Rang dans la classe</p>
-                <p id="v-rank" class="text-2xl font-black py-1"></p>
-            </div>
-            <div class="border border-black p-2 text-center">
-                <p class="text-[10px] font-bold uppercase border-b pb-1">Moyenne Classe</p>
-                <p id="v-class-avg" class="text-2xl font-black py-1"></p>
-            </div>
-            <div class="border border-black p-2 text-center bg-slate-900 text-white">
-                <p class="text-[10px] font-bold uppercase border-b border-white/20 pb-1">Décision du Conseil</p>
-                <p id="v-decision" class="text-sm font-black py-2 uppercase"></p>
-            </div>
+        <div class="footer-grid">
+            <table class="check-table">
+                <tr><td>Travail Satisfaisant</td><td class="check-box" id="chk-1"></td></tr>
+                <tr><td>Peut mieux faire</td><td class="check-box" id="chk-2"></td></tr>
+                <tr><td>Insuffisant</td><td class="check-box" id="chk-3"></td></tr>
+                <tr><td>Risque de redoublement</td><td class="check-box" id="chk-4"></td></tr>
+            </table>
+            <table class="check-table">
+                <tr><td>Félicitations</td><td class="check-box" id="chk-5"></td></tr>
+                <tr><td>Encouragements</td><td class="check-box" id="chk-6"></td></tr>
+                <tr><td>Tableau d'Honneur</td><td class="check-box" id="chk-7"></td></tr>
+                <tr><td>Avertissement</td><td class="check-box" id="chk-8"></td></tr>
+            </table>
         </div>
 
-        <!-- SIGNATURES -->
-        <div class="grid grid-cols-3 gap-10 mt-10 text-[11px] font-black text-center uppercase">
-            <div class="flex flex-col items-center">
-                <p class="underline mb-2">Le Parent d'élève</p>
-                <div class="h-20 w-40 border border-dotted border-slate-300"></div>
+        <div class="signature-area">
+            <div style="width: 50%;">
+                Observations du Conseil :
+                <div class="obs-zone" id="lbl-obs">Cliquer pour écrire une observation...</div>
             </div>
-            <div class="flex flex-col items-center">
-                <p class="underline mb-2">Le Titulaire / Prof. Principal</p>
-                <div class="h-20 w-40 border border-dotted border-slate-300"></div>
-            </div>
-            <div class="flex flex-col items-center">
-                <p class="underline mb-2">Le Chef d'établissement</p>
-                <div class="h-20 w-40 border-2 border-black flex items-center justify-center italic text-slate-300">Cachet & Signature</div>
+            <div style="text-align: center;">
+                Le Chef d'Établissement
+                <div style="margin-top: 40px; border-top: 1px dashed #ccc; width: 200px; margin-left: auto; margin-right: auto;"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const cid = params.get('class');
-        const sid = params.get('student');
-        // On essaye de récupérer les données des deux stockages possibles (Lycée ou Général)
-        const data = JSON.parse(localStorage.getItem('gestnotes_full')) || JSON.parse(localStorage.getItem('gestnotes_lycee'));
+        function getAppreciation(m) {
+            if (m < 5) return "Médiocre";
+            if (m < 10) return "Insuffisant";
+            if (m < 12) return "Passable";
+            if (m < 14) return "Assez Bien";
+            if (m < 16) return "Bien";
+            return "Très Bien";
+        }
 
-        if(data && cid && sid) {
-            const classData = data.classes[cid];
-            const student = classData.students.find(s => s.id === sid);
+        window.onload = function () {
+            // Gestion de l'en-tête
+            const hIn = document.getElementById('header-input');
+            const hOut = document.getElementById('header-text-display');
+            hIn.addEventListener('input', () => { hOut.innerHTML = hIn.value.replace(/\n/g, '<br>'); });
 
-            // Calculs Statistiques
-            const stats = classData.students.map(s => {
-                let p = 0, c = 0;
-                classData.subjects.forEach(sub => {
-                    const g = classData.grades[s.id]?.[sub.id] || {d1:0, d2:0, c:0};
-                    const mD = (Number(g.d1) + Number(g.d2)) / (g.d2 ? 2 : 1);
-                    const mS = (mD + (Number(g.c)*2)) / 3;
-                    p += mS * sub.coef; c += sub.coef;
-                });
-                return { id: s.id, m: c > 0 ? p/c : 0 };
+            // Observation éditable
+            const obs = document.getElementById('lbl-obs');
+            obs.addEventListener('click', () => { 
+                const txt = prompt("Saisir l'observation :", obs.innerText);
+                if(txt !== null) obs.innerText = txt;
             });
 
-            const sorted = [...stats].sort((a,b) => b.m - a.m);
-            const myRank = sorted.findIndex(x => x.id === sid) + 1;
-            const classAvg = stats.reduce((a, b) => a + b.m, 0) / stats.length;
+            // Récupération Paramètres
+            const params = new URLSearchParams(window.location.search);
+            const classId = params.get('class');
+            const studentId = params.get('student');
+            const period = params.get('period') || "1";
 
-            // Affichage des Textes
-            document.getElementById('v-name').textContent = `${student.lastName} ${student.firstName}`;
-            document.getElementById('v-class').textContent = cid.replace('_', ' ');
-            document.getElementById('v-year').textContent = data.settings.year || '2025-2026';
-            document.getElementById('v-sem').textContent = (data.settings.semester || '1') + (data.settings.semester == 2 ? 'ème' : 'er') + " SEMESTRE";
-            document.getElementById('v-date').textContent = new Date().toLocaleDateString('fr-FR');
-            document.getElementById('v-mat').textContent = student.matricule || 'N/A';
-            document.getElementById('v-total-students').textContent = classData.students.length;
+            const raw = localStorage.getItem('gestnotes_v4');
+            if (!raw || !classId || !studentId) {
+                document.getElementById('error-msg').style.display = 'block';
+                return;
+            }
 
-            // Remplissage du tableau
-            let tP = 0, tC = 0;
-            const body = document.getElementById('v-body');
-            body.innerHTML = classData.subjects.map(sub => {
-                const g = classData.grades[sid]?.[sub.id] || {d1:0,d2:0,c:0};
-                const mD = (Number(g.d1) + Number(g.d2)) / (g.d2 ? 2 : 1);
-                const mS = (mD + (Number(g.c)*2)) / 3;
-                const pond = mS * sub.coef;
-                tP += pond; tC += sub.coef;
+            const data = JSON.parse(raw);
+            const cData = data.classes[classId];
+            const student = cData.students.find(s => s.id === studentId);
+            const grades = cData.grades[period][studentId] || {};
 
-                let appreciation = "Passable";
-                if(mS >= 16) appreciation = "Excellent";
-                else if(mS >= 14) appreciation = "Très Bien";
-                else if(mS >= 12) appreciation = "Bien";
-                else if(mS >= 10) appreciation = "Assez Bien";
-                else if(mS < 8) appreciation = "Insuffisant";
+            document.getElementById('bulletin-content').style.display = 'block';
+            document.getElementById('lbl-period-title').innerText = period + (period == 1 ? "er Semestre" : "ème Semestre");
+            document.getElementById('lbl-name').innerText = student.lastName;
+            document.getElementById('lbl-mat').innerText = student.matricule;
+            document.getElementById('lbl-class').innerText = classId.replace('_', ' ');
+            document.getElementById('lbl-eff').innerText = cData.students.length;
 
-                return `<tr>
-                    <td class="text-left font-bold px-2 uppercase text-xs">${sub.name}</td>
-                    <td>${g.d1 || '-'}</td>
-                    <td>${g.d2 || '-'}</td>
-                    <td class="bg-slate-100 font-bold">${mD.toFixed(2)}</td>
-                    <td class="font-bold">${g.c || '-'}</td>
-                    <td class="bg-blue-50 font-black text-blue-900">${mS.toFixed(2)}</td>
-                    <td>${sub.coef}</td>
-                    <td class="font-bold">${pond.toFixed(2)}</td>
-                    <td class="text-[10px] italic">${appreciation}</td>
-                </tr>`;
-            }).join('');
+            // Calculs
+            let totalCoef = 0, totalPts = 0;
+            const tbody = document.getElementById('grades-body');
 
-            // Totaux
-            const finalMoy = (tP / tC);
-            document.getElementById('v-tot-coef').textContent = tC;
-            document.getElementById('v-tot-pts').textContent = tP.toFixed(2);
-            document.getElementById('v-final-moy').textContent = finalMoy.toFixed(2) + " / 20";
-            document.getElementById('v-rank').textContent = myRank + (myRank == 1 ? "er" : "ème");
-            document.getElementById('v-class-avg').textContent = classAvg.toFixed(2);
+            cData.subjects.forEach(sub => {
+                const g = grades[sub.id] || {d1:'', d2:'', c:''};
+                const d1 = parseFloat(g.d1) || 0;
+                const d2 = parseFloat(g.d2) || d1;
+                const cp = parseFloat(g.c) || 0;
+
+                let m = 0;
+                if(g.d1 !== '' || g.c !== '') {
+                    m = ((d1 + d2) / 2 + (cp * 2)) / 3;
+                    const pts = m * sub.coef;
+                    totalCoef += sub.coef;
+                    totalPts += pts;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="col-discipline">${sub.name}</td>
+                        <td>${g.d1}</td><td>${g.d2}</td><td>${g.c}</td>
+                        <td>${m.toFixed(2)}</td><td>${sub.coef}</td>
+                        <td>${pts.toFixed(2)}</td>
+                        <td style="font-size:9px">${getAppreciation(m)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            const genAvg = totalCoef > 0 ? totalPts / totalCoef : 0;
+            document.getElementById('lbl-total-coef').innerText = totalCoef;
+            document.getElementById('lbl-total-pts').innerText = totalPts.toFixed(2);
+            document.getElementById('lbl-moy-gen').innerText = genAvg.toFixed(2) + " / 20";
+
+            // Calcul Rang
+            const sorted = cData.students.map(s => {
+                let p = 0, c = 0;
+                cData.subjects.forEach(sub => {
+                    const g = cData.grades[period][s.id]?.[sub.id] || {d1:0,d2:0,c:0};
+                    const d1 = parseFloat(g.d1) || 0;
+                    const d2 = parseFloat(g.d2) || d1;
+                    const cp = parseFloat(g.c) || 0;
+                    const m = ((d1 + d2) / 2 + (cp * 2)) / 3;
+                    if(m > 0) { p += m * sub.coef; c += sub.coef; }
+                });
+                return {id: s.id, a: c > 0 ? p/c : 0};
+            }).sort((a,b) => b.a - a.a);
             
-            // Décision
-            let dec = "DÉCOURAGEANT";
-            if(finalMoy >= 10) dec = "TABLEAU D'HONNEUR";
-            else if(finalMoy >= 9) dec = "AVERTISSEMENT TRAVAIL";
-            else dec = "BLÂME / ÉCHEC";
-            document.getElementById('v-decision').textContent = dec;
-        } else {
-            alert("Erreur : Aucune donnée trouvée. Veuillez d'abord saisir les notes.");
-        }
+            const rank = sorted.findIndex(x => x.id === studentId) + 1;
+            document.getElementById('lbl-rank-final').innerText = "RANG : " + rank + (rank==1?"er":"ème");
+
+            // Décisions automatiques
+            if(genAvg >= 10) {
+                document.getElementById('chk-1').innerText = "X";
+                if(genAvg >= 15) document.getElementById('chk-5').innerText = "X";
+                else if(genAvg >= 13) document.getElementById('chk-6').innerText = "X";
+            } else {
+                document.getElementById('chk-3').innerText = "X";
+                if(genAvg < 7) document.getElementById('chk-4').innerText = "X";
+            }
+        };
     </script>
 </body>
 </html>
