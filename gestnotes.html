@@ -9,51 +9,17 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
         
-        /* Style pour la liste des élèves avec suppression */
-        .student-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-        }
+        .student-item { display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
+        .btn-delete-student { display: none; color: #f87171; padding: 4px; border-radius: 6px; }
+        .student-item:hover .btn-delete-student { display: block; }
 
-        .btn-delete-student {
-            display: none; /* Cache la croix par défaut */
-            color: #f87171;
-            padding: 4px;
-            border-radius: 6px;
-        }
-
-        .student-item:hover .btn-delete-student {
-            display: block; /* Affiche la croix uniquement au survol de l'élève */
-        }
-
-        /* Optimisation des champs de notes pour la saisie mobile et clavier */
         .grade-input {
-            width: 60px;
-            height: 45px;
-            border: 2px solid #e2e8f0;
-            background: #f8fafc;
-            text-align: center;
-            font-weight: 800;
-            font-size: 16px;
-            border-radius: 10px;
-            transition: all 0.2s;
+            width: 60px; height: 45px; border: 2px solid #e2e8f0; background: #f8fafc;
+            text-align: center; font-weight: 800; font-size: 16px; border-radius: 10px; transition: all 0.2s;
         }
+        .grade-input:focus { border-color: #4f46e5; background: white; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); outline: none; }
 
-        .grade-input:focus {
-            border-color: #4f46e5;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-            outline: none;
-        }
-
-        /* Supprime les flèches par défaut des nombres pour gagner de la place */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body>
@@ -74,7 +40,7 @@
 
     <div class="container mx-auto p-4 lg:p-8">
         
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 items-end">
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Classe / Niveau</label>
                 <input type="text" id="class-level" value="TERMINALE" oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
@@ -83,8 +49,16 @@
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Série / Identifiant</label>
                 <input type="text" id="class-section" value="S2" oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
             </div>
+            
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Période (Semestre/Trimestre)</label>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Effectif Total</label>
+                <div class="flex gap-1">
+                    <input type="number" id="input-effectif" placeholder="Ex: 45" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold" onchange="saveEffectif()">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Période</label>
                 <select id="semester" onchange="updatePeriod()" class="w-full bg-indigo-600 text-white border-none rounded-2xl p-3 text-sm font-black shadow-lg">
                     <option value="1">1er Semestre</option>
                     <option value="2">2ème Semestre</option>
@@ -141,10 +115,7 @@
     </div>
 
     <script>
-        let appState = JSON.parse(localStorage.getItem('gestnotes_v4')) || {
-            classes: {}
-        };
-
+        let appState = JSON.parse(localStorage.getItem('gestnotes_v4')) || { classes: {} };
         let currentClassId = "";
         let currentStudentId = null;
         let currentPeriod = "1";
@@ -159,12 +130,13 @@
                 appState.classes[currentClassId] = { 
                     students: [], 
                     subjects: [], 
-                    grades: { "1": {}, "2": {}, "3": {} } 
+                    grades: { "1": {}, "2": {}, "3": {} },
+                    effectif: "" // Initialise l'effectif vide
                 };
             }
-            if(!appState.classes[currentClassId].grades["1"]) {
-                appState.classes[currentClassId].grades = { "1": {}, "2": {}, "3": {} };
-            }
+            
+            // Charger l'effectif enregistré pour cette classe
+            document.getElementById('input-effectif').value = appState.classes[currentClassId].effectif || "";
 
             renderSubjectsConfig();
             renderStudents();
@@ -172,9 +144,16 @@
             if(currentStudentId) renderGradesFields();
         }
 
+        function saveEffectif() {
+            if (!currentClassId) return;
+            const val = document.getElementById('input-effectif').value;
+            appState.classes[currentClassId].effectif = val;
+            saveToStorage();
+        }
+
         function updatePeriod() {
             currentPeriod = document.getElementById('semester').value;
-            if(currentStudentId) renderGradesFields();
+            if(currentStudentId) selectStudent(currentStudentId); 
             renderStats();
             saveToStorage();
         }
@@ -211,12 +190,8 @@
             const periodGrades = appState.classes[currentClassId].grades[currentPeriod];
             if(!periodGrades[currentStudentId]) periodGrades[currentStudentId] = {};
             if(!periodGrades[currentStudentId][subId]) periodGrades[currentStudentId][subId] = {d1:'', d2:'', c:''};
-            
             periodGrades[currentStudentId][subId][type] = val;
             saveToStorage();
-            
-            // LA CORRECTION EST ICI : On ne rappelle PLUS renderGradesFields()
-            // pour ne pas perdre le focus (le curseur) pendant la saisie.
             renderStats();
         }
 
@@ -237,24 +212,6 @@
                         </div>
                     </div>`;
             }).join('');
-
-            const inputs = document.querySelectorAll('.grade-input');
-            inputs.forEach((input, index) => {
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === "Enter") {
-                        e.preventDefault();
-                        inputs[index + 1]?.focus();
-                    }
-                    if (e.key === "ArrowDown") {
-                        e.preventDefault();
-                        inputs[index + 3]?.focus();
-                    }
-                    if (e.key === "ArrowUp") {
-                        e.preventDefault();
-                        inputs[index - 3]?.focus();
-                    }
-                });
-            });
         }
 
         function renderStats() {
