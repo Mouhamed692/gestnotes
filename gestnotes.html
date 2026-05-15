@@ -3,191 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GestNotes - Système Académique</title>
+    <title>GestNotes Intégral - Système Académique</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --primary: #1e1b4b;
-            --accent: #4f46e5;
-            --bg: #f8fafc;
-        }
-
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
-        
-        /* En-tête bleu foncé identique à vos captures */
-        .header-top {
-            background: var(--primary);
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .container { max-width: 1300px; margin: 20px auto; padding: 0 15px; }
-
-        .dashboard-layout {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 20px;
-        }
-
-        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-
-        /* Style des inputs pour saisie rapide mobile */
-        .input-grade {
-            width: 80px;
-            height: 45px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        .input-grade:focus { border-color: var(--accent); outline: none; background: #f5f3ff; }
-
-        /* Bouton retour (Flèche) */
-        .btn-back {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-            margin-right: 20px;
-        }
-
-        /* Responsivité pour mobile */
-        @media (max-width: 768px) {
-            .dashboard-layout { grid-template-columns: 1fr; }
-            thead { display: none; }
-            tr { display: block; border: 1px solid #e2e8f0; border-radius: 15px; margin-bottom: 15px; padding: 15px; }
-            td { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border: none !important; border-bottom: 1px solid #f1f5f9 !important; }
-            td::before { content: attr(data-label); font-weight: bold; color: #64748b; }
-        }
-
-        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; color: white; }
-        .btn-blue { background: #4338ca; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
     </style>
 </head>
 <body>
 
-<div class="header-top">
-    <div style="display: flex; align-items: center;">
-        <a href="index.html" class="btn-back">
-            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        </a>
-        <div style="background: #10b981; padding: 5px 10px; border-radius: 8px; font-weight: 900; margin-right: 15px;">GN</div>
-        <span style="letter-spacing: 1px; font-weight: bold;">SYSTÈME ACADÉMIQUE INTÉGRÉ</span>
-    </div>
-    <div style="display: flex; gap: 10px;">
-        <button class="btn btn-blue" onclick="sauvegarder()">SAUVEGARDER</button>
-        <button class="btn btn-blue" onclick="restaurer()">RESTAURER</button>
-    </div>
-</div>
+    <nav class="bg-indigo-950 text-white p-4 shadow-xl sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-500 p-2 rounded-lg font-black italic">GN</div>
+                <h1 class="text-sm font-black uppercase tracking-widest">SYSTÈME ACADÉMIQUE INTÉGRÉ</h1>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="exportData()" class="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-[10px] font-bold">SAUVEGARDER</button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-indigo-600 px-3 py-2 rounded-lg text-[10px] font-bold">RESTAURER</button>
+                <input type="file" id="importFile" class="hidden" onchange="importData(event)">
+            </div>
+        </div>
+    </nav>
 
-<div class="container">
-    <div class="dashboard-layout">
-        <div class="card">
-            <h3 style="margin-top:0; display: flex; justify-content: space-between;">
-                LISTE DES ÉLÈVES <span id="nb-eleves" style="background: #4f46e5; color:white; padding: 2px 10px; border-radius: 50%; font-size: 14px;">0</span>
-            </h3>
-            <div id="liste-noms" style="display: flex; flex-direction: column; gap: 10px;">
-                </div>
+    <div class="container mx-auto p-4 lg:p-8">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Cycle & Niveau</label>
+                <select id="class-level" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 appearance-none">
+                    <optgroup label="LYCÉE">
+                        <option value="TLE">Terminale</option><option value="1ERE">Première</option><option value="2NDE">Seconde</option>
+                    </optgroup>
+                    <optgroup label="MOYEN">
+                        <option value="3EME">3ème</option><option value="4EME">4ème</option><option value="5EME">5ème</option><option value="6EME">6ème</option>
+                    </optgroup>
+                    <optgroup label="PRIMAIRE">
+                        <option value="CM2">CM2</option><option value="CM1">CM1</option><option value="CI">CI</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Série / Identifiant</label>
+                <input type="text" id="class-section" placeholder="Ex: S1, L2, A..." oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Semestre</label>
+                <select id="semester" onchange="saveSettings()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold">
+                    <option value="1">1er Semestre</option><option value="2">2ème Semestre</option>
+                </select>
+            </div>
+            <div class="bg-indigo-50 rounded-2xl p-3 flex flex-col justify-center text-center border border-indigo-100">
+                <p class="text-[9px] font-black text-indigo-400 uppercase">Moyenne Générale</p>
+                <p id="class-avg-display" class="text-2xl font-black text-indigo-900">0.00/20</p>
+            </div>
         </div>
 
-        <div class="card">
-            <div style="display: flex; gap: 15px; margin-bottom: 25px;">
-                <select id="sel-class" class="input-grade" style="width:100%; text-align: left; padding-left: 15px;" onchange="init()"></select>
-                <select id="sel-period" class="input-grade" style="width:100%; text-align: left; padding-left: 15px;" onchange="init()">
-                    <option value="1">1er Semestre</option>
-                    <option value="2">2ème Semestre</option>
-                </select>
-                <div style="background: #eef2ff; padding: 5px 20px; border-radius: 15px; text-align: center; min-width: 150px;">
-                    <div style="font-size: 10px; color: var(--accent); font-weight: 800;">MOYENNE GÉNÉRALE</div>
-                    <div id="moy-globale" style="font-size: 22px; font-weight: 900;">0.00/20</div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                        <h2 class="font-extrabold text-slate-800 text-xs uppercase tracking-tighter">Élèves Inscrits</h2>
+                        <span id="badge-count" class="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full">0</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex gap-2 mb-6">
+                            <input type="text" id="new-student-name" placeholder="Nom et Prénom" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-sm outline-none focus:ring-1 focus:ring-emerald-500">
+                            <button onclick="addStudent()" class="bg-emerald-500 text-white w-12 h-12 rounded-xl font-black shadow-lg hover:bg-emerald-600 transition">+</button>
+                        </div>
+                        <ul id="student-list" class="space-y-2 max-h-[450px] overflow-y-auto pr-2"></ul>
+                    </div>
                 </div>
             </div>
 
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="text-align: left; color: #94a3b8; font-size: 11px; letter-spacing: 1px;">
-                        <th>ÉLÈVE</th>
-                        <th>DEVOIR 1</th>
-                        <th>DEVOIR 2</th>
-                        <th>COMPOSITION</th>
-                        <th>ACTION</th>
-                    </tr>
-                </thead>
-                <tbody id="table-corps"></tbody>
-            </table>
+            <div class="lg:col-span-8">
+                <div id="welcome-msg" class="bg-white rounded-3xl p-24 text-center border-2 border-dashed border-slate-200">
+                    <p class="text-slate-400 font-bold uppercase text-xs tracking-widest">Sélectionnez un élève pour calculer</p>
+                </div>
+
+                <div id="editor-panel" class="hidden">
+                    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                        <div class="p-6 bg-indigo-950 text-white flex justify-between items-center">
+                            <div>
+                                <h2 id="current-student-display" class="text-xl font-black uppercase">---</h2>
+                                <p id="current-class-display" class="text-emerald-400 text-[10px] font-black uppercase"></p>
+                            </div>
+                            <button onclick="printReport()" class="bg-emerald-500 hover:bg-emerald-400 px-5 py-2 rounded-lg font-black text-[10px] uppercase shadow-lg transition">Imprimer Bulletin</button>
+                        </div>
+                        
+                        <div class="p-6 grid grid-cols-1 gap-3 bg-slate-50" id="grades-grid"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    // Récupération de vos données
-    let DATA = JSON.parse(localStorage.getItem('gestnotes_v4')) || { classes: {} };
+    <script>
+        let appState = JSON.parse(localStorage.getItem('gestnotes_full')) || {
+            settings: { year: '2025-2026', semester: '1' },
+            classes: {}
+        };
 
-    function init() {
-        const selClass = document.getElementById('sel-class');
-        const listeNoms = document.getElementById('liste-noms');
-        const tableCorps = document.getElementById('table-corps');
-        const periode = document.getElementById('sel-period').value;
+        let currentClassId = "";
+        let currentStudentId = null;
 
-        // Remplissage sélecteur de classe si vide
-        if(selClass.options.length === 0) {
-            Object.keys(DATA.classes).forEach(c => {
-                selClass.add(new Option(c.replace('_',' '), c));
-            });
+        function getSubjectsByLevel(level, section) {
+            const isS = section.toUpperCase().includes('S');
+            if(['CI','CP','CE1','CM1','CM2'].includes(level)) {
+                return [
+                    { id: 'lang', name: 'Langue & Communication', coef: 2 },
+                    { id: 'math', name: 'Mathématiques', coef: 2 },
+                    { id: 'esac', name: 'ESAC', coef: 1 },
+                    { id: 'env', name: 'Découverte Monde', coef: 1 }
+                ];
+            }
+            return [
+                { id: 'fr', name: 'Français', coef: isS ? 3 : 5 },
+                { id: 'math', name: 'Mathématiques', coef: isS ? 6 : 2 },
+                { id: 'pc', name: 'Physique-Chimie', coef: isS ? 6 : 0 },
+                { id: 'phi', name: 'Philosophie', coef: level === 'TLE' ? (isS ? 2 : 4) : 0 },
+                { id: 'ang', name: 'Anglais', coef: 3 }
+            ].filter(s => s.coef > 0);
         }
 
-        const classeActuelle = selClass.value;
-        if(!classeActuelle || !DATA.classes[classeActuelle]) return;
+        function changeLevel() {
+            const level = document.getElementById('class-level').value;
+            const section = document.getElementById('class-section').value.toUpperCase() || "A";
+            currentClassId = `${level}_${section}`;
 
-        const eleves = DATA.classes[classeActuelle].students;
-        document.getElementById('nb-eleves').innerText = eleves.length;
+            if (!appState.classes[currentClassId]) {
+                appState.classes[currentClassId] = { students: [], subjects: getSubjectsByLevel(level, section), grades: {} };
+            }
+            renderStudents();
+            renderStats();
+            if(currentStudentId) renderGradesFields();
+        }
 
-        // Affichage liste gauche
-        listeNoms.innerHTML = "";
-        eleves.forEach(e => {
-            const d = document.createElement('div');
-            d.style = "padding: 15px; border: 1px solid #f1f5f9; border-radius: 12px; font-weight: 800; text-transform: uppercase; font-size: 13px;";
-            d.innerText = e.lastName + " " + e.firstName;
-            listeNoms.appendChild(d);
-        });
+        function updateVal(subId, type, val) {
+            if(!appState.classes[currentClassId].grades[currentStudentId]) appState.classes[currentClassId].grades[currentStudentId] = {};
+            if(!appState.classes[currentClassId].grades[currentStudentId][subId]) appState.classes[currentClassId].grades[currentStudentId][subId] = {d1:'', d2:'', c:''};
+            
+            appState.classes[currentClassId].grades[currentStudentId][subId][type] = val;
+            saveToStorage();
+            renderGradesFields(); // Rafraîchit le calcul vert instantanément
+            renderStats();        // Rafraîchit la moyenne générale
+        }
 
-        // Affichage tableau saisie
-        tableCorps.innerHTML = "";
-        eleves.forEach(e => {
-            const notes = DATA.classes[classeActuelle].grades[periode][e.id]?.maths || {d1:'', d2:'', c:''};
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td data-label="Élève"><strong>${e.lastName}</strong></td>
-                <td data-label="Devoir 1"><input type="number" inputmode="decimal" class="input-grade" value="${notes.d1}" onchange="maj('${e.id}','d1',this.value)"></td>
-                <td data-label="Devoir 2"><input type="number" inputmode="decimal" class="input-grade" value="${notes.d2}" onchange="maj('${e.id}','d2',this.value)"></td>
-                <td data-label="Composition"><input type="number" inputmode="decimal" class="input-grade" value="${notes.c}" onchange="maj('${e.id}','c',this.value)"></td>
-                <td data-label="Action"><button class="btn" style="background:var(--accent); font-size:12px;" onclick="location.href='bulletin.html?class=${classeActuelle}&student=${e.id}&period=${periode}'">PDF</button></td>
-            `;
-            tableCorps.appendChild(tr);
-        });
+        function renderGradesFields() {
+            const classData = appState.classes[currentClassId];
+            const container = document.getElementById('grades-grid');
+            
+            container.innerHTML = classData.subjects.map(sub => {
+                const g = classData.grades[currentStudentId]?.[sub.id] || { d1:'', d2:'', c:'' };
+                
+                // CALCUL EN DIRECT POUR L'INTERFACE
+                const d1 = parseFloat(g.d1);
+                const d2 = parseFloat(g.d2);
+                const cp = parseFloat(g.c);
+                let moyD = !isNaN(d1) && !isNaN(d2) ? (d1+d2)/2 : (!isNaN(d1) ? d1 : (!isNaN(d2) ? d2 : 0));
+                let moyMat = (moyD + (nc = !isNaN(cp) ? cp*2 : 0)) / (cp ? 3 : 1);
+                if(isNaN(moyMat)) moyMat = 0;
 
-        // Navigation automatique Entrée
-        const inputs = document.querySelectorAll('.input-grade');
-        inputs.forEach((inp, i) => {
-            inp.onkeydown = (ev) => { if(ev.key === "Enter") inputs[i+1]?.focus(); };
-        });
-    }
+                return `
+                <div class="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name} <span class="text-indigo-400 text-[9px] ml-1">Coef ${sub.coef}</span></div>
+                    <div class="flex gap-2 items-center">
+                        <input type="number" placeholder="D1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none focus:ring-1 focus:ring-indigo-400">
+                        <input type="number" placeholder="D2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value)" class="w-12 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none focus:ring-1 focus:ring-indigo-400">
+                        <input type="number" placeholder="CP" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value)" class="w-14 p-2 bg-indigo-50 text-indigo-900 rounded-lg text-center font-black text-xs outline-none focus:ring-1 focus:ring-indigo-400">
+                        <div class="w-14 p-2 bg-emerald-500 text-white rounded-lg text-center font-black text-xs shadow-inner">
+                            ${moyMat > 0 ? moyMat.toFixed(2) : '--'}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
 
-    function maj(id, champ, val) {
-        const c = document.getElementById('sel-class').value;
-        const p = document.getElementById('sel-period').value;
-        if(!DATA.classes[c].grades[p][id]) DATA.classes[c].grades[p][id] = { maths: {d1:'', d2:'', c:''} };
-        DATA.classes[c].grades[p][id].maths[champ] = val;
-        localStorage.setItem('gestnotes_v4', JSON.stringify(DATA));
-    }
+        function renderStats() {
+            const classData = appState.classes[currentClassId];
+            if(!classData || !classData.students.length) return;
+            let totalMoy = 0;
+            classData.students.forEach(s => {
+                let p = 0, c = 0;
+                classData.subjects.forEach(sub => {
+                    const g = classData.grades[s.id]?.[sub.id] || {d1:0,d2:0,c:0};
+                    const mD = (parseFloat(g.d1)+parseFloat(g.d2)) / (g.d1&&g.d2?2:1) || 0;
+                    const mS = (mD + (parseFloat(g.c||0)*2)) / 3;
+                    p += mS * sub.coef; c += sub.coef;
+                });
+                totalMoy += (c > 0 ? p/c : 0);
+            });
+            document.getElementById('class-avg-display').textContent = (totalMoy / classData.students.length || 0).toFixed(2) + "/20";
+        }
 
-    window.onload = init;
-</script>
+        function addStudent() {
+            const input = document.getElementById('new-student-name');
+            if(!input.value.trim()) return;
+            appState.classes[currentClassId].students.push({
+                id: 'std_' + Date.now(),
+                lastName: input.value.toUpperCase(),
+                firstName: '',
+                matricule: 'REG-' + Math.floor(1000 + Math.random() * 9000)
+            });
+            input.value = ''; saveToStorage(); renderStudents();
+        }
+
+        function selectStudent(id) {
+            currentStudentId = id;
+            const student = appState.classes[currentClassId].students.find(s => s.id === id);
+            document.getElementById('welcome-msg').classList.add('hidden');
+            document.getElementById('editor-panel').classList.remove('hidden');
+            document.getElementById('current-student-display').textContent = student.lastName;
+            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ');
+            renderGradesFields();
+            renderStudents();
+        }
+
+        function renderStudents() {
+            const list = document.getElementById('student-list');
+            const students = appState.classes[currentClassId]?.students || [];
+            document.getElementById('badge-count').textContent = students.length;
+            list.innerHTML = students.map(s => `
+                <li onclick="selectStudent('${s.id}')" class="p-3 rounded-xl cursor-pointer transition ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
+                    <span class="font-bold text-[11px] uppercase">${s.lastName}</span>
+                </li>
+            `).join('');
+        }
+
+        function saveToStorage() { localStorage.setItem('gestnotes_full', JSON.stringify(appState)); }
+        function saveSettings() { appState.settings.semester = document.getElementById('semester').value; saveToStorage(); }
+        function printReport() { window.open(`bulletin.html?class=${currentClassId}&student=${currentStudentId}`, '_blank'); }
+        function exportData() { const blob = new Blob([JSON.stringify(appState)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "backup.json"; a.click(); }
+        function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { appState = JSON.parse(ev.target.result); changeLevel(); }; reader.readAsText(e.target.files[0]); }
+
+        window.onload = () => changeLevel();
+    </script>
 </body>
 </html>
