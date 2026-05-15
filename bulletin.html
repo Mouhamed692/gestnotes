@@ -1,405 +1,200 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
-    <title>Bulletin de Notes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulletin de Notes - GestNotes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Styles de base */
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            color: #000;
-            margin: 0;
-            padding: 20px;
-            font-size: 13px;
-            background-color: #f1f5f9;
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f1f5f9; 
         }
 
-        .bulletin-wrapper {
-            max-width: 1000px;
-            margin: 0 auto 20px auto;
-            background: white;
-            padding: 25px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
-
-        /* Panneau de saisie (Interface) */
-        .input-panel {
-            background: #ffffff;
-            padding: 15px;
-            border: 2px solid #fbbf24;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .input-panel label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .input-panel textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            box-sizing: border-box;
-            resize: vertical;
-        }
-
-        .btn-print {
-            margin-top: 10px;
-            padding: 10px 20px;
-            background-color: #059669;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        /* Gestion de l'impression */
         @media print {
             .no-print { display: none !important; }
-            body { background-color: white; padding: 0; }
-            .bulletin-wrapper { box-shadow: none; margin: 0; padding: 10px; max-width: 100%; }
-            @page { margin: 10mm; size: A4 landscape; }
+            body { background-color: white !important; padding: 0 !important; }
+            .print-container { 
+                box-shadow: none !important; 
+                margin: 0 !important; 
+                width: 100% !important;
+                padding: 10mm !important;
+            }
         }
 
-        /* --- STRUCTURE DU BULLETIN --- */
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-
-        .header-left {
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Centrage des éléments de gauche selon l'image */
-            text-align: center;
-            font-weight: bold;
-            font-size: 11px;
-            width: 250px;
-        }
-
-        .flag {
-            width: 50px;
-            height: 30px;
-            display: flex;
-            border: 1px solid #000;
-            margin-bottom: 5px;
-        }
-        .flag .green { background-color: #00853f; flex: 1; }
-        .flag .yellow { background-color: #fdef42; flex: 1; display: flex; justify-content: center; align-items: center; }
-        .flag .red { background-color: #e31b23; flex: 1; }
-        .flag .star { color: #00853f; font-size: 10px; }
-
-        .header-center { flex-grow: 1; text-align: center; }
-        .header-center h1 {
-            margin: 0;
-            font-size: 24px;
-            text-transform: uppercase;
-            text-decoration: underline;
-            margin-top: 15px;
-        }
-
-        .header-right {
-            width: 250px;
-            text-align: right;
-            font-weight: bold;
-        }
-
-        /* Infos Élève */
-        .student-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            border-top: 1px solid #000;
-            padding-top: 10px;
-        }
-        .student-col { width: 48%; line-height: 1.8; }
-        .student-col strong { text-transform: uppercase; }
-        .field { display: inline-block; min-width: 100px; }
-
-        /* Tableau des notes */
-        table.grades-table {
+        .flag-line {
+            height: 6px;
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-        }
-        table.grades-table th, table.grades-table td {
-            border: 1px solid #000;
-            padding: 5px;
-            text-align: center;
-        }
-        table.grades-table .col-discipline { text-align: left; text-transform: uppercase; font-weight: bold; }
-        .summary-row td { font-weight: bold; background-color: #f0f0f0; }
-
-        /* Footer & Décisions */
-        .footer-sections {
             display: flex;
-            justify-content: flex-start;
-            gap: 40px;
-            margin-top: 10px;
         }
-        .decision-table, .sanction-table { border-collapse: collapse; width: 280px; }
-        .decision-table td, .sanction-table td { border: 1px solid #000; padding: 4px 8px; font-size: 11px; }
-        .check-box { width: 25px; text-align: center; font-weight: bold; }
-
-        /* --- ZONE OBSERVATIONS (RECTANGLE NOIR) --- */
-        .observations-container {
-            border: 2px solid #000;
-            padding: 10px;
-            margin-top: 20px;
-            min-height: 100px;
-        }
-
-        .obs-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 50px; /* Espace pour les signatures */
-        }
-
-        .obs-title {
-            text-transform: uppercase;
-            font-weight: bold; /* Texte en gras comme demandé */
-            font-size: 13px;
-        }
+        .flag-green { background: #00853f; flex: 1; }
+        .flag-yellow { background: #fdef42; flex: 1; }
+        .flag-red { background: #e31b23; flex: 1; }
     </style>
 </head>
+<body class="p-4 md:p-10">
 
-<body>
-
-    <div id="error-msg" class="no-print" style="display:none; color:red; text-align:center; padding:50px;">
-        Données introuvables. Veuillez générer le bulletin depuis l'application.
+    <div class="no-print max-w-[210mm] mx-auto mb-6 flex justify-between items-center">
+        <button onclick="window.history.back()" class="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm text-slate-600 font-bold hover:bg-slate-50 transition border border-slate-200">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Retour
+        </button>
+        <button onclick="window.print()" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-black shadow-lg hover:bg-indigo-700 transition uppercase text-xs tracking-widest">
+            Imprimer le bulletin
+        </button>
     </div>
 
-    <div class="bulletin-wrapper no-print" id="setup-panel">
-        <div class="input-panel">
-            <label for="header-input">Modifier l'en-tête (IA / IEF / École) :</label>
-            <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE
-IEF PIKINE
-RENOVATION</textarea>
-            <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
+    <div class="print-container max-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-2xl rounded-sm p-12 relative">
+        
+        <div class="flag-line mb-6">
+            <div class="flag-green"></div>
+            <div class="flag-yellow"></div>
+            <div class="flag-red"></div>
         </div>
-    </div>
 
-    <div class="bulletin-wrapper" id="bulletin-content">
-        <div class="header-container">
-            <div class="header-left">
-                <div class="flag">
-                    <div class="green"></div>
-                    <div class="yellow"><span class="star">★</span></div>
-                    <div class="red"></div>
-                </div>
-                <div id="header-text-display">
-                    IA PIKINE / GUEDIAWAYE<br>IEF PIKINE<br>RENOVATION
-                </div>
+        <div class="flex justify-between border-b-4 border-slate-900 pb-6 mb-8">
+            <div>
+                <h1 class="text-xl font-black uppercase tracking-tight">République du Sénégal</h1>
+                <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Ministère de l'Éducation Nationale</p>
+                <p class="mt-4 text-sm font-bold text-indigo-600">Année Scolaire : <span id="display-year">2025-2026</span></p>
             </div>
-            <div class="header-center">
-                <h1>BULLETIN DE NOTES</h1>
-            </div>
-            <div class="header-right">
-                Année Scolaire: <span id="lbl-year">2025-2026</span><br>
-                <span id="lbl-semester">1er</span> Semestre
+            <div class="text-right">
+                <div class="bg-slate-900 text-white px-6 py-3 rounded-lg font-black text-xl mb-2">BULLETIN DE NOTES</div>
+                <p id="display-period" class="font-black text-emerald-500 uppercase tracking-widest text-sm">---</p>
             </div>
         </div>
 
-        <div class="student-info">
-            <div class="student-col">
-                <div><span class="field">Prénoms:</span> <strong><span id="lbl-firstname"></span></strong></div>
-                <div><span class="field">Né(e) le:</span> <strong id="lbl-birth"></strong> à <strong id="lbl-birthplace"></strong></div>
-                <div><span class="field">Matricule:</span> <strong id="lbl-matricule"></strong></div>
+        <div class="grid grid-cols-2 gap-8 bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100">
+            <div>
+                <span class="text-[10px] font-black text-slate-400 uppercase">Élève</span>
+                <h2 id="student-name" class="text-2xl font-black text-slate-900 uppercase">Chargement...</h2>
+                <p id="student-id" class="text-xs font-bold text-slate-500 mt-1 uppercase"></p>
             </div>
-            <div class="student-col">
-                <div><span class="field">Nom:</span> <strong><span id="lbl-lastname"></span></strong></div>
-                <div><span class="field">Classe:</span> <strong><span id="lbl-class"></span></strong></div>
-                <div><span class="field">Effectif:</span> <strong id="lbl-effectif"></strong> 
-                &nbsp;&nbsp; Redoublant: <strong id="lbl-redouble">NON</strong></div>
+            <div class="text-right border-l border-slate-200 pl-8">
+                <span class="text-[10px] font-black text-slate-400 uppercase">Classe & Niveau</span>
+                <h2 id="class-id" class="text-2xl font-black text-slate-900 uppercase">---</h2>
+                <p id="class-effectif" class="text-xs font-bold text-slate-500 mt-1 uppercase">Effectif : --</p>
             </div>
         </div>
 
-        <table class="grades-table">
+        <table class="w-full mb-8 text-sm">
             <thead>
-                <tr>
-                    <th rowspan="2">DISCIPLINES</th>
-                    <th colspan="2">Devoir</th>
-                    <th rowspan="2">Comp.</th>
-                    <th rowspan="2">Moy/20</th>
-                    <th rowspan="2">Coef</th>
-                    <th rowspan="2">Moy×Coef</th>
-                    <th rowspan="2">Rang</th>
-                    <th rowspan="2">Appréciations</th>
-                </tr>
-                <tr>
-                    <th>D1</th>
-                    <th>D2</th>
+                <tr class="bg-slate-900 text-white">
+                    <th class="p-4 text-left rounded-tl-xl">MATIÈRES</th>
+                    <th class="p-4 text-center">COEF</th>
+                    <th class="p-4 text-center">MOY. DEV</th>
+                    <th class="p-4 text-center">NOTE COMPO</th>
+                    <th class="p-4 text-center">MOYENNE</th>
+                    <th class="p-4 text-center rounded-tr-xl">POINTS</th>
                 </tr>
             </thead>
-            <tbody id="grades-body"></tbody>
-            <tfoot>
-                <tr class="summary-row">
-                    <td colspan="4">MOYENNE GÉNÉRALE: <span id="lbl-moy-gen"></span> /20</td>
-                    <td colspan="2">RANG: <span id="lbl-rank"></span></td>
-                    <td colspan="3">Absences: <span id="lbl-abs">0</span> | Retards: <span id="lbl-ret">0</span></td>
-                </tr>
-            </tfoot>
+            <tbody id="table-body" class="font-bold text-slate-700">
+                </tbody>
         </table>
 
-        <div class="footer-sections">
-            <table class="decision-table">
-                <tr><td>Satisfaisant / Doit continuer</td><td class="check-box" id="chk-satisfaisant"></td></tr>
-                <tr><td>Peut Mieux Faire</td><td class="check-box" id="chk-peut-mieux"></td></tr>
-                <tr><td>Insuffisant</td><td class="check-box" id="chk-insuffisant"></td></tr>
-                <tr><td>Risque de Redoubler</td><td class="check-box" id="chk-risque-redoubler"></td></tr>
-            </table>
-
-            <table class="sanction-table">
-                <tr><td>Félicitations</td><td class="check-box" id="chk-felicitations"></td></tr>
-                <tr><td>Encouragements</td><td class="check-box" id="chk-encouragement"></td></tr>
-                <tr><td>Tableau d'Honneur</td><td class="check-box" id="chk-tableau-honneur"></td></tr>
-                <tr><td>Avertissement</td><td class="check-box" id="chk-avertissement"></td></tr>
-            </table>
+        <div class="grid grid-cols-3 gap-4 mt-auto">
+            <div class="border-2 border-slate-900 rounded-2xl p-6 text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Moyenne Générale</p>
+                <p id="final-avg" class="text-4xl font-black text-slate-900">0.00</p>
+            </div>
+            <div class="border-2 border-slate-100 rounded-2xl p-6 text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Rang de l'élève</p>
+                <p id="final-rank" class="text-4xl font-black text-slate-400">-- / --</p>
+            </div>
+            <div class="bg-slate-900 rounded-2xl p-6 text-white">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Observation</p>
+                <p id="final-obs" class="text-sm font-bold italic leading-tight">Veuillez compléter toutes les notes.</p>
+            </div>
         </div>
 
-        <div class="observations-container">
-            <div class="obs-header">
-                <div class="obs-title">Observations du conseil des professeurs</div>
-                <div class="obs-title">Le Chef d'établissement</div>
+        <div class="grid grid-cols-3 gap-10 mt-16 text-center">
+            <div class="border-t border-slate-200 pt-4">
+                <p class="text-[10px] font-black uppercase text-slate-400 mb-8">Le Parent</p>
             </div>
+            <div class="border-t border-slate-200 pt-4">
+                <p class="text-[10px] font-black uppercase text-slate-400 mb-8">Le Professeur</p>
+            </div>
+            <div class="border-t border-slate-200 pt-4">
+                <p class="text-[10px] font-black uppercase text-slate-400 mb-8">Le Directeur</p>
+            </div>
+        </div>
+
+        <div class="absolute bottom-8 left-12 right-12 flex justify-between items-center text-[9px] font-bold text-slate-300 uppercase tracking-widest border-t pt-4">
+            <span>GestNotes Pro v4.0</span>
+            <span>Document Officiel</span>
         </div>
     </div>
 
     <script>
-window.onload = function () {
-    // Gestion de l'en-tête dynamique
-    const headerInput = document.getElementById('header-input');
-    const headerDisplay = document.getElementById('header-text-display');
-    headerInput.addEventListener('input', function () {
-        headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
-    });
+        const params = new URLSearchParams(window.location.search);
+        const classId = params.get('class');
+        const studentId = params.get('student');
+        const period = params.get('period');
 
-    // Récupération des paramètres URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const classId = urlParams.get('class');
-    const studentId = urlParams.get('student');
-    const period = urlParams.get('period') || "1";
-    const rawData = localStorage.getItem('gestnotes_v4');
+        const appState = JSON.parse(localStorage.getItem('gestnotes_v4'));
 
-    if (!rawData || !classId || !studentId) {
-        document.getElementById('error-msg').style.display = 'block';
-        document.getElementById('bulletin-content').style.display = 'none';
-        return;
-    }
+        function loadBulletin() {
+            if (!appState || !classId || !studentId) return;
 
-    const appState = JSON.parse(rawData);
-    const classData = appState.classes[classId];
-    const student = classData.students.find(s => s.id === studentId);
-    const periodGrades = classData.grades[period] || {};
+            const classData = appState.classes[classId];
+            const student = classData.students.find(s => s.id === studentId);
+            const periodGrades = classData.grades[period][studentId] || {};
 
-    // Remplissage des informations de base
-    document.getElementById('lbl-semester').textContent = period == "1" ? "1er" : period + "ème";
-    document.getElementById('lbl-firstname').textContent = student.firstName || "";
-    document.getElementById('lbl-lastname').textContent = student.lastName;
-    document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
-    document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
+            // Affichage Infos
+            document.getElementById('student-name').textContent = student.lastName;
+            document.getElementById('student-id').textContent = student.matricule || "REG-0000";
+            document.getElementById('class-id').textContent = classId.replace('_', ' ');
+            document.getElementById('display-period').textContent = period + (period == 1 ? "er" : "ème") + " Semestre";
+            document.getElementById('class-effectif').textContent = "Effectif : " + (classData.effectif || classData.students.length);
 
-    // --- 1. CALCUL DES MOYENNES GÉNÉRALES DE TOUS LES ÉLÈVES (Pour le Rang) ---
-    let allStudentsAverages = classData.students.map(s => {
-        let totalPoints = 0;
-        let totalCoefs = 0;
+            // Calculs
+            let totalPoints = 0;
+            let totalCoef = 0;
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = "";
 
-        classData.subjects.forEach(sub => {
-            const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
-            const d1 = parseFloat(g.d1);
-            const d2 = g.d2 !== '' ? parseFloat(g.d2) : d1;
-            const cp = parseFloat(g.c);
+            classData.subjects.forEach((sub, index) => {
+                const g = periodGrades[sub.id] || { d1: 0, d2: 0, c: 0 };
+                const d1 = parseFloat(g.d1) || 0;
+                const d2 = parseFloat(g.d2) || d1;
+                const cp = parseFloat(g.c) || 0;
+                
+                const moyDev = (d1 + d2) / 2;
+                const moySub = (moyDev + (cp * 2)) / 3;
+                const points = moySub * sub.coef;
 
-            if (!isNaN(d1) && !isNaN(cp)) {
-                const moyMatiere = (((d1 + d2) / 2) + (cp * 2)) / 3;
-                totalPoints += moyMatiere * sub.coef;
-                totalCoefs += sub.coef;
-            }
-        });
+                totalPoints += points;
+                totalCoef += sub.coef;
 
-        return {
-            id: s.id,
-            avg: totalCoefs > 0 ? totalPoints / totalCoefs : null
-        };
-    });
+                const row = `
+                    <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'} border-b border-slate-100">
+                        <td class="p-4 uppercase">${sub.name}</td>
+                        <td class="p-4 text-center">${sub.coef}</td>
+                        <td class="p-4 text-center">${moyDev.toFixed(2)}</td>
+                        <td class="p-4 text-center font-black">${cp.toFixed(2)}</td>
+                        <td class="p-4 text-center text-indigo-600">${moySub.toFixed(2)}</td>
+                        <td class="p-4 text-center font-black">${points.toFixed(2)}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
 
-    // Tri pour le classement
-    allStudentsAverages.sort((a, b) => (b.avg || 0) - (a.avg || 0));
-    
-    const studentEntry = allStudentsAverages.find(a => a.id === studentId);
-    const studentGenAvg = studentEntry ? studentEntry.avg : null;
-    const rank = studentGenAvg !== null ? allStudentsAverages.findIndex(a => a.id === studentId) + 1 : "-";
-
-    // --- 2. REMPLISSAGE DU TABLEAU DES NOTES ---
-    const tbody = document.getElementById('grades-body');
-    let totalCoef = 0;
-    let totalPoints = 0;
-
-    classData.subjects.forEach(sub => {
-        const g = periodGrades[studentId]?.[sub.id] || { d1: '', d2: '', c: '' };
-        const d1 = g.d1 !== '' ? parseFloat(g.d1) : '';
-        const d2 = g.d2 !== '' ? parseFloat(g.d2) : '';
-        const cp = g.c !== '' ? parseFloat(g.c) : '';
-
-        let moyMatStr = "", mxcStr = "", appreciation = "";
-
-        if (d1 !== '' && cp !== '') {
-            const valD1 = parseFloat(d1);
-            const valD2 = d2 !== '' ? parseFloat(d2) : valD1;
-            const valCP = parseFloat(cp);
+            const finalAvg = totalCoef > 0 ? (totalPoints / totalCoef) : 0;
+            document.getElementById('final-avg').textContent = finalAvg.toFixed(2);
             
-            const moyMat = (((valD1 + valD2) / 2) + (valCP * 2)) / 3;
-            moyMatStr = moyMat.toFixed(2);
-            const mxc = moyMat * sub.coef;
-            mxcStr = mxc.toFixed(2);
-            
-            totalPoints += mxc;
-            totalCoef += sub.coef;
-            
-            // Appréciation simple
-            if(moyMat >= 16) appreciation = "Excellent";
-            else if(moyMat >= 14) appreciation = "Bien";
-            else if(moyMat >= 12) appreciation = "A. Bien";
-            else if(moyMat >= 10) appreciation = "Passable";
-            else appreciation = "Insuffisant";
+            // Observation automatique
+            let obs = "";
+            if (finalAvg >= 16) obs = "Excellent travail. Félicitations du conseil.";
+            else if (finalAvg >= 14) obs = "Très bon travail. Continuez ainsi.";
+            else if (finalAvg >= 12) obs = "Bon travail. Des efforts à maintenir.";
+            else if (finalAvg >= 10) obs = "Passable. Doit redoubler d'ardeur au travail.";
+            else obs = "Insuffisant. Doit se ressaisir rapidement.";
+            document.getElementById('final-obs').textContent = obs;
         }
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td class="col-discipline">${sub.name}</td>
-            <td>${d1}</td><td>${d2}</td><td>${cp}</td>
-            <td style="font-weight:bold">${moyMatStr}</td>
-            <td>${sub.coef}</td>
-            <td style="font-weight:bold">${mxcStr}</td>
-            <td>-</td>
-            <td>${appreciation}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    // --- 3. AFFICHAGE DES RÉSULTATS FINAUX ---
-    document.getElementById('lbl-moy-gen').textContent = studentGenAvg ? studentGenAvg.toFixed(2) : "-";
-    document.getElementById('lbl-rank').textContent = rank + (rank === 1 ? "er" : "");
-
-    // Cochage automatique des cases de décision
-    if (studentGenAvg !== null) {
-        if (studentGenAvg >= 12) {
-            document.getElementById('chk-satisfaisant').textContent = "X";
-            if (studentGenAvg >= 14) document.getElementById('chk-felicitations').textContent = "X";
-        } else if (studentGenAvg >= 10) {
-            document.getElementById('chk-peut-mieux').textContent = "X";
-        } else {
-            document.getElementById('chk-insuffisant').textContent = "X";
-        }
-    }
-};
+        window.onload = loadBulletin;
     </script>
 </body>
 </html>
