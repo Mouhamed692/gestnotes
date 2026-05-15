@@ -218,6 +218,7 @@ input::-webkit-inner-spin-button {
             renderGradesFields();
             renderStats();
         }
+
 function renderGradesFields() {
     const container = document.getElementById('grades-grid');
     const classData = appState.classes[currentClassId];
@@ -229,38 +230,37 @@ function renderGradesFields() {
             <div class="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
                 <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name}</div>
                 <div class="flex gap-2">
-                    <input type="number" step="0.1" inputmode="decimal" class="grade-input" placeholder="D1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value)">
-                    <input type="number" step="0.1" inputmode="decimal" class="grade-input" placeholder="D2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value)">
-                    <input type="number" step="0.1" inputmode="decimal" class="grade-input bg-indigo-50" placeholder="CP" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value)">
+                    <input type="number" step="0.25" inputmode="decimal" class="grade-input" placeholder="D1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value)">
+                    <input type="number" step="0.25" inputmode="decimal" class="grade-input" placeholder="D2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value)">
+                    <input type="number" step="0.25" inputmode="decimal" class="grade-input bg-indigo-50" placeholder="CP" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value)">
                 </div>
             </div>`;
     }).join('');
 
-    // SYSTÈME DE NAVIGATION INTELLIGENTE
     const inputs = document.querySelectorAll('.grade-input');
     inputs.forEach((input, index) => {
-        // Sélectionne tout le texte quand on clique pour modifier plus vite
+        // Permet d'écraser la note existante en commençant à taper
         input.addEventListener('focus', () => input.select());
 
         input.addEventListener('keydown', (e) => {
-            if (e.key === "Enter" || e.key === "ArrowDown") {
+            // ON NE CHANGE DE CASE QUE SUR CES TOUCHES PRÉCISES :
+            if (e.key === "Enter") {
                 e.preventDefault();
-                inputs[index + 3]?.focus(); // Va à la ligne suivante (3 champs par ligne)
+                inputs[index + 1]?.focus(); // Passe simplement au champ suivant (D1 -> D2 -> CP -> Matière suivante)
+            }
+            
+            // Flèches pour naviguer comme dans Excel
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                inputs[index + 3]?.focus(); // Saute à la ligne du dessous
             }
             if (e.key === "ArrowUp") {
                 e.preventDefault();
-                inputs[index - 3]?.focus(); // Va à la ligne précédente
-            }
-            if (e.key === "ArrowRight" && input.selectionEnd === input.value.length) {
-                inputs[index + 1]?.focus();
-            }
-            if (e.key === "ArrowLeft" && input.selectionStart === 0) {
-                inputs[index - 1]?.focus();
+                inputs[index - 3]?.focus(); // Saute à la ligne du dessus
             }
         });
     });
 }
-
 // Fonction pour vider l'input et l'état
 function clearInput(element, subId, type) {
     const input = element.previousElementSibling;
