@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GestNotes Pro - 3 Semestres</title>
+    <title>GestNotes Pro - Multi-Périodes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
@@ -20,20 +20,13 @@
         .grade-input:focus { border-color: #4f46e5; background: white; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); outline: none; }
 
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        /* Empêche le zoom automatique sur iPhone lors de la saisie */
-@media screen and (max-width: 768px) {
-    input[type="text"], input[type="number"], select {
-        font-size: 16px !important;
-    }
-}
+        
+        @media screen and (max-width: 768px) {
+            input[type="text"], input[type="number"], select { font-size: 16px !important; }
+        }
 
-/* Style pour les lignes de notes impaires dans l'éditeur */
-#grades-grid > div:nth-child(odd) {
-    background-color: #ffffff;
-}
-#grades-grid > div:nth-child(even) {
-    background-color: #f1f5f9;
-}
+        #grades-grid > div:nth-child(odd) { background-color: #ffffff; }
+        #grades-grid > div:nth-child(even) { background-color: #f1f5f9; }
     </style>
 </head>
 <body>
@@ -57,18 +50,26 @@
         <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 items-end">
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Classe / Niveau</label>
-                <input type="text" id="class-level" value="TERMINALE" oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
+                <input type="text" id="class-level" list="levels-list" value="6ÉME" oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500">
+                <datalist id="levels-list">
+                    <option value="CI"><option value="CP"><option value="CE1"><option value="CE2"><option value="CM1"><option value="CM2">
+                    <option value="6ÉME"><option value="5ÉME"><option value="4ÉME"><option value="3ÉME">
+                    <option value="SECONDE"><option value="PREMIERE"><option value="TERMINALE">
+                </datalist>
             </div>
+
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Série / Identifiant</label>
-                <input type="text" id="class-section" value="S2" oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase">
+                <input type="text" id="class-section" list="sections-list" value="A" oninput="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500">
+                <datalist id="sections-list">
+                    <option value="A"><option value="B"><option value="C">
+                    <option value="S1"><option value="S2"><option value="L1"><option value="L2"><option value="L'1"><option value="STEG">
+                </datalist>
             </div>
             
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Effectif Total</label>
-                <div class="flex gap-1">
-                    <input type="number" id="input-effectif" placeholder="Ex: 45" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold" onchange="saveEffectif()">
-                </div>
+                <input type="number" id="input-effectif" placeholder="Ex: 45" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold outline-none" onchange="saveEffectif()">
             </div>
 
             <div>
@@ -79,6 +80,7 @@
                     <option value="3">3ème Semestre</option>
                 </select>
             </div>
+
             <div class="bg-emerald-50 rounded-2xl p-3 flex flex-col justify-center text-center border border-emerald-100">
                 <p class="text-[9px] font-black text-emerald-500 uppercase">Moyenne Période</p>
                 <p id="class-avg-display" class="text-2xl font-black text-emerald-900">0.00</p>
@@ -145,42 +147,30 @@
                     students: [], 
                     subjects: [], 
                     grades: { "1": {}, "2": {}, "3": {} },
-                    effectif: "" // Initialise l'effectif vide
+                    effectif: "" 
                 };
             }
             
-            // Charger l'effectif enregistré pour cette classe
             document.getElementById('input-effectif').value = appState.classes[currentClassId].effectif || "";
-
             renderSubjectsConfig();
             renderStudents();
             renderStats();
-            if(currentStudentId) renderGradesFields();
+            if(currentStudentId) selectStudent(currentStudentId);
         }
 
         function saveEffectif() {
             if (!currentClassId) return;
-            const val = document.getElementById('input-effectif').value;
-            appState.classes[currentClassId].effectif = val;
+            appState.classes[currentClassId].effectif = document.getElementById('input-effectif').value;
             saveToStorage();
         }
-function updatePeriod() {
-    currentPeriod = document.getElementById('semester').value;
-    
-    // Met à jour le titre du panneau d'édition si un élève est sélectionné
-    if(currentStudentId) {
-        const student = appState.classes[currentClassId].students.find(s => s.id === currentStudentId);
-        document.getElementById('current-class-display').textContent = 
-            currentClassId.replace('_', ' ') + " - Période " + currentPeriod;
-        renderGradesFields(); 
-    }
-    
-    renderStats(); // Recalcule la moyenne de classe pour la nouvelle période
-    saveToStorage();
-}
-       
 
-        // --- GESTION MATIÈRES ---
+        function updatePeriod() {
+            currentPeriod = document.getElementById('semester').value;
+            if(currentStudentId) selectStudent(currentStudentId); 
+            renderStats();
+            saveToStorage();
+        }
+
         function addSubject() {
             const name = document.getElementById('new-sub-name').value.trim();
             const coef = parseFloat(document.getElementById('new-sub-coef').value) || 1;
@@ -188,12 +178,6 @@ function updatePeriod() {
             appState.classes[currentClassId].subjects.push({ id: 'sub_' + Date.now(), name, coef });
             saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields();
             document.getElementById('new-sub-name').value = ''; document.getElementById('new-sub-coef').value = '';
-        }
-
-        function removeSubject(subId) {
-            if(!confirm("Supprimer cette matière ?")) return;
-            appState.classes[currentClassId].subjects = appState.classes[currentClassId].subjects.filter(s => s.id !== subId);
-            saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields(); renderStats();
         }
 
         function renderSubjectsConfig() {
@@ -207,7 +191,12 @@ function updatePeriod() {
             `).join('');
         }
 
-        // --- GESTION NOTES ---
+        function removeSubject(subId) {
+            if(!confirm("Supprimer cette matière ?")) return;
+            appState.classes[currentClassId].subjects = appState.classes[currentClassId].subjects.filter(s => s.id !== subId);
+            saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields(); renderStats();
+        }
+
         function updateVal(subId, type, val) {
             const periodGrades = appState.classes[currentClassId].grades[currentPeriod];
             if(!periodGrades[currentStudentId]) periodGrades[currentStudentId] = {};
@@ -228,9 +217,9 @@ function updatePeriod() {
                     <div class="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
                         <div class="flex-1 font-bold text-slate-700 text-xs uppercase">${sub.name}</div>
                         <div class="flex gap-2">
-                            <input type="number" step="0.25" inputmode="decimal" class="grade-input" placeholder="D1" value="${g.d1}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd1', this.value)">
-                            <input type="number" step="0.25" inputmode="decimal" class="grade-input" placeholder="D2" value="${g.d2}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd2', this.value)">
-                            <input type="number" step="0.25" inputmode="decimal" class="grade-input bg-indigo-50" placeholder="CP" value="${g.c}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'c', this.value)">
+                            <input type="number" step="0.25" class="grade-input" placeholder="D1" value="${g.d1}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd1', this.value)">
+                            <input type="number" step="0.25" class="grade-input" placeholder="D2" value="${g.d2}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd2', this.value)">
+                            <input type="number" step="0.25" class="grade-input bg-indigo-50" placeholder="CP" value="${g.c}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'c', this.value)">
                         </div>
                     </div>`;
             }).join('');
@@ -249,7 +238,7 @@ function updatePeriod() {
                     const d1 = parseFloat(g.d1) || 0;
                     const d2 = parseFloat(g.d2) || d1;
                     const cp = parseFloat(g.c) || 0;
-                    const mS = (( (d1+d2)/2 ) + (cp*2)) / 3;
+                    const mS = (((d1+d2)/2) + (cp*2)) / 3;
                     p += mS * sub.coef; c += sub.coef;
                 });
                 totalMoy += (c > 0 ? p/c : 0);
@@ -271,6 +260,7 @@ function updatePeriod() {
         function selectStudent(id) {
             currentStudentId = id;
             const student = appState.classes[currentClassId].students.find(s => s.id === id);
+            if(!student) return;
             document.getElementById('welcome-msg').classList.add('hidden');
             document.getElementById('editor-panel').classList.remove('hidden');
             document.getElementById('current-student-display').textContent = student.lastName;
@@ -300,8 +290,7 @@ function updatePeriod() {
                     document.getElementById('welcome-msg').classList.remove('hidden');
                     document.getElementById('editor-panel').classList.add('hidden');
                 }
-                saveToStorage();
-                renderStudents();
+                saveToStorage(); renderStudents();
             }
         }
         
