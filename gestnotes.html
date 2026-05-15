@@ -20,6 +20,20 @@
         .grade-input:focus { border-color: #4f46e5; background: white; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); outline: none; }
 
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        /* Empêche le zoom automatique sur iPhone lors de la saisie */
+@media screen and (max-width: 768px) {
+    input[type="text"], input[type="number"], select {
+        font-size: 16px !important;
+    }
+}
+
+/* Style pour les lignes de notes impaires dans l'éditeur */
+#grades-grid > div:nth-child(odd) {
+    background-color: #ffffff;
+}
+#grades-grid > div:nth-child(even) {
+    background-color: #f1f5f9;
+}
     </style>
 </head>
 <body>
@@ -150,13 +164,21 @@
             appState.classes[currentClassId].effectif = val;
             saveToStorage();
         }
-
-        function updatePeriod() {
-            currentPeriod = document.getElementById('semester').value;
-            if(currentStudentId) selectStudent(currentStudentId); 
-            renderStats();
-            saveToStorage();
-        }
+function updatePeriod() {
+    currentPeriod = document.getElementById('semester').value;
+    
+    // Met à jour le titre du panneau d'édition si un élève est sélectionné
+    if(currentStudentId) {
+        const student = appState.classes[currentClassId].students.find(s => s.id === currentStudentId);
+        document.getElementById('current-class-display').textContent = 
+            currentClassId.replace('_', ' ') + " - Période " + currentPeriod;
+        renderGradesFields(); 
+    }
+    
+    renderStats(); // Recalcule la moyenne de classe pour la nouvelle période
+    saveToStorage();
+}
+       
 
         // --- GESTION MATIÈRES ---
         function addSubject() {
