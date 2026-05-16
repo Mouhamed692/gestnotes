@@ -157,7 +157,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            }
+        }
 
         .flag .red {
             background-color: #e31b23;
@@ -221,6 +221,11 @@
             border: 1px solid #000;
             padding: 4px 6px;
             text-align: center;
+        }
+
+        table.grades-table th {
+            background-color: #f8fafc;
+            font-weight: bold;
         }
 
         table.grades-table .col-discipline {
@@ -464,7 +469,12 @@ RENOVATION</textarea>
         function checkIsPrimaire(cId) {
             if (!cId) return false;
             const level = cId.split('_')[0].toUpperCase();
-            return ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(level);
+            // Prise en compte de la nomenclature classique du Sénégal (CI à CM2) et de vos ajouts numériques (6EME à 1ERE ETAPE)
+            const classesPrimaire = [
+                "CI", "CP", "CE1", "CE2", "CM1", "CM2", 
+                "6EME", "5EME", "4EME", "3EME", "2EME", "1ERE"
+            ];
+            return classesPrimaire.some(pLevel => level.startsWith(pLevel));
         }
 
         window.onload = function () {
@@ -510,7 +520,39 @@ RENOVATION</textarea>
             document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
             document.getElementById('lbl-abs-ret').textContent = `${student.absences || 0} Abs / ${student.retards || 0} Ret`;
 
-            // On va chercher dans classData.grades[period] s'il existe une séparation par période
+            // Injection dynamique de l'en-tête du tableau selon le cycle
+            const thead = document.getElementById('grades-header');
+            if (isPrimaireMode) {
+                thead.innerHTML = `
+                    <tr>
+                        <th rowspan="2" style="width: 30%;">Disciplines</th>
+                        <th colspan="2">Notes Évaluations</th>
+                        <th rowspan="2">Note Obtenue</th>
+                        <th rowspan="2">Barème</th>
+                        <th rowspan="2">Rang</th>
+                        <th rowspan="2">Appréciations</th>
+                    </tr>
+                    <tr>
+                        <th>Devoir scientifique / Contrôle</th>
+                        <th>Composition</th>
+                    </tr>
+                `;
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th style="width: 25%;">Disciplines</th>
+                        <th>Devoir 1</th>
+                        <th>Devoir 2</th>
+                        <th>Composition</th>
+                        <th>Moyenne /20</th>
+                        <th>Coef</th>
+                        <th>Total Points</th>
+                        <th>Rang</th>
+                        <th>Appréciations</th>
+                    </tr>
+                `;
+            }
+
             const periodGrades = (classData.grades && classData.grades[period]) ? classData.grades[period] : (classData.grades || {});
 
             let subjectRanksMap = {};
@@ -538,7 +580,7 @@ RENOVATION</textarea>
                             const moySub = (valD1 + valCp) / 2;
                             
                             subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
-                            primPointsObtenus += (moySub / 20) * sub.coef; // Ajustement sur le barème max de la matière
+                            primPointsObtenus += (moySub / 20) * sub.coef;
                             primBaremeTotal += sub.coef;
                             hasGrades = true;
                         }
@@ -595,7 +637,6 @@ RENOVATION</textarea>
                 const d2 = g.d2 !== '' ? parseFloat(g.d2) : '';
                 const comp = g.c !== '' ? parseFloat(g.c) : '';
 
-                // Extraction du rang par matière
                 const rankInSubjectList = subjectRanksMap[sub.id];
                 const itemIndex = rankInSubjectList.findIndex(x => x.studentId === studentId);
                 let subjectRankStr = "-";
@@ -611,9 +652,8 @@ RENOVATION</textarea>
                     if (d1 !== '' || comp !== '') {
                         const valD1 = d1 !== '' ? d1 : 0;
                         const valComp = comp !== '' ? comp : valD1;
-                        const calculatedMoy = (valD1 + valComp) / 2; // Moyenne de la discipline sur 20
+                        const calculatedMoy = (valD1 + valComp) / 2;
 
-                        // Conversion sur le barème max de la matière de l'étape primaire (ex: /40 ou /20)
                         const noteSurBareme = (calculatedMoy / 20) * sub.coef;
 
                         noteObtenueStr = noteSurBareme.toFixed(2).replace('.', ',');
@@ -663,7 +703,7 @@ RENOVATION</textarea>
                 tbody.appendChild(tr);
             });
 
-            // Étape 3 : Calcul final et pied de tableau (Génération des lignes de résumés)
+            // Étape 3 : Calcul final et pied de tableau
             const tfoot = document.getElementById('grades-footer');
             let finalAvg = 0;
             const displayRank = myRankIndex > 0 ? `${myRankIndex} / ${totalElevesComptes}` : "-";
@@ -672,8 +712,8 @@ RENOVATION</textarea>
                 finalAvg = totalPrimBareme > 0 ? (totalPrimObtenu / totalPrimBareme) * 10 : 0;
                 tfoot.innerHTML = `
                     <tr class="total-row">
-                        <td colspan="3" class="lbl-total">TOTAL DES POINTS</td>
-                        <td id="lbl-tot-pts" colspan="2">${totalPrimObtenu.toFixed(2).replace('.', ',')} / ${totalPrimBareme}</td>
+                        <td colspan="3" class="lbl-total" style="text-align: right; padding-right: 15px;">TOTAL DES POINTS :</td>
+                        <td id="lbl-tot-pts" colspan="2" style="text-align: left; padding-left: 15px;">${totalPrimObtenu.toFixed(2).replace('.', ',')} / ${totalPrimBareme}</td>
                         <td></td>
                         <td></td>
                     </tr>
@@ -702,9 +742,8 @@ RENOVATION</textarea>
                 `;
             }
 
-            // Étape 4 : Système de coches automatiques des décisions et mentions
+            // Étape 4 : Coche automatique des décisions et mentions d'honneur
             if (totalElevesComptes > 0 && ((isPrimaireMode && totalPrimBareme > 0) || (!isPrimaireMode && totalCoef > 0))) {
-                // Pour que la logique de décision reste uniforme, on ramène fictivement la moyenne primaire (/10) sur 20
                 const checkAvg = isPrimaireMode ? finalAvg * 2 : finalAvg;
 
                 if (checkAvg >= 12) {
