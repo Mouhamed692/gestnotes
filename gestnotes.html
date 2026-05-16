@@ -77,9 +77,7 @@
 
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Période</label>
-                <select id="semester" onchange="updatePeriod()" class="w-full bg-indigo-600 text-white border-none rounded-2xl p-3 text-xs sm:text-sm font-black shadow-lg">
-                    <option value="1">1er Semestre</option><option value="2">2ème Semestre</option><option value="3">3ème Semestre</option>
-                </select>
+                <select id="semester" onchange="updatePeriod()" class="w-full bg-indigo-600 text-white border-none rounded-2xl p-3 text-xs sm:text-sm font-black shadow-lg"></select>
             </div>
 
             <div class="col-span-2 sm:col-span-3 lg:col-span-1 bg-emerald-50 rounded-2xl p-3 flex flex-col justify-center text-center border border-emerald-100 mt-2 sm:mt-0">
@@ -170,7 +168,7 @@
                 </div>
 
                 <div id="welcome-msg" class="bg-white rounded-3xl p-10 sm:p-16 text-center border-2 border-dashed border-slate-200">
-                    <p class="text-slate-400 font-bold uppercase text-[9px] tracking-widest italic">Sélectionnez un élève pour saisir les notes</p>
+                    <p class="text-slate-400 font-bold uppercase text-[9px] tracking-widest italic">Sélectionnez un élève pour saisir les notes. Appuyez sur ENTRÉE pour passer à l'élève suivant.</p>
                 </div>
             </div>
         </div>
@@ -210,6 +208,33 @@
             return ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(level);
         }
 
+        // Met à jour dynamiquement les périodes (Trimestres pour primaire, Semestres pour le reste)
+        function updatePeriodDropdownOptions() {
+            const periodSelect = document.getElementById('semester');
+            const oldVal = periodSelect.value;
+            
+            if (isPrimaire()) {
+                periodSelect.innerHTML = `
+                    <option value="1">1er Trimestre</option>
+                    <option value="2">2ème Trimestre</option>
+                    <option value="3">3ème Trimestre</option>
+                `;
+            } else {
+                periodSelect.innerHTML = `
+                    <option value="1">1er Semestre</option>
+                    <option value="2">2ème Semestre</option>
+                `;
+            }
+            
+            // Tente de conserver la période sélectionnée si elle existe toujours
+            if ([...periodSelect.options].some(o => o.value === oldVal)) {
+                periodSelect.value = oldVal;
+            } else {
+                periodSelect.value = "1";
+            }
+            currentPeriod = periodSelect.value;
+        }
+
         function autoLoadSubjects() {
             const level = document.getElementById('class-level').value;
             let list = [];
@@ -228,7 +253,9 @@
 
         function changeLevel() {
             currentClassId = `${document.getElementById('class-level').value}_${document.getElementById('class-section').value}`;
-            currentPeriod = document.getElementById('semester').value;
+            
+            updatePeriodDropdownOptions();
+            
             if (!appState.classes[currentClassId]) {
                 appState.classes[currentClassId] = { students: [], subjects: [], grades: { "1": {}, "2": {}, "3": {} }, effectif: "" };
             }
@@ -356,6 +383,40 @@
             document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
         }
 
+        // Gère la touche ENTRÉE pour sauter à l'élève suivant
+        function handleKeyDown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const students = appState.classes[currentClassId]?.students || [];
+                const currentIndex = students.findIndex(s => s.id === currentStudentId);
+                
+                if (currentIndex !== -1 && currentIndex < students.length - 1) {
+                    const nextStudent = students[currentIndex + 1];
+                    // On retient l'index de l'input actif (d1, d2 ou c) pour le focaliser chez le prochain élève
+                    let activeClassName = "";
+                    if (document.activeElement.classList.contains('input-d1')) activeClassName = '.input-d1';
+                    else if (document.activeElement.classList.contains('input-d2')) activeClassName = '.input-d2';
+                    else if (document.activeElement.classList.contains('input-c')) activeClassName = '.input-c';
+                    
+                    const activeRowIndex = [...document.querySelectorAll('.grade-row-item')].indexOf(document.activeElement.closest('.grade-row-item'));
+
+                    selectStudent(nextStudent.id);
+                    
+                    // Remettre le focus sur la même case pour le nouvel élève
+                    setTimeout(() => {
+                        const rows = document.querySelectorAll('.grade-row-item');
+                        if (rows[activeRowIndex] && activeClassName) {
+                            const targetInput = rows[activeRowIndex].querySelector(activeClassName);
+                            if (targetInput) {
+                                targetInput.focus();
+                                targetInput.select();
+                            }
+                        }
+                    }, 50);
+                }
+            }
+        }
+
         function renderGradesFields() {
             const container = document.getElementById('grades-grid');
             const classData = appState.classes[currentClassId];
@@ -376,9 +437,9 @@
                             ${sub.name} <span class="text-indigo-400 font-normal text-[9px]">${isPrimaire() ? '(Sur ' + sub.coef + ')' : ''}</span>
                         </div>
                         <div class="flex items-center gap-2 justify-end">
-                            <input type="number" step="0.25" class="input-d1 grade-input" placeholder="${pD1}" value="${g.d1}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd1', this.value, this)">
-                            <input type="number" step="0.25" class="input-d2 grade-input" placeholder="${pD2}" value="${g.d2}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd2', this.value, this)">
-                            <input type="number" step="0.25" class="input-c grade-input bg-indigo-50" placeholder="${pC}" value="${g.c}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'c', this.value, this)">
+                            <input type="number" step="0.25" class="input-d1 grade-input" placeholder="${pD1}" value="${g.d1}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd1', this.value, this)" onkeydown="handleKeyDown(event)">
+                            <input type="number" step="0.25" class="input-d2 grade-input" placeholder="${pD2}" value="${g.d2}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd2', this.value, this)" onkeydown="handleKeyDown(event)">
+                            <input type="number" step="0.25" class="input-c grade-input bg-indigo-50" placeholder="${pC}" value="${g.c}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'c', this.value, this)" onkeydown="handleKeyDown(event)">
                             <div class="flex flex-col items-center ml-1">
                                 <span class="text-[8px] text-indigo-500 font-black uppercase mb-0.5">${labelMoy}</span>
                                 <input type="text" value="${initialMoy}" disabled class="input-moy w-12 h-10 bg-indigo-900 text-emerald-400 font-black text-center text-xs rounded-xl border-none cursor-not-allowed">
@@ -391,7 +452,6 @@
             document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
         }
 
-        // Modification de la fonction d'ajout pour prendre en compte le Prénom et le Nom
         function addStudent() {
             const lastNameInput = document.getElementById('new-student-lastname');
             const firstNameInput = document.getElementById('new-student-firstname');
@@ -424,9 +484,9 @@
             document.getElementById('welcome-msg').classList.add('hidden');
             document.getElementById('editor-panel').classList.remove('hidden');
             
-            // Affichage combiné Prénom + Nom dans l'en-tête de saisie des notes
+            const typePeriodeLabel = isPrimaire() ? "Trimestre " : "Semestre ";
             document.getElementById('current-student-display').textContent = `${student.firstName} ${student.lastName}`;
-            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ') + " - Période " + currentPeriod;
+            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ') + " - " + typePeriodeLabel + currentPeriod;
             renderGradesFields(); renderStudents();
         }
 
@@ -463,7 +523,7 @@
                     let totalBaremesMax = 0;
 
                     classData.subjects.forEach(sub => {
-                        const g = classData.grades[currentPeriod][s.id]?.[sub.id] || {d1:'', d2:'', c:''};
+                        const g = classData.grades[currentPeriod]?.[s.id]?.[sub.id] || {d1:'', d2:'', c:''};
                         const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, sub.coef);
                         if (mS !== '--') {
                             totalPointsObtenus += parseFloat(mS);
@@ -475,7 +535,7 @@
                 } else {
                     let p = 0, c = 0;
                     classData.subjects.forEach(sub => {
-                        const g = classData.grades[currentPeriod][s.id]?.[sub.id] || {d1:0,d2:0,c:0};
+                        const g = classData.grades[currentPeriod]?.[s.id]?.[sub.id] || {d1:0,d2:0,c:0};
                         const mS = (((parseFloat(g.d1)||0) + (parseFloat(g.d2)||parseFloat(g.d1)||0))/2 + (parseFloat(g.c)||0)*2)/3;
                         p += mS * sub.coef; c += sub.coef;
                     });
