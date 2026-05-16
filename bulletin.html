@@ -13,7 +13,6 @@
             padding: 20px;
             font-size: 13px;
             background-color: #f1f5f9;
-            /* Fond gris clair pour l'interface */
         }
 
         .bulletin-wrapper {
@@ -29,7 +28,6 @@
             background: #ffffff;
             padding: 15px;
             border: 2px solid #fbbf24;
-            /* Couleur Ambre */
             border-radius: 8px;
             margin-bottom: 20px;
             display: flex;
@@ -276,9 +274,8 @@
             font-size: 13px;
         }
 
-        /* Rectangle d'observation sans bordure gauche */
         .obs-box-container {
-            width: 50%;
+            width: 45%;
             margin-top: 10px;
         }
 
@@ -286,14 +283,26 @@
             border-top: 1px solid #000;
             border-bottom: 1px solid #000;
             border-right: 1px solid #000;
-            border-left: none; /* Supprime la largeur de gauche */
-            height: 60px; /* Espace pour écrire l'observation */
+            border-left: none;
+            height: 60px;
             margin-top: 5px;
         }
 
-        .obs-right {
+        .signatures-container {
+            width: 50%;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .sig-block {
             text-align: center;
-            width: 300px;
+            width: 48%;
+        }
+
+        .sig-space {
+            height: 60px;
         }
 
         #error-msg {
@@ -348,7 +357,7 @@ RENOVATION</textarea>
             </div>
             <div class="header-right">
                 Année Scolaire: <span id="lbl-year">2025-2026</span><br>
-                <span id="lbl-semester">1er</span> Semestre
+                <span id="lbl-period-type">Semestre</span> : <span id="lbl-semester">1er</span>
             </div>
         </div>
 
@@ -359,7 +368,7 @@ RENOVATION</textarea>
                 <div><span class="field">Matricule:</span> <strong id="lbl-matricule"></strong></div>
             </div>
             <div class="student-col">
-                <div><span class="field">Nom</span> <strong><span id="lbl-lastname"></span></strong></div>
+                <div><span class="field">Nom :</span> <strong><span id="lbl-lastname"></span></strong></div>
                 <div><span class="field">Classe:</span> <strong><span id="lbl-class"></span></strong></div>
                 <div><span class="field">Nbre d'élèves:</span> <strong id="lbl-effectif"></strong></div>
                 <div><span class="field">Absences / Retards:</span> <strong id="lbl-abs-ret">0</strong></div>
@@ -367,11 +376,9 @@ RENOVATION</textarea>
         </div>
 
         <table class="grades-table">
-            <thead id="grades-header">
-                </thead>
+            <thead id="grades-header"></thead>
             <tbody id="grades-body"></tbody>
-            <tfoot id="grades-footer">
-                </tfoot>
+            <tfoot id="grades-footer"></tfoot>
         </table>
 
         <div class="footer-sections">
@@ -427,14 +434,23 @@ RENOVATION</textarea>
                 <div>Observations du conseil des professeurs</div>
                 <div class="obs-box"></div>
             </div>
-            <div class="obs-right" style="margin-top: 10px;">Le Chef d'Établissement</div>
+            
+            <div class="signatures-container">
+                <div class="sig-block">
+                    <div>Le Titulaire de Classe</div>
+                    <div class="sig-space"></div>
+                </div>
+                <div class="sig-block">
+                    <div>Le Chef d'Établissement</div>
+                    <div class="sig-space"></div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         function getAppreciation(note, max = 20) {
             if (note === null || note === undefined || note === '') return "";
-            // Ramener sur 20 pour utiliser la même échelle d'appréciations
             const note20 = max !== 20 ? (note / max) * 20 : note;
             if (note20 < 4) return "Très Faible";
             if (note20 < 8) return "Faible";
@@ -445,7 +461,6 @@ RENOVATION</textarea>
             return "Excellent";
         }
 
-        // Détection adaptative du niveau primaire
         function checkIsPrimaire(cId) {
             if (!cId) return false;
             const level = cId.split('_')[0].toUpperCase();
@@ -485,11 +500,10 @@ RENOVATION</textarea>
             document.title = "Bulletin - " + student.lastName;
 
             document.getElementById('lbl-year').textContent = "2025-2026";
+            document.getElementById('lbl-period-type').textContent = isPrimaireMode ? "Trimestre" : "Semestre";
             document.getElementById('lbl-semester').textContent = period + (period == "1" ? "er" : "ème");
             
-            // Correction ici : Recherche adaptative de la clé du prénom (firstName ou firstname)
             document.getElementById('lbl-firstname').textContent = student.firstName || student.firstname || "";
-            
             document.getElementById('lbl-lastname').textContent = student.lastName;
             document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
             document.getElementById('lbl-matricule').textContent = student.matricule || 'REG-' + Math.floor(1000+Math.random()*9000);
@@ -498,7 +512,7 @@ RENOVATION</textarea>
 
             const periodGrades = (classData.grades && classData.grades[period]) ? classData.grades[period] : (classData.grades || {});
 
-            // Génération dynamique de l'en-tête du tableau de notes
+            // Génération dynamique de l'en-tête
             const thead = document.getElementById('grades-header');
             if (isPrimaireMode) {
                 thead.innerHTML = `
@@ -531,14 +545,18 @@ RENOVATION</textarea>
                 `;
             }
 
-            // Logique de tri automatique pour trouver le rang de la classe adaptatif ET la moyenne globale de la classe
+            // Structure pour stocker les notes de toute la classe par matière afin de trier les rangs
+            let subjectRanksMap = {};
+            classData.subjects.forEach(sub => { subjectRanksMap[sub.id] = []; });
+
             let ranks = [];
             let totalMoyennesClasse = 0;
             let totalElevesComptes = 0;
 
+            // Étape 1 : Collecter et calculer les notes de CHAQUE élève pour les rangs globaux et par matière
             classData.students.forEach(s => {
-                let stPoints = 0, stCoef = 0; // Mode secondaire
-                let primPointsObtenus = 0, primBaremeTotal = 0; // Mode primaire
+                let stPoints = 0, stCoef = 0;
+                let primPointsObtenus = 0, primBaremeTotal = 0;
                 let hasGrades = false;
 
                 classData.subjects.forEach(sub => {
@@ -551,6 +569,8 @@ RENOVATION</textarea>
                             const valD1 = d1 !== null ? d1 : 0;
                             const valCp = cp !== null ? cp : valD1;
                             const moySub = (valD1 + valCp) / 2;
+                            
+                            subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
                             primPointsObtenus += moySub;
                             primBaremeTotal += sub.coef;
                             hasGrades = true;
@@ -558,8 +578,14 @@ RENOVATION</textarea>
                     } else {
                         const d2 = g.d2 !== '' ? parseFloat(g.d2) : d1;
                         if (d1 !== null || cp !== null) {
-                            const moyDev = d1 !== null ? (d2 !== null ? (d1 + d2) / 2 : d1) : 0;
-                            const moySub = cp !== null ? (moyDev + (cp * 2)) / 3 : moyDev;
+                            const valD1 = d1 !== null ? d1 : 0;
+                            const valD2 = d2 !== null ? d2 : valD1;
+                            const valComp = cp !== null ? cp : 0;
+
+                            const moyDev = (valD1 + valD2) / 2;
+                            const moySub = cp !== null ? (moyDev + (valComp * 2)) / 3 : moyDev;
+
+                            subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
                             stPoints += moySub * sub.coef;
                             stCoef += sub.coef;
                             hasGrades = true;
@@ -569,38 +595,51 @@ RENOVATION</textarea>
 
                 if (isPrimaireMode) {
                     const finalPrimAvg = primBaremeTotal > 0 ? (primPointsObtenus / primBaremeTotal) * 10 : 0;
-                    ranks.push({ id: s.id, avg: finalPrimAvg });
                     if (hasGrades) {
+                        ranks.push({ id: s.id, avg: finalPrimAvg });
                         totalMoyennesClasse += finalPrimAvg;
                         totalElevesComptes++;
                     }
                 } else {
                     const finalSecAvg = stCoef > 0 ? (stPoints / stCoef) : 0;
-                    ranks.push({ id: s.id, avg: finalSecAvg });
                     if (hasGrades) {
+                        ranks.push({ id: s.id, avg: finalSecAvg });
                         totalMoyennesClasse += finalSecAvg;
                         totalElevesComptes++;
                     }
                 }
             });
+
+            // Trier les listes pour extraire les rangs par matière
+            Object.keys(subjectRanksMap).forEach(subId => {
+                subjectRanksMap[subId].sort((a, b) => b.score - a.score);
+            });
+
             ranks.sort((a, b) => b.avg - a.avg);
             const myRankIndex = ranks.findIndex(r => r.id === studentId) + 1;
-
-            // Calcul global final de la moyenne générale de la classe (parmi les élèves évalués)
             const moyenneClasseGlobale = totalElevesComptes > 0 ? (totalMoyennesClasse / totalElevesComptes).toFixed(2) : "0,00";
 
-            // Remplissage des lignes de disciplines
+            // Étape 2 : Remplissage et rendu HTML des lignes
             const tbody = document.getElementById('grades-body');
             tbody.innerHTML = "";
 
-            let totalCoef = 0, totalPoints = 0; // Mode secondaire
-            let totalPrimObtenu = 0, totalPrimBareme = 0; // Mode primaire
+            let totalCoef = 0, totalPoints = 0;
+            let totalPrimObtenu = 0, totalPrimBareme = 0;
 
             classData.subjects.forEach(sub => {
                 const g = periodGrades[studentId]?.[sub.id] || { d1: '', d2: '', c: '' };
                 const d1 = g.d1 !== '' ? parseFloat(g.d1) : '';
                 const d2 = g.d2 !== '' ? parseFloat(g.d2) : '';
                 const comp = g.c !== '' ? parseFloat(g.c) : '';
+
+                // Trouver le rang de l'élève pour cette matière spécifique
+                const rankInSubjectList = subjectRanksMap[sub.id];
+                const itemIndex = rankInSubjectList.findIndex(x => x.studentId === studentId);
+                let subjectRankStr = "-";
+                if (itemIndex !== -1) {
+                    const r = itemIndex + 1;
+                    subjectRankStr = r + (r === 1 ? "er" : "e");
+                }
 
                 const tr = document.createElement('tr');
 
@@ -623,7 +662,7 @@ RENOVATION</textarea>
                         <td>${comp !== '' ? comp.toFixed(2).replace('.', ',') : ''}</td>
                         <td style="font-weight: bold;">${noteObtenueStr}</td>
                         <td style="color: #475569;">/${sub.coef}</td>
-                        <td>-</td>
+                        <td style="font-weight: bold; color: #1e1b4b;">${subjectRankStr}</td>
                         <td>${app}</td>
                     `;
                 } else {
@@ -648,16 +687,20 @@ RENOVATION</textarea>
                     tr.innerHTML = `
                         <td class="col-discipline">${sub.name}</td>
                         <td>${d1}</td><td>${d2}</td><td>${comp}</td>
-                        <td>${moy20.replace('.', ',')}</td><td>${sub.coef}</td><td>${mxcoef.replace('.', ',')}</td>
-                        <td>-</td><td>${app}</td>
+                        <td style="font-weight: bold;">${moy20.replace('.', ',')}</td>
+                        <td>${sub.coef}</td>
+                        <td style="font-weight: bold;">${mxcoef.replace('.', ',')}</td>
+                        <td style="font-weight: bold; color: #1e1b4b;">${subjectRankStr}</td>
+                        <td>${app}</td>
                     `;
                 }
                 tbody.appendChild(tr);
             });
 
-            // Injection dynamique du footer avec l'intégration de la moyenne de classe
+            // Étape 3 : Calcul final et pied de tableau
             const tfoot = document.getElementById('grades-footer');
             let finalAvg = 0;
+            const displayRank = myRankIndex > 0 ? `${myRankIndex} / ${totalElevesComptes}` : "-";
 
             if (isPrimaireMode) {
                 finalAvg = totalPrimBareme > 0 ? (totalPrimObtenu / totalPrimBareme) * 10 : 0;
@@ -670,7 +713,7 @@ RENOVATION</textarea>
                     </tr>
                     <tr class="summary-row">
                         <td colspan="3" class="lbl-moy">Moyenne Générale : <span id="lbl-moy-gen">${finalAvg.toFixed(2).replace('.', ',')}</span> /10</td>
-                        <td colspan="2">Rang : <span id="lbl-rank">${myRankIndex} / ${classData.students.length}</span></td>
+                        <td colspan="2">Rang : <span id="lbl-rank">${displayRank}</span></td>
                         <td colspan="2">Moyenne Classe : <span>${moyenneClasseGlobale.replace('.', ',')}</span> /10</td>
                     </tr>
                 `;
@@ -678,28 +721,28 @@ RENOVATION</textarea>
                 finalAvg = totalCoef > 0 ? (totalPoints / totalCoef) : 0;
                 tfoot.innerHTML = `
                     <tr class="total-row">
-                        <td colspan="5" class="lbl-total">TOTAL</td>
+                        <td colspan="4" class="lbl-total">TOTAL</td>
+                        <td></td>
                         <td id="lbl-tot-coef">${totalCoef || ''}</td>
                         <td id="lbl-tot-pts">${totalPoints ? totalPoints.toFixed(2).replace('.', ',') : ''}</td>
                         <td></td>
                         <td></td>
                     </tr>
                     <tr class="summary-row">
-                        <td colspan="4" class="lbl-moy">Moyenne : <span id="lbl-moy-gen">${finalAvg.toFixed(2).replace('.', ',')}</span> /20</td>
-                        <td colspan="2">Rang : <span id="lbl-rank">${myRankIndex} / ${classData.students.length}</span></td>
+                        <td colspan="4" class="lbl-moy">Moyenne Générale : <span id="lbl-moy-gen">${finalAvg.toFixed(2).replace('.', ',')}</span> /20</td>
+                        <td colspan="2">Rang : <span id="lbl-rank">${displayRank}</span></td>
                         <td colspan="3">Moyenne Classe : <span>${moyenneClasseGlobale.replace('.', ',')}</span> /20</td>
                     </tr>
                 `;
             }
 
-            // Système adaptatif automatique des coches de décisions
-            if ((isPrimaireMode && totalPrimBareme > 0) || (!isPrimaireMode && totalCoef > 0)) {
-                // Pour la vérification, on aligne les échelles (si primaire on multiplie la moyenne par 2 pour simuler un système sur 20)
+            // Étape 4 : Système automatique des coches de décisions
+            if (totalElevesComptes > 0 && ((isPrimaireMode && totalPrimBareme > 0) || (!isPrimaireMode && totalCoef > 0))) {
                 const checkAvg = isPrimaireMode ? finalAvg * 2 : finalAvg;
 
                 if (checkAvg >= 12) {
                     document.getElementById('chk-satisfaisant').textContent = 'X';
-                    if (checkAvg >= 15) document.getElementById('chk-felicitations').textContent = 'X';
+                    if (checkAvg >= 16) document.getElementById('chk-felicitations').textContent = 'X';
                     else if (checkAvg >= 14) document.getElementById('chk-encouragement').textContent = 'X';
                     else document.getElementById('chk-tableau-honneur').textContent = 'X';
                 } else if (checkAvg >= 10) {
