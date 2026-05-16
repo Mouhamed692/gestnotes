@@ -347,41 +347,16 @@ RENOVATION</textarea>
                 <div><span class="field">Nom</span> <strong><span id="lbl-lastname"></span></strong></div>
                 <div><span class="field">Classe:</span> <strong><span id="lbl-class"></span></strong></div>
                 <div><span class="field">Nbre d'élèves:</span> <strong id="lbl-effectif"></strong></div>
+                <div><span class="field">Absences / Retards:</span> <strong id="lbl-abs-ret">0</strong></div>
             </div>
         </div>
 
         <table class="grades-table">
-            <thead>
-                <tr>
-                    <th rowspan="2">DISCIPLINES</th>
-                    <th colspan="2">Devoir</th>
-                    <th rowspan="2">Comp</th>
-                    <th rowspan="2">Moy/20</th>
-                    <th rowspan="2">Coef</th>
-                    <th rowspan="2">Moy x Coef</th>
-                    <th rowspan="2">Rang</th>
-                    <th rowspan="2">Appréciations</th>
-                </tr>
-                <tr>
-                    <th>D1</th>
-                    <th>D2</th>
-                </tr>
-            </thead>
+            <thead id="grades-header">
+                </thead>
             <tbody id="grades-body"></tbody>
-            <tfoot>
-                <tr class="total-row">
-                    <td colspan="5" class="lbl-total">TOTAL</td>
-                    <td id="lbl-tot-coef"></td>
-                    <td id="lbl-tot-pts"></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr class="summary-row">
-                    <td colspan="5" class="lbl-moy">Moyenne <span id="lbl-moy-gen"></span> /20</td>
-                    <td colspan="2">Rang <span id="lbl-rank"></span></td>
-                    <td colspan="2">Absences / Retards : <span id="lbl-abs-ret">0</span></td>
-                </tr>
-            </tfoot>
+            <tfoot id="grades-footer">
+                </tfoot>
         </table>
 
         <div class="footer-sections">
@@ -439,15 +414,24 @@ RENOVATION</textarea>
     </div>
 
     <script>
-        function getAppreciation(note) {
+        function getAppreciation(note, max = 20) {
             if (note === null || note === undefined || note === '') return "";
-            if (note < 4) return "Très Faible";
-            if (note < 8) return "Faible";
-            if (note < 10) return "Insuffisant";
-            if (note < 12) return "Passable";
-            if (note < 14) return "A. Bien";
-            if (note < 16) return "Bien";
+            // Ramener sur 20 pour utiliser la même échelle d'appréciations
+            const note20 = max !== 20 ? (note / max) * 20 : note;
+            if (note20 < 4) return "Très Faible";
+            if (note20 < 8) return "Faible";
+            if (note20 < 10) return "Insuffisant";
+            if (note20 < 12) return "Passable";
+            if (note20 < 14) return "A. Bien";
+            if (note20 < 16) return "Bien";
             return "Excellent";
+        }
+
+        // Détection adaptative du niveau primaire
+        function checkIsPrimaire(cId) {
+            if (!cId) return false;
+            const level = cId.split('_')[0].toUpperCase();
+            return ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(level);
         }
 
         window.onload = function () {
@@ -463,7 +447,6 @@ RENOVATION</textarea>
             const studentId = urlParams.get('student');
             const period = urlParams.get('period') || "1";
 
-            // Lecture adaptative de la clé globale de stockage de votre projet GestNotes
             const rawData = localStorage.getItem('gestnotes_v4') || localStorage.getItem('gestnotes_data');
             if (!rawData || !classId || !studentId) {
                 document.getElementById('error-msg').style.display = 'block';
@@ -477,6 +460,8 @@ RENOVATION</textarea>
 
             const student = classData.students.find(s => s.id === studentId);
             if (!student) return;
+
+            const isPrimaireMode = checkIsPrimaire(classId);
 
             document.getElementById('bulletin-content').style.display = 'block';
             document.title = "Bulletin - " + student.lastName;
@@ -492,32 +477,86 @@ RENOVATION</textarea>
 
             const periodGrades = (classData.grades && classData.grades[period]) ? classData.grades[period] : (classData.grades || {});
 
-            // Logique de tri automatique pour trouver le rang
+            // Génération dynamique de l'en-tête du tableau de notes
+            const thead = document.getElementById('grades-header');
+            if (isPrimaireMode) {
+                thead.innerHTML = `
+                    <tr>
+                        <th>DISCIPLINES / ÉTAPES</th>
+                        <th>Éval. Continue</th>
+                        <th>Composition</th>
+                        <th>Note Obtenue</th>
+                        <th>Barème Max</th>
+                        <th>Rang</th>
+                        <th>Appréciations</th>
+                    </tr>
+                `;
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th rowspan="2">DISCIPLINES</th>
+                        <th colspan="2">Devoir</th>
+                        <th rowspan="2">Comp</th>
+                        <th rowspan="2">Moy/20</th>
+                        <th rowspan="2">Coef</th>
+                        <th rowspan="2">Moy x Coef</th>
+                        <th rowspan="2">Rang</th>
+                        <th rowspan="2">Appréciations</th>
+                    </tr>
+                    <tr>
+                        <th>D1</th>
+                        <th>D2</th>
+                    </tr>
+                `;
+            }
+
+            // Logique de tri automatique pour trouver le rang de la classe adaptatif
             let ranks = [];
             classData.students.forEach(s => {
-                let stPoints = 0, stCoef = 0;
+                let stPoints = 0, stCoef = 0; // Mode secondaire
+                let primPointsObtenus = 0, primBaremeTotal = 0; // Mode primaire
+
                 classData.subjects.forEach(sub => {
                     const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
                     const d1 = g.d1 !== '' ? parseFloat(g.d1) : null;
-                    const d2 = g.d2 !== '' ? parseFloat(g.d2) : d1;
                     const cp = g.c !== '' ? parseFloat(g.c) : null;
-                    
-                    if(d1 !== null || cp !== null) {
-                        const moyDev = d1 !== null ? (d2 !== null ? (d1 + d2) / 2 : d1) : 0;
-                        const moySub = cp !== null ? (moyDev + (cp * 2)) / 3 : moyDev;
-                        stPoints += moySub * sub.coef;
-                        stCoef += sub.coef;
+
+                    if (isPrimaireMode) {
+                        if (d1 !== null || cp !== null) {
+                            const valD1 = d1 !== null ? d1 : 0;
+                            const valCp = cp !== null ? cp : valD1;
+                            const moySub = (valD1 + valCp) / 2;
+                            primPointsObtenus += moySub;
+                            primBaremeTotal += sub.coef;
+                        }
+                    } else {
+                        const d2 = g.d2 !== '' ? parseFloat(g.d2) : d1;
+                        if (d1 !== null || cp !== null) {
+                            const moyDev = d1 !== null ? (d2 !== null ? (d1 + d2) / 2 : d1) : 0;
+                            const moySub = cp !== null ? (moyDev + (cp * 2)) / 3 : moyDev;
+                            stPoints += moySub * sub.coef;
+                            stCoef += sub.coef;
+                        }
                     }
                 });
-                ranks.push({ id: s.id, avg: stCoef > 0 ? (stPoints / stCoef) : 0 });
+
+                if (isPrimaireMode) {
+                    // Note ramenée sur 10 pour le classement général primaire
+                    const finalPrimAvg = primBaremeTotal > 0 ? (primPointsObtenus / primBaremeTotal) * 10 : 0;
+                    ranks.push({ id: s.id, avg: finalPrimAvg });
+                } else {
+                    ranks.push({ id: s.id, avg: stCoef > 0 ? (stPoints / stCoef) : 0 });
+                }
             });
             ranks.sort((a, b) => b.avg - a.avg);
             const myRankIndex = ranks.findIndex(r => r.id === studentId) + 1;
 
-            // Remplissage dynamique des lignes de disciplines
+            // Remplissage des lignes de disciplines
             const tbody = document.getElementById('grades-body');
             tbody.innerHTML = "";
-            let totalCoef = 0, totalPoints = 0;
+
+            let totalCoef = 0, totalPoints = 0; // Mode secondaire
+            let totalPrimObtenu = 0, totalPrimBareme = 0; // Mode primaire
 
             classData.subjects.forEach(sub => {
                 const g = periodGrades[studentId]?.[sub.id] || { d1: '', d2: '', c: '' };
@@ -525,56 +564,114 @@ RENOVATION</textarea>
                 const d2 = g.d2 !== '' ? parseFloat(g.d2) : '';
                 const comp = g.c !== '' ? parseFloat(g.c) : '';
 
-                let moy20 = '', mxcoef = '', app = '', rSub = '';
-                
-                if (d1 !== '' || comp !== '') {
-                    const valD1 = d1 !== '' ? d1 : 0;
-                    const valD2 = d2 !== '' ? d2 : valD1;
-                    const valComp = comp !== '' ? comp : 0;
-
-                    const moyDev = (valD1 + valD2) / 2;
-                    const calculatedMoy = comp !== '' ? (moyDev + (valComp * 2)) / 3 : moyDev;
-                    
-                    moy20 = calculatedMoy.toFixed(2);
-                    const points = calculatedMoy * sub.coef;
-                    mxcoef = points.toFixed(2);
-                    
-                    totalCoef += sub.coef;
-                    totalPoints += points;
-                    app = getAppreciation(calculatedMoy);
-                }
-
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="col-discipline">${sub.name}</td>
-                    <td>${d1}</td><td>${d2}</td><td>${comp}</td>
-                    <td>${moy20.replace('.', ',')}</td><td>${sub.coef}</td><td>${mxcoef.replace('.', ',')}</td>
-                    <td>-</td><td>${app}</td>
-                `;
+
+                if (isPrimaireMode) {
+                    let noteObtenueStr = '', app = '';
+                    if (d1 !== '' || comp !== '') {
+                        const valD1 = d1 !== '' ? d1 : 0;
+                        const valComp = comp !== '' ? comp : valD1;
+                        const calculatedMoy = (valD1 + valComp) / 2;
+
+                        noteObtenueStr = calculatedMoy.toFixed(2).replace('.', ',');
+                        totalPrimObtenu += calculatedMoy;
+                        totalPrimBareme += sub.coef;
+                        app = getAppreciation(calculatedMoy, sub.coef);
+                    }
+
+                    tr.innerHTML = `
+                        <td class="col-discipline">${sub.name}</td>
+                        <td>${d1 !== '' ? d1.toFixed(2).replace('.', ',') : ''}</td>
+                        <td>${comp !== '' ? comp.toFixed(2).replace('.', ',') : ''}</td>
+                        <td style="font-weight: bold;">${noteObtenueStr}</td>
+                        <td style="color: #475569;">/${sub.coef}</td>
+                        <td>-</td>
+                        <td>${app}</td>
+                    `;
+                } else {
+                    let moy20 = '', mxcoef = '', app = '';
+                    if (d1 !== '' || comp !== '') {
+                        const valD1 = d1 !== '' ? d1 : 0;
+                        const valD2 = d2 !== '' ? d2 : valD1;
+                        const valComp = comp !== '' ? comp : 0;
+
+                        const moyDev = (valD1 + valD2) / 2;
+                        const calculatedMoy = comp !== '' ? (moyDev + (valComp * 2)) / 3 : moyDev;
+
+                        moy20 = calculatedMoy.toFixed(2);
+                        const points = calculatedMoy * sub.coef;
+                        mxcoef = points.toFixed(2);
+
+                        totalCoef += sub.coef;
+                        totalPoints += points;
+                        app = getAppreciation(calculatedMoy, 20);
+                    }
+
+                    tr.innerHTML = `
+                        <td class="col-discipline">${sub.name}</td>
+                        <td>${d1}</td><td>${d2}</td><td>${comp}</td>
+                        <td>${moy20.replace('.', ',')}</td><td>${sub.coef}</td><td>${mxcoef.replace('.', ',')}</td>
+                        <td>-</td><td>${app}</td>
+                    `;
+                }
                 tbody.appendChild(tr);
             });
 
-            const finalAvg = totalCoef > 0 ? (totalPoints / totalCoef) : 0;
-            document.getElementById('lbl-tot-coef').textContent = totalCoef || '';
-            document.getElementById('lbl-tot-pts').textContent = totalPoints ? totalPoints.toFixed(2).replace('.', ',') : '';
-            document.getElementById('lbl-moy-gen').textContent = finalAvg.toFixed(2).replace('.', ',');
-            document.getElementById('lbl-rank').textContent = `${myRankIndex} / ${classData.students.length}`;
+            // Injection dynamique du footer et calculs globaux
+            const tfoot = document.getElementById('grades-footer');
+            let finalAvg = 0;
 
-            // Systéme de cochage automatique des décisions selon votre baréme
-            if (totalCoef > 0) {
-                if (finalAvg >= 12) {
+            if (isPrimaireMode) {
+                finalAvg = totalPrimBareme > 0 ? (totalPrimObtenu / totalPrimBareme) * 10 : 0;
+                tfoot.innerHTML = `
+                    <tr class="total-row">
+                        <td colspan="3" class="lbl-total">TOTAL DES POINTS</td>
+                        <td id="lbl-tot-pts" colspan="2">${totalPrimObtenu.toFixed(2).replace('.', ',')} / ${totalPrimBareme}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr class="summary-row">
+                        <td colspan="3" class="lbl-moy">Moyenne Générale : <span id="lbl-moy-gen">${finalAvg.toFixed(2).replace('.', ',')}</span> /10</td>
+                        <td colspan="2">Rang : <span id="lbl-rank">${myRankIndex} / ${classData.students.length}</span></td>
+                        <td colspan="2"></td>
+                    </tr>
+                `;
+            } else {
+                finalAvg = totalCoef > 0 ? (totalPoints / totalCoef) : 0;
+                tfoot.innerHTML = `
+                    <tr class="total-row">
+                        <td colspan="5" class="lbl-total">TOTAL</td>
+                        <td id="lbl-tot-coef">${totalCoef || ''}</td>
+                        <td id="lbl-tot-pts">${totalPoints ? totalPoints.toFixed(2).replace('.', ',') : ''}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr class="summary-row">
+                        <td colspan="5" class="lbl-moy">Moyenne <span id="lbl-moy-gen">${finalAvg.toFixed(2).replace('.', ',')}</span> /20</td>
+                        <td colspan="2">Rang <span id="lbl-rank">${myRankIndex} / ${classData.students.length}</span></td>
+                        <td colspan="2"></td>
+                    </tr>
+                `;
+            }
+
+            // Système adaptatif automatique des coches de décisions
+            if ((isPrimaireMode && totalPrimBareme > 0) || (!isPrimaireMode && totalCoef > 0)) {
+                // Pour la vérification, on aligne les échelles (si primaire on multiplie la moyenne par 2 pour simuler un système sur 20)
+                const checkAvg = isPrimaireMode ? finalAvg * 2 : finalAvg;
+
+                if (checkAvg >= 12) {
                     document.getElementById('chk-satisfaisant').textContent = 'X';
-                    if (finalAvg >= 15) document.getElementById('chk-felicitations').textContent = 'X';
-                    else if (finalAvg >= 14) document.getElementById('chk-encouragement').textContent = 'X';
+                    if (checkAvg >= 15) document.getElementById('chk-felicitations').textContent = 'X';
+                    else if (checkAvg >= 14) document.getElementById('chk-encouragement').textContent = 'X';
                     else document.getElementById('chk-tableau-honneur').textContent = 'X';
-                } else if (finalAvg >= 10) { 
-                    document.getElementById('chk-peut-mieux').textContent = 'X'; 
-                } else if (finalAvg >= 8) { 
-                    document.getElementById('chk-insuffisant').textContent = 'X'; 
-                } else if (finalAvg >= 6) { 
-                    document.getElementById('chk-risque-redoubler').textContent = 'X'; 
-                } else { 
-                    document.getElementById('chk-risque-exclusion').textContent = 'X'; 
+                } else if (checkAvg >= 10) {
+                    document.getElementById('chk-peut-mieux').textContent = 'X';
+                } else if (checkAvg >= 8) {
+                    document.getElementById('chk-insuffisant').textContent = 'X';
+                } else if (checkAvg >= 6) {
+                    document.getElementById('chk-risque-redoubler').textContent = 'X';
+                } else {
+                    document.getElementById('chk-risque-exclusion').textContent = 'X';
                 }
             }
         };
