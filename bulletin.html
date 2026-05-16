@@ -510,11 +510,15 @@ RENOVATION</textarea>
                 `;
             }
 
-            // Logique de tri automatique pour trouver le rang de la classe adaptatif
+            // Logique de tri automatique pour trouver le rang de la classe adaptatif ET la moyenne globale de la classe
             let ranks = [];
+            let totalMoyennesClasse = 0;
+            let totalElevesComptes = 0;
+
             classData.students.forEach(s => {
                 let stPoints = 0, stCoef = 0; // Mode secondaire
                 let primPointsObtenus = 0, primBaremeTotal = 0; // Mode primaire
+                let hasGrades = false;
 
                 classData.subjects.forEach(sub => {
                     const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
@@ -528,6 +532,7 @@ RENOVATION</textarea>
                             const moySub = (valD1 + valCp) / 2;
                             primPointsObtenus += moySub;
                             primBaremeTotal += sub.coef;
+                            hasGrades = true;
                         }
                     } else {
                         const d2 = g.d2 !== '' ? parseFloat(g.d2) : d1;
@@ -536,20 +541,32 @@ RENOVATION</textarea>
                             const moySub = cp !== null ? (moyDev + (cp * 2)) / 3 : moyDev;
                             stPoints += moySub * sub.coef;
                             stCoef += sub.coef;
+                            hasGrades = true;
                         }
                     }
                 });
 
                 if (isPrimaireMode) {
-                    // Note ramenée sur 10 pour le classement général primaire
                     const finalPrimAvg = primBaremeTotal > 0 ? (primPointsObtenus / primBaremeTotal) * 10 : 0;
                     ranks.push({ id: s.id, avg: finalPrimAvg });
+                    if (hasGrades) {
+                        totalMoyennesClasse += finalPrimAvg;
+                        totalElevesComptes++;
+                    }
                 } else {
-                    ranks.push({ id: s.id, avg: stCoef > 0 ? (stPoints / stCoef) : 0 });
+                    const finalSecAvg = stCoef > 0 ? (stPoints / stCoef) : 0;
+                    ranks.push({ id: s.id, avg: finalSecAvg });
+                    if (hasGrades) {
+                        totalMoyennesClasse += finalSecAvg;
+                        totalElevesComptes++;
+                    }
                 }
             });
             ranks.sort((a, b) => b.avg - a.avg);
             const myRankIndex = ranks.findIndex(r => r.id === studentId) + 1;
+
+            // Calcul global final de la moyenne générale de la classe (parmi les élèves évalués)
+            const moyenneClasseGlobale = totalElevesComptes > 0 ? (totalMoyennesClasse / totalElevesComptes).toFixed(2) : "0,00";
 
             // Remplissage des lignes de disciplines
             const tbody = document.getElementById('grades-body');
@@ -617,7 +634,7 @@ RENOVATION</textarea>
                 tbody.appendChild(tr);
             });
 
-            // Injection dynamique du footer et calculs globaux
+            // Injection dynamique du footer avec l'intégration de la moyenne de classe
             const tfoot = document.getElementById('grades-footer');
             let finalAvg = 0;
 
@@ -633,7 +650,7 @@ RENOVATION</textarea>
                     <tr class="summary-row">
                         <td colspan="3" class="lbl-moy">Moyenne Générale : <span id="lbl-moy-gen">${finalAvg.toFixed(2).replace('.', ',')}</span> /10</td>
                         <td colspan="2">Rang : <span id="lbl-rank">${myRankIndex} / ${classData.students.length}</span></td>
-                        <td colspan="2"></td>
+                        <td colspan="2">Moyenne Classe : <span>${moyenneClasseGlobale.replace('.', ',')}</span> /10</td>
                     </tr>
                 `;
             } else {
@@ -647,9 +664,9 @@ RENOVATION</textarea>
                         <td></td>
                     </tr>
                     <tr class="summary-row">
-                        <td colspan="5" class="lbl-moy">Moyenne <span id="lbl-moy-gen">${finalAvg.toFixed(2).replace('.', ',')}</span> /20</td>
-                        <td colspan="2">Rang <span id="lbl-rank">${myRankIndex} / ${classData.students.length}</span></td>
-                        <td colspan="2"></td>
+                        <td colspan="4" class="lbl-moy">Moyenne : <span id="lbl-moy-gen">${finalAvg.toFixed(2).replace('.', ',')}</span> /20</td>
+                        <td colspan="2">Rang : <span id="lbl-rank">${myRankIndex} / ${classData.students.length}</span></td>
+                        <td colspan="3">Moyenne Classe : <span>${moyenneClasseGlobale.replace('.', ',')}</span> /20</td>
                     </tr>
                 `;
             }
