@@ -114,15 +114,12 @@
                     <div class="flex flex-col sm:flex-row gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100">
                         <select id="new-sub-name" class="flex-1 bg-transparent border-none p-2 text-xs font-bold outline-none uppercase">
                             <option value="">-- CHOISIR --</option>
+                            <option value="LANGUE ET COMMUNICATION">LANGUE ET COMMUNICATION</option>
                             <option value="MATHÉMATIQUES">MATHÉMATIQUES</option>
-                            <option value="FRANÇAIS">FRANÇAIS</option>
-                            <option value="HISTOIRE-GÉO">HISTOIRE-GÉO</option>
-                            <option value="SVT">SVT</option>
-                            <option value="PHYSIQUE-CHIMIE">PHYSIQUE-CHIMIE</option>
-                            <option value="ANGLAIS">ANGLAIS</option>
-                            <option value="PHILOSOPHIE">PHILOSOPHIE</option>
-                            <option value="EPS">EPS</option>
-                            <option value="ÉDUCATION CIVIQUE">ÉDUCATION CIVIQUE</option>
+                            <option value="DÉCOUVERTE DU MONDE">DÉCOUVERTE DU MONDE</option>
+                            <option value="DÉVELOPPEMENT DURABLE">DÉVELOPPEMENT DURABLE</option>
+                            <option value="ÉDUCATION ARTISTIQUE">ÉDUCATION ARTISTIQUE</option>
+                            <option value="ÉDUCATION PHYSIQUE">ÉDUCATION PHYSIQUE</option>
                             <option value="ARABE">ARABE</option>
                         </select>
                         <div class="flex gap-2 w-full sm:w-auto">
@@ -160,9 +157,13 @@
 
         const DEFAULT_SUBJECTS = {
             primaire: [
-                {name: "FRANÇAIS", coef: 2}, {name: "MATHÉMATIQUES", coef: 2}, 
-                {name: "HISTOIRE-GÉO", coef: 1}, {name: "ÉD. CIVIQUE", coef: 1},
-                {name: "SCIENCES", coef: 1}, {name: "ARABE", coef: 1}, {name: "EPS", coef: 1}
+                {name: "LANGUE ET COMMUNICATION", coef: 40}, // Au primaire, coef stockera le barème Max (ex: /40)
+                {name: "MATHÉMATIQUES", coef: 40}, 
+                {name: "DÉCOUVERTE DU MONDE", coef: 40}, 
+                {name: "DÉVELOPPEMENT DURABLE", coef: 20},
+                {name: "ÉDUCATION ARTISTIQUE", coef: 10}, 
+                {name: "ÉDUCATION PHYSIQUE", coef: 10},
+                {name: "ARABE", coef: 10}
             ],
             moyen: [
                 {name: "FRANÇAIS", coef: 5}, {name: "MATHÉMATIQUES", coef: 5}, 
@@ -177,11 +178,17 @@
             ]
         };
 
+        // Fonction utilitaire pour savoir si la classe actuelle est du primaire
+        function isPrimaire() {
+            const level = document.getElementById('class-level').value;
+            return ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(level);
+        }
+
         function autoLoadSubjects() {
             const level = document.getElementById('class-level').value;
             let list = [];
             
-            if (["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(level)) list = DEFAULT_SUBJECTS.primaire;
+            if (isPrimaire()) list = DEFAULT_SUBJECTS.primaire;
             else if (["6ÉME", "5ÉME", "4ÉME", "3ÉME"].includes(level)) list = DEFAULT_SUBJECTS.moyen;
             else list = DEFAULT_SUBJECTS.secondaire;
 
@@ -199,6 +206,15 @@
             if (!appState.classes[currentClassId]) {
                 appState.classes[currentClassId] = { students: [], subjects: [], grades: { "1": {}, "2": {}, "3": {} }, effectif: "" };
             }
+            
+            // Adapter le placeholder de l'input d'ajout de matière
+            const coefInput = document.getElementById('new-sub-coef');
+            if (isPrimaire()) {
+                coefInput.placeholder = "Max (ex: 40)";
+            } else {
+                coefInput.placeholder = "Coef";
+            }
+
             document.getElementById('input-effectif').value = appState.classes[currentClassId].effectif || "";
             renderSubjectsConfig(); renderStudents(); renderStats();
             if(currentStudentId) selectStudent(currentStudentId);
@@ -209,7 +225,9 @@
 
         function addSubject() {
             const name = document.getElementById('new-sub-name').value;
-            const coef = parseFloat(document.getElementById('new-sub-coef').value) || 1;
+            // Par défaut si primaire : barème sur 40, si secondaire coef 1
+            const defaultVal = isPrimaire() ? 40 : 1;
+            const coef = parseFloat(document.getElementById('new-sub-coef').value) || defaultVal;
             if(!name) return;
             appState.classes[currentClassId].subjects.push({ id: 'sub_' + Date.now(), name, coef });
             saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields();
@@ -218,9 +236,11 @@
         function renderSubjectsConfig() {
             const list = document.getElementById('subjects-config-list');
             const subjects = appState.classes[currentClassId]?.subjects || [];
+            const labelType = isPrimaire() ? "Max" : "x";
+            
             list.innerHTML = subjects.map(s => `
                 <div class="flex items-center bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 gap-2">
-                    <span class="text-[9px] font-black text-indigo-900 uppercase">${s.name} (x${s.coef})</span>
+                    <span class="text-[9px] font-black text-indigo-900 uppercase">${s.name} (${labelType}${s.coef})</span>
                     <button onclick="removeSubject('${s.id}')" class="text-red-500 font-bold hover:text-red-700">×</button>
                 </div>`).join('');
         }
@@ -232,17 +252,25 @@
         }
 
         // Calcule à la volée la moyenne pour une seule matière
-        function calculateSingleMoyenne(d1, d2, c) {
+        function calculateSingleMoyenne(d1, d2, c, maxBars = 20) {
             const vD1 = d1 !== '' ? parseFloat(d1) : null;
             const vD2 = d2 !== '' ? parseFloat(d2) : vD1;
             const vComp = c !== '' ? parseFloat(c) : null;
 
             if (vD1 === null && vComp === null) return '--';
 
-            const moyDev = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
-            const finalMoy = vComp !== null ? (moyDev + (vComp * 2)) / 3 : moyDev;
-            
-            return finalMoy.toFixed(2);
+            if (isPrimaire()) {
+                // Au primaire, on fait souvent la moyenne brute Note_Mensuelle + Note_Compo (ou juste la note saisie si une seule)
+                // Ramenons le résultat final sur le barème max de la matière
+                const noteMensuelle = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
+                const noteFinale = vComp !== null ? (noteMensuelle + vComp) / 2 : noteMensuelle;
+                return noteFinale.toFixed(2);
+            } else {
+                // Formule Classique Moyen/Secondaire
+                const moyDev = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
+                const finalMoy = vComp !== null ? (moyDev + (vComp * 2)) / 3 : moyDev;
+                return finalMoy.toFixed(2);
+            }
         }
 
         function updateVal(subId, type, val, inputElement) {
@@ -259,26 +287,37 @@
             const d1 = row.querySelector('.input-d1').value;
             const d2 = row.querySelector('.input-d2').value;
             const c = row.querySelector('.input-c').value;
+            const maxBars = parseFloat(row.dataset.coef);
             
-            row.querySelector('.input-moy').value = calculateSingleMoyenne(d1, d2, c);
+            row.querySelector('.input-moy').value = calculateSingleMoyenne(d1, d2, c, maxBars);
         }
 
         function renderGradesFields() {
             const container = document.getElementById('grades-grid');
             const classData = appState.classes[currentClassId];
             const periodGrades = classData.grades[currentPeriod];
+            
             container.innerHTML = classData.subjects.map(sub => {
                 const g = periodGrades[currentStudentId]?.[sub.id] || { d1: '', d2: '', c: '' };
-                const initialMoy = calculateSingleMoyenne(g.d1, g.d2, g.c);
+                const initialMoy = calculateSingleMoyenne(g.d1, g.d2, g.c, sub.coef);
+                
+                // On adapte les placeholders pour le Primaire
+                const pD1 = isPrimaire() ? "Ev1" : "D1";
+                const pD2 = isPrimaire() ? "Ev2" : "D2";
+                const pC = isPrimaire() ? "Comp" : "CP";
+                const labelMoy = isPrimaire() ? `/${sub.coef}` : "Moy";
+
                 return `
-                    <div class="grade-row flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm min-w-[320px]">
-                        <div class="font-bold text-slate-700 text-[11px] uppercase tracking-wide truncate max-w-[180px]">${sub.name}</div>
+                    <div class="grade-row flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm min-w-[320px]" data-coef="${sub.coef}">
+                        <div class="font-bold text-slate-700 text-[11px] uppercase tracking-wide truncate max-w-[180px]">
+                            ${sub.name} <span class="text-indigo-400 font-normal text-[9px]">${isPrimaire() ? '(Sur ' + sub.coef + ')' : ''}</span>
+                        </div>
                         <div class="flex items-center gap-2 justify-end">
-                            <input type="number" step="0.25" class="input-d1 grade-input" placeholder="D1" value="${g.d1}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd1', this.value, this)">
-                            <input type="number" step="0.25" class="input-d2 grade-input" placeholder="D2" value="${g.d2}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd2', this.value, this)">
-                            <input type="number" step="0.25" class="input-c grade-input bg-indigo-50" placeholder="CP" value="${g.c}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'c', this.value, this)">
+                            <input type="number" step="0.25" class="input-d1 grade-input" placeholder="${pD1}" value="${g.d1}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd1', this.value, this)">
+                            <input type="number" step="0.25" class="input-d2 grade-input" placeholder="${pD2}" value="${g.d2}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd2', this.value, this)">
+                            <input type="number" step="0.25" class="input-c grade-input bg-indigo-50" placeholder="${pC}" value="${g.c}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'c', this.value, this)">
                             <div class="flex flex-col items-center ml-1">
-                                <span class="text-[8px] text-indigo-500 font-black uppercase mb-0.5">Moy</span>
+                                <span class="text-[8px] text-indigo-500 font-black uppercase mb-0.5">${labelMoy}</span>
                                 <input type="text" value="${initialMoy}" disabled class="input-moy w-12 h-10 bg-indigo-900 text-emerald-400 font-black text-center text-xs rounded-xl border-none cursor-not-allowed">
                             </div>
                         </div>
@@ -328,17 +367,42 @@
                 document.getElementById('class-avg-display').textContent = "0.00";
                 return;
             }
-            let totalMoy = 0;
+            
+            let totalMoyennesClasse = 0;
+
             classData.students.forEach(s => {
-                let p = 0, c = 0;
-                classData.subjects.forEach(sub => {
-                    const g = classData.grades[currentPeriod][s.id]?.[sub.id] || {d1:0,d2:0,c:0};
-                    const mS = (((parseFloat(g.d1)||0) + (parseFloat(g.d2)||parseFloat(g.d1)||0))/2 + (parseFloat(g.c)||0)*2)/3;
-                    p += mS * sub.coef; c += sub.coef;
-                });
-                totalMoy += (c > 0 ? p/c : 0);
+                if (isPrimaire()) {
+                    // Logique PRIMAIRE : Somme des points obtenus / Somme des barèmes Max * 10 (pour avoir une note sur 10)
+                    let totalPointsObtenus = 0;
+                    let totalBaremesMax = 0;
+
+                    classData.subjects.forEach(sub => {
+                        const g = classData.grades[currentPeriod][s.id]?.[sub.id] || {d1:'', d2:'', c:''};
+                        const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, sub.coef);
+                        
+                        if (mS !== '--') {
+                            totalPointsObtenus += parseFloat(mS);
+                            totalBaremesMax += sub.coef; // Le barème de la matière (ex: 40)
+                        }
+                    });
+
+                    // Moyenne de l'élève ramenée sur 10 (Standard de l'école primaire au Sénégal / Ouest-Africain)
+                    const moyenneEleve = totalBaremesMax > 0 ? (totalPointsObtenus / totalBaremesMax) * 10 : 0;
+                    totalMoyennesClasse += moyenneEleve;
+
+                } else {
+                    // Logique SECONDAIRE / MOYEN : Moyenne pondérée par coefficients
+                    let p = 0, c = 0;
+                    classData.subjects.forEach(sub => {
+                        const g = classData.grades[currentPeriod][s.id]?.[sub.id] || {d1:0,d2:0,c:0};
+                        const mS = (((parseFloat(g.d1)||0) + (parseFloat(g.d2)||parseFloat(g.d1)||0))/2 + (parseFloat(g.c)||0)*2)/3;
+                        p += mS * sub.coef; c += sub.coef;
+                    });
+                    totalMoyennesClasse += (c > 0 ? p/c : 0);
+                }
             });
-            document.getElementById('class-avg-display').textContent = (totalMoy / classData.students.length).toFixed(2);
+
+            document.getElementById('class-avg-display').textContent = (totalMoyennesClasse / classData.students.length).toFixed(2);
         }
 
         function saveToStorage() { localStorage.setItem('gestnotes_v4', JSON.stringify(appState)); }
