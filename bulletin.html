@@ -157,7 +157,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-        }
+            }
 
         .flag .red {
             background-color: #e31b23;
@@ -510,42 +510,9 @@ RENOVATION</textarea>
             document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
             document.getElementById('lbl-abs-ret').textContent = `${student.absences || 0} Abs / ${student.retards || 0} Ret`;
 
+            // On va chercher dans classData.grades[period] s'il existe une séparation par période
             const periodGrades = (classData.grades && classData.grades[period]) ? classData.grades[period] : (classData.grades || {});
 
-            // Génération dynamique de l'en-tête
-            const thead = document.getElementById('grades-header');
-            if (isPrimaireMode) {
-                thead.innerHTML = `
-                    <tr>
-                        <th>DISCIPLINES / ÉTAPES</th>
-                        <th>Éval. Continue</th>
-                        <th>Composition</th>
-                        <th>Note Obtenue</th>
-                        <th>Barème Max</th>
-                        <th>Rang</th>
-                        <th>Appréciations</th>
-                    </tr>
-                `;
-            } else {
-                thead.innerHTML = `
-                    <tr>
-                        <th rowspan="2">DISCIPLINES</th>
-                        <th colspan="2">Devoir</th>
-                        <th rowspan="2">Comp</th>
-                        <th rowspan="2">Moy/20</th>
-                        <th rowspan="2">Coef</th>
-                        <th rowspan="2">Moy x Coef</th>
-                        <th rowspan="2">Rang</th>
-                        <th rowspan="2">Appréciations</th>
-                    </tr>
-                    <tr>
-                        <th>D1</th>
-                        <th>D2</th>
-                    </tr>
-                `;
-            }
-
-            // Structure pour stocker les notes de toute la classe par matière afin de trier les rangs
             let subjectRanksMap = {};
             classData.subjects.forEach(sub => { subjectRanksMap[sub.id] = []; });
 
@@ -553,7 +520,7 @@ RENOVATION</textarea>
             let totalMoyennesClasse = 0;
             let totalElevesComptes = 0;
 
-            // Étape 1 : Collecter et calculer les notes de CHAQUE élève pour les rangs globaux et par matière
+            // Étape 1 : Collecter et calculer les notes de CHAQUE élève pour bâtir les classements
             classData.students.forEach(s => {
                 let stPoints = 0, stCoef = 0;
                 let primPointsObtenus = 0, primBaremeTotal = 0;
@@ -571,7 +538,7 @@ RENOVATION</textarea>
                             const moySub = (valD1 + valCp) / 2;
                             
                             subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
-                            primPointsObtenus += moySub;
+                            primPointsObtenus += (moySub / 20) * sub.coef; // Ajustement sur le barème max de la matière
                             primBaremeTotal += sub.coef;
                             hasGrades = true;
                         }
@@ -593,20 +560,16 @@ RENOVATION</textarea>
                     }
                 });
 
-                if (isPrimaireMode) {
+                if (isPrimaireMode && hasGrades) {
                     const finalPrimAvg = primBaremeTotal > 0 ? (primPointsObtenus / primBaremeTotal) * 10 : 0;
-                    if (hasGrades) {
-                        ranks.push({ id: s.id, avg: finalPrimAvg });
-                        totalMoyennesClasse += finalPrimAvg;
-                        totalElevesComptes++;
-                    }
-                } else {
+                    ranks.push({ id: s.id, avg: finalPrimAvg });
+                    totalMoyennesClasse += finalPrimAvg;
+                    totalElevesComptes++;
+                } else if (!isPrimaireMode && hasGrades) {
                     const finalSecAvg = stCoef > 0 ? (stPoints / stCoef) : 0;
-                    if (hasGrades) {
-                        ranks.push({ id: s.id, avg: finalSecAvg });
-                        totalMoyennesClasse += finalSecAvg;
-                        totalElevesComptes++;
-                    }
+                    ranks.push({ id: s.id, avg: finalSecAvg });
+                    totalMoyennesClasse += finalSecAvg;
+                    totalElevesComptes++;
                 }
             });
 
@@ -619,7 +582,7 @@ RENOVATION</textarea>
             const myRankIndex = ranks.findIndex(r => r.id === studentId) + 1;
             const moyenneClasseGlobale = totalElevesComptes > 0 ? (totalMoyennesClasse / totalElevesComptes).toFixed(2) : "0,00";
 
-            // Étape 2 : Remplissage et rendu HTML des lignes
+            // Étape 2 : Remplissage et rendu HTML des lignes du tableau de l'élève actif
             const tbody = document.getElementById('grades-body');
             tbody.innerHTML = "";
 
@@ -632,7 +595,7 @@ RENOVATION</textarea>
                 const d2 = g.d2 !== '' ? parseFloat(g.d2) : '';
                 const comp = g.c !== '' ? parseFloat(g.c) : '';
 
-                // Trouver le rang de l'élève pour cette matière spécifique
+                // Extraction du rang par matière
                 const rankInSubjectList = subjectRanksMap[sub.id];
                 const itemIndex = rankInSubjectList.findIndex(x => x.studentId === studentId);
                 let subjectRankStr = "-";
@@ -648,12 +611,15 @@ RENOVATION</textarea>
                     if (d1 !== '' || comp !== '') {
                         const valD1 = d1 !== '' ? d1 : 0;
                         const valComp = comp !== '' ? comp : valD1;
-                        const calculatedMoy = (valD1 + valComp) / 2;
+                        const calculatedMoy = (valD1 + valComp) / 2; // Moyenne de la discipline sur 20
 
-                        noteObtenueStr = calculatedMoy.toFixed(2).replace('.', ',');
-                        totalPrimObtenu += calculatedMoy;
+                        // Conversion sur le barème max de la matière de l'étape primaire (ex: /40 ou /20)
+                        const noteSurBareme = (calculatedMoy / 20) * sub.coef;
+
+                        noteObtenueStr = noteSurBareme.toFixed(2).replace('.', ',');
+                        totalPrimObtenu += noteSurBareme;
                         totalPrimBareme += sub.coef;
-                        app = getAppreciation(calculatedMoy, sub.coef);
+                        app = getAppreciation(calculatedMoy, 20);
                     }
 
                     tr.innerHTML = `
@@ -697,7 +663,7 @@ RENOVATION</textarea>
                 tbody.appendChild(tr);
             });
 
-            // Étape 3 : Calcul final et pied de tableau
+            // Étape 3 : Calcul final et pied de tableau (Génération des lignes de résumés)
             const tfoot = document.getElementById('grades-footer');
             let finalAvg = 0;
             const displayRank = myRankIndex > 0 ? `${myRankIndex} / ${totalElevesComptes}` : "-";
@@ -736,8 +702,9 @@ RENOVATION</textarea>
                 `;
             }
 
-            // Étape 4 : Système automatique des coches de décisions
+            // Étape 4 : Système de coches automatiques des décisions et mentions
             if (totalElevesComptes > 0 && ((isPrimaireMode && totalPrimBareme > 0) || (!isPrimaireMode && totalCoef > 0))) {
+                // Pour que la logique de décision reste uniforme, on ramène fictivement la moyenne primaire (/10) sur 20
                 const checkAvg = isPrimaireMode ? finalAvg * 2 : finalAvg;
 
                 if (checkAvg >= 12) {
