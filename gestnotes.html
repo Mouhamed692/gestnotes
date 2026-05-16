@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GestNotes Pro - Auto-Configuration</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./tailwind.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
@@ -12,8 +12,11 @@
         .btn-delete-student { display: none; color: #f87171; padding: 4px; border-radius: 6px; }
         .student-item:hover .btn-delete-student { display: block; }
         .grade-input {
-            width: 60px; height: 45px; border: 2px solid #e2e8f0; background: #f8fafc;
-            text-align: center; font-weight: 800; font-size: 16px; border-radius: 10px; transition: all 0.2s;
+            width: 50px; height: 40px; border: 2px solid #e2e8f0; background: #f8fafc;
+            text-align: center; font-weight: 800; font-size: 14px; border-radius: 10px; transition: all 0.2s;
+        }
+        @media (min-width: 640px) {
+            .grade-input { width: 60px; height: 45px; font-size: 16px; }
         }
         .grade-input:focus { border-color: #4f46e5; background: white; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); outline: none; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -24,25 +27,25 @@
 <body>
     
     <nav class="bg-indigo-950 text-white p-4 shadow-xl sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
+        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3">
                 <div class="bg-emerald-500 p-2 rounded-lg font-black italic text-white text-xs">GN</div>
                 <h1 class="text-xs font-black uppercase tracking-widest text-emerald-400">Multi-Périodes PRO</h1>
             </div>
-            <div class="flex gap-2">
-                <button onclick="exportData()" class="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-[9px] font-bold uppercase">Exporter</button>
-                <button onclick="document.getElementById('importFile').click()" class="bg-indigo-600 px-3 py-2 rounded-lg text-[9px] font-bold uppercase">Importer</button>
+            <div class="flex gap-2 w-full sm:w-auto justify-end">
+                <button onclick="exportData()" class="flex-1 sm:flex-none bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-[9px] font-bold uppercase">Exporter</button>
+                <button onclick="document.getElementById('importFile').click()" class="flex-1 sm:flex-none bg-indigo-600 px-3 py-2 rounded-lg text-[9px] font-bold uppercase text-center">Importer</button>
                 <input type="file" id="importFile" class="hidden" onchange="importData(event)">
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto p-4 lg:p-8">
+    <div class="container mx-auto p-3 sm:p-4 lg:p-8">
         
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 items-end">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 bg-white p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-200 items-end">
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Classe / Niveau</label>
-                <select id="class-level" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500">
+                <select id="class-level" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-xs sm:text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500">
                     <optgroup label="Primaire">
                         <option value="CI">CI</option><option value="CP">CP</option><option value="CE1">CE1</option>
                         <option value="CE2">CE2</option><option value="CM1">CM1</option><option value="CM2">CM2</option>
@@ -59,7 +62,7 @@
 
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Série / Section</label>
-                <select id="class-section" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500">
+                <select id="class-section" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-xs sm:text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500">
                     <option value="A" selected>A</option><option value="B">B</option><option value="C">C</option>
                     <option value="S1">S1</option><option value="S2">S2</option><option value="L1">L1</option>
                     <option value="L2">L2</option><option value="STEG">STEG</option>
@@ -68,46 +71,46 @@
             
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Effectif</label>
-                <input type="number" id="input-effectif" placeholder="0" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-sm font-bold outline-none" onchange="saveEffectif()">
+                <input type="number" id="input-effectif" placeholder="0" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-xs sm:text-sm font-bold outline-none" onchange="saveEffectif()">
             </div>
 
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Période</label>
-                <select id="semester" onchange="updatePeriod()" class="w-full bg-indigo-600 text-white border-none rounded-2xl p-3 text-sm font-black shadow-lg">
+                <select id="semester" onchange="updatePeriod()" class="w-full bg-indigo-600 text-white border-none rounded-2xl p-3 text-xs sm:text-sm font-black shadow-lg">
                     <option value="1">1er Semestre</option><option value="2">2ème Semestre</option><option value="3">3ème Semestre</option>
                 </select>
             </div>
 
-            <div class="bg-emerald-50 rounded-2xl p-3 flex flex-col justify-center text-center border border-emerald-100">
+            <div class="col-span-2 sm:col-span-3 lg:col-span-1 bg-emerald-50 rounded-2xl p-3 flex flex-col justify-center text-center border border-emerald-100 mt-2 sm:mt-0">
                 <p class="text-[9px] font-black text-emerald-500 uppercase">Moyenne Classe</p>
-                <p id="class-avg-display" class="text-2xl font-black text-emerald-900">0.00</p>
+                <p id="class-avg-display" class="text-xl sm:text-2xl font-black text-emerald-900">0.00</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="lg:col-span-4">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6">
                     <h2 class="font-black text-slate-800 text-[10px] uppercase mb-4 tracking-widest">Liste des Élèves</h2>
                     <div class="flex gap-2 mb-6">
                         <input type="text" id="new-student-name" placeholder="NOM PRÉNOM" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-xs font-bold outline-none uppercase">
-                        <button onclick="addStudent()" class="bg-indigo-600 text-white w-12 h-12 rounded-xl font-black shadow-lg hover:bg-indigo-700 transition">+</button>
+                        <button onclick="addStudent()" class="bg-indigo-600 text-white w-12 h-12 rounded-xl font-black shadow-lg hover:bg-indigo-700 transition flex items-center justify-center text-xl">+</button>
                     </div>
-                    <ul id="student-list" class="space-y-2 max-h-[400px] overflow-y-auto pr-2"></ul>
+                    <ul id="student-list" class="space-y-2 max-h-[300px] lg:max-h-[450px] overflow-y-auto pr-1"></ul>
                 </div>
             </div>
 
-            <div class="lg:col-span-8">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 mb-6">
-                    <div class="flex justify-between items-center mb-4">
+            <div class="lg:col-span-8 space-y-6">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
                         <h2 class="font-black text-slate-800 text-[10px] uppercase tracking-widest">Configuration des Matières</h2>
-                        <button onclick="autoLoadSubjects()" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase hover:bg-indigo-100 transition">
+                        <button onclick="autoLoadSubjects()" class="w-full sm:w-auto text-left bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase hover:bg-indigo-100 transition">
                             ⚡ Charger Matières Standard
                         </button>
                     </div>
                     
                     <div class="flex flex-wrap gap-2 mb-4" id="subjects-config-list"></div>
                     
-                    <div class="flex gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div class="flex flex-col sm:flex-row gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100">
                         <select id="new-sub-name" class="flex-1 bg-transparent border-none p-2 text-xs font-bold outline-none uppercase">
                             <option value="">-- CHOISIR --</option>
                             <option value="MATHÉMATIQUES">MATHÉMATIQUES</option>
@@ -121,25 +124,27 @@
                             <option value="ÉDUCATION CIVIQUE">ÉDUCATION CIVIQUE</option>
                             <option value="ARABE">ARABE</option>
                         </select>
-                        <input type="number" id="new-sub-coef" placeholder="Coef" class="w-16 bg-white border-none rounded-lg p-2 text-xs font-bold text-center outline-none">
-                        <button onclick="addSubject()" class="bg-emerald-500 text-white px-4 rounded-xl font-black text-[10px] uppercase shadow-md">Ajouter</button>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <input type="number" id="new-sub-coef" placeholder="Coef" class="flex-1 sm:w-16 bg-white border-none rounded-lg p-2 text-xs font-bold text-center outline-none">
+                            <button onclick="addSubject()" class="bg-emerald-500 text-white px-4 py-2 sm:py-0 rounded-xl font-black text-[10px] uppercase shadow-md whitespace-nowrap">Ajouter</button>
+                        </div>
                     </div>
                 </div>
 
                 <div id="editor-panel" class="hidden">
                     <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-                        <div class="p-5 bg-slate-900 text-white flex justify-between items-center">
+                        <div class="p-4 sm:p-5 bg-slate-900 text-white flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                             <div>
-                                <h2 id="current-student-display" class="text-lg font-black uppercase tracking-tight text-emerald-400">---</h2>
+                                <h2 id="current-student-display" class="text-base sm:text-lg font-black uppercase tracking-tight text-emerald-400">---</h2>
                                 <p id="current-class-display" class="text-slate-400 text-[9px] font-black uppercase tracking-widest"></p>
                             </div>
-                            <button onclick="printReport()" class="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded-xl font-black text-[10px] transition uppercase">Bulletin PDF</button>
+                            <button onclick="printReport()" class="w-full sm:w-auto bg-indigo-500 hover:bg-indigo-400 px-4 py-2.5 rounded-xl font-black text-[10px] transition uppercase text-center">Bulletin PDF</button>
                         </div>
-                        <div class="p-6 grid grid-cols-1 gap-3 bg-slate-50" id="grades-grid"></div>
+                        <div class="p-3 sm:p-6 grid grid-cols-1 gap-3 bg-slate-50 overflow-x-auto" id="grades-grid"></div>
                     </div>
                 </div>
 
-                <div id="welcome-msg" class="bg-white rounded-3xl p-16 text-center border-2 border-dashed border-slate-200">
+                <div id="welcome-msg" class="bg-white rounded-3xl p-10 sm:p-16 text-center border-2 border-dashed border-slate-200">
                     <p class="text-slate-400 font-bold uppercase text-[9px] tracking-widest italic">Sélectionnez un élève pour saisir les notes</p>
                 </div>
             </div>
@@ -152,7 +157,6 @@
         let currentStudentId = null;
         let currentPeriod = "1";
 
-        // CONFIGURATIONS PAR DÉFAUT
         const DEFAULT_SUBJECTS = {
             primaire: [
                 {name: "FRANÇAIS", coef: 2}, {name: "MATHÉMATIQUES", coef: 2}, 
@@ -226,12 +230,36 @@
             saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields(); renderStats();
         }
 
-        function updateVal(subId, type, val) {
+        // Calcule à la volée la moyenne pour une seule matière
+        function calculateSingleMoyenne(d1, d2, c) {
+            const vD1 = d1 !== '' ? parseFloat(d1) : null;
+            const vD2 = d2 !== '' ? parseFloat(d2) : vD1;
+            const vComp = c !== '' ? parseFloat(c) : null;
+
+            if (vD1 === null && vComp === null) return '--';
+
+            const moyDev = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
+            const finalMoy = vComp !== null ? (moyDev + (vComp * 2)) / 3 : moyDev;
+            
+            return finalMoy.toFixed(2);
+        }
+
+        function updateVal(subId, type, val, inputElement) {
             const periodGrades = appState.classes[currentClassId].grades[currentPeriod];
             if(!periodGrades[currentStudentId]) periodGrades[currentStudentId] = {};
             if(!periodGrades[currentStudentId][subId]) periodGrades[currentStudentId][subId] = {d1:'', d2:'', c:''};
+            
             periodGrades[currentStudentId][subId][type] = val;
-            saveToStorage(); renderStats();
+            saveToStorage(); 
+            renderStats();
+
+            // Code de calcul de l'input en temps réel
+            const row = inputElement.closest('.grade-row');
+            const d1 = row.querySelector('.input-d1').value;
+            const d2 = row.querySelector('.input-d2').value;
+            const c = row.querySelector('.input-c').value;
+            
+            row.querySelector('.input-moy').value = calculateSingleMoyenne(d1, d2, c);
         }
 
         function renderGradesFields() {
@@ -240,13 +268,18 @@
             const periodGrades = classData.grades[currentPeriod];
             container.innerHTML = classData.subjects.map(sub => {
                 const g = periodGrades[currentStudentId]?.[sub.id] || { d1: '', d2: '', c: '' };
+                const initialMoy = calculateSingleMoyenne(g.d1, g.d2, g.c);
                 return `
-                    <div class="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                        <div class="flex-1 font-bold text-slate-700 text-[11px] uppercase">${sub.name}</div>
-                        <div class="flex gap-2">
-                            <input type="number" step="0.25" class="grade-input" placeholder="D1" value="${g.d1}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd1', this.value)">
-                            <input type="number" step="0.25" class="grade-input" placeholder="D2" value="${g.d2}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd2', this.value)">
-                            <input type="number" step="0.25" class="grade-input bg-indigo-50" placeholder="CP" value="${g.c}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'c', this.value)">
+                    <div class="grade-row flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm min-w-[320px]">
+                        <div class="font-bold text-slate-700 text-[11px] uppercase tracking-wide truncate max-w-[180px]">${sub.name}</div>
+                        <div class="flex items-center gap-2 justify-end">
+                            <input type="number" step="0.25" class="input-d1 grade-input" placeholder="D1" value="${g.d1}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd1', this.value, this)">
+                            <input type="number" step="0.25" class="input-d2 grade-input" placeholder="D2" value="${g.d2}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd2', this.value, this)">
+                            <input type="number" step="0.25" class="input-c grade-input bg-indigo-50" placeholder="CP" value="${g.c}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'c', this.value, this)">
+                            <div class="flex flex-col items-center ml-1">
+                                <span class="text-[8px] text-indigo-500 font-black uppercase mb-0.5">Moy</span>
+                                <input type="text" value="${initialMoy}" disabled class="input-moy w-12 h-10 bg-indigo-900 text-emerald-400 font-black text-center text-xs rounded-xl border-none cursor-not-allowed">
+                            </div>
                         </div>
                     </div>`;
             }).join('');
@@ -256,7 +289,7 @@
             const input = document.getElementById('new-student-name');
             if(!input.value.trim()) return;
             appState.classes[currentClassId].students.push({ id: 'std_' + Date.now(), lastName: input.value.toUpperCase() });
-            input.value = ''; saveToStorage(); renderStudents();
+            input.value = ''; saveToStorage(); renderStudents(); renderStats();
         }
 
         function selectStudent(id) {
@@ -290,7 +323,10 @@
 
         function renderStats() {
             const classData = appState.classes[currentClassId];
-            if(!classData || !classData.students.length) return;
+            if(!classData || !classData.students.length) {
+                document.getElementById('class-avg-display').textContent = "0.00";
+                return;
+            }
             let totalMoy = 0;
             classData.students.forEach(s => {
                 let p = 0, c = 0;
@@ -311,13 +347,13 @@
 
         window.onload = () => changeLevel();
 
-    if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('Service Worker enregistré avec succès ! En avant le hors-ligne.'))
-      .catch(err => console.error('Échec de l\'enregistrement du Service Worker :', err));
-  });
-}   
-</script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                  .then(reg => console.log('Service Worker enregistré avec succès !'))
+                  .catch(err => console.error('Échec de l\'enregistrement du Service Worker :', err));
+            });
+        }   
+    </script>
 </body>
 </html>
