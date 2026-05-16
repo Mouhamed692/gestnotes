@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
         .student-item { display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
         .btn-delete-student { display: none; color: #f87171; padding: 4px; border-radius: 6px; }
@@ -36,7 +36,7 @@
             <div class="flex gap-2 w-full sm:w-auto justify-end">
                 <button onclick="exportData()" class="flex-1 sm:flex-none bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-[9px] font-bold uppercase">Exporter</button>
                 <button onclick="document.getElementById('importFile').click()" class="flex-1 sm:flex-none bg-indigo-600 px-3 py-2 rounded-lg text-[9px] font-bold uppercase text-center">Importer</button>
-                <input type="file" id="importFile" class="hidden" onchange="importData(event)">
+                <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
             </div>
         </div>
     </nav>
@@ -203,12 +203,15 @@
             ]
         };
 
+        function saveToStorage() {
+            localStorage.setItem('gestnotes_v4', JSON.stringify(appState));
+        }
+
         function isPrimaire() {
             const level = document.getElementById('class-level').value;
             return ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(level);
         }
 
-        // Met à jour dynamiquement les périodes (Trimestres pour primaire, Semestres pour le reste)
         function updatePeriodDropdownOptions() {
             const periodSelect = document.getElementById('semester');
             const oldVal = periodSelect.value;
@@ -226,7 +229,6 @@
                 `;
             }
             
-            // Tente de conserver la période sélectionnée si elle existe toujours
             if ([...periodSelect.options].some(o => o.value === oldVal)) {
                 periodSelect.value = oldVal;
             } else {
@@ -383,7 +385,6 @@
             document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
         }
 
-        // Gère la touche ENTRÉE pour sauter à l'élève suivant
         function handleKeyDown(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -392,7 +393,6 @@
                 
                 if (currentIndex !== -1 && currentIndex < students.length - 1) {
                     const nextStudent = students[currentIndex + 1];
-                    // On retient l'index de l'input actif (d1, d2 ou c) pour le focaliser chez le prochain élève
                     let activeClassName = "";
                     if (document.activeElement.classList.contains('input-d1')) activeClassName = '.input-d1';
                     else if (document.activeElement.classList.contains('input-d2')) activeClassName = '.input-d2';
@@ -402,7 +402,6 @@
 
                     selectStudent(nextStudent.id);
                     
-                    // Remettre le focus sur la même case pour le nouvel élève
                     setTimeout(() => {
                         const rows = document.querySelectorAll('.grade-row-item');
                         if (rows[activeRowIndex] && activeClassName) {
@@ -546,20 +545,68 @@
             document.getElementById('class-avg-display').textContent = (totalMoyennesClasse / classData.students.length).toFixed(2);
         }
 
-        function saveToStorage() { localStorage.setItem('gestnotes_v4', JSON.stringify(appState)); }
-        function exportData() { const blob = new Blob([JSON.stringify(appState)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "gestnotes_backup.json"; a.click(); }
-        function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { appState = JSON.parse(ev.target.result); changeLevel(); }; reader.readAsText(e.target.files[0]); }
-        function printReport() { window.open(`bulletin.html?class=${currentClassId}&student=${currentStudentId}&period=${currentPeriod}`, '_blank'); }
+        // ==========================================
+        //  FONCTIONS D'IMPORTATION / EXPORTATION LOCALES
+        // ==========================================
+        function exportData() {
+            if (!appState || Object.keys(appState.classes).length === 0) {
+                alert("Il n'y a aucune donnée à exporter pour le moment.");
+                return;
+            }
+            
+            // Formatage du nom du fichier pour la secrétaire (Ex: Sauvegarde_GestNotes_2026-05-16.json)
+            const dateStr = new Date().toISOString().split('T')[0];
+            const filename = `Sauvegarde_GestNotes_${dateStr}.json`;
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", filename);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
 
-        window.onload = () => changeLevel();
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                  .then(reg => console.log('Service Worker enregistré avec succès !'))
-                  .catch(err => console.error('Échec de l\'enregistrement du Service Worker :', err));
-            });
-        }   
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedState = JSON.parse(e.target.result);
+                    
+                    // Validation rapide de la structure du fichier JSON importé
+                    if (importedState && typeof importedState === 'object' && importedState.classes) {
+                        if (confirm("Attention : l'importation de ce fichier va remplacer toutes vos données actuelles sur ce navigateur. Voulez-vous continuer ?")) {
+                            appState = importedState;
+                            saveToStorage();
+                            
+                            // Réinitialisation de l'affichage avec la classe actuellement sélectionnée
+                            changeLevel();
+                            alert("Données importées avec succès !");
+                        }
+                    } else {
+                        alert("Erreur : Le fichier sélectionné n'est pas un fichier de sauvegarde valide GestNotes.");
+                    }
+                } catch (err) {
+                    alert("Erreur lors de la lecture du fichier. Assurez-vous qu'il s'agit d'un fichier .json valide.");
+                }
+                // Réinitialise le champ input file pour pouvoir importer le même fichier deux fois si nécessaire
+                document.getElementById('importFile').value = "";
+            };
+            reader.readAsText(file);
+        }
+
+        function printReport() {
+            // Logique de redirection ou impression vers bulletin.html
+            window.open('bulletin.html', '_blank');
+        }
+
+        // Initialisation au chargement de la page
+        window.onload = function() {
+            changeLevel();
+        }
     </script>
 </body>
 </html>
