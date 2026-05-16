@@ -276,6 +276,21 @@
             font-size: 13px;
         }
 
+        /* Rectangle d'observation sans bordure gauche */
+        .obs-box-container {
+            width: 50%;
+            margin-top: 10px;
+        }
+
+        .obs-box {
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            border-right: 1px solid #000;
+            border-left: none; /* Supprime la largeur de gauche */
+            height: 60px; /* Espace pour écrire l'observation */
+            margin-top: 5px;
+        }
+
         .obs-right {
             text-align: center;
             width: 300px;
@@ -339,7 +354,7 @@ RENOVATION</textarea>
 
         <div class="student-info">
             <div class="student-col">
-                <div><span class="field">Prénoms</span> <strong><span id="lbl-firstname"></span></strong></div>
+                <div><span class="field">Prénoms:</span> <strong><span id="lbl-firstname"></span></strong></div>
                 <div><span class="field">Né(e) le</span> <strong id="lbl-birth"></strong> à <strong id="lbl-birthplace"></strong></div>
                 <div><span class="field">Matricule:</span> <strong id="lbl-matricule"></strong></div>
             </div>
@@ -408,8 +423,11 @@ RENOVATION</textarea>
         </div>
 
         <div class="observations">
-            <div>Observations du conseil des professeurs</div>
-            <div class="obs-right">Le Chef d'Établissement</div>
+            <div class="obs-box-container">
+                <div>Observations du conseil des professeurs</div>
+                <div class="obs-box"></div>
+            </div>
+            <div class="obs-right" style="margin-top: 10px;">Le Chef d'Établissement</div>
         </div>
     </div>
 
@@ -468,7 +486,10 @@ RENOVATION</textarea>
 
             document.getElementById('lbl-year').textContent = "2025-2026";
             document.getElementById('lbl-semester').textContent = period + (period == "1" ? "er" : "ème");
-            document.getElementById('lbl-firstname').textContent = student.firstName || "";
+            
+            // Correction ici : Recherche adaptative de la clé du prénom (firstName ou firstname)
+            document.getElementById('lbl-firstname').textContent = student.firstName || student.firstname || "";
+            
             document.getElementById('lbl-lastname').textContent = student.lastName;
             document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
             document.getElementById('lbl-matricule').textContent = student.matricule || 'REG-' + Math.floor(1000+Math.random()*9000);
