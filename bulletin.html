@@ -439,7 +439,7 @@ RENOVATION</textarea>
                 <div>Observations du conseil des professeurs</div>
                 <div class="obs-box"></div>
             </div>
-            
+             
             <div class="signatures-container">
                 <div class="sig-block">
                     <div>Le Titulaire de Classe</div>
@@ -469,12 +469,15 @@ RENOVATION</textarea>
         function checkIsPrimaire(cId) {
             if (!cId) return false;
             const level = cId.split('_')[0].toUpperCase();
-            // Prise en compte de la nomenclature classique du Sénégal (CI à CM2) et de vos ajouts numériques (6EME à 1ERE ETAPE)
+            
+            // Nomenclature classique du Sénégal (CI à CM2) + Nomenclature numérique personnalisée du primaire (6EME à 1ERE)
             const classesPrimaire = [
                 "CI", "CP", "CE1", "CE2", "CM1", "CM2", 
                 "6EME", "5EME", "4EME", "3EME", "2EME", "1ERE"
             ];
-            return classesPrimaire.some(pLevel => level.startsWith(pLevel));
+            
+            // On vérifie si l'identifiant commence par l'un de ces mots-clés
+            return classesPrimaire.some(pLevel => level === pLevel || level.startsWith(pLevel));
         }
 
         window.onload = function () {
@@ -492,17 +495,22 @@ RENOVATION</textarea>
 
             const rawData = localStorage.getItem('gestnotes_v4') || localStorage.getItem('gestnotes_data');
             if (!rawData || !classId || !studentId) {
-                document.getElementById('error-msg').style.display = 'block';
-                document.getElementById('setup-panel').style.display = 'none';
+                showError();
                 return;
             }
 
             const appState = JSON.parse(rawData);
-            const classData = appState.classes[classId];
-            if (!classData) return;
+            if (!appState.classes || !appState.classes[classId]) {
+                showError();
+                return;
+            }
 
+            const classData = appState.classes[classId];
             const student = classData.students.find(s => s.id === studentId);
-            if (!student) return;
+            if (!student) {
+                showError();
+                return;
+            }
 
             const isPrimaireMode = checkIsPrimaire(classId);
 
@@ -512,7 +520,7 @@ RENOVATION</textarea>
             document.getElementById('lbl-year').textContent = "2025-2026";
             document.getElementById('lbl-period-type').textContent = isPrimaireMode ? "Trimestre" : "Semestre";
             document.getElementById('lbl-semester').textContent = period + (period == "1" ? "er" : "ème");
-            
+             
             document.getElementById('lbl-firstname').textContent = student.firstName || student.firstname || "";
             document.getElementById('lbl-lastname').textContent = student.lastName;
             document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
@@ -556,7 +564,9 @@ RENOVATION</textarea>
             const periodGrades = (classData.grades && classData.grades[period]) ? classData.grades[period] : (classData.grades || {});
 
             let subjectRanksMap = {};
-            classData.subjects.forEach(sub => { subjectRanksMap[sub.id] = []; });
+            if (classData.subjects) {
+                classData.subjects.forEach(sub => { subjectRanksMap[sub.id] = []; });
+            }
 
             let ranks = [];
             let totalMoyennesClasse = 0;
@@ -568,39 +578,41 @@ RENOVATION</textarea>
                 let primPointsObtenus = 0, primBaremeTotal = 0;
                 let hasGrades = false;
 
-                classData.subjects.forEach(sub => {
-                    const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
-                    const d1 = g.d1 !== '' ? parseFloat(g.d1) : null;
-                    const cp = g.c !== '' ? parseFloat(g.c) : null;
+                if (classData.subjects) {
+                    classData.subjects.forEach(sub => {
+                        const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
+                        const d1 = g.d1 !== '' ? parseFloat(g.d1) : null;
+                        const cp = g.c !== '' ? parseFloat(g.c) : null;
 
-                    if (isPrimaireMode) {
-                        if (d1 !== null || cp !== null) {
-                            const valD1 = d1 !== null ? d1 : 0;
-                            const valCp = cp !== null ? cp : valD1;
-                            const moySub = (valD1 + valCp) / 2;
-                            
-                            subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
-                            primPointsObtenus += (moySub / 20) * sub.coef;
-                            primBaremeTotal += sub.coef;
-                            hasGrades = true;
+                        if (isPrimaireMode) {
+                            if (d1 !== null || cp !== null) {
+                                const valD1 = d1 !== null ? d1 : 0;
+                                const valCp = cp !== null ? cp : valD1;
+                                const moySub = (valD1 + valCp) / 2;
+                                 
+                                subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
+                                primPointsObtenus += (moySub / 20) * sub.coef;
+                                primBaremeTotal += sub.coef;
+                                hasGrades = true;
+                            }
+                        } else {
+                            const d2 = g.d2 !== '' ? parseFloat(g.d2) : d1;
+                            if (d1 !== null || cp !== null) {
+                                const valD1 = d1 !== null ? d1 : 0;
+                                const valD2 = d2 !== null ? d2 : valD1;
+                                const valComp = cp !== null ? cp : 0;
+
+                                const moyDev = (valD1 + valD2) / 2;
+                                const moySub = cp !== null ? (moyDev + (valComp * 2)) / 3 : moyDev;
+
+                                subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
+                                stPoints += moySub * sub.coef;
+                                stCoef += sub.coef;
+                                hasGrades = true;
+                            }
                         }
-                    } else {
-                        const d2 = g.d2 !== '' ? parseFloat(g.d2) : d1;
-                        if (d1 !== null || cp !== null) {
-                            const valD1 = d1 !== null ? d1 : 0;
-                            const valD2 = d2 !== null ? d2 : valD1;
-                            const valComp = cp !== null ? cp : 0;
-
-                            const moyDev = (valD1 + valD2) / 2;
-                            const moySub = cp !== null ? (moyDev + (valComp * 2)) / 3 : moyDev;
-
-                            subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
-                            stPoints += moySub * sub.coef;
-                            stCoef += sub.coef;
-                            hasGrades = true;
-                        }
-                    }
-                });
+                    });
+                }
 
                 if (isPrimaireMode && hasGrades) {
                     const finalPrimAvg = primBaremeTotal > 0 ? (primPointsObtenus / primBaremeTotal) * 10 : 0;
@@ -631,77 +643,79 @@ RENOVATION</textarea>
             let totalCoef = 0, totalPoints = 0;
             let totalPrimObtenu = 0, totalPrimBareme = 0;
 
-            classData.subjects.forEach(sub => {
-                const g = periodGrades[studentId]?.[sub.id] || { d1: '', d2: '', c: '' };
-                const d1 = g.d1 !== '' ? parseFloat(g.d1) : '';
-                const d2 = g.d2 !== '' ? parseFloat(g.d2) : '';
-                const comp = g.c !== '' ? parseFloat(g.c) : '';
+            if (classData.subjects) {
+                classData.subjects.forEach(sub => {
+                    const g = periodGrades[studentId]?.[sub.id] || { d1: '', d2: '', c: '' };
+                    const d1 = g.d1 !== '' ? parseFloat(g.d1) : '';
+                    const d2 = g.d2 !== '' ? parseFloat(g.d2) : '';
+                    const comp = g.c !== '' ? parseFloat(g.c) : '';
 
-                const rankInSubjectList = subjectRanksMap[sub.id];
-                const itemIndex = rankInSubjectList.findIndex(x => x.studentId === studentId);
-                let subjectRankStr = "-";
-                if (itemIndex !== -1) {
-                    const r = itemIndex + 1;
-                    subjectRankStr = r + (r === 1 ? "er" : "e");
-                }
-
-                const tr = document.createElement('tr');
-
-                if (isPrimaireMode) {
-                    let noteObtenueStr = '', app = '';
-                    if (d1 !== '' || comp !== '') {
-                        const valD1 = d1 !== '' ? d1 : 0;
-                        const valComp = comp !== '' ? comp : valD1;
-                        const calculatedMoy = (valD1 + valComp) / 2;
-
-                        const noteSurBareme = (calculatedMoy / 20) * sub.coef;
-
-                        noteObtenueStr = noteSurBareme.toFixed(2).replace('.', ',');
-                        totalPrimObtenu += noteSurBareme;
-                        totalPrimBareme += sub.coef;
-                        app = getAppreciation(calculatedMoy, 20);
+                    const rankInSubjectList = subjectRanksMap[sub.id] || [];
+                    const itemIndex = rankInSubjectList.findIndex(x => x.studentId === studentId);
+                    let subjectRankStr = "-";
+                    if (itemIndex !== -1) {
+                        const r = itemIndex + 1;
+                        subjectRankStr = r + (r === 1 ? "er" : "e");
                     }
 
-                    tr.innerHTML = `
-                        <td class="col-discipline">${sub.name}</td>
-                        <td>${d1 !== '' ? d1.toFixed(2).replace('.', ',') : ''}</td>
-                        <td>${comp !== '' ? comp.toFixed(2).replace('.', ',') : ''}</td>
-                        <td style="font-weight: bold;">${noteObtenueStr}</td>
-                        <td style="color: #475569;">/${sub.coef}</td>
-                        <td style="font-weight: bold; color: #1e1b4b;">${subjectRankStr}</td>
-                        <td>${app}</td>
-                    `;
-                } else {
-                    let moy20 = '', mxcoef = '', app = '';
-                    if (d1 !== '' || comp !== '') {
-                        const valD1 = d1 !== '' ? d1 : 0;
-                        const valD2 = d2 !== '' ? d2 : valD1;
-                        const valComp = comp !== '' ? comp : 0;
+                    const tr = document.createElement('tr');
 
-                        const moyDev = (valD1 + valD2) / 2;
-                        const calculatedMoy = comp !== '' ? (moyDev + (valComp * 2)) / 3 : moyDev;
+                    if (isPrimaireMode) {
+                        let noteObtenueStr = '', app = '';
+                        if (d1 !== '' || comp !== '') {
+                            const valD1 = d1 !== '' ? d1 : 0;
+                            const valComp = comp !== '' ? comp : valD1;
+                            const calculatedMoy = (valD1 + valComp) / 2;
 
-                        moy20 = calculatedMoy.toFixed(2);
-                        const points = calculatedMoy * sub.coef;
-                        mxcoef = points.toFixed(2);
+                            const noteSurBareme = (calculatedMoy / 20) * sub.coef;
 
-                        totalCoef += sub.coef;
-                        totalPoints += points;
-                        app = getAppreciation(calculatedMoy, 20);
+                            noteObtenueStr = noteSurBareme.toFixed(2).replace('.', ',');
+                            totalPrimObtenu += noteSurBareme;
+                            totalPrimBareme += sub.coef;
+                            app = getAppreciation(calculatedMoy, 20);
+                        }
+
+                        tr.innerHTML = `
+                            <td class="col-discipline">${sub.name}</td>
+                            <td>${d1 !== '' ? d1.toFixed(2).replace('.', ',') : ''}</td>
+                            <td>${comp !== '' ? comp.toFixed(2).replace('.', ',') : ''}</td>
+                            <td style="font-weight: bold;">${noteObtenueStr}</td>
+                            <td style="color: #475569;">/${sub.coef}</td>
+                            <td style="font-weight: bold; color: #1e1b4b;">${subjectRankStr}</td>
+                            <td>${app}</td>
+                        `;
+                    } else {
+                        let moy20 = '', mxcoef = '', app = '';
+                        if (d1 !== '' || comp !== '') {
+                            const valD1 = d1 !== '' ? d1 : 0;
+                            const valD2 = d2 !== '' ? d2 : valD1;
+                            const valComp = comp !== '' ? comp : 0;
+
+                            const moyDev = (valD1 + valD2) / 2;
+                            const calculatedMoy = comp !== '' ? (moyDev + (valComp * 2)) / 3 : moyDev;
+
+                            moy20 = calculatedMoy.toFixed(2);
+                            const points = calculatedMoy * sub.coef;
+                            mxcoef = points.toFixed(2);
+
+                            totalCoef += sub.coef;
+                            totalPoints += points;
+                            app = getAppreciation(calculatedMoy, 20);
+                        }
+
+                        tr.innerHTML = `
+                            <td class="col-discipline">${sub.name}</td>
+                            <td>${d1}</td><td>${d2}</td><td>${comp}</td>
+                            <td style="font-weight: bold;">${moy20.replace('.', ',')}</td>
+                            <td>${sub.coef}</td>
+                            <td style="font-weight: bold;">${mxcoef.replace('.', ',')}</td>
+                            <td style="font-weight: bold; color: #1e1b4b;">${subjectRankStr}</td>
+                            <td>${app}</td>
+                        `;
                     }
-
-                    tr.innerHTML = `
-                        <td class="col-discipline">${sub.name}</td>
-                        <td>${d1}</td><td>${d2}</td><td>${comp}</td>
-                        <td style="font-weight: bold;">${moy20.replace('.', ',')}</td>
-                        <td>${sub.coef}</td>
-                        <td style="font-weight: bold;">${mxcoef.replace('.', ',')}</td>
-                        <td style="font-weight: bold; color: #1e1b4b;">${subjectRankStr}</td>
-                        <td>${app}</td>
-                    `;
-                }
-                tbody.appendChild(tr);
-            });
+                    tbody.appendChild(tr);
+                });
+            }
 
             // Étape 3 : Calcul final et pied de tableau
             const tfoot = document.getElementById('grades-footer');
@@ -762,6 +776,12 @@ RENOVATION</textarea>
                 }
             }
         };
+
+        function showError() {
+            document.getElementById('error-msg').style.display = 'block';
+            document.getElementById('setup-panel').style.display = 'none';
+            document.getElementById('bulletin-content').style.display = 'none';
+        }
     </script>
 </body>
 
