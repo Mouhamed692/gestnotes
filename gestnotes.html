@@ -545,23 +545,20 @@
             document.getElementById('class-avg-display').textContent = (totalMoyennesClasse / classData.students.length).toFixed(2);
         }
 
+      
+        
         // ==========================================
         //  FONCTIONS D'IMPORTATION / EXPORTATION LOCALES
         // ==========================================
         function exportData() {
             if (!appState || Object.keys(appState.classes).length === 0) {
-                alert("Il n'y a aucune donnée à exporter pour le moment.");
+                alert("Aucune donnée à exporter.");
                 return;
             }
-            
-            // Formatage du nom du fichier pour la secrétaire (Ex: Sauvegarde_GestNotes_2026-05-16.json)
-            const dateStr = new Date().toISOString().split('T')[0];
-            const filename = `Sauvegarde_GestNotes_${dateStr}.json`;
-            
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", filename);
+            downloadAnchor.setAttribute("download", `gestnotes_backup_${new Date().toISOString().slice(0,10)}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
@@ -574,39 +571,49 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const importedState = JSON.parse(e.target.result);
-                    
-                    // Validation rapide de la structure du fichier JSON importé
-                    if (importedState && typeof importedState === 'object' && importedState.classes) {
-                        if (confirm("Attention : l'importation de ce fichier va remplacer toutes vos données actuelles sur ce navigateur. Voulez-vous continuer ?")) {
-                            appState = importedState;
+                    const importedData = JSON.parse(e.target.result);
+                    if (importedData && importedData.classes) {
+                        if (confirm("Attention, l'importation va remplacer vos données actuelles. Continuer ?")) {
+                            appState = importedData;
                             saveToStorage();
-                            
-                            // Réinitialisation de l'affichage avec la classe actuellement sélectionnée
                             changeLevel();
                             alert("Données importées avec succès !");
                         }
                     } else {
-                        alert("Erreur : Le fichier sélectionné n'est pas un fichier de sauvegarde valide GestNotes.");
+                        alert("Format de fichier invalide. Le fichier doit contenir un objet de classes valide.");
                     }
                 } catch (err) {
-                    alert("Erreur lors de la lecture du fichier. Assurez-vous qu'il s'agit d'un fichier .json valide.");
+                    alert("Erreur lors de la lecture du fichier JSON.");
                 }
-                // Réinitialise le champ input file pour pouvoir importer le même fichier deux fois si nécessaire
-                document.getElementById('importFile').value = "";
             };
             reader.readAsText(file);
+            // Réinitialise l'input pour permettre de ré-importer le même fichier si besoin
+            event.target.value = '';
         }
 
+        // ==========================================
+        //  REDIRECTION VERS LE BULLETIN EN LIGNE
+        // ==========================================
         function printReport() {
-            // Logique de redirection ou impression vers bulletin.html
-            window.open('bulletin.html', '_blank');
+            if (!currentClassId || !currentStudentId) {
+                alert("Veuillez sélectionner un élève.");
+                return;
+            }
+            
+            // Construit l'URL avec les paramètres requis par bulletin.html
+            const url = `bulletin.html?class=${encodeURIComponent(currentClassId)}&student=${encodeURIComponent(currentStudentId)}&period=${encodeURIComponent(currentPeriod)}`;
+            
+            // Ouvre le bulletin dans un nouvel onglet
+            window.open(url, '_blank');
         }
 
-        // Initialisation au chargement de la page
+        // Initialisation de la page au chargement complet
         window.onload = function() {
             changeLevel();
-        }
+        };
     </script>
+</body>
+</html>
+
 </body>
 </html>
