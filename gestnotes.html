@@ -92,9 +92,12 @@
             <div class="lg:col-span-4">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6">
                     <h2 class="font-black text-slate-800 text-[10px] uppercase mb-4 tracking-widest">Liste des Élèves</h2>
-                    <div class="flex gap-2 mb-6">
-                        <input type="text" id="new-student-name" placeholder="NOM PRÉNOM" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-xs font-bold outline-none uppercase">
-                        <button onclick="addStudent()" class="bg-indigo-600 text-white w-12 h-12 rounded-xl font-black shadow-lg hover:bg-indigo-700 transition flex items-center justify-center text-xl">+</button>
+                    <div class="flex flex-col gap-2 mb-6">
+                        <input type="text" id="new-student-lastname" placeholder="NOM" class="w-full bg-slate-100 border-none rounded-xl p-3 text-xs font-bold outline-none uppercase">
+                        <div class="flex gap-2">
+                            <input type="text" id="new-student-firstname" placeholder="PRÉNOM" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-xs font-bold outline-none uppercase">
+                            <button onclick="addStudent()" class="bg-indigo-600 text-white w-12 h-12 rounded-xl font-black shadow-lg hover:bg-indigo-700 transition flex items-center justify-center text-xl">+</button>
+                        </div>
                     </div>
                     <ul id="student-list" class="space-y-2 max-h-[300px] lg:max-h-[450px] overflow-y-auto pr-1"></ul>
                 </div>
@@ -257,7 +260,7 @@
             saveToStorage(); 
             renderSubjectsConfig(); 
             
-            nameInput.value = ''; // Reset du champ après ajout libre
+            nameInput.value = ''; 
             document.getElementById('new-sub-coef').value = '';
             
             if(currentStudentId) renderGradesFields();
@@ -299,7 +302,6 @@
             }
         }
 
-        // Calcule la moyenne générale de l'élève en cours à afficher en bas
         function calculateCurrentStudentAverage() {
             const classData = appState.classes[currentClassId];
             if (!classData || !currentStudentId) return "0.00";
@@ -351,7 +353,6 @@
             
             row.querySelector('.input-moy').value = calculateSingleMoyenne(d1, d2, c, maxBars);
             
-            // Met à jour la ligne du bas instantanément lors de la saisie
             document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
         }
 
@@ -386,16 +387,34 @@
                     </div>`;
             }).join('');
 
-            // Mise à jour de l'affichage du bloc résumé de l'élève
             document.getElementById('student-summary-label').textContent = isPrimaire() ? "NOTE /10" : "MOY /20";
             document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
         }
 
+        // Modification de la fonction d'ajout pour prendre en compte le Prénom et le Nom
         function addStudent() {
-            const input = document.getElementById('new-student-name');
-            if(!input.value.trim()) return;
-            appState.classes[currentClassId].students.push({ id: 'std_' + Date.now(), lastName: input.value.toUpperCase() });
-            input.value = ''; saveToStorage(); renderStudents(); renderStats();
+            const lastNameInput = document.getElementById('new-student-lastname');
+            const firstNameInput = document.getElementById('new-student-firstname');
+            
+            const lastName = lastNameInput.value.trim().toUpperCase();
+            const firstName = firstNameInput.value.trim().toUpperCase();
+            
+            if(!lastName || !firstName) {
+                alert("Veuillez remplir le Nom ET le Prénom.");
+                return;
+            }
+            
+            appState.classes[currentClassId].students.push({ 
+                id: 'std_' + Date.now(), 
+                lastName: lastName,
+                firstName: firstName 
+            });
+            
+            lastNameInput.value = ''; 
+            firstNameInput.value = ''; 
+            saveToStorage(); 
+            renderStudents(); 
+            renderStats();
         }
 
         function selectStudent(id) {
@@ -404,7 +423,9 @@
             if(!student) return;
             document.getElementById('welcome-msg').classList.add('hidden');
             document.getElementById('editor-panel').classList.remove('hidden');
-            document.getElementById('current-student-display').textContent = student.lastName;
+            
+            // Affichage combiné Prénom + Nom dans l'en-tête de saisie des notes
+            document.getElementById('current-student-display').textContent = `${student.firstName} ${student.lastName}`;
             document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ') + " - Période " + currentPeriod;
             renderGradesFields(); renderStudents();
         }
@@ -414,7 +435,7 @@
             const students = appState.classes[currentClassId]?.students || [];
             list.innerHTML = students.map(s => `
                 <li class="student-item p-3 rounded-xl cursor-pointer mb-2 ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
-                    <span onclick="selectStudent('${s.id}')" class="font-bold text-[10px] uppercase flex-1">${s.lastName}</span>
+                    <span onclick="selectStudent('${s.id}')" class="font-bold text-[10px] uppercase flex-1">${s.firstName} ${s.lastName}</span>
                     <button onclick="deleteStudent('${s.id}')" class="btn-delete-student hover:bg-red-50">×</button>
                 </li>`).join('');
         }
