@@ -21,8 +21,8 @@
         }
         .grade-input:focus { border-color: #4f46e5; background: white; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); outline: none; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        #grades-grid > div:nth-child(odd) { background-color: #ffffff; }
-        #grades-grid > div:nth-child(even) { background-color: #f1f5f9; }
+        .grade-row-item:nth-child(odd) { background-color: #ffffff; }
+        .grade-row-item:nth-child(even) { background-color: #f1f5f9; }
     </style>
 </head>
 <body>
@@ -112,16 +112,25 @@
                     <div class="flex flex-wrap gap-2 mb-4" id="subjects-config-list"></div>
                     
                     <div class="flex flex-col sm:flex-row gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100">
-                        <select id="new-sub-name" class="flex-1 bg-transparent border-none p-2 text-xs font-bold outline-none uppercase">
-                            <option value="">-- CHOISIR --</option>
-                            <option value="LANGUE ET COMMUNICATION">LANGUE ET COMMUNICATION</option>
-                            <option value="MATHÉMATIQUES">MATHÉMATIQUES</option>
-                            <option value="DÉCOUVERTE DU MONDE">DÉCOUVERTE DU MONDE</option>
-                            <option value="DÉVELOPPEMENT DURABLE">DÉVELOPPEMENT DURABLE</option>
-                            <option value="ÉDUCATION ARTISTIQUE">ÉDUCATION ARTISTIQUE</option>
-                            <option value="ÉDUCATION PHYSIQUE">ÉDUCATION PHYSIQUE</option>
-                            <option value="ARABE">ARABE</option>
-                        </select>
+                        <input type="text" id="new-sub-name" list="standard-subjects" placeholder="CHOISIR OU TAPER UNE MATIÈRE" class="flex-1 bg-transparent border-none p-2 text-xs font-bold outline-none uppercase">
+                        <datalist id="standard-subjects">
+                            <option value="LANGUE ET COMMUNICATION"></option>
+                            <option value="MATHÉMATIQUES"></option>
+                            <option value="DÉCOUVERTE DU MONDE"></option>
+                            <option value="DÉVELOPPEMENT DURABLE"></option>
+                            <option value="ÉDUCATION ARTISTIQUE"></option>
+                            <option value="ÉDUCATION PHYSIQUE"></option>
+                            <option value="ARABE"></option>
+                            <option value="FRANÇAIS"></option>
+                            <option value="ANGLAIS"></option>
+                            <option value="HISTOIRE-GÉO"></option>
+                            <option value="SVT"></option>
+                            <option value="PHYSIQUE-CHIMIE"></option>
+                            <option value="EPS"></option>
+                            <option value="ARTS"></option>
+                            <option value="PHILOSOPHIE"></option>
+                        </datalist>
+                        
                         <div class="flex gap-2 w-full sm:w-auto">
                             <input type="number" id="new-sub-coef" placeholder="Coef" class="flex-1 sm:w-16 bg-white border-none rounded-lg p-2 text-xs font-bold text-center outline-none">
                             <button onclick="addSubject()" class="bg-emerald-500 text-white px-4 py-2 sm:py-0 rounded-xl font-black text-[10px] uppercase shadow-md whitespace-nowrap">Ajouter</button>
@@ -138,7 +147,22 @@
                             </div>
                             <button onclick="printReport()" class="w-full sm:w-auto bg-indigo-500 hover:bg-indigo-400 px-4 py-2.5 rounded-xl font-black text-[10px] transition uppercase text-center">Bulletin PDF</button>
                         </div>
-                        <div class="p-3 sm:p-6 grid grid-cols-1 gap-3 bg-slate-50 overflow-x-auto" id="grades-grid"></div>
+                        
+                        <div class="p-3 sm:p-6 bg-slate-50 overflow-x-auto space-y-3" id="grades-grid-container">
+                            <div class="flex flex-col gap-3" id="grades-grid"></div>
+                            
+                            <div id="student-summary-row" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-indigo-950 text-white rounded-2xl border border-indigo-900 shadow-md min-w-[320px] mt-4">
+                                <div class="font-black text-[12px] uppercase tracking-wider text-indigo-300">
+                                    MOYENNE GÉNÉRALE DE L'ÉLÈVE
+                                </div>
+                                <div class="flex items-center gap-2 justify-end">
+                                    <div class="flex flex-col items-center">
+                                        <span id="student-summary-label" class="text-[8px] text-emerald-400 font-black uppercase mb-0.5">MOYENNE</span>
+                                        <span id="student-avg-display" class="w-20 py-2 bg-emerald-500 text-slate-950 font-black text-center text-base rounded-xl shadow-inner block">0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -157,7 +181,7 @@
 
         const DEFAULT_SUBJECTS = {
             primaire: [
-                {name: "LANGUE ET COMMUNICATION", coef: 40}, // Au primaire, coef stockera le barème Max (ex: /40)
+                {name: "LANGUE ET COMMUNICATION", coef: 40},
                 {name: "MATHÉMATIQUES", coef: 40}, 
                 {name: "DÉCOUVERTE DU MONDE", coef: 40}, 
                 {name: "DÉVELOPPEMENT DURABLE", coef: 20},
@@ -178,7 +202,6 @@
             ]
         };
 
-        // Fonction utilitaire pour savoir si la classe actuelle est du primaire
         function isPrimaire() {
             const level = document.getElementById('class-level').value;
             return ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(level);
@@ -207,7 +230,6 @@
                 appState.classes[currentClassId] = { students: [], subjects: [], grades: { "1": {}, "2": {}, "3": {} }, effectif: "" };
             }
             
-            // Adapter le placeholder de l'input d'ajout de matière
             const coefInput = document.getElementById('new-sub-coef');
             if (isPrimaire()) {
                 coefInput.placeholder = "Max (ex: 40)";
@@ -224,13 +246,21 @@
         function updatePeriod() { currentPeriod = document.getElementById('semester').value; if(currentStudentId) selectStudent(currentStudentId); renderStats(); saveToStorage(); }
 
         function addSubject() {
-            const name = document.getElementById('new-sub-name').value;
-            // Par défaut si primaire : barème sur 40, si secondaire coef 1
+            const nameInput = document.getElementById('new-sub-name');
+            const name = nameInput.value.trim().toUpperCase();
             const defaultVal = isPrimaire() ? 40 : 1;
             const coef = parseFloat(document.getElementById('new-sub-coef').value) || defaultVal;
+            
             if(!name) return;
+            
             appState.classes[currentClassId].subjects.push({ id: 'sub_' + Date.now(), name, coef });
-            saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields();
+            saveToStorage(); 
+            renderSubjectsConfig(); 
+            
+            nameInput.value = ''; // Reset du champ après ajout libre
+            document.getElementById('new-sub-coef').value = '';
+            
+            if(currentStudentId) renderGradesFields();
         }
 
         function renderSubjectsConfig() {
@@ -251,7 +281,6 @@
             saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields(); renderStats();
         }
 
-        // Calcule à la volée la moyenne pour une seule matière
         function calculateSingleMoyenne(d1, d2, c, maxBars = 20) {
             const vD1 = d1 !== '' ? parseFloat(d1) : null;
             const vD2 = d2 !== '' ? parseFloat(d2) : vD1;
@@ -260,16 +289,48 @@
             if (vD1 === null && vComp === null) return '--';
 
             if (isPrimaire()) {
-                // Au primaire, on fait souvent la moyenne brute Note_Mensuelle + Note_Compo (ou juste la note saisie si une seule)
-                // Ramenons le résultat final sur le barème max de la matière
                 const noteMensuelle = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
                 const noteFinale = vComp !== null ? (noteMensuelle + vComp) / 2 : noteMensuelle;
                 return noteFinale.toFixed(2);
             } else {
-                // Formule Classique Moyen/Secondaire
                 const moyDev = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
                 const finalMoy = vComp !== null ? (moyDev + (vComp * 2)) / 3 : moyDev;
                 return finalMoy.toFixed(2);
+            }
+        }
+
+        // Calcule la moyenne générale de l'élève en cours à afficher en bas
+        function calculateCurrentStudentAverage() {
+            const classData = appState.classes[currentClassId];
+            if (!classData || !currentStudentId) return "0.00";
+
+            if (isPrimaire()) {
+                let totalPointsObtenus = 0;
+                let totalBaremesMax = 0;
+
+                classData.subjects.forEach(sub => {
+                    const g = classData.grades[currentPeriod][currentStudentId]?.[sub.id] || {d1:'', d2:'', c:''};
+                    const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, sub.coef);
+                    if (mS !== '--') {
+                        totalPointsObtenus += parseFloat(mS);
+                        totalBaremesMax += sub.coef;
+                    }
+                });
+                return totalBaremesMax > 0 ? ((totalPointsObtenus / totalBaremesMax) * 10).toFixed(2) : "0.00";
+            } else {
+                let p = 0, c = 0;
+                classData.subjects.forEach(sub => {
+                    const g = classData.grades[currentPeriod][currentStudentId]?.[sub.id] || {d1:'', d2:'', c:''};
+                    const vD1 = g.d1 !== '' ? parseFloat(g.d1) : null;
+                    const vD2 = g.d2 !== '' ? parseFloat(g.d2) : vD1;
+                    const vComp = g.c !== '' ? parseFloat(g.c) : null;
+
+                    if (vD1 !== null || vComp !== null) {
+                        const mS = (((vD1||0) + (vD2||vD1||0))/2 + (vComp||0)*2)/3;
+                        p += mS * sub.coef; c += sub.coef;
+                    }
+                });
+                return c > 0 ? (p / c).toFixed(2) : "0.00";
             }
         }
 
@@ -282,14 +343,16 @@
             saveToStorage(); 
             renderStats();
 
-            // Code de calcul de l'input en temps réel
-            const row = inputElement.closest('.grade-row');
+            const row = inputElement.closest('.grade-row-item');
             const d1 = row.querySelector('.input-d1').value;
             const d2 = row.querySelector('.input-d2').value;
             const c = row.querySelector('.input-c').value;
             const maxBars = parseFloat(row.dataset.coef);
             
             row.querySelector('.input-moy').value = calculateSingleMoyenne(d1, d2, c, maxBars);
+            
+            // Met à jour la ligne du bas instantanément lors de la saisie
+            document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
         }
 
         function renderGradesFields() {
@@ -301,14 +364,13 @@
                 const g = periodGrades[currentStudentId]?.[sub.id] || { d1: '', d2: '', c: '' };
                 const initialMoy = calculateSingleMoyenne(g.d1, g.d2, g.c, sub.coef);
                 
-                // On adapte les placeholders pour le Primaire
                 const pD1 = isPrimaire() ? "Ev1" : "D1";
                 const pD2 = isPrimaire() ? "Ev2" : "D2";
                 const pC = isPrimaire() ? "Comp" : "CP";
                 const labelMoy = isPrimaire() ? `/${sub.coef}` : "Moy";
 
                 return `
-                    <div class="grade-row flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm min-w-[320px]" data-coef="${sub.coef}">
+                    <div class="grade-row-item flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm min-w-[320px]" data-coef="${sub.coef}">
                         <div class="font-bold text-slate-700 text-[11px] uppercase tracking-wide truncate max-w-[180px]">
                             ${sub.name} <span class="text-indigo-400 font-normal text-[9px]">${isPrimaire() ? '(Sur ' + sub.coef + ')' : ''}</span>
                         </div>
@@ -323,6 +385,10 @@
                         </div>
                     </div>`;
             }).join('');
+
+            // Mise à jour de l'affichage du bloc résumé de l'élève
+            document.getElementById('student-summary-label').textContent = isPrimaire() ? "NOTE /10" : "MOY /20";
+            document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
         }
 
         function addStudent() {
@@ -372,26 +438,20 @@
 
             classData.students.forEach(s => {
                 if (isPrimaire()) {
-                    // Logique PRIMAIRE : Somme des points obtenus / Somme des barèmes Max * 10 (pour avoir une note sur 10)
                     let totalPointsObtenus = 0;
                     let totalBaremesMax = 0;
 
                     classData.subjects.forEach(sub => {
                         const g = classData.grades[currentPeriod][s.id]?.[sub.id] || {d1:'', d2:'', c:''};
                         const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, sub.coef);
-                        
                         if (mS !== '--') {
                             totalPointsObtenus += parseFloat(mS);
-                            totalBaremesMax += sub.coef; // Le barème de la matière (ex: 40)
+                            totalBaremesMax += sub.coef;
                         }
                     });
-
-                    // Moyenne de l'élève ramenée sur 10 (Standard de l'école primaire au Sénégal / Ouest-Africain)
                     const moyenneEleve = totalBaremesMax > 0 ? (totalPointsObtenus / totalBaremesMax) * 10 : 0;
                     totalMoyennesClasse += moyenneEleve;
-
                 } else {
-                    // Logique SECONDAIRE / MOYEN : Moyenne pondérée par coefficients
                     let p = 0, c = 0;
                     classData.subjects.forEach(sub => {
                         const g = classData.grades[currentPeriod][s.id]?.[sub.id] || {d1:0,d2:0,c:0};
