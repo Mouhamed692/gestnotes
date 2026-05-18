@@ -252,6 +252,7 @@
                 saveToStorage();
                 renderSubjectsConfig();
                 if(currentStudentId) renderGradesFields();
+                renderStats();
             }
         }
 
@@ -273,7 +274,16 @@
 
             document.getElementById('input-effectif').value = appState.classes[currentClassId].effectif || "";
             renderSubjectsConfig(); renderStudents(); renderStats();
-            if(currentStudentId) selectStudent(currentStudentId);
+            if(currentStudentId) {
+                const standardList = appState.classes[currentClassId].students;
+                if(standardList.some(s => s.id === currentStudentId)) {
+                    selectStudent(currentStudentId);
+                } else {
+                    currentStudentId = null;
+                    document.getElementById('welcome-msg').classList.remove('hidden');
+                    document.getElementById('editor-panel').classList.add('hidden');
+                }
+            }
         }
 
         function saveEffectif() { if (currentClassId) appState.classes[currentClassId].effectif = document.getElementById('input-effectif').value; saveToStorage(); }
@@ -295,6 +305,7 @@
             document.getElementById('new-sub-coef').value = '';
             
             if(currentStudentId) renderGradesFields();
+            renderStats();
         }
 
         function renderSubjectsConfig() {
@@ -310,7 +321,7 @@
         }
 
         function removeSubject(subId) {
-            if(!confirm("Supprimer ?")) return;
+            if(!confirm("Supprimer cette matière ?")) return;
             appState.classes[currentClassId].subjects = appState.classes[currentClassId].subjects.filter(s => s.id !== subId);
             saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields(); renderStats();
         }
@@ -421,7 +432,7 @@
         function renderGradesFields() {
             const container = document.getElementById('grades-grid');
             const classData = appState.classes[currentClassId];
-            const periodGrades = classData.grades[currentPeriod];
+            const periodGrades = classData.grades[currentPeriod] || {};
             
             container.innerHTML = classData.subjects.map(sub => {
                 const g = periodGrades[currentStudentId]?.[sub.id] || { d1: '', d2: '', c: '' };
@@ -488,7 +499,6 @@
             const typePeriodeLabel = isPrimaire() ? "Trimestre " : "Semestre ";
             document.getElementById('current-student-display').textContent = `${student.firstName} ${student.lastName}`;
             
-            // Formatage propre du titre de la classe (ex: "6ÉME Unique" au lieu de "6ÉME UNIQUE")
             const classLabelClean = currentClassId.replace('_', ' ').replace('UNIQUE', 'Unique');
             document.getElementById('current-class-display').textContent = classLabelClean + " - " + typePeriodeLabel + currentPeriod;
             
@@ -521,11 +531,13 @@
             }
             
             let totalMoyennesClasse = 0;
+            let countValidStudents = 0;
 
             classData.students.forEach(s => {
                 if (isPrimaire()) {
                     let totalPointsObtenus = 0;
                     let totalBaremesMax = 0;
+                    let hasGrades = false;
 
                     classData.subjects.forEach(sub => {
                         const g = classData.grades[currentPeriod]?.[s.id]?.[sub.id] || {d1:'', d2:'', c:''};
@@ -533,32 +545,39 @@
                         if (mS !== '--') {
                             totalPointsObtenus += parseFloat(mS);
                             totalBaremesMax += sub.coef;
+                            hasGrades = true;
                         }
                     });
-                    const moyenneEleve = totalBaremesMax > 0 ? (totalPointsObtenus / totalBaremesMax) * 10 : 0;
-                    totalMoyennesClasse += moyenneEleve;
+                    if(hasGrades && totalBaremesMax > 0) {
+                        totalMoyennesClasse += (totalPointsObtenus / totalBaremesMax) * 10;
+                        countValidStudents++;
+                    }
                 } else {
                     let p = 0, c = 0;
+                    let hasGrades = false;
                     classData.subjects.forEach(sub => {
-                        const g = classData.grades[currentPeriod]?.[s.id]?.[sub.id] || {d1:0,d2:0,c:0};
-                        const mS = (((parseFloat(g.d1)||0) + (parseFloat(g.d2)||parseFloat(g.d1)||0))/2 + (parseFloat(g.c)||0)*2)/3;
-                        p += mS * sub.coef; c += sub.coef;
+                        const g = classData.grades[currentPeriod]?.[s.id]?.[sub.id] || {d1:'', d2:'', c:''};
+                        const vD1 = g.d1 !== '' ? parseFloat(g.d1) : null;
+                        const vD2 = g.d2 !== '' ? parseFloat(g.d2) : vD1;
+                        const vComp = g.c !== '' ? parseFloat(g.c) : null;
+
+                        if (vD1 !== null || vComp !== null) {
+                            const mS = (((vD1||0) + (vD2||vD1||0))/2 + (vComp||0)*2)/3;
+                            p += mS * sub.coef; c += sub.coef;
+                            hasGrades = true;
+                        }
                     });
-                    totalMoyennesClasse += (c > 0 ? p/c : 0);
+                    if(hasGrades && c > 0) {
+                        totalMoyennesClasse += p / c;
+                        countValidStudents++;
+                    }
                 }
             });
 
-            document.getElementById('class-avg-display').textContent = (totalMoyennesClasse / classData.students.length).toFixed(2);
+            const finalClassAvg = countValidStudents > 0 ? (totalMoyennesClasse / countValidStudents) : 0;
+            document.getElementById('class-avg-display').textContent = finalClassAvg.toFixed(2);
         }
 
-        // Initialisation automatique au chargement
-        window.onload = function() {
-            changeLevel();
-        }
-
-        // ==========================================
-        //  FONCTIONS D'IMPORTATION / EXPORTATION LOCALES
-        // ==========================================
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
             const downloadAnchor = document.createElement('a');
@@ -575,14 +594,14 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const imported = JSON.parse(e.target.result);
-                    if (imported && imported.classes) {
-                        appState = imported;
+                    const importedState = JSON.parse(e.target.result);
+                    if(importedState.classes) {
+                        appState = importedState;
                         saveToStorage();
                         changeLevel();
                         alert("Données importées avec succès !");
                     } else {
-                        alert("Fichier JSON invalide.");
+                        alert("Format de fichier invalide.");
                     }
                 } catch (err) {
                     alert("Erreur lors de la lecture du fichier.");
@@ -592,9 +611,13 @@
         }
 
         function printReport() {
-            alert("Génération du bulletin au format d'impression...");
             window.print();
         }
+
+        // Initialisation de l'UI
+        window.onload = function() {
+            changeLevel();
+        };
     </script>
 </body>
 </html>
