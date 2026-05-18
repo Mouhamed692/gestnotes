@@ -100,28 +100,6 @@
             </div>
 
             <div
-                class="flex items-center gap-3 bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20">
-                <label for="class-select"
-                    class="font-medium text-sm uppercase tracking-wider text-indigo-100">Niveau</label>
-                <select id="class-select"
-                    class="bg-white text-indigo-900 rounded px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold cursor-pointer shadow-sm border-0">
-                    <optgroup label="Enseignement Primaire" class="text-slate-500 font-normal">
-                        <option value="CP">CP</option>
-                        <option value="CE1">CE1</option>
-                        <option value="CE2">CE2</option>
-                        <option value="CM1">CM1</option>
-                        <option value="CM2">CM2</option>
-                    </optgroup>
-                    <optgroup label="Enseignement Secondaire" class="text-slate-500 font-normal">
-                        <option value="6ème" selected>6ème</option>
-                        <option value="5ème">5ème</option>
-                        <option value="4ème">4ème</option>
-                        <option value="3ème">3ème</option>
-                        <option value="Seconde">Seconde</option>
-                        <option value="Première">Première</option>
-                        <option value="Terminale">Terminale</option>
-                    </optgroup>
-                </select>
                 class="flex flex-col sm:flex-row items-center gap-3 bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20 w-full lg:w-auto">
                 <span class="font-medium text-sm uppercase tracking-wider text-indigo-100 font-bold">Structure</span>
                 <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
@@ -153,7 +131,6 @@
         </div>
     </header>
 
-    <main class="flex-1 overflow-auto p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
     <main class="flex-1 overflow-auto p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0">
@@ -201,16 +178,6 @@
                 </div>
                 <div class="p-3 bg-white border-b border-slate-100">
                     <form id="add-subject-form" class="flex flex-col gap-2">
-                        <div class="flex gap-2">
-                            <input type="text" id="new-subject-name" placeholder="Nom de la matière / domaine" required
-                                class="flex-[2] rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-emerald-500">
-                            <input type="number" id="new-subject-coef" placeholder="Coef G."
-                                title="Coefficient pour la moyenne générale" step="0.5" min="0.5"
-                                required
-                                class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-emerald-500">
-                            <button type="submit"
-                                class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"><i
-                                    class="fa-solid fa-plus"></i></button>
                         <div class="flex flex-col sm:flex-row gap-2">
                             <input type="text" id="new-subject-name" placeholder="Nom de la matière" required
                                 class="flex-[2] rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-emerald-500">
@@ -239,8 +206,6 @@
                 <h2 class="text-base sm:text-lg font-semibold text-slate-800 flex flex-wrap items-center gap-1 sm:gap-2">
                     <i class="fa-solid fa-table text-amber-500 w-5"></i> Saisie des Notes
                     <span id="grades-table-subtitle"
-                        class="text-xs font-normal text-slate-500 ml-2 bg-white px-2 py-1 border rounded shadow-sm">(D1
-                        = Devoir 1, D2 = Devoir 2, C = Compo)</span>
                         class="text-[11px] font-normal text-slate-500 bg-white px-2 py-0.5 border rounded shadow-sm"></span>
                 </h2>
                 <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
@@ -332,18 +297,6 @@
                         class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-emerald-500">
                 </div>
                 <div class="p-3 bg-emerald-50/50 rounded-lg border border-emerald-100">
-                    <label class="text-xs font-bold text-emerald-800 uppercase block mb-2" id="modal-coef-label">Coefficients internes (calcul moyenne matière)</label>
-                    <div class="flex gap-2">
-                        <div class="flex-1 text-center"><label
-                                class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Note 1 / D1</label><input
-                                type="number" id="edit-sub-d1"
-                                class="w-full border border-emerald-200 rounded p-1.5 text-sm text-center"></div>
-                        <div class="flex-1 text-center"><label
-                                class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Note 2 / D2</label><input
-                                type="number" id="edit-sub-d2"
-                                class="w-full border border-emerald-200 rounded p-1.5 text-sm text-center"></div>
-                        <div class="flex-1 text-center"><label
-                                class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Compo / Ev.</label><input
                     <label class="text-xs font-bold text-emerald-800 uppercase block mb-2" id="modal-coef-label">Coefficients internes</label>
                     <div class="flex gap-2">
                         <div class="flex-1 text-center"><label id="label-modal-d1"
@@ -374,10 +327,6 @@
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
     <script>
-        // --- ÉTAT ET MIGRATION ---
-        const defaultState = { settings: { year: '2025-2026', semester: '1' }, classes: {} };
-        const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-        classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {} });
         // --- ÉTAT GLOBAL ADAPTÉ AUX SÉRIES ---
         const defaultState = { settings: { year: '2025-2026', semester: '1' }, classes: {} };
         const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
@@ -394,34 +343,6 @@
         let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
         if (!appState.settings) appState.settings = { year: '2025-2026', semester: '1' };
 
-        // S'assurer que les nouvelles classes du primaire existent dans les anciennes données locales
-        classNames.forEach(c => {
-            if (!appState.classes[c]) {
-                appState.classes[c] = { students: [], subjects: [], grades: {} };
-            }
-        });
-
-        // Migration automatique des données vers le nouveau format
-        Object.keys(appState.classes).forEach(cls => {
-            const data = appState.classes[cls];
-            if (!data.students) data.students = [];
-            if (!data.subjects) data.subjects = [];
-            if (!data.grades) data.grades = {};
-            if (data.effectif === undefined) data.effectif = '';
-
-            data.subjects.forEach(sub => {
-                if (sub.coefD1 === undefined) sub.coefD1 = 1;
-                if (sub.coefD2 === undefined) sub.coefD2 = 1;
-                if (sub.coefC === undefined) sub.coefC = 2;
-            });
-
-            Object.keys(data.grades).forEach(sId => {
-                Object.keys(data.grades[sId]).forEach(subId => {
-                    const val = data.grades[sId][subId];
-                    if (typeof val === 'number' || typeof val === 'string') {
-                        data.grades[sId][subId] = { d1: '', d2: '', c: val };
-                    }
-                });
         // Configuration initiale des conteneurs de stockage (Format de clé de stockage : "Niveau_Section")
         classNames.forEach(c => {
             const sections = getSectionsForClass(c);
@@ -484,10 +405,6 @@
         function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
         function generateId() { return Math.random().toString(36).substr(2, 9); }
         function isPrimary(className) { return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className); }
-
-        function isPrimary(className) {
-            return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
-        }
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -595,22 +512,11 @@
         };
 
         function render() {
-            // Ajustement contextuel des intitulés pour le Primaire
             const subTitle = document.getElementById('subject-section-title');
             const tableSubtitle = document.getElementById('grades-table-subtitle');
             
             if (isPrimary(currentClass)) {
                 subTitle.innerHTML = `<i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Domaines & Coef.`;
-                tableSubtitle.textContent = "(N1 = Note 1, N2 = Note 2, Év = Évaluation)";
-                document.getElementById('new-subject-name').placeholder = "Nom du domaine / activité";
-                document.getElementById('modal-sub-label').textContent = "Nom du domaine d'apprentissage";
-                document.getElementById('modal-coef-label').textContent = "Coefficients internes (Moyenne domaine)";
-            } else {
-                subTitle.innerHTML = `<i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Matières & Coefficients`;
-                tableSubtitle.textContent = "(D1 = Devoir 1, D2 = Devoir 2, C = Compo)";
-                document.getElementById('new-subject-name').placeholder = "Nom de la matière";
-                document.getElementById('modal-sub-label').textContent = "Nom de la matière";
-                document.getElementById('modal-coef-label').textContent = "Coefficients internes (Moyenne matière)";
                 tableSubtitle.textContent = `(Classe : ${currentClass}${currentSection}) • N1=Note 1, N2=Note 2, Év=Évaluation`;
                 document.getElementById('new-subject-name').placeholder = "Nom du domaine / activité";
                 document.getElementById('modal-sub-label').textContent = "Nom du domaine d'apprentissage";
@@ -704,14 +610,12 @@
             const tag2 = isPrim ? "N2" : "D2";
             const tag3 = isPrim ? "Év" : "C";
 
-            let trHead = `<tr><th class="px-4 py-3 font-bold w-48 bg-slate-100 border-b border-slate-200 sticky left-0 z-30 sticky-left-shadow text-slate-700">Élève</th>`;
             let trHead = `<tr><th class="px-4 py-3 font-bold w-48 bg-slate-100 border-b border-slate-200 sticky left-0 z-10 sticky-left-shadow text-slate-700">Élève</th>`;
             subjects.forEach(sub => {
                 trHead += `
                 <th class="px-2 py-2 text-center bg-white border-b border-slate-200 border-l min-w-[150px]">
                     <div class="font-bold text-slate-700 text-xs truncate max-w-[140px]" title="${sub.name}">${sub.name} <span class="text-emerald-600 font-normal">(x${sub.coef})</span></div>
                     <div class="flex justify-center gap-2 mt-1 text-[9px] text-slate-400 font-normal">
-                        <span>${tag1}(x${sub.coefD1})</span><span>${tag2}(x${sub.coefD2})</span><span class="font-bold text-indigo-400">${tag3}(x${sub.coefC})</span>
                         <span>${tag1}(x${sub.coefD1 || 1})</span><span>${tag2}(x${sub.coefD2 || 1})</span><span class="font-bold text-indigo-400">${tag3}(x${sub.coefC || 2})</span>
                     </div>
                 </th>`;
@@ -721,8 +625,6 @@
             els.gradesThead.innerHTML = trHead;
 
             els.gradesTbody.innerHTML = '';
-
-            const ranks = getClassRanks(currentClass);
             const ranks = getClassRanks(currentFullKey);
 
             students.forEach(student => {
@@ -738,7 +640,6 @@
 
                 subjects.forEach(sub => {
                     const g = sGrades[sub.id] || { d1: '', d2: '', c: '' };
-
                     let sp = 0, sc = 0;
                     if (g.d1 !== '' && g.d1 !== undefined) { sp += Number(g.d1) * (sub.coefD1 || 1); sc += (sub.coefD1 || 1); }
                     if (g.d2 !== '' && g.d2 !== undefined) { sp += Number(g.d2) * (sub.coefD2 || 1); sc += (sub.coefD2 || 1); }
@@ -747,12 +648,6 @@
                     let avgClass = sc > 0 ? ((sp / sc) >= 10 ? 'text-emerald-600' : 'text-red-500') : 'text-slate-300';
 
                     html += `
-                        <td class="px-2 py-2 border-b border-slate-100 border-l text-center">
-                            <div class="flex flex-col items-center gap-1">
-                                <div class="flex gap-1 justify-center">
-                                    <input type="text" inputmode="decimal" value="${g.d1}" onblur="updateGrade('${student.id}', '${sub.id}', 'd1', this.value, this)" class="w-10 px-1 py-1 border border-slate-200 rounded text-center text-xs focus:ring-1 focus:ring-indigo-400 transition-shadow bg-slate-50 focus:bg-white" placeholder="${tag1}">
-                                    <input type="text" inputmode="decimal" value="${g.d2}" onblur="updateGrade('${student.id}', '${sub.id}', 'd2', this.value, this)" class="w-10 px-1 py-1 border border-slate-200 rounded text-center text-xs focus:ring-1 focus:ring-indigo-400 transition-shadow bg-slate-50 focus:bg-white" placeholder="${tag2}">
-                                    <input type="text" inputmode="decimal" value="${g.c}" onblur="updateGrade('${student.id}', '${sub.id}', 'c', this.value, this)" class="w-10 px-1 py-1 border border-indigo-200 rounded text-center text-xs font-bold focus:ring-1 focus:ring-indigo-500 transition-shadow bg-indigo-50/50 focus:bg-white" placeholder="${tag3}">
                         <td class="px-1 py-2 border-b border-slate-100 border-l text-center">
                             <div class="flex flex-col items-center gap-0.5">
                                 <div class="flex gap-0.5 justify-center">
@@ -893,10 +788,6 @@
             e.preventDefault();
             const name = document.getElementById('new-subject-name'); const coef = document.getElementById('new-subject-coef');
             if (name.value.trim() && parseFloat(coef.value) > 0) {
-                appState.classes[currentClass].subjects.push({ id: generateId(), name: name.value.trim(), coef: parseFloat(coef.value), coefD1: 1, coefD2: 1, coefC: 2 });
-                saveState(); render(); name.value = ''; coef.value = ''; name.focus(); 
-                const textConfirm = isPrimary(currentClass) ? 'Domaine ajouté' : 'Matière ajoutée';
-                showToast(textConfirm);
                 appState.classes[currentFullKey].subjects.push({ id: generateId(), name: name.value.trim(), coef: parseFloat(coef.value), coefD1: 1, coefD2: 1, coefC: 2 });
                 saveState(); render(); name.value = ''; coef.value = ''; name.focus(); 
                 showToast(isPrimary(currentClass) ? 'Domaine ajouté' : 'Matière ajoutée');
@@ -904,10 +795,6 @@
         });
 
         window.deleteSubject = function (id) {
-            const textConfirm = isPrimary(currentClass) ? 'Supprimer ce domaine et ses notes ?' : 'Supprimer cette matière et ses notes ?';
-            if (confirm(textConfirm)) {
-                appState.classes[currentClass].subjects = appState.classes[currentClass].subjects.filter(s => s.id !== id);
-                Object.keys(appState.classes[currentClass].grades).forEach(sId => delete appState.classes[currentClass].grades[sId][id]);
             if (confirm('Supprimer cet élément et ses notes ?')) {
                 appState.classes[currentFullKey].subjects = appState.classes[currentFullKey].subjects.filter(s => s.id !== id);
                 Object.keys(appState.classes[currentFullKey].grades).forEach(sId => delete appState.classes[currentFullKey].grades[sId][id]);
@@ -984,8 +871,6 @@
             const semester = appState.settings.semester;
             const isPrim = isPrimary(currentClass);
 
-            let csv = '\ufeff'; // BOM pour Excel
-            csv += `Classe;${currentClass}\n`;
             let csv = '\ufeff';
             csv += `Classe;${currentClass} ${currentSection}\n`;
             csv += `Année scolaire;${year};Période (Trimestre/Semestre);${semester}\n`;
@@ -1044,7 +929,6 @@
         };
 
         window.printReportCard = function (studentId) {
-            window.open(`bulletin.html?class=${encodeURIComponent(currentClass)}&student=${encodeURIComponent(studentId)}`, '_blank');
             window.open(`bulletin.html?class=${encodeURIComponent(currentClass + '_' + currentSection)}&student=${encodeURIComponent(studentId)}`, '_blank');
         };
 
