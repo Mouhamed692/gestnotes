@@ -24,37 +24,131 @@
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .grade-row-item:nth-child(odd) { background-color: #ffffff; }
         .grade-row-item:nth-child(even) { background-color: #f1f5f9; }
+
+        /* ==========================================================================
+           FONCTIONS ET STYLES D'IMPRESSION DU BULLETIN (A4 PORTRAIT COHÉRENT)
+           ========================================================================== */
         @media print {
-    /* Masquer la navigation, les formulaires, la liste des élèves et les boutons */
-    nav, 
-    .grid.grid-cols-2, 
-    .lg\:col-span-4, 
-    #subjects-config-list, 
-    .bg-slate-50.rounded-2xl, 
-    button, 
-    #welcome-msg {
-        display: none !important;
-    }
+            /* 1. Masquer absolument tout le superflu de l'application */
+            nav, 
+            .grid.grid-cols-2, 
+            .lg\:col-span-4, 
+            #subjects-config-list, 
+            .bg-slate-50.rounded-2xl, 
+            #welcome-msg,
+            button,
+            .p-4.sm\3Ap-5.bg-slate-900 { 
+                display: none !important; 
+            }
 
-    /* Forcer le panneau d'édition (le bulletin) à prendre toute la page */
-    .lg\:col-span-8, #editor-panel, .bg-white.rounded-3xl {
-        width: 100% !important;
-        position: absolute;
-        left: 0;
-        top: 0;
-        box-shadow: none !important;
-        border: none !important;
-        background: white !important;
-        color: black !important;
-    }
+            /* 2. Réinitialiser les marges de la page et le fond */
+            @page {
+                size: A4 portrait;
+                margin: 15mm 15mm 15mm 15mm;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+                font-size: 12px;
+            }
 
-    /* Ajuster la taille des inputs pour qu'ils s'intègrent bien sur papier */
-    .grade-input {
-        border: none !important;
-        background: transparent !important;
-        padding: 0 !important;
-    }
-}
+            /* 3. Forcer le panneau du bulletin à occuper tout l'espace proprement */
+            .lg\:col-span-8, #editor-panel {
+                display: block !important;
+                width: 100% !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            .bg-white.rounded-3xl.shadow-xl {
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+
+            /* 4. Mettre en page l'entête du bulletin officiel */
+            #grades-grid-container {
+                background: transparent !important;
+                padding: 0 !important;
+                margin-top: 20px;
+            }
+
+            /* Simuler un vrai en-tête de bulletin à l'impression */
+            #editor-panel::before {
+                content: "REPUBLIQUE DU SENEGAL\nMinistère de l'Éducation Nationale\n-------------------\nBULLETIN DE NOTES";
+                white-space: pre-line;
+                display: block;
+                text-align: center;
+                font-weight: 800;
+                font-size: 14px;
+                margin-bottom: 30px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            /* 5. Nettoyer les lignes de notes pour l'impression papier */
+            .grade-row-item {
+                page-break-inside: avoid;
+                border-bottom: 1px solid #cbd5e1 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                padding: 8px 0 !important;
+                background: transparent !important;
+            }
+
+            /* Rendre les inputs transparents et invisibles sauf leur valeur */
+            .grade-input {
+                border: none !important;
+                background: transparent !important;
+                font-size: 12px !important;
+                width: auto !important;
+                height: auto !important;
+            }
+            
+            .input-moy {
+                background: transparent !important;
+                color: black !important;
+                font-size: 13px !important;
+                font-weight: bold !important;
+            }
+
+            /* Masquer les placeholders (Ev1, Ev2, etc.) s'ils sont vides à l'impression */
+            input::placeholder {
+                color: transparent !important;
+            }
+
+            /* 6. Bloc de résumé de la moyenne et zone de signature */
+            #student-summary-row {
+                background: #f1f5f9 !important;
+                color: black !important;
+                border: 2px solid black !important;
+                border-radius: 8px !important;
+                margin-top: 30px !important;
+                padding: 15px !important;
+            }
+
+            #student-avg-display {
+                background: black !important;
+                color: white !important;
+                border-radius: 6px !important;
+            }
+
+            /* Ajout d'une zone de signature en bas du bulletin */
+            #grades-grid::after {
+                content: "Observations du Directeur :                                      Signature :";
+                display: block;
+                margin-top: 50px;
+                font-weight: bold;
+                font-size: 12px;
+                border-top: 1px dashed #cbd5e1;
+                padding-top: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -519,7 +613,6 @@
             const typePeriodeLabel = isPrimaire() ? "Trimestre " : "Semestre ";
             document.getElementById('current-student-display').textContent = `${student.firstName} ${student.lastName}`;
             
-            // Formatage propre du titre de la classe (ex: "6ÉME Unique" au lieu de "6ÉME UNIQUE")
             const classLabelClean = currentClassId.replace('_', ' ').replace('UNIQUE', 'Unique');
             document.getElementById('current-class-display').textContent = classLabelClean + " - " + typePeriodeLabel + currentPeriod;
             
@@ -582,14 +675,10 @@
             document.getElementById('class-avg-display').textContent = (totalMoyennesClasse / classData.students.length).toFixed(2);
         }
 
-        // Initialisation automatique au chargement
         window.onload = function() {
             changeLevel();
         }
 
-        // ==========================================
-        //  FONCTIONS D'IMPORTATION / EXPORTATION LOCALES
-        // ==========================================
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
             const downloadAnchor = document.createElement('a');
@@ -623,7 +712,6 @@
         }
 
         function printReport() {
-            alert("Génération du bulletin au format d'impression...");
             window.print();
         }
     </script>
