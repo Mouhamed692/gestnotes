@@ -13,6 +13,7 @@
             padding: 20px;
             font-size: 13px;
             background-color: #f1f5f9;
+            /* Fond gris clair pour l'interface */
         }
 
         .bulletin-wrapper {
@@ -28,6 +29,7 @@
             background: #ffffff;
             padding: 15px;
             border: 2px solid #fbbf24;
+            /* Couleur Ambre */
             border-radius: 8px;
             margin-bottom: 20px;
         }
@@ -95,7 +97,7 @@
             }
         }
 
-        /* Styles du bulletin */
+        /* Styles du bulletin (inchangés) */
         .header-container {
             display: flex;
             justify-content: space-between;
@@ -264,19 +266,23 @@
 
 <body>
 
-    <div id="error-msg" class="no-print">Données introuvables. Veuillez générer le bulletin depuis la page principale.</div>
+    <div id="error-msg" class="no-print">Données introuvables. Veuillez générer le bulletin depuis la page principale.
+    </div>
 
+    <!-- PANNEAU DE SAISIE AVANT IMPRESSION -->
     <div class="bulletin-wrapper no-print" id="setup-panel">
         <div class="input-panel">
             <label for="header-input">Modifier l'en-tête de l'établissement (IEF, École, etc.) :</label>
             <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE
 IEF PIKINE
 RENOVATION</textarea>
-            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Les modifications s'appliquent en direct ci-dessous.</p>
+            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Les modifications s'appliquent en direct
+                ci-dessous.</p>
             <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
         </div>
     </div>
 
+    <!-- CONTENU DU BULLETIN -->
     <div class="bulletin-wrapper" id="bulletin-content" style="display: none;">
 
         <div class="header-container">
@@ -286,6 +292,7 @@ RENOVATION</textarea>
                     <div class="yellow"><span class="star">★</span></div>
                     <div class="red"></div>
                 </div>
+                <!-- ZONE DYNAMIQUE DE L'EN-TÊTE -->
                 <div id="header-text-display">
                     IA PIKINE / GUEDIAWAYE<br>
                     IEF PIKINE<br>
@@ -296,21 +303,23 @@ RENOVATION</textarea>
                 <h1>BULLETIN DE NOTES</h1>
             </div>
             <div class="header-right">
-                Année Scolaire: <span id="lbl-year">2025-2026</span><br>
-                <span id="lbl-period-kind">1er Semestre</span>
+                Année Scolaire: <span id="lbl-year"></span><br>
+                <span id="lbl-semester"></span> Semestre
             </div>
         </div>
 
         <div class="student-info">
             <div class="student-col">
                 <div><span class="field">Prénoms</span> <strong><span id="lbl-firstname"></span></strong></div>
-                <div><span class="field">Né(e) le</span> <strong id="lbl-birth"></strong> à <strong id="lbl-birthplace"></strong></div>
+                <div><span class="field">Né(e) le</span> <strong id="lbl-birth"></strong> à <strong
+                        id="lbl-birthplace"></strong></div>
                 <div><span class="field">Matricule:</span> <strong id="lbl-matricule"></strong></div>
             </div>
             <div class="student-col">
                 <div><span class="field">Nom</span> <strong><span id="lbl-lastname"></span></strong></div>
                 <div><span class="field">Classe:</span> <strong><span id="lbl-class"></span></strong></div>
-                <div><span class="field">Nbre d'élèves:</span> <strong id="lbl-effectif"></strong></div>
+                <div><span class="field">Nbre d'élèves:</span> <strong id="lbl-effectif"></strong>
+                    &nbsp;&nbsp;&nbsp;&nbsp; Classe Redoublée <strong id="lbl-redouble">0</strong></div>
             </div>
         </div>
 
@@ -318,18 +327,18 @@ RENOVATION</textarea>
             <thead>
                 <tr>
                     <th rowspan="2">DISCIPLINES</th>
-                    <th colspan="2" id="lbl-devoir-header">Devoir</th>
-                    <th rowspan="2" id="lbl-comp-header">Comp</th>
-                    <th rowspan="2" id="lbl-moy-header">Moy/20</th>
+                    <th colspan="2">Devoir</th>
+                    <th rowspan="2">Comp</th>
+                    <th rowspan="2">Moy/20</th>
                     <th rowspan="2">Coef</th>
                     <th rowspan="2">Moy x Coef</th>
-                    <th rowspan="2" class="th-column" style="display: none;">T.H</th>
+                    <th rowspan="2">T.H</th>
                     <th rowspan="2">Rang</th>
                     <th rowspan="2">Appréciations</th>
                 </tr>
                 <tr>
-                    <th id="lbl-d1">D1</th>
-                    <th id="lbl-d2">D2</th>
+                    <th>D1</th>
+                    <th>D2</th>
                 </tr>
             </thead>
             <tbody id="grades-body"></tbody>
@@ -338,14 +347,15 @@ RENOVATION</textarea>
                     <td colspan="5" class="lbl-total">TOTAL</td>
                     <td id="lbl-tot-coef"></td>
                     <td id="lbl-tot-pts"></td>
-                    <td class="th-column" style="display: none;"></td>
+                    <td></td>
                     <td></td>
                     <td></td>
                 </tr>
                 <tr class="summary-row">
-                    <td colspan="5" id="lbl-moy-gen-container">Moyenne <span id="lbl-moy-gen"></span> /20</td>
+                    <td colspan="5" class="lbl-moy">Moyenne <span id="lbl-moy-gen"></span> /20</td>
                     <td colspan="2">Rang <span id="lbl-rank"></span></td>
-                    <td colspan="3" id="lbl-absences-container">Absences / Retards non spécifiés</td>
+                    <td colspan="2">Retards <span id="lbl-ret"></span></td>
+                    <td>Absences <span id="lbl-abs"></span></td>
                 </tr>
             </tfoot>
         </table>
@@ -405,37 +415,15 @@ RENOVATION</textarea>
     </div>
 
     <script>
-        function getAppreciation(note, isPrimaire, maxCoef) {
-            if (note === null || note === undefined || note === '' || isNaN(note)) return "";
-            
-            let referenceNote = note;
-            if (isPrimaire && maxCoef) {
-                referenceNote = (note / maxCoef) * 20; 
-            }
-
-            if (referenceNote < 4) return "Très Faible";
-            if (referenceNote < 8) return "Faible";
-            if (referenceNote < 10) return "Insuffisant";
-            if (referenceNote < 12) return "Passable";
-            if (referenceNote < 14) return "A. Bien";
-            if (referenceNote < 16) return "Bien";
+        function getAppreciation(note) {
+            if (note === null || note === undefined || note === '') return "";
+            if (note < 4) return "Très Faible";
+            if (note < 8) return "Faible";
+            if (note < 10) return "Insuffisant";
+            if (note < 12) return "Passable";
+            if (note < 14) return "A. Bien";
+            if (note < 16) return "Bien";
             return "Excellent";
-        }
-
-        function calculateSingleMoyenne(d1, d2, c, isPrimaire) {
-            const vD1 = d1 !== '' && d1 !== undefined ? parseFloat(d1) : null;
-            const vD2 = d2 !== '' && d2 !== undefined ? parseFloat(d2) : vD1;
-            const vComp = c !== '' && c !== undefined ? parseFloat(c) : null;
-
-            if (vD1 === null && vComp === null) return null;
-
-            if (isPrimaire) {
-                const noteMensuelle = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
-                return vComp !== null ? (noteMensuelle + vComp) / 2 : noteMensuelle;
-            } else {
-                const moyDev = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
-                return vComp !== null ? (moyDev + (vComp * 2)) / 3 : moyDev;
-            }
         }
 
         window.onload = function () {
@@ -447,14 +435,12 @@ RENOVATION</textarea>
                 headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
             });
 
-            // --- CHARGEMENT DES PARAMÈTRES URL ---
+            // --- CHARGEMENT DES DONNÉES ---
             const urlParams = new URLSearchParams(window.location.search);
             const classId = urlParams.get('class');
             const studentId = urlParams.get('student');
-            const period = urlParams.get('period') || "1"; // Par défaut période 1 si non spécifié
 
-            // Lecture de la base v4 unifiée
-            const rawData = localStorage.getItem('gestnotes_v4');
+            const rawData = localStorage.getItem('gestnotes_data');
             if (!rawData || !classId || !studentId) {
                 document.getElementById('error-msg').style.display = 'block';
                 document.getElementById('setup-panel').style.display = 'none';
@@ -471,46 +457,29 @@ RENOVATION</textarea>
             document.getElementById('bulletin-content').style.display = 'block';
             document.title = "Bulletin - " + student.lastName + " " + student.firstName;
 
-            // Détection du niveau d'enseignement
-            const levelCode = classId.split('_')[0];
-            const isPrimaire = ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(levelCode);
-
-            // Remplissage des libellés de période et d'entête de tableau
-            if (isPrimaire) {
-                document.getElementById('lbl-period-kind').textContent = period + (period === '1' ? 'er Trimestre' : 'ème Trimestre');
-                document.getElementById('lbl-devoir-header').textContent = "Évaluations Continues";
-                document.getElementById('lbl-comp-header').textContent = "Compétence";
-                document.getElementById('lbl-d1').textContent = "Ev1";
-                document.getElementById('lbl-d2').textContent = "Ev2";
-                document.getElementById('lbl-moy-header').textContent = "Note Fin.";
-                document.getElementById('lbl-moy-gen-container').innerHTML = `Note Globale : <span id="lbl-moy-gen"></span> /10`;
-            } else {
-                document.getElementById('lbl-period-kind').textContent = period + (period === '1' ? 'er Semestre' : 'ème Semestre');
-            }
-
-            // Remplissage infos globales élève
+            document.getElementById('lbl-year').textContent = appState.settings.year;
+            document.getElementById('lbl-semester').textContent = appState.settings.semester == '1' ? '1er' : '2ème';
             document.getElementById('lbl-firstname').textContent = student.firstName;
             document.getElementById('lbl-lastname').textContent = student.lastName;
-            document.getElementById('lbl-class').textContent = classId.replace('_', ' ').replace('UNIQUE', 'Unique');
+            document.getElementById('lbl-class').textContent = classId;
+            document.getElementById('lbl-birth').textContent = student.birthDate || '';
+            document.getElementById('lbl-matricule').textContent = student.matricule || '';
             document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
-            
-            // Nettoyage de l'affichage des absences
-            document.getElementById('lbl-absences-container').textContent = `Absences : ${student.absences || 0} | Retards : ${student.retards || 0}`;
+            document.getElementById('lbl-abs').textContent = student.absences || 0;
+            document.getElementById('lbl-ret').textContent = student.retards || 0;
 
-            const periodGrades = classData.grades[period] || {};
-
-            // --- CALCUL DES RANGS PAR MATIÈRE ---
+            // Calcul des moyennes par matière pour le rang
             const subjectRanks = {};
             classData.subjects.forEach(sub => {
                 let subAvgs = [];
                 classData.students.forEach(s => {
-                    const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
-                    const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, isPrimaire);
-                    if (mS !== null) {
-                        subAvgs.push({ id: s.id, avg: mS });
-                    }
+                    const g = classData.grades[s.id]?.[sub.id] || {};
+                    let p = 0, c = 0;
+                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * sub.coefD1; c += sub.coefD1; }
+                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * sub.coefD2; c += sub.coefD2; }
+                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * sub.coefC; c += sub.coefC; }
+                    if (c > 0) subAvgs.push({ id: s.id, avg: p / c });
                 });
-                
                 subAvgs.sort((a, b) => b.avg - a.avg);
                 subjectRanks[sub.id] = {};
                 let currentRank = 1;
@@ -520,32 +489,18 @@ RENOVATION</textarea>
                 });
             });
 
-            // --- CALCUL MOYENNE GÉNÉRALE DE TOUS LES ÉLÈVES POUR LE RANG GLOBAL ---
+            // Calcul Moyenne Générale
             const generalAvgs = classData.students.map(s => {
-                if (isPrimaire) {
-                    let totalPointsObtenus = 0;
-                    let totalBaremesMax = 0;
-                    classData.subjects.forEach(sub => {
-                        const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
-                        const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, isPrimaire);
-                        if (mS !== null) {
-                            totalPointsObtenus += mS;
-                            totalBaremesMax += sub.coef;
-                        }
-                    });
-                    return { id: s.id, avg: totalBaremesMax > 0 ? (totalPointsObtenus / totalBaremesMax) * 10 : null };
-                } else {
+                let tP = 0, tC = 0;
+                classData.subjects.forEach(sub => {
+                    const g = classData.grades[s.id]?.[sub.id] || {};
                     let p = 0, c = 0;
-                    classData.subjects.forEach(sub => {
-                        const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
-                        const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, isPrimaire);
-                        if (mS !== null) {
-                            p += mS * sub.coef;
-                            c += sub.coef;
-                        }
-                    });
-                    return { id: s.id, avg: c > 0 ? (p / c) : null };
-                }
+                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * sub.coefD1; c += sub.coefD1; }
+                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * sub.coefD2; c += sub.coefD2; }
+                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * sub.coefC; c += sub.coefC; }
+                    if (c > 0) { tP += (p / c) * sub.coef; tC += sub.coef; }
+                });
+                return { id: s.id, avg: tC > 0 ? (tP / tC) : null };
             });
 
             generalAvgs.sort((a, b) => (b.avg || 0) - (a.avg || 0));
@@ -560,74 +515,59 @@ RENOVATION</textarea>
                 }
             });
 
-            // --- REMPLISSAGE DU TABLEAU DES MATIÈRES ---
+            // Remplissage tableau
             const tbody = document.getElementById('grades-body');
             let totalCoef = 0, totalPoints = 0;
 
             classData.subjects.forEach(sub => {
-                const g = periodGrades[studentId]?.[sub.id] || { d1: '', d2: '', c: '' };
-                const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, isPrimaire);
+                const g = classData.grades[studentId]?.[sub.id] || {};
+                let p = 0, c = 0;
+                const d1 = g.d1 !== undefined && g.d1 !== '' ? Number(g.d1) : '';
+                const d2 = g.d2 !== undefined && g.d2 !== '' ? Number(g.d2) : '';
+                const comp = g.c !== undefined && g.c !== '' ? Number(g.c) : '';
+
+                if (d1 !== '') { p += d1 * sub.coefD1; c += sub.coefD1; }
+                if (d2 !== '') { p += d2 * sub.coefD2; c += sub.coefD2; }
+                if (comp !== '') { p += comp * sub.coefC; c += sub.coefC; }
 
                 let sAvgStr = '', mxcStr = '', app = '', rankSub = '';
-                if (mS !== null) {
-                    sAvgStr = mS.toFixed(2).replace('.', ',');
-                    
-                    let mxc = 0;
-                    if (isPrimaire) {
-                        mxc = mS; // Au primaire, la note finale est déjà ramenée / calculée sur le barème max (coef)
-                        totalCoef += sub.coef;
-                        totalPoints += mxc;
-                    } else {
-                        mxc = mS * sub.coef;
-                        totalCoef += sub.coef;
-                        totalPoints += mxc;
-                    }
-
+                if (c > 0) {
+                    const sAvg = p / c;
+                    sAvgStr = sAvg.toFixed(2).replace('.', ',');
+                    const mxc = sAvg * sub.coef;
                     mxcStr = mxc.toFixed(2).replace('.', ',');
-                    app = getAppreciation(mS, isPrimaire, sub.coef);
+                    totalCoef += sub.coef;
+                    totalPoints += mxc;
+                    app = getAppreciation(sAvg);
                     rankSub = subjectRanks[sub.id]?.[studentId] || '';
                 }
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="col-discipline">${sub.name}</td>
-                    <td>${g.d1 || ''}</td>
-                    <td>${g.d2 || ''}</td>
-                    <td>${g.c || ''}</td>
-                    <td>${sAvgStr}</td>
-                    <td>${sub.coef}</td>
-                    <td>${mxcStr}</td>
-                    <td class="th-column" style="display: none;">TH</td>
-                    <td>${rankSub}</td>
-                    <td>${app}</td>
+                    <td>${d1}</td><td>${d2}</td><td>${comp}</td>
+                    <td>${sAvgStr}</td><td>${sub.coef}</td><td>${mxcStr}</td>
+                    <td>TH</td><td>${rankSub}</td><td>${app}</td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Injection des totaux dans le pied de page du tableau
             document.getElementById('lbl-tot-coef').textContent = totalCoef || '';
             document.getElementById('lbl-tot-pts').textContent = totalPoints ? totalPoints.toFixed(2).replace('.', ',') : '';
             document.getElementById('lbl-moy-gen').textContent = studentGenAvg !== null ? studentGenAvg.toFixed(2).replace('.', ',') : '-';
-            document.getElementById('lbl-rank').textContent = genRank + ' / ' + classData.students.length;
+            document.getElementById('lbl-rank').textContent = genRank;
 
-            // --- COCHAGE AUTOMATIQUE DES SECTIONS DÉCISIONS & SANCTIONS ---
+            // Cocher auto
             if (studentGenAvg !== null) {
-                const noteSur20 = isPrimaire ? (studentGenAvg * 2) : studentGenAvg;
-
-                if (noteSur20 >= 12) {
+                if (studentGenAvg >= 12) {
                     document.getElementById('chk-satisfaisant').textContent = 'X';
-                    if (noteSur20 >= 14) document.getElementById('chk-felicitations').textContent = 'X';
-                    else if (noteSur20 >= 13) document.getElementById('chk-encouragement').textContent = 'X';
+                    if (studentGenAvg >= 14) document.getElementById('chk-felicitations').textContent = 'X';
+                    else if (studentGenAvg >= 13) document.getElementById('chk-encouragement').textContent = 'X';
                     else document.getElementById('chk-tableau-honneur').textContent = 'X';
-                } else if (noteSur20 >= 10) { 
-                    document.getElementById('chk-peut-mieux').textContent = 'X'; 
-                } else if (noteSur20 >= 8) { 
-                    document.getElementById('chk-insuffisant').textContent = 'X'; 
-                } else if (noteSur20 >= 5) { 
-                    document.getElementById('chk-risque-redoubler').textContent = 'X'; 
-                } else { 
-                    document.getElementById('chk-risque-exclusion').textContent = 'X'; 
-                }
+                } else if (studentGenAvg >= 10) { document.getElementById('chk-peut-mieux').textContent = 'X'; }
+                else if (studentGenAvg >= 8) { document.getElementById('chk-insuffisant').textContent = 'X'; }
+                else if (studentGenAvg >= 5) { document.getElementById('chk-risque-redoubler').textContent = 'X'; }
+                else { document.getElementById('chk-risque-exclusion').textContent = 'X'; }
             }
         };
     </script>
