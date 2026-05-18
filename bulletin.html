@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Bulletin de Notes</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -48,8 +49,16 @@
             resize: vertical;
         }
 
-        .btn-print {
+        .actions-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn-print {
             padding: 10px 20px;
             background-color: #059669;
             color: white;
@@ -62,6 +71,23 @@
 
         .btn-print:hover {
             background-color: #047857;
+        }
+
+        .btn-back {
+            padding: 10px 15px;
+            background-color: #4f46e5;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-back:hover {
+            background-color: #4338ca;
         }
 
         @media print {
@@ -269,9 +295,12 @@
             <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE
 IEF PIKINE
 RENOVATION</textarea>
-            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Les modifications s'appliquent en direct
-                ci-dessous.</p>
-            <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
+            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Les modifications s'appliquent en direct ci-dessous.</p>
+            
+            <div class="actions-row">
+                <a href="gestnotes (1).html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Retour à GestNotes</a>
+                <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
+            </div>
         </div>
     </div>
 
@@ -290,8 +319,10 @@ RENOVATION</textarea>
                     RENOVATION
                 </div>
             </div>
-            <div class="header-center">
-                <h1>BULLETIN DE NOTES</h1>
+            <div class="header-container center">
+                <div class="header-center">
+                    <h1>BULLETIN DE NOTES</h1>
+                </div>
             </div>
             <div class="header-right">
                 Année Scolaire: <span id="lbl-year"></span><br>
@@ -302,13 +333,12 @@ RENOVATION</textarea>
         <div class="student-info">
             <div class="student-col">
                 <div><span class="field">Prénoms</span> <strong><span id="lbl-firstname"></span></strong></div>
-                <div><span class="field">Né(e) le</span> <strong id="lbl-birth"></strong> à <strong
-                        id="lbl-birthplace">Dakar</strong></div>
+                <div><span class="field">Né(e) le</span> <strong id="lbl-birth"></strong> à <strong id="lbl-birthplace">Dakar</strong></div>
                 <div><span class="field">Matricule:</span> <strong id="lbl-matricule"></strong></div>
             </div>
             <div class="student-col">
                 <div><span class="field">Nom</span> <strong><span id="lbl-lastname"></span></strong></div>
-                <div><span class="field">Classe:</span> <strong><span id="lbl-class"></span></strong></div>
+                <div><span class="field">Classe / Série:</span> <strong><span id="lbl-class"></span></strong></div>
                 <div><span class="field">Nbre d'élèves:</span> <strong id="lbl-effectif"></strong>
                     &nbsp;&nbsp;&nbsp;&nbsp; Classe Redoublée <strong id="lbl-redouble">0</strong></div>
             </div>
@@ -418,7 +448,7 @@ RENOVATION</textarea>
         }
 
         function isPrimary(className) {
-            return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
+            return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className.split('_')[0]);
         }
 
         window.onload = function () {
@@ -430,7 +460,7 @@ RENOVATION</textarea>
             });
 
             const urlParams = new URLSearchParams(window.location.search);
-            const classId = urlParams.get('class');
+            const classId = urlParams.get('class'); // Reçoit la clé combinée, ex: "6ème_A" ou "Terminale_S1"
             const studentId = urlParams.get('student');
 
             const rawData = localStorage.getItem('gestnotes_data');
@@ -442,7 +472,11 @@ RENOVATION</textarea>
 
             const appState = JSON.parse(rawData);
             const classData = appState.classes[classId];
-            if (!classData) return;
+            if (!classData) {
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('setup-panel').style.display = 'none';
+                return;
+            }
 
             const student = classData.students.find(s => s.id === studentId);
             if (!student) return;
@@ -450,7 +484,7 @@ RENOVATION</textarea>
             document.getElementById('bulletin-content').style.display = 'block';
             document.title = "Bulletin - " + student.lastName + " " + student.firstName;
 
-            // Détection du primaire pour la modification des en-têtes de colonnes
+            // Détection du primaire
             if (isPrimary(classId)) {
                 document.getElementById('th-discipline').textContent = "DOMAINES D'APPRENTISSAGE";
                 document.getElementById('th-note-group').textContent = "Notes";
@@ -466,7 +500,10 @@ RENOVATION</textarea>
             document.getElementById('lbl-year').textContent = appState.settings.year;
             document.getElementById('lbl-firstname').textContent = student.firstName;
             document.getElementById('lbl-lastname').textContent = student.lastName;
-            document.getElementById('lbl-class').textContent = classId;
+            
+            // Format d'affichage propre sans le underscore pour la série (ex: "6ème A")
+            document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
+            
             document.getElementById('lbl-birth').textContent = student.birthDate || '';
             document.getElementById('lbl-matricule').textContent = student.matricule || '';
             document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
@@ -480,9 +517,9 @@ RENOVATION</textarea>
                 classData.students.forEach(s => {
                     const g = classData.grades[s.id]?.[sub.id] || {};
                     let p = 0, c = 0;
-                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * sub.coefD1; c += sub.coefD1; }
-                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * sub.coefD2; c += sub.coefD2; }
-                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * sub.coefC; c += sub.coefC; }
+                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * (sub.coefD1 || 1); c += (sub.coefD1 || 1); }
+                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * (sub.coefD2 || 1); c += (sub.coefD2 || 1); }
+                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * (sub.coefC || 2); c += (sub.coefC || 2); }
                     if (c > 0) subAvgs.push({ id: s.id, avg: p / c });
                 });
                 subAvgs.sort((a, b) => b.avg - a.avg);
@@ -500,9 +537,9 @@ RENOVATION</textarea>
                 classData.subjects.forEach(sub => {
                     const g = classData.grades[s.id]?.[sub.id] || {};
                     let p = 0, c = 0;
-                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * sub.coefD1; c += sub.coefD1; }
-                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * sub.coefD2; c += sub.coefD2; }
-                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * sub.coefC; c += sub.coefC; }
+                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * (sub.coefD1 || 1); c += (sub.coefD1 || 1); }
+                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * (sub.coefD2 || 1); c += (sub.coefD2 || 1); }
+                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * (sub.coefC || 2); c += (sub.coefC || 2); }
                     if (c > 0) { tP += (p / c) * sub.coef; tC += sub.coef; }
                 });
                 return { id: s.id, avg: tC > 0 ? (tP / tC) : null };
@@ -531,9 +568,9 @@ RENOVATION</textarea>
                 const d2 = g.d2 !== undefined && g.d2 !== '' ? Number(g.d2) : '';
                 const comp = g.c !== undefined && g.c !== '' ? Number(g.c) : '';
 
-                if (d1 !== '') { p += d1 * sub.coefD1; c += sub.coefD1; }
-                if (d2 !== '') { p += d2 * sub.coefD2; c += sub.coefD2; }
-                if (comp !== '') { p += comp * sub.coefC; c += sub.coefC; }
+                if (d1 !== '') { p += d1 * (sub.coefD1 || 1); c += (sub.coefD1 || 1); }
+                if (d2 !== '') { p += d2 * (sub.coefD2 || 1); c += (sub.coefD2 || 1); }
+                if (comp !== '') { p += comp * (sub.coefC || 2); c += (sub.coefC || 2); }
 
                 let sAvgStr = '', mxcStr = '', app = '', rankSub = '';
                 if (c > 0) {
@@ -552,7 +589,7 @@ RENOVATION</textarea>
                     <td class="col-discipline">${sub.name}</td>
                     <td>${d1}</td><td>${d2}</td><td>${comp}</td>
                     <td>${sAvgStr}</td><td>${sub.coef}</td><td>${mxcStr}</td>
-                    <td>TH</td><td>${rankSub}</td><td>${app}</td>
+                    <td></td><td>${rankSub}</td><td>${app}</td>
                 `;
                 tbody.appendChild(tr);
             });
