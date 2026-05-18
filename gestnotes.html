@@ -327,31 +327,35 @@
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
     <script>
-        // --- ÉTAT GLOBAL ADAPTÉ AUX SUBDIVISIONS ---
+        // --- ÉTAT GLOBAL ET CONFIGURATION DES SECTIONS ---
         const defaultState = { settings: { year: '2025-2026', semester: '1' }, classes: {} };
         const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
         
-        // Séries/Sections avec subdivisions par défaut par type de classe
+        // Configuration des séries demandées
         function getSectionsForClass(cls) {
-            if (["CP", "CE1", "CE2", "CM1", "CM2"].includes(cls)) return ["A", "B"];
-            if (["6ème", "5ème", "4ème", "3ème"].includes(cls)) return ["A", "B", "C"];
-            if (["Seconde"].includes(cls)) return ["S A", "S B", "L A", "L B"];
-            if (["Première", "Terminale"].includes(cls)) {
-                return [
-                    "S1 A", "S1 B", 
-                    "S2 A", "S2 B", 
-                    "L1 A", "L1 B", 
-                    "L2 A", "L2 B", 
-                    "G A", "G B"
-                ];
+            // Primaire (CP à CM2) et Premier cycle (6ème à 3ème)
+            if (["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"].includes(cls)) {
+                return ["unique", "A", "B", "C"];
             }
-            return ["A"];
+            // Classe de Seconde spécifiquement
+            if (["Seconde"].includes(cls)) {
+                return ["L", "L2", "S2", "S1"];
+            }
+            // Classe de Première
+            if (["Première"].includes(cls)) {
+                return ["L1A", "L1B", "L1C", "L2A", "L2B", "L2C", "S1", "S2A", "S2B", "S2C"];
+            }
+            // Classe de Terminale
+            if (["Terminale"].includes(cls)) {
+                return ["L1A", "L1B", "L1C", "L2", "L2A", "L2B", "L2C", "S1", "S2A", "S2B", "S2C"];
+            }
+            return ["unique"];
         }
 
         let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
         if (!appState.settings) appState.settings = { year: '2025-2026', semester: '1' };
 
-        // Configuration initiale des conteneurs de stockage (Format de clé de stockage : "Niveau_Section")
+        // Configuration initiale des conteneurs de stockage (Clé : "Niveau_Section")
         classNames.forEach(c => {
             const sections = getSectionsForClass(c);
             sections.forEach(s => {
@@ -372,10 +376,12 @@
             sections.forEach(s => {
                 const opt = document.createElement('option');
                 opt.value = s;
-                if (["Seconde", "Première", "Terminale"].includes(cls)) {
-                    opt.textContent = `Série ${s}`;
-                } else {
+                if (s === "unique") {
+                    opt.textContent = "Classe Unique";
+                } else if (["A", "B", "C"].includes(s) && !["Seconde", "Première", "Terminale"].includes(cls)) {
                     opt.textContent = `Classe ${s}`;
+                } else {
+                    opt.textContent = `Série ${s}`;
                 }
                 sectionSelect.appendChild(opt);
             });
@@ -432,7 +438,7 @@
             }, 3000);
         }
 
-        // --- BASE DE MATIÈRES STANDARDS ADAPTÉE AUX SUBDIVISIONS ---
+        // --- CHARGEMENT AUTOMATIQUE DES MATIÈRES STANDARDS ---
         function loadStandardSubjects() {
             if (!appState.classes[currentFullKey]) return;
             if (appState.classes[currentFullKey].subjects.length > 0) {
@@ -461,7 +467,7 @@
                     standards.push({ name: "Seconde Langue (All/Esp)", coef: 2 });
                 }
             } else {
-                // Lycée (Détection par préfixe de la subdivision, ex: "S1 A" -> "S")
+                // Lycée : Détection intelligente par préfixe (S ou L)
                 if (currentSection.startsWith("S")) {
                     standards = [
                         { name: "Mathématiques", coef: 5 },
@@ -503,7 +509,7 @@
             showToast("Matières standards chargées !");
         }
 
-        // --- MOTEUR DE RENDU ---
+        // --- RENDU DE L'INTERFACE ---
         const els = {
             studentsList: document.getElementById('students-list'),
             subjectsList: document.getElementById('subjects-list'),
@@ -519,7 +525,7 @@
             
             if (isPrimary(currentClass)) {
                 subTitle.innerHTML = `<i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Domaines & Coef.`;
-                tableSubtitle.textContent = `(Classe : ${currentClass} ${currentSection}) • N1=Note 1, N2=Note 2, Év=Évaluation`;
+                tableSubtitle.textContent = `(Classe : ${currentClass} ${currentSection === 'unique' ? 'Unique' : currentSection}) • N1=Note 1, N2=Note 2, Év=Évaluation`;
                 document.getElementById('new-subject-name').placeholder = "Nom du domaine / activité";
                 document.getElementById('modal-sub-label').textContent = "Nom du domaine d'apprentissage";
                 document.getElementById('modal-coef-label').textContent = "Coefficients internes (Moyenne domaine)";
@@ -571,7 +577,7 @@
                 els.subjectsList.appendChild(li);
             });
 
-            // 3. Grille des Notes
+            // 3. Table des Notes
             if (data.students.length === 0 || data.subjects.length === 0) {
                 els.gradesTable.classList.add('hidden');
                 els.gradesEmpty.classList.remove('hidden');
@@ -583,7 +589,6 @@
         }
 
         function buildGradesTable(data) {
-            // Header
             let thead = `<tr>
                 <th scope="col" class="px-4 py-3 sticky left-0 bg-slate-100 z-30 sticky-left-shadow font-bold text-slate-700 w-[240px]">Nom complet de l'élève</th>`;
             data.subjects.forEach(sub => {
@@ -603,7 +608,6 @@
             thead += `</tr>`;
             els.gradesThead.innerHTML = thead;
 
-            // Body
             els.gradesTbody.innerHTML = '';
             data.students.sort((a,b) => a.lastName.localeCompare(b.lastName)).forEach(st => {
                 const tr = document.createElement('tr');
@@ -636,7 +640,7 @@
             });
         }
 
-        // --- MANIPULATION DES DONNÉES ---
+        // --- ACTIONS SUR LES FORMULAIRES ---
         document.getElementById('add-student-form').addEventListener('submit', e => {
             e.preventDefault();
             const f = document.getElementById('new-student-first');
@@ -685,7 +689,6 @@
         window.deleteStudent = function(id) {
             if(!confirm("Supprimer cet élève ainsi que toutes ses notes ?")) return;
             appState.classes[currentFullKey].students = appState.classes[currentFullKey].students.filter(s => s.id !== id);
-            // Nettoyage des notes associées
             for (let k in appState.classes[currentFullKey].grades) {
                 if (k.startsWith(id + '_')) delete appState.classes[currentFullKey].grades[k];
             }
@@ -695,14 +698,13 @@
         window.deleteSubject = function(id) {
             if(!confirm("Supprimer cette matière ainsi que toutes les notes correspondantes ?")) return;
             appState.classes[currentFullKey].subjects = appState.classes[currentFullKey].subjects.filter(s => s.id !== id);
-            // Nettoyage des notes associées
             for (let k in appState.classes[currentFullKey].grades) {
                 if (k.includes('_' + id + '_')) delete appState.classes[currentFullKey].grades[k];
             }
             saveState(); render(); showToast("Matière supprimée", "info");
         };
 
-        // --- MODALS ET PARAMÈTRES AVANCÉS ---
+        // --- GESTION DES DE FENÊTRES MODALES ---
         window.openStudentModal = function(id) {
             const s = appState.classes[currentFullKey].students.find(x => x.id === id);
             if(!s) return;
@@ -757,7 +759,7 @@
 
         window.closeModal = function(mId) { document.getElementById(mId).classList.add('hidden'); };
 
-        // --- IMPRESSION / EXPORTATION VIA DES PARAMÈTRES SÉCURISÉS ---
+        // --- IMPRESSION ET IMPORTS CSV ---
         window.exportCSV = function (studentId) {
             const student = appState.classes[currentFullKey].students.find(s => s.id === studentId);
             if (!student) return;
@@ -793,7 +795,6 @@
         };
 
         window.printReportCard = function (studentId) {
-            // Transmet la clé de classe complète (ex: Terminale_L2 A) pour l'interface bulletin.html
             window.open(`bulletin.html?class=${encodeURIComponent(currentFullKey)}&student=${encodeURIComponent(studentId)}`, '_blank');
         };
 
