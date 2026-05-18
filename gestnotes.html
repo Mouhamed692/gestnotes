@@ -46,7 +46,6 @@
         .toast-enter { animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         .toast-leave { animation: fadeOut 0.4s ease-out forwards; }
         
-        /* Fixations responsive pour le tableau de saisie */
         .sticky-left-shadow {
             box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.1);
         }
@@ -69,12 +68,11 @@
                     <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-1">
                         <input type="text" id="setting-year" title="Année scolaire" placeholder="Ex: 2025-2026"
                             class="bg-white/10 text-white placeholder-white/70 border border-white/20 rounded px-2 py-0.5 text-xs w-24 focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
-                        <select id="setting-term" title="Trimestre"
+                        
+                        <select id="setting-term" title="Période académique"
                             class="bg-white/10 text-white border border-white/20 rounded px-2 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
-                            <option value="1" class="text-slate-800">1er Trimestre</option>
-                            <option value="2" class="text-slate-800">2ème Trimestre</option>
-                            <option value="3" class="text-slate-800">3ème Trimestre</option>
                         </select>
+
                         <input type="number" id="setting-effectif" title="Nombre total d'élèves" placeholder="Effectif"
                             class="bg-white/10 text-white placeholder-white/70 border border-white/20 rounded px-2 py-0.5 text-xs w-20 focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
                     </div>
@@ -232,14 +230,23 @@
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
     <script>
-        // --- ARCHITECTURE DES CYCLES ET STRUCTURES ---
+        // --- CARTOGRAPHIE SCOLAIRE AVEC SÉPARATION NIVEAU / SECTIONS ---
         const ROADMAP_CYCLES = {
-            "PRIMAIRE": ["CI A", "CI B", "CP A", "CP B", "CE1 A", "CE1 B", "CE2 A", "CE2 B", "CM1 A", "CM1 B", "CM2 A", "CM2 B"],
-            "COLLEGE": ["6ème A", "6ème B", "5ème A", "5ème B", "4ème A", "4ème B", "3ème A", "3ème B"],
+            "PRIMAIRE": [
+                "CI Unique", "CI A", "CI B", "CP Unique", "CP A", "CP B", 
+                "CE1 Unique", "CE1 A", "CE1 B", "CE2 Unique", "CE2 A", "CE2 B", 
+                "CM1 Unique", "CM1 A", "CM1 B", "CM2 Unique", "CM2 A", "CM2 B"
+            ],
+            "COLLEGE": [
+                "6ème Unique", "6ème A", "6ème B", "5ème Unique", "5ème A", "5ème B", 
+                "4ème Unique", "4ème A", "4ème B", "3ème Unique", "3ème A", "3ème B"
+            ],
             "LYCEE": [
-                "Seconde L A", "Seconde L B", "Seconde S A", "Seconde S B", 
-                "Première L1 A", "Première L1 B", "Première L2 A", "Première L2 B", "Première S1 A", "Première S2 A",
-                "Terminale L1 A", "Terminale L1 B", "Terminale L2 A", "Terminale L2 B", "Terminale S1 A", "Terminale S2 A"
+                "Seconde L Unique", "Seconde L A", "Seconde L B", "Seconde S Unique", "Seconde S A", "Seconde S B", 
+                "Première L1 Unique", "Première L1 A", "Première L1 B", "Première L2 Unique", "Première L2 A", "Première L2 B", 
+                "Première S1 Unique", "Première S1 A", "Première S2 Unique", "Première S2 A",
+                "Terminale L1 Unique", "Terminale L1 A", "Terminale L1 B", "Terminale L2 Unique", "Terminale L2 A", "Terminale L2 B", 
+                "Terminale S1 Unique", "Terminale S1 A", "Terminale S2 Unique", "Terminale S2 A"
             ]
         };
 
@@ -257,7 +264,7 @@
             "LYCEE": {
                 "L": [
                     { name: "Philosophie", val: 5 }, { name: "Français", val: 4 }, { name: "Histoire-Géographie", val: 4 },
-                    { name: "Anglais", val: 4 }, { name: "LV2 (Arabe/Espagnol)", val: 3 }, { name: "Mathématiques", val: 2 },
+                    { name: "Anglais", val: 4 }, { name: "LV2", val: 3 }, { name: "Mathématiques", val: 2 },
                     { name: "SVT", val: 2 }, { name: "EPS", val: 1 }
                 ],
                 "S": [
@@ -269,27 +276,18 @@
         };
 
         const defaultState = { settings: { year: '2025-2026', term: '1' }, classes: {} };
-        
-        // Déploiement automatique de l'ensemble de la cartographie scolaire
         Object.values(ROADMAP_CYCLES).flat().forEach(cls => {
             defaultState.classes[cls] = { students: [], subjects: [], grades: {}, effectif: '' };
         });
 
         let appState = JSON.parse(localStorage.getItem('gestnotes_data_v2')) || defaultState;
         
-        // Sécurisation et alignement des anciennes données avec les clés de structure v2
+        // Alignement et rétrocompatibilité des structures
         if (!appState.settings) appState.settings = { year: '2025-2026', term: '1' };
-        if (!appState.settings.term && appState.settings.semester) { appState.settings.term = appState.settings.semester; delete appState.settings.semester; }
-        
         Object.values(ROADMAP_CYCLES).flat().forEach(cls => {
             if (!appState.classes[cls]) appState.classes[cls] = { students: [], subjects: [], grades: {}, effectif: '' };
-            let cData = appState.classes[cls];
-            if (!cData.students) cData.students = [];
-            if (!cData.subjects) cData.subjects = [];
-            if (!cData.grades) cData.grades = {};
         });
 
-        // Détection globale du cycle actif
         function checkCycle(className) {
             if (!className) return "COLLEGE";
             if (className.match(/(CI|CP|CE1|CE2|CM1|CM2)/)) return "PRIMAIRE";
@@ -297,8 +295,7 @@
             return "COLLEGE";
         }
 
-        // Configuration initiale de l'interface
-        let currentClass = localStorage.getItem('gestnotes_current_class') || "6ème A";
+        let currentClass = localStorage.getItem('gestnotes_current_class') || "6ème Unique";
         
         function populateClassSelect() {
             const select = document.getElementById('class-select');
@@ -313,14 +310,41 @@
             select.innerHTML = html;
         }
 
+        // --- GESTION ADAPTATIVE DE LA PÉRIODE (TRIMESTRE VS SEMESTRE) ---
+        function updatePeriodSelector() {
+            const periodSelect = document.getElementById('setting-term');
+            const cycle = checkCycle(currentClass);
+            let optionsHtml = '';
+
+            if (cycle === "PRIMAIRE") {
+                // Le Primaire requiert impérativement un cursus sur 3 Trimestres
+                optionsHtml = `
+                    <option value="1">1er Trimestre</option>
+                    <option value="2">2ème Trimestre</option>
+                    <option value="3">3ème Trimestre</option>
+                `;
+                // Ajustement si la valeur sauvegardée était un semestre inadéquat
+                if (!['1', '2', '3'].includes(appState.settings.term)) appState.settings.term = '1';
+            } else {
+                // Le Secondaire (Collège/Lycée) se base traditionnellement sur 2 Semestres
+                optionsHtml = `
+                    <option value="1">1er Semestre</option>
+                    <option value="2">2ème Semestre</option>
+                `;
+                if (!['1', '2'].includes(appState.settings.term)) appState.settings.term = '1';
+            }
+
+            periodSelect.innerHTML = optionsHtml;
+            periodSelect.value = appState.settings.term;
+        }
+
         populateClassSelect();
-        currentClass = document.getElementById('class-select').value; // Sécurité si l'ancien élément stocké n'existe plus
+        currentClass = document.getElementById('class-select').value;
+        updatePeriodSelector();
 
         document.getElementById('setting-year').value = appState.settings.year || '2025-2026';
-        document.getElementById('setting-term').value = appState.settings.term || '1';
         document.getElementById('setting-effectif').value = appState.classes[currentClass]?.effectif || '';
 
-        // Handlers de synchronisation d'état global
         document.getElementById('setting-year').addEventListener('change', e => { appState.settings.year = e.target.value; saveState(); });
         document.getElementById('setting-term').addEventListener('change', e => { appState.settings.term = e.target.value; saveState(); });
         document.getElementById('setting-effectif').addEventListener('input', e => { appState.classes[currentClass].effectif = e.target.value; saveState(); });
@@ -342,7 +366,6 @@
             setTimeout(() => { toast.classList.replace('toast-enter', 'toast-leave'); setTimeout(() => toast.remove(), 400); }, 3000);
         }
 
-        // --- INTERACTION ET ÉLÉMENTS DU DOM ---
         const els = {
             classSelect: document.getElementById('class-select'),
             studentsList: document.getElementById('students-list'),
@@ -363,7 +386,7 @@
                 els.subjectSectionTitle.textContent = "Matières & Notes Max (Primaire)";
             } else {
                 els.newSubjectVal.placeholder = "Coef G.";
-                els.newSubjectVal.title = "Coefficient général pour le calcul de la moyenne globale";
+                els.newSubjectVal.title = "Coefficient général pour le calcul du second degré";
                 els.subjectSectionTitle.textContent = "Matières & Coefficients";
             }
         }
@@ -427,8 +450,7 @@
             });
         }
 
-        // Remplissage automatique des standards de classe (Presets)
-        function loadStandardSubjects() {
+        window.loadStandardSubjects = function() {
             const cycle = checkCycle(currentClass);
             let listToLoad = [];
 
@@ -515,7 +537,6 @@
                     if (sc > 0) {
                         const calculatedAvg = sp / sc;
                         avgDisplay = calculatedAvg.toFixed(2);
-                        // Au primaire, le seuil de validation s'indexe à la moitié de la note max de la matière
                         const passingScore = cycle === "PRIMAIRE" ? (sub.val / 2) : 10;
                         avgClass = calculatedAvg >= passingScore ? 'text-emerald-600' : 'text-red-500';
                     }
@@ -535,7 +556,6 @@
 
                 const stats = ranks[student.id];
                 const genAvgStr = stats.avg !== null ? stats.avg.toFixed(2) : '—';
-                // La moyenne globale générale reste toujours normalisée sur 20 pour la clarté administrative standard
                 const genClass = stats.avg !== null ? (stats.avg >= 10 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-red-700 bg-red-100 border-red-200') : 'text-slate-300 border-transparent';
 
                 html += `
@@ -554,7 +574,6 @@
             });
         }
 
-        // --- ENREGISTREMENT DES NOTES & TRAITEMENT DE BORD ---
         window.updateGrade = function (studentId, subjectId, type, value, inputEl) {
             const data = appState.classes[currentClass];
             const sub = data.subjects.find(s => s.id === subjectId);
@@ -570,7 +589,6 @@
                 numValue = parseFloat(value.replace(',', '.'));
                 if (isNaN(numValue)) { showToast('Format invalide', 'error'); inputEl.value = data.grades[studentId][subjectId][type] || ''; return; }
                 
-                // Borne dynamique des notes (Max défini au primaire, max 20 pour le reste du cursus scolaire)
                 const boundMax = cycle === "PRIMAIRE" ? sub.val : 20;
                 if (numValue < 0) numValue = 0; 
                 if (numValue > boundMax) numValue = boundMax;
@@ -592,7 +610,6 @@
             const g = data.grades[studentId][subjectId];
             const cycle = checkCycle(currentClass);
 
-            // Recalcul de la moyenne de la matière ciblée
             let sp = 0, sc = 0;
             if (g.d1 !== '' && g.d1 !== undefined) { sp += Number(g.d1) * (sub.coefD1 || 1); sc += (sub.coefD1 || 1); }
             if (g.d2 !== '' && g.d2 !== undefined) { sp += Number(g.d2) * (sub.coefD2 || 1); sc += (sub.coefD2 || 1); }
@@ -608,7 +625,6 @@
                 avgSpan.textContent = '--'; avgSpan.className = 'text-slate-300'; 
             }
 
-            // Recalcul global en temps réel des moyennes générales de la ligne
             const ranks = getClassRanks(currentClass);
             const stats = ranks[studentId];
             const genAvgSpan = document.getElementById(`genavg-${studentId}`);
@@ -622,11 +638,9 @@
             }
         }
 
-        // --- GESTIONNAIRE DES MODALES & FORMULAIRES ---
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         window.closeModal = function (id) { document.getElementById(id).classList.add('hidden'); }
 
-        // Élèves
         document.getElementById('add-student-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const last = document.getElementById('new-student-last'); 
@@ -669,7 +683,6 @@
             saveState(); render(); closeModal('student-modal'); showToast('Détails modifiés');
         };
 
-        // Matières
         document.getElementById('add-subject-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const name = document.getElementById('new-subject-name'); 
@@ -711,7 +724,6 @@
             document.getElementById('edit-sub-c').value = subject.coefC ?? 2;
 
             document.getElementById('modal-sub-val-label').textContent = cycle === "PRIMAIRE" ? "Note Maximale" : "Coefficient Général";
-            
             openModal('subject-modal');
         };
 
@@ -729,10 +741,10 @@
         els.classSelect.addEventListener('change', (e) => {
             currentClass = e.target.value;
             document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
+            updatePeriodSelector(); // Met à jour Trimestre vs Semestre en direct
             render();
         });
 
-        // --- COMPTABILISATION DES MOYENNES GLOBALES ET DES RANGS ---
         function getAppreciation(note) {
             if (note === null || note === undefined) return "";
             if (note < 4) return "Très Faible";
@@ -762,11 +774,9 @@
                     if (c > 0) {
                         const localAvg = p / c;
                         if (cycle === "PRIMAIRE") {
-                            // Au primaire : Normalisation proportionnelle de la note acquise sur une base universelle sur 20
                             totalPoints += (localAvg / sub.val) * 20;
-                            sumWeights += 1; // Traitement équitable des matières au primaire (poids égalitaire)
+                            sumWeights += 1;
                         } else {
-                            // Au secondaire (Collège/Lycée) : Utilisation standard de la pondération par coefficient
                             totalPoints += localAvg * sub.val;
                             sumWeights += sub.val;
                         }
@@ -788,7 +798,6 @@
             return ranks;
         }
 
-        // --- LOGIQUE D'EXPORTATION ---
         window.exportCSV = function (studentId) {
             const data = appState.classes[currentClass];
             const student = data.students.find(s => s.id === studentId);
@@ -797,10 +806,11 @@
             const year = appState.settings.year;
             const term = appState.settings.term;
             const cycle = checkCycle(currentClass);
+            const labelPeriode = cycle === "PRIMAIRE" ? "Trimestre" : "Semestre";
 
-            let csv = '\ufeff'; // BOM Excel
+            let csv = '\ufeff'; 
             csv += `Classe;${currentClass}\n`;
-            csv += `Annee scolaire;${year};Trimestre;${term}\n`;
+            csv += `Annee scolaire;${year};${labelPeriode};${term}\n`;
             csv += `Eleve;${student.firstName} ${student.lastName};Matricule;${student.matricule || ''};Ne(e) le;${student.birthDate || ''};\n`;
             csv += `;;Nbre eleves;${data.students.length};Rang classe;${stats.rank}\n\n`;
 
@@ -872,15 +882,11 @@
         window.printAllReportCards = function () {
             const students = appState.classes[currentClass].students;
             if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
-
-            if (students.length > 5 && !confirm("Vous allez ouvrir " + students.length + " onglets d'impression. Continuer ?")) {
-                return;
-            }
+            if (students.length > 5 && !confirm("Vous allez ouvrir " + students.length + " onglets d'impression. Continuer ?")) return;
             students.forEach((s, i) => { setTimeout(() => printReportCard(s.id), i * 300); });
             showToast("Ouverture des demandes d'impression...");
         };
 
-        // Rendu final
         render();
     </script>
 </body>
