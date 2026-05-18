@@ -109,7 +109,7 @@
                 color: black !important;
                 font-size: 13px !important;
                 font-weight: bold !important;
-                }
+            }
 
             input::placeholder {
                 color: transparent !important;
@@ -593,7 +593,145 @@
             document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
         }
 
-        // Note : Les autres fonctions JS (addStudent, renderStudents, etc.) restent inchangées en dessous.
+        function addStudent() {
+            const lastNameInput = document.getElementById('new-student-lastname');
+            const firstNameInput = document.getElementById('new-student-firstname');     
+            const lastname = lastNameInput.value.trim().toUpperCase();
+            const firstname = firstNameInput.value.trim().toUpperCase();
+
+            if (!lastname || !firstname) return;
+
+            const newStudent = {
+                id: 'stud_' + Date.now(),
+                lastname,
+                firstname
+            };
+
+            appState.classes[currentClassId].students.push(newStudent);
+            // Tri par nom puis prénom
+            appState.classes[currentClassId].students.sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
+            
+            saveToStorage();
+            renderStudents();
+            
+            lastNameInput.value = '';
+            firstNameInput.value = '';
+            lastNameInput.focus();
+            renderStats();
+        }
+
+        function renderStudents() {
+            const list = document.getElementById('student-list');
+            const students = appState.classes[currentClassId]?.students || [];
+
+            list.innerHTML = students.map((s, idx) => {
+                const avg = calculateCurrentStudentAverage(s.id);
+                const activeClass = currentStudentId === s.id ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-slate-50 border-slate-100 hover:bg-slate-100';
+                return `
+                    <li class="student-item border p-3 rounded-xl ${activeClass}" onclick="selectStudent('${s.id}')">
+                        <div class="flex items-center gap-3 truncate">
+                            <span class="text-[10px] font-black text-slate-400 w-5">${idx + 1}</span>
+                            <div class="truncate">
+                                <p class="text-xs font-black text-slate-800 truncate">${s.lastname} ${s.firstname}</p>
+                                <p class="text-[9px] font-bold text-indigo-500">Moy: ${avg}</p>
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); removeStudent('${s.id}')" class="btn-delete-student text-xs font-bold">✕</button>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        function selectStudent(studentId) {
+            currentStudentId = studentId;
+            const student = appState.classes[currentClassId].students.find(s => s.id === studentId);
+            
+            document.getElementById('current-student-display').textContent = `${student.lastname} ${student.firstname}`;
+            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ');
+            
+            document.getElementById('welcome-msg').classList.add('hidden');
+            document.getElementById('editor-panel').classList.remove('hidden');
+            
+            renderStudents();
+            renderGradesFields();
+        }
+
+        function removeStudent(studentId) {
+            if (!confirm("Supprimer cet élève ainsi que ses notes ?")) return;
+            
+            appState.classes[currentClassId].students = appState.classes[currentClassId].students.filter(s => s.id !== studentId);
+            
+            // Nettoyage des notes
+            ["1", "2", "3"].forEach(p => {
+                if (appState.classes[currentClassId].grades[p]?.[studentId]) {
+                    delete appState.classes[currentClassId].grades[p][studentId];
+                }
+            });
+
+            if (currentStudentId === studentId) {
+                currentStudentId = null;
+                document.getElementById('editor-panel').classList.add('hidden');
+                document.getElementById('welcome-msg').classList.remove('hidden');
+            }
+
+            saveToStorage();
+            renderStudents();
+            renderStats();
+        }
+
+        function renderStats() {
+            const classData = appState.classes[currentClassId];
+            if (!classData || classData.students.length === 0) {
+                document.getElementById('class-avg-display').textContent = "0.00";
+                return;
+            }
+
+            let totalAverages = 0;
+            classData.students.forEach(s => {
+                totalAverages += parseFloat(calculateCurrentStudentAverage(s.id));
+            });
+
+            const classAvg = totalAverages / classData.students.length;
+            document.getElementById('class-avg-display').textContent = classAvg.toFixed(2);
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `gestnotes_export_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedState = JSON.parse(e.target.result);
+                    if (importedState && importedState.classes) {
+                        appState = importedState;
+                        saveToStorage();
+                        alert("Données importées avec succès !");
+                        changeLevel();
+                    } else {
+                        alert("Format de fichier invalide.");
+                    }
+                } catch (err) {
+                    alert("Erreur lors de la lecture du fichier.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Initialisation de la page au chargement
+        window.onload = function() {
+            changeLevel();
+        };
     </script>
 </body>
 </html>
