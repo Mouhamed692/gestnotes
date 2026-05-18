@@ -327,17 +327,24 @@
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
     <script>
-        // --- ÉTAT GLOBAL ADAPTÉ AUX SÉRIES ---
+        // --- ÉTAT GLOBAL ADAPTÉ AUX SUBDIVISIONS ---
         const defaultState = { settings: { year: '2025-2026', semester: '1' }, classes: {} };
         const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
         
-        // Séries/Sections par défaut par type de classe adaptées selon vos instructions
+        // Séries/Sections avec subdivisions par défaut par type de classe
         function getSectionsForClass(cls) {
-            if (cls === "6ème") return ["Unique"]; // Classe de 6ème sans sous-sections
             if (["CP", "CE1", "CE2", "CM1", "CM2"].includes(cls)) return ["A", "B"];
-            if (["5ème", "4ème", "3ème"].includes(cls)) return ["A", "B", "C"];
-            if (["Seconde"].includes(cls)) return ["S", "L"];
-            if (["Première", "Terminale"].includes(cls)) return ["A", "S1", "S2", "L1", "L2", "G"]; // Ajout de la classe/série A au Lycée
+            if (["6ème", "5ème", "4ème", "3ème"].includes(cls)) return ["A", "B", "C"];
+            if (["Seconde"].includes(cls)) return ["S A", "S B", "L A", "L B"];
+            if (["Première", "Terminale"].includes(cls)) {
+                return [
+                    "S1 A", "S1 B", 
+                    "S2 A", "S2 B", 
+                    "L1 A", "L1 B", 
+                    "L2 A", "L2 B", 
+                    "G A", "G B"
+                ];
+            }
             return ["A"];
         }
 
@@ -365,10 +372,10 @@
             sections.forEach(s => {
                 const opt = document.createElement('option');
                 opt.value = s;
-                if (s === "Unique") {
-                    opt.textContent = `Classe Unique`;
+                if (["Seconde", "Première", "Terminale"].includes(cls)) {
+                    opt.textContent = `Série ${s}`;
                 } else {
-                    opt.textContent = (["S1", "S2", "L1", "L2", "G", "S", "L", "A"].includes(s) && ["Seconde", "Première", "Terminale"].includes(cls)) ? `Série ${s}` : `Classe ${s}`;
+                    opt.textContent = `Classe ${s}`;
                 }
                 sectionSelect.appendChild(opt);
             });
@@ -419,19 +426,19 @@
             toast.className = `flex items-center gap-3 px-4 py-3 rounded shadow-xl text-white border-l-4 ${styles[type]} toast-enter pointer-events-auto text-sm`;
             toast.innerHTML = `<i class="fa-solid ${icons[type]}"></i> <span>${message}</span>`;
             container.appendChild(toast);
-            setTimeout(() => { toast.classList.replace('toast-enter', 'toast-leave'); setTimeout(() => toast.remove(), 400); }, 3000);
+            setTimeout(() => {
+                toast.classList.replace('toast-enter', 'toast-leave');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
         }
 
-        // --- BASE DE MATIÈRES STANDARDS (DÉFAUT) ---
+        // --- BASE DE MATIÈRES STANDARDS ADAPTÉE AUX SUBDIVISIONS ---
         function loadStandardSubjects() {
             if (!appState.classes[currentFullKey]) return;
-            
             if (appState.classes[currentFullKey].subjects.length > 0) {
                 if (!confirm("Voulez-vous ajouter les matières standards ? Vos matières actuelles seront conservées.")) return;
             }
-
             let standards = [];
-
             if (isPrimary(currentClass)) {
                 standards = [
                     { name: "Langue & Communication", coef: 2 },
@@ -454,7 +461,7 @@
                     standards.push({ name: "Seconde Langue (All/Esp)", coef: 2 });
                 }
             } else {
-                // Lycée (Selon Séries)
+                // Lycée (Détection par préfixe de la subdivision, ex: "S1 A" -> "S")
                 if (currentSection.startsWith("S")) {
                     standards = [
                         { name: "Mathématiques", coef: 5 },
@@ -465,7 +472,7 @@
                         { name: "Histoire-Géographie", coef: 2 },
                         { name: "Anglais", coef: 2 }
                     ];
-                } else if (currentSection.startsWith("L") || currentSection === "A") {
+                } else if (currentSection.startsWith("L")) {
                     standards = [
                         { name: "Français", coef: 4 },
                         { name: "Philosophie", coef: 4 },
@@ -485,27 +492,18 @@
                     ];
                 }
             }
-
             standards.forEach(sub => {
                 const exists = appState.classes[currentFullKey].subjects.some(s => s.name.toLowerCase() === sub.name.toLowerCase());
                 if (!exists) {
-                    appState.classes[currentFullKey].subjects.push({
-                        id: generateId(),
-                        name: sub.name,
-                        coef: sub.coef,
-                        coefD1: 1,
-                        coefD2: 1,
-                        coefC: 2
-                    });
+                    appState.classes[currentFullKey].subjects.push({ id: generateId(), name: sub.name, coef: sub.coef, coefD1: 1, coefD2: 1, coefC: 2 });
                 }
             });
-
             saveState();
             render();
             showToast("Matières standards chargées !");
         }
 
-        // --- MOTEUR DE RENDU ADAPTÉ ---
+        // --- MOTEUR DE RENDU ---
         const els = {
             studentsList: document.getElementById('students-list'),
             subjectsList: document.getElementById('subjects-list'),
@@ -519,20 +517,18 @@
             const subTitle = document.getElementById('subject-section-title');
             const tableSubtitle = document.getElementById('grades-table-subtitle');
             
-            const txtSection = currentSection === "Unique" ? "" : ` ${currentSection}`;
-
             if (isPrimary(currentClass)) {
                 subTitle.innerHTML = `<i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Domaines & Coef.`;
-                tableSubtitle.textContent = `(Classe : ${currentClass}${txtSection}) • N1=Note 1, N2=Note 2, Év=Évaluation`;
+                tableSubtitle.textContent = `(Classe : ${currentClass} ${currentSection}) • N1=Note 1, N2=Note 2, Év=Évaluation`;
                 document.getElementById('new-subject-name').placeholder = "Nom du domaine / activité";
                 document.getElementById('modal-sub-label').textContent = "Nom du domaine d'apprentissage";
                 document.getElementById('modal-coef-label').textContent = "Coefficients internes (Moyenne domaine)";
                 document.getElementById('label-modal-d1').textContent = "Note 1";
                 document.getElementById('label-modal-d2').textContent = "Note 2";
-                document.getElementById('label-modal-c').textContent = "Éval.";
+                document.getElementById('label-modal-c').textContent = "Évaluation";
             } else {
                 subTitle.innerHTML = `<i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Matières & Coefficients`;
-                tableSubtitle.textContent = `(Classe : ${currentClass}${txtSection}) • D1=Devoir 1, D2=Devoir 2, C=Compo`;
+                tableSubtitle.textContent = `(Série : ${currentClass} ${currentSection}) • D1=Devoir 1, D2=Devoir 2, Compo=Composition`;
                 document.getElementById('new-subject-name').placeholder = "Nom de la matière";
                 document.getElementById('modal-sub-label').textContent = "Nom de la matière";
                 document.getElementById('modal-coef-label').textContent = "Coefficients internes (Moyenne matière)";
@@ -540,303 +536,252 @@
                 document.getElementById('label-modal-d2').textContent = "D2";
                 document.getElementById('label-modal-c').textContent = "Compo";
             }
-            renderStudents();
-            renderSubjects();
-            renderGradesTable();
-        }
 
-        function renderStudents() {
-            const students = appState.classes[currentFullKey]?.students || [];
-            students.sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
+            const data = appState.classes[currentFullKey] || { students: [], subjects: [], grades: {} };
+            
+            // 1. Liste Éleves
             els.studentsList.innerHTML = '';
-            document.getElementById('students-count').textContent = students.length;
-            if (students.length === 0) {
-                els.studentsList.innerHTML = `<li class="text-sm text-slate-400 p-3 text-center italic">Aucun élève</li>`;
-                return;
-            }
-            students.forEach(student => {
+            document.getElementById('students-count').textContent = data.students.length;
+            data.students.sort((a,b) => a.lastName.localeCompare(b.lastName)).forEach(s => {
                 const li = document.createElement('li');
-                li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded group border border-transparent transition-colors';
+                li.className = "flex justify-between items-center bg-slate-50 hover:bg-slate-100 p-2 rounded-lg border border-slate-200/60 transition-colors text-sm";
                 li.innerHTML = `
-                    <div class="min-w-0 flex-1 pr-2">
-                        <div class="font-bold text-slate-800 uppercase text-[13px] tracking-wide truncate">${student.lastName} <span class="capitalize text-slate-500 font-medium ml-1">${student.firstName}</span></div>
-                        ${student.matricule ? `<div class="text-[10px] text-slate-400">Mat: ${student.matricule}</div>` : ''}
-                    </div>
-                    <div class="flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                        <button onclick="exportCSV('${student.id}')" class="text-slate-400 hover:text-amber-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Bulletin CSV"><i class="fa-solid fa-file-csv text-xs"></i></button>
-                        <button onclick="openStudentModal('${student.id}')" class="text-slate-400 hover:text-indigo-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Modifier"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button onclick="deleteStudent('${student.id}')" class="text-slate-400 hover:text-red-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Supprimer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    <div class="font-medium truncate"><span class="uppercase font-bold text-slate-700">${s.lastName}</span> ${s.firstName}</div>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button onclick="openStudentModal('${s.id}')" title="Modifier l'élève" class="p-1 text-slate-400 hover:text-indigo-600 transition-colors"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteStudent('${s.id}')" title="Supprimer" class="p-1 text-slate-400 hover:text-red-600 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 `;
                 els.studentsList.appendChild(li);
             });
-        }
 
-        function renderSubjects() {
-            const subjects = appState.classes[currentFullKey]?.subjects || [];
+            // 2. Liste Matières
             els.subjectsList.innerHTML = '';
-            document.getElementById('subjects-count').textContent = subjects.length;
-            if (subjects.length === 0) {
-                const fallbackText = isPrimary(currentClass) ? "Aucun domaine" : "Aucune matière";
-                els.subjectsList.innerHTML = `<li class="text-sm text-slate-400 p-3 text-center italic">${fallbackText}</li>`;
-                return;
-            }
-            subjects.forEach(subject => {
+            document.getElementById('subjects-count').textContent = data.subjects.length;
+            data.subjects.forEach(sub => {
                 const li = document.createElement('li');
-                li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded group border border-transparent transition-colors';
+                li.className = "flex justify-between items-center bg-slate-50 hover:bg-slate-100 p-2 rounded-lg border border-slate-200/60 transition-colors text-sm";
                 li.innerHTML = `
-                    <div class="flex items-center gap-2 min-w-0 flex-1 pr-2">
-                        <span class="font-semibold text-slate-700 text-[13px] truncate">${subject.name}</span>
-                        <span class="bg-emerald-50 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded border border-emerald-100 font-bold shrink-0">Coef ${subject.coef}</span>
-                    </div>
-                    <div class="flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                        <button onclick="openSubjectModal('${subject.id}')" class="text-slate-400 hover:text-emerald-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center"><i class="fa-solid fa-sliders text-xs"></i></button>
-                        <button onclick="deleteSubject('${subject.id}')" class="text-slate-400 hover:text-red-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    <div class="font-medium truncate text-slate-700">${sub.name} <span class="text-xs bg-slate-200 text-slate-600 px-1.5 py-0.2 rounded ml-1 font-bold">Coef ${sub.coef}</span></div>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button onclick="openSubjectModal('${sub.id}')" title="Paramètres internes" class="p-1 text-slate-400 hover:text-emerald-600 transition-colors"><i class="fa-solid fa-sliders"></i></button>
+                        <button onclick="deleteSubject('${sub.id}')" title="Supprimer" class="p-1 text-slate-400 hover:text-red-600 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 `;
                 els.subjectsList.appendChild(li);
             });
-        }
 
-        function renderGradesTable() {
-            const students = appState.classes[currentFullKey]?.students || [];
-            const subjects = appState.classes[currentFullKey]?.subjects || [];
-
-            if (students.length === 0 || subjects.length === 0) {
+            // 3. Grille des Notes
+            if (data.students.length === 0 || data.subjects.length === 0) {
                 els.gradesTable.classList.add('hidden');
                 els.gradesEmpty.classList.remove('hidden');
-                return;
+            } else {
+                els.gradesTable.classList.remove('hidden');
+                els.gradesEmpty.classList.add('hidden');
+                buildGradesTable(data);
             }
+        }
 
-            els.gradesTable.classList.remove('hidden');
-            els.gradesEmpty.classList.add('hidden');
-
-            // En-tête du tableau de saisie
-            let theadHtml = `<tr>
-                <th scope="col" class="px-4 py-3 sticky left-0 bg-slate-100 z-10 sticky-left-shadow min-w-[180px]">Nom de l'élève</th>`;
-            subjects.forEach(sub => {
-                theadHtml += `<th scope="col" colspan="3" class="px-2 py-2 text-center border-l border-slate-200 bg-slate-50 font-bold text-indigo-900 border-b border-indigo-100">${sub.name} <span class="text-[10px] text-slate-500">(x${subjectCoefString(sub)})</span></th>`;
+        function buildGradesTable(data) {
+            // Header
+            let thead = `<tr>
+                <th scope="col" class="px-4 py-3 sticky left-0 bg-slate-100 z-30 sticky-left-shadow font-bold text-slate-700 w-[240px]">Nom complet de l'élève</th>`;
+            data.subjects.forEach(sub => {
+                thead += `<th scope="col" colspan="3" class="px-2 py-2 text-center border-l border-slate-200 bg-slate-50 font-semibold text-slate-700 text-xs truncate max-w-[180px]" title="${sub.name}">
+                    ${sub.name} <span class="block text-[10px] font-bold text-slate-400">Coef ${sub.coef}</span>
+                </th>`;
             });
-            theadHtml += `<th scope="col" class="px-4 py-3 text-center sticky right-0 bg-slate-100 z-10 sticky-right-shadow">Actions</th></tr>`;
-
-            theadHtml += `tr><th class="sticky left-0 bg-slate-100 sticky-left-shadow border-b border-slate-200"></th>`;
-            subjects.forEach(() => {
-                theadHtml += `
-                    <th class="px-1 py-1 text-center text-[10px] font-bold text-slate-400 bg-white border-l border-slate-100">${isPrimary(currentClass) ? 'N1' : 'D1'}</th>
-                    <th class="px-1 py-1 text-center text-[10px] font-bold text-slate-400 bg-white">${isPrimary(currentClass) ? 'N2' : 'D2'}</th>
-                    <th class="px-1 py-1 text-center text-[10px] font-bold text-indigo-500 bg-indigo-50/30 border-r border-slate-200">${isPrimary(currentClass) ? 'Év' : 'C'}</th>
+            thead += `</tr><tr class="bg-slate-50/50 border-b border-slate-200 text-[10px] text-slate-400">
+                <th class="px-4 py-1.5 sticky left-0 bg-slate-50 z-30 sticky-left-shadow"></th>`;
+            data.subjects.forEach(() => {
+                thead += `
+                    <th class="text-center border-l border-slate-200 py-1 w-10">${isPrimary(currentClass)?'N1':'D1'}</th>
+                    <th class="text-center py-1 w-10">${isPrimary(currentClass)?'N2':'D2'}</th>
+                    <th class="text-center py-1 w-12 bg-amber-50/40 text-amber-800 font-bold">${isPrimary(currentClass)?'Év':'Comp'}</th>
                 `;
             });
-            theadHtml += `<th class="sticky right-0 bg-slate-100 sticky-right-shadow"></th></tr>`;
-            els.gradesThead.innerHTML = theadHtml;
+            thead += `</tr>`;
+            els.gradesThead.innerHTML = thead;
 
-            // Lignes des élèves
+            // Body
             els.gradesTbody.innerHTML = '';
-            students.forEach(student => {
+            data.students.sort((a,b) => a.lastName.localeCompare(b.lastName)).forEach(st => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50/80 transition-colors';
+                tr.className = "hover:bg-slate-50/80 transition-colors";
+                
+                let row = `<td class="px-4 py-2.5 font-semibold sticky left-0 bg-white z-10 text-slate-700 truncate max-w-[240px] sticky-left-shadow border-r" title="${st.lastName} ${st.firstName}">
+                    <span class="uppercase">${st.lastName}</span> ${st.firstName}
+                </td>`;
 
-                let rowHtml = `<td class="px-4 py-2 font-bold text-slate-700 uppercase tracking-wide sticky left-0 bg-white group-hover:bg-slate-50 z-10 sticky-left-shadow truncate max-w-[200px]">${student.lastName} <span class="capitalize text-slate-500 font-normal ml-1">${student.firstName}</span></td>`;
+                data.subjects.forEach(sub => {
+                    const d1 = data.grades[`${st.id}_${sub.id}_d1`] ?? '';
+                    const d2 = data.grades[`${st.id}_${sub.id}_d2`] ?? '';
+                    const c = data.grades[`${st.id}_${sub.id}_c`] ?? '';
 
-                subjects.forEach(sub => {
-                    const grade = appState.classes[currentFullKey].grades[student.id]?.[sub.id] || { d1: '', d2: '', c: '' };
-                    rowHtml += `
-                        <td class="p-1 border-l border-slate-100"><input type="text" value="${grade.d1||''}" onchange="updateGrade('${student.id}','${sub.id}','d1',this.value)" class="w-10 text-center rounded border border-slate-200 py-1 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"></td>
-                        <td class="p-1"><input type="text" value="${grade.d2||''}" onchange="updateGrade('${student.id}','${sub.id}','d2',this.value)" class="w-10 text-center rounded border border-slate-200 py-1 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"></td>
-                        <td class="p-1 border-r border-slate-200 bg-indigo-50/10"><input type="text" value="${grade.c||''}" onchange="updateGrade('${student.id}','${sub.id}','c',this.value)" class="w-11 text-center rounded border border-indigo-200 py-1 text-xs font-bold focus:ring-1 focus:ring-indigo-500 focus:outline-none bg-indigo-50/30 text-indigo-900"></td>
+                    row += `
+                        <td class="p-1 border-l border-slate-100 text-center">
+                            <input type="text" value="${d1}" onchange="updateGrade('${st.id}','${sub.id}','d1',this.value)" class="w-9 h-7 text-center rounded border border-slate-200 text-xs focus:ring-1 focus:ring-amber-500 p-0">
+                        </td>
+                        <td class="p-1 text-center">
+                            <input type="text" value="${d2}" onchange="updateGrade('${st.id}','${sub.id}','d2',this.value)" class="w-9 h-7 text-center rounded border border-slate-200 text-xs focus:ring-1 focus:ring-amber-500 p-0">
+                        </td>
+                        <td class="p-1 text-center bg-amber-50/20">
+                            <input type="text" value="${c}" onchange="updateGrade('${st.id}','${sub.id}','c',this.value)" class="w-11 h-7 text-center rounded border border-amber-200 text-xs font-bold bg-amber-50/50 text-amber-900 focus:ring-1 focus:ring-amber-500 p-0">
+                        </td>
                     `;
                 });
 
-                rowHtml += `
-                    <td class="px-4 py-2 text-center sticky right-0 bg-white group-hover:bg-slate-50 z-10 sticky-right-shadow">
-                        <button onclick="printReportCard('${student.id}')" class="text-amber-600 hover:text-amber-700 font-bold bg-amber-50 px-2 py-1 rounded text-xs border border-amber-200 shadow-sm transition-colors"><i class="fa-solid fa-print"></i> Ouvrir</button>
-                    </td>
-                `;
-                tr.innerHTML = rowHtml;
+                tr.innerHTML = row;
                 els.gradesTbody.appendChild(tr);
             });
         }
 
-        function subjectCoefString(sub) {
-            return `${sub.coef} | ${sub.coefD1||1}-${sub.coefD2||1}-${sub.coefC||2}`;
-        }
-
-        function updateGrade(studentId, subjectId, field, value) {
-            if (!appState.classes[currentFullKey].grades[studentId]) {
-                appState.classes[currentFullKey].grades[studentId] = {};
-            }
-            if (!appState.classes[currentFullKey].grades[studentId][subjectId]) {
-                appState.classes[currentFullKey].grades[studentId][subjectId] = { d1: '', d2: '', c: '' };
-            }
-            
-            // Formatage virgule en point
-            let formatted = value.trim().replace(',', '.');
-            if (formatted !== '' && isNaN(formatted)) {
-                showToast("Veuillez saisir une note valide", "error");
-                return;
-            }
-            
-            appState.classes[currentFullKey].grades[studentId][subjectId][field] = formatted;
-            saveState();
-        }
-
-        // --- ENREGISTREMENT ÉLÈVES ---
+        // --- MANIPULATION DES DONNÉES ---
         document.getElementById('add-student-form').addEventListener('submit', e => {
             e.preventDefault();
-            const first = document.getElementById('new-student-first').value.trim();
-            const last = document.getElementById('new-student-last').value.trim();
-
-            if (!appState.classes[currentFullKey]) return;
-
+            const f = document.getElementById('new-student-first');
+            const l = document.getElementById('new-student-last');
+            if(!appState.classes[currentFullKey]) return;
+            
             appState.classes[currentFullKey].students.push({
-                id: generateId(),
-                firstName: first,
-                lastName: last,
-                matricule: '',
-                birthDate: '',
-                absences: 0,
-                retards: 0
+                id: generateId(), firstName: f.value.trim(), lastName: l.value.trim().toUpperCase(),
+                matricule: '', birthday: '', absences: 0, retards: 0
             });
-
-            saveState();
-            document.getElementById('add-student-form').reset();
-            document.getElementById('new-student-first').focus();
-            render();
-            showToast(`Élève ${last} ajouté avec succès`);
+            f.value = ''; l.value = '';
+            saveState(); render(); showToast("Élève ajouté !");
         });
 
-        function deleteStudent(id) {
-            if (!confirm("Voulez-vous vraiment supprimer cet élève ainsi que ses notes ?")) return;
-            appState.classes[currentFullKey].students = appState.classes[currentFullKey].students.filter(s => s.id !== id);
-            if (appState.classes[currentFullKey].grades[id]) delete appState.classes[currentFullKey].grades[id];
-            saveState();
-            render();
-            showToast("Élève supprimé");
-        }
-
-        // --- ENREGISTREMENT MATIÈRES ---
         document.getElementById('add-subject-form').addEventListener('submit', e => {
             e.preventDefault();
-            const name = document.getElementById('new-subject-name').value.trim();
-            const coef = parseFloat(document.getElementById('new-subject-coef').value);
-
-            if (!appState.classes[currentFullKey]) return;
+            const n = document.getElementById('new-subject-name');
+            const c = document.getElementById('new-subject-coef');
+            if(!appState.classes[currentFullKey]) return;
 
             appState.classes[currentFullKey].subjects.push({
-                id: generateId(),
-                name: name,
-                coef: coef,
-                coefD1: 1,
-                coefD2: 1,
-                coefC: 2
+                id: generateId(), name: n.value.trim(), coef: parseFloat(c.value),
+                coefD1: 1, coefD2: 1, coefC: 2
             });
-
-            saveState();
-            document.getElementById('add-subject-form').reset();
-            document.getElementById('new-subject-name').focus();
-            render();
-            showToast(`Matière/Domaine créé(e)`);
+            n.value = ''; c.value = '';
+            saveState(); render(); showToast("Matière ajoutée !");
         });
 
-        function deleteSubject(id) {
-            if (!confirm("Supprimer cette matière ? Les notes associées seront perdues.")) return;
-            appState.classes[currentFullKey].subjects = appState.classes[currentFullKey].subjects.filter(sub => sub.id !== id);
-            
-            // Nettoyage des notes internes
-            Object.keys(appState.classes[currentFullKey].grades).forEach(studentId => {
-                if (appState.classes[currentFullKey].grades[studentId][id]) {
-                    delete appState.classes[currentFullKey].grades[studentId][id];
+        window.updateGrade = function(stId, subId, type, val) {
+            val = val.replace(',', '.');
+            const key = `${stId}_${subId}_${type}`;
+            if(val === '') {
+                delete appState.classes[currentFullKey].grades[key];
+            } else {
+                const num = parseFloat(val);
+                if(isNaN(num) || num < 0 || num > 20) {
+                    showToast("Note invalide (doit être entre 0 et 20)", "error");
+                    render();
+                    return;
                 }
-            });
-
+                appState.classes[currentFullKey].grades[key] = num;
+            }
             saveState();
-            render();
-            showToast("Matière supprimée");
-        }
+        };
 
-        // --- MODALE ÉLÈVES ---
-        function openStudentModal(id) {
-            const s = appState.classes[currentFullKey].students.find(item => item.id === id);
-            if (!s) return;
+        window.deleteStudent = function(id) {
+            if(!confirm("Supprimer cet élève ainsi que toutes ses notes ?")) return;
+            appState.classes[currentFullKey].students = appState.classes[currentFullKey].students.filter(s => s.id !== id);
+            // Nettoyage des notes associées
+            for (let k in appState.classes[currentFullKey].grades) {
+                if (k.startsWith(id + '_')) delete appState.classes[currentFullKey].grades[k];
+            }
+            saveState(); render(); showToast("Élève supprimé", "info");
+        };
+
+        window.deleteSubject = function(id) {
+            if(!confirm("Supprimer cette matière ainsi que toutes les notes correspondantes ?")) return;
+            appState.classes[currentFullKey].subjects = appState.classes[currentFullKey].subjects.filter(s => s.id !== id);
+            // Nettoyage des notes associées
+            for (let k in appState.classes[currentFullKey].grades) {
+                if (k.includes('_' + id + '_')) delete appState.classes[currentFullKey].grades[k];
+            }
+            saveState(); render(); showToast("Matière supprimée", "info");
+        };
+
+        // --- MODALS ET PARAMÈTRES AVANCÉS ---
+        window.openStudentModal = function(id) {
+            const s = appState.classes[currentFullKey].students.find(x => x.id === id);
+            if(!s) return;
             document.getElementById('edit-student-id').value = s.id;
-            document.getElementById('edit-student-first').value = s.firstName || '';
-            document.getElementById('edit-student-last').value = s.lastName || '';
+            document.getElementById('edit-student-first').value = s.firstName;
+            document.getElementById('edit-student-last').value = s.lastName;
             document.getElementById('edit-student-mat').value = s.matricule || '';
-            document.getElementById('edit-student-birth').value = s.birthDate || '';
+            document.getElementById('edit-student-birth').value = s.birthday || '';
             document.getElementById('edit-student-abs').value = s.absences || 0;
             document.getElementById('edit-student-ret').value = s.retards || 0;
             document.getElementById('student-modal').classList.remove('hidden');
-        }
+        };
 
-        function saveStudentModal() {
+        window.saveStudentModal = function() {
             const id = document.getElementById('edit-student-id').value;
-            const s = appState.classes[currentFullKey].students.find(item => item.id === id);
-            if (!s) return;
+            const s = appState.classes[currentFullKey].students.find(x => x.id === id);
+            if(s) {
+                s.firstName = document.getElementById('edit-student-first').value.trim();
+                s.lastName = document.getElementById('edit-student-last').value.trim().toUpperCase();
+                s.matricule = document.getElementById('edit-student-mat').value.trim();
+                s.birthday = document.getElementById('edit-student-birth').value.trim();
+                s.absences = parseInt(document.getElementById('edit-student-abs').value) || 0;
+                s.retards = parseInt(document.getElementById('edit-student-ret').value) || 0;
+                saveState(); render(); closeModal('student-modal'); showToast("Profil mis à jour");
+            }
+        };
 
-            s.firstName = document.getElementById('edit-student-first').value.trim();
-            s.lastName = document.getElementById('edit-student-last').value.trim();
-            s.matricule = document.getElementById('edit-student-mat').value.trim();
-            s.birthDate = document.getElementById('edit-student-birth').value.trim();
-            s.absences = parseInt(document.getElementById('edit-student-abs').value) || 0;
-            s.retards = parseInt(document.getElementById('edit-student-ret').value) || 0;
-
-            saveState();
-            closeModal('student-modal');
-            render();
-            showToast("Fiche élève mise à jour");
-        }
-
-        // --- MODALE MATIÈRES ---
-        function openSubjectModal(id) {
-            const sub = appState.classes[currentFullKey].subjects.find(item => item.id === id);
-            if (!sub) return;
+        window.openSubjectModal = function(id) {
+            const sub = appState.classes[currentFullKey].subjects.find(x => x.id === id);
+            if(!sub) return;
             document.getElementById('edit-sub-id').value = sub.id;
-            document.getElementById('edit-sub-name').value = sub.name || '';
-            document.getElementById('edit-sub-coef').value = sub.coef || 1;
-            document.getElementById('edit-sub-d1').value = sub.coefD1 !== undefined ? sub.coefD1 : 1;
-            document.getElementById('edit-sub-d2').value = sub.coefD2 !== undefined ? sub.coefD2 : 1;
-            document.getElementById('edit-sub-c').value = sub.coefC !== undefined ? sub.coefC : 2;
+            document.getElementById('edit-sub-name').value = sub.name;
+            document.getElementById('edit-sub-coef').value = sub.coef;
+            document.getElementById('edit-sub-d1').value = sub.coefD1 ?? 1;
+            document.getElementById('edit-sub-d2').value = sub.coefD2 ?? 1;
+            document.getElementById('edit-sub-c').value = sub.coefC ?? 2;
             document.getElementById('subject-modal').classList.remove('hidden');
-        }
+        };
 
-        function saveSubjectModal() {
+        window.saveSubjectModal = function() {
             const id = document.getElementById('edit-sub-id').value;
-            const sub = appState.classes[currentFullKey].subjects.find(item => item.id === id);
-            if (!sub) return;
+            const sub = appState.classes[currentFullKey].subjects.find(x => x.id === id);
+            if(sub) {
+                sub.name = document.getElementById('edit-sub-name').value.trim();
+                sub.coef = parseFloat(document.getElementById('edit-sub-coef').value) || 1;
+                sub.coefD1 = parseFloat(document.getElementById('edit-sub-d1').value) || 1;
+                sub.coefD2 = parseFloat(document.getElementById('edit-sub-d2').value) || 1;
+                sub.coefC = parseFloat(document.getElementById('edit-sub-c').value) || 2;
+                saveState(); render(); closeModal('subject-modal'); showToast("Paramètres matière enregistrés");
+            }
+        };
 
-            sub.name = document.getElementById('edit-sub-name').value.trim();
-            sub.coef = parseFloat(document.getElementById('edit-sub-coef').value) || 1;
-            sub.coefD1 = parseFloat(document.getElementById('edit-sub-d1').value) || 0;
-            sub.coefD2 = parseFloat(document.getElementById('edit-sub-d2').value) || 0;
-            sub.coefC = parseFloat(document.getElementById('edit-sub-c').value) || 0;
+        window.closeModal = function(mId) { document.getElementById(mId).classList.add('hidden'); };
 
-            saveState();
-            closeModal('subject-modal');
-            render();
-            showToast("Paramètres de l'élément enregistrés");
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-        }
-
-        // --- IMPRESSIONS ET EXPORTS ---
+        // --- IMPRESSION / EXPORTATION VIA DES PARAMÈTRES SÉCURISÉS ---
         window.exportCSV = function (studentId) {
             const student = appState.classes[currentFullKey].students.find(s => s.id === studentId);
-            const subjects = appState.classes[currentFullKey].subjects;
             if (!student) return;
 
-            let csv = `\uFEFFBulletin de Notes\nNom;${student.lastName};Prenom;${student.firstName};Classe;${currentClass}${currentSection === "Unique" ? "" : " " + currentSection}\n\nMatiere;D1;D2;Compo\n`;
-            subjects.forEach(sub => {
-                const g = appState.classes[currentFullKey].grades[student.id]?.[sub.id] || {};
-                csv += `${sub.name};${g.d1||''};${g.d2||''};${g.c||''}\n`;
+            let csv = `\ufeffBULLETIN DE NOTES\n`;
+            csv += `Annee Scolaire;${appState.settings.year}\n`;
+            csv += `Periode;${appState.settings.semester}\n`;
+            csv += `Eleve;${student.lastName} ${student.firstName}\n`;
+            csv += `Classe;${currentClass} ${currentSection}\n\n`;
+            csv += `Matiere;Coef;${isPrimary(currentClass)?'Note 1;Note 2;Evaluation':'Devoir 1;Devoir 2;Composition'}\n`;
+
+            appState.classes[currentFullKey].subjects.forEach(sub => {
+                const d1 = appState.classes[currentFullKey].grades[`${student.id}_${sub.id}_d1`] ?? '';
+                const d2 = appState.classes[currentFullKey].grades[`${student.id}_${sub.id}_d2`] ?? '';
+                const c = appState.classes[currentFullKey].grades[`${student.id}_${sub.id}_c`] ?? '';
+                csv += `${sub.name};${sub.coef};${d1};${d2};${c}\n`;
             });
-            csv += `\nAbsences;${student.absences || 0};Retards;${student.retards || 0}\n`;
+
+            csv += `\nAbsences;${student.absences || 0}\nRetards;${student.retards || 0}\n`;
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `Bulletin_${currentClass}${currentSection === "Unique" ? "" : "_" + currentSection}_${student.lastName}_${student.firstName}.csv`;
+            link.download = `Bulletin_${currentClass}_${currentSection}_${student.lastName}_${student.firstName}.csv`;
             link.click();
         };
 
@@ -848,8 +793,8 @@
         };
 
         window.printReportCard = function (studentId) {
-            const suffixKey = `${currentClass}_${currentSection}`;
-            window.open(`bulletin.html?class=${encodeURIComponent(suffixKey)}&student=${encodeURIComponent(studentId)}`, '_blank');
+            // Transmet la clé de classe complète (ex: Terminale_L2 A) pour l'interface bulletin.html
+            window.open(`bulletin.html?class=${encodeURIComponent(currentFullKey)}&student=${encodeURIComponent(studentId)}`, '_blank');
         };
 
         window.printAllReportCards = function () {
@@ -857,7 +802,7 @@
             if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
             if (students.length > 6 && !confirm(`Ouvrir ${students.length} onglets d'impression ?`)) return;
             students.forEach((s, i) => setTimeout(() => printReportCard(s.id), i * 300));
-            showToast("Génération des bulletins lancée...");
+            showToast("Ouverture des bulletins pour impression...");
         };
 
         // Rendu initial
