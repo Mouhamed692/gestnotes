@@ -280,16 +280,13 @@
             font-weight: bold;
         }
 
-        /* ==========================================
-           GESTION DE L'IMPRESSION - CORRECTION FINALE
-           ========================================== */
+        /* Gestion de l'impression */
         @media print {
             @page {
                 size: A4 portrait;
                 margin: 12mm 15mm 12mm 15mm;
             }
 
-            /* 1. Forcer la disparition complète du panneau de config */
             #setup-panel, .no-print {
                 display: none !important;
                 visibility: hidden !important;
@@ -299,7 +296,6 @@
                 border: none !important;
             }
 
-            /* 2. Reset du Body pour l'impression */
             body {
                 background-color: white !important;
                 background: #fff !important;
@@ -310,7 +306,6 @@
                 print-color-adjust: exact !important;
             }
 
-            /* 3. Forcer le conteneur du bulletin à ignorer ses styles d'écran */
             #bulletin-content.bulletin-wrapper {
                 display: block !important;
                 box-shadow: none !important;
@@ -323,7 +318,6 @@
                 background: transparent !important;
             }
             
-            /* Anti-coupure des lignes de tableau */
             tr { page-break-inside: avoid; }
             .student-info { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
@@ -393,7 +387,8 @@ RENOVATION</textarea>
         <table class="grades-table">
             <thead id="grades-header"></thead>
             <tbody id="grades-body"></tbody>
-            <tbody id="grades-footer"></tbody> </table>
+            <tbody id="grades-footer"></tbody>
+        </table>
 
         <div class="footer-sections">
             <table class="decision-table">
@@ -475,10 +470,17 @@ RENOVATION</textarea>
             return "Excellent";
         }
 
+        // Détection élargie pour inclure la 6ème et le système d'étapes de l'élémentaire sénégalais
         function checkIsPrimaire(cId) {
             if (!cId) return false;
             const level = cId.split('_')[0].toUpperCase();
-            const classesPrimaire = ["CI", "CP", "CE1", "CE2", "CM1", "CM2"];
+            
+            // Inclusion des niveaux classiques (CI à CM2) et des étapes (1ère à 6ème)
+            const classesPrimaire = [
+                "CI", "CP", "CE1", "CE2", "CM1", "CM2", 
+                "6EME", "5EME", "4EME", "3EME", "2EME", "1ERE"
+            ];
+            
             return classesPrimaire.some(pLevel => level === pLevel || level.startsWith(pLevel));
         }
 
