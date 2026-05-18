@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>Bulletin de Notes</title>
     <style>
-        /* Styles de base pour l'écran */
         body {
             font-family: Arial, Helvetica, sans-serif;
             color: #000;
@@ -13,7 +12,6 @@
             padding: 20px;
             font-size: 13px;
             background-color: #f1f5f9;
-            /* Fond gris clair pour l'interface */
         }
 
         .bulletin-wrapper {
@@ -24,12 +22,10 @@
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
 
-        /* Panneau de saisie (Interface utilisateur) */
         .input-panel {
             background: #ffffff;
             padding: 15px;
             border: 2px solid #fbbf24;
-            /* Couleur Ambre */
             border-radius: 8px;
             margin-bottom: 20px;
         }
@@ -68,7 +64,6 @@
             background-color: #047857;
         }
 
-        /* Gestion de l'impression */
         @media print {
             .no-print {
                 display: none !important;
@@ -97,7 +92,6 @@
             }
         }
 
-        /* Styles du bulletin (inchangés) */
         .header-container {
             display: flex;
             justify-content: space-between;
@@ -269,7 +263,6 @@
     <div id="error-msg" class="no-print">Données introuvables. Veuillez générer le bulletin depuis la page principale.
     </div>
 
-    <!-- PANNEAU DE SAISIE AVANT IMPRESSION -->
     <div class="bulletin-wrapper no-print" id="setup-panel">
         <div class="input-panel">
             <label for="header-input">Modifier l'en-tête de l'établissement (IEF, École, etc.) :</label>
@@ -282,7 +275,6 @@ RENOVATION</textarea>
         </div>
     </div>
 
-    <!-- CONTENU DU BULLETIN -->
     <div class="bulletin-wrapper" id="bulletin-content" style="display: none;">
 
         <div class="header-container">
@@ -292,7 +284,6 @@ RENOVATION</textarea>
                     <div class="yellow"><span class="star">★</span></div>
                     <div class="red"></div>
                 </div>
-                <!-- ZONE DYNAMIQUE DE L'EN-TÊTE -->
                 <div id="header-text-display">
                     IA PIKINE / GUEDIAWAYE<br>
                     IEF PIKINE<br>
@@ -304,7 +295,7 @@ RENOVATION</textarea>
             </div>
             <div class="header-right">
                 Année Scolaire: <span id="lbl-year"></span><br>
-                <span id="lbl-semester"></span> Semestre
+                Période: <span id="lbl-semester"></span>
             </div>
         </div>
 
@@ -312,7 +303,7 @@ RENOVATION</textarea>
             <div class="student-col">
                 <div><span class="field">Prénoms</span> <strong><span id="lbl-firstname"></span></strong></div>
                 <div><span class="field">Né(e) le</span> <strong id="lbl-birth"></strong> à <strong
-                        id="lbl-birthplace"></strong></div>
+                        id="lbl-birthplace">Dakar</strong></div>
                 <div><span class="field">Matricule:</span> <strong id="lbl-matricule"></strong></div>
             </div>
             <div class="student-col">
@@ -326,9 +317,9 @@ RENOVATION</textarea>
         <table class="grades-table">
             <thead>
                 <tr>
-                    <th rowspan="2">DISCIPLINES</th>
-                    <th colspan="2">Devoir</th>
-                    <th rowspan="2">Comp</th>
+                    <th rowspan="2" id="th-discipline">DISCIPLINES</th>
+                    <th colspan="2" id="th-note-group">Devoir</th>
+                    <th rowspan="2" id="th-final">Comp</th>
                     <th rowspan="2">Moy/20</th>
                     <th rowspan="2">Coef</th>
                     <th rowspan="2">Moy x Coef</th>
@@ -337,8 +328,8 @@ RENOVATION</textarea>
                     <th rowspan="2">Appréciations</th>
                 </tr>
                 <tr>
-                    <th>D1</th>
-                    <th>D2</th>
+                    <th id="th-n1">D1</th>
+                    <th id="th-n2">D2</th>
                 </tr>
             </thead>
             <tbody id="grades-body"></tbody>
@@ -409,7 +400,7 @@ RENOVATION</textarea>
         </div>
 
         <div class="observations">
-            <div>Observations du conseil des professeurs</div>
+            <div id="lbl-obs-conseil">Observations du conseil des professeurs</div>
             <div class="obs-right">Le Chef d'Etablissement</div>
         </div>
     </div>
@@ -426,8 +417,11 @@ RENOVATION</textarea>
             return "Excellent";
         }
 
+        function isPrimary(className) {
+            return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
+        }
+
         window.onload = function () {
-            // --- GESTION DE L'EN-TÊTE DYNAMIQUE ---
             const headerInput = document.getElementById('header-input');
             const headerDisplay = document.getElementById('header-text-display');
 
@@ -435,7 +429,6 @@ RENOVATION</textarea>
                 headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
             });
 
-            // --- CHARGEMENT DES DONNÉES ---
             const urlParams = new URLSearchParams(window.location.search);
             const classId = urlParams.get('class');
             const studentId = urlParams.get('student');
@@ -457,8 +450,20 @@ RENOVATION</textarea>
             document.getElementById('bulletin-content').style.display = 'block';
             document.title = "Bulletin - " + student.lastName + " " + student.firstName;
 
+            // Détection du primaire pour la modification des en-têtes de colonnes
+            if (isPrimary(classId)) {
+                document.getElementById('th-discipline').textContent = "DOMAINES D'APPRENTISSAGE";
+                document.getElementById('th-note-group').textContent = "Notes";
+                document.getElementById('th-n1').textContent = "N1";
+                document.getElementById('th-n2').textContent = "N2";
+                document.getElementById('th-final').textContent = "Év.";
+                document.getElementById('lbl-obs-conseil').textContent = "Observations de l'Enseignant";
+                document.getElementById('lbl-semester').textContent = appState.settings.semester + (appState.settings.semester == '1' ? 'er Trimestre' : 'ème Trimestre');
+            } else {
+                document.getElementById('lbl-semester').textContent = appState.settings.semester == '1' ? '1er Semestre' : '2ème Semestre';
+            }
+
             document.getElementById('lbl-year').textContent = appState.settings.year;
-            document.getElementById('lbl-semester').textContent = appState.settings.semester == '1' ? '1er' : '2ème';
             document.getElementById('lbl-firstname').textContent = student.firstName;
             document.getElementById('lbl-lastname').textContent = student.lastName;
             document.getElementById('lbl-class').textContent = classId;
@@ -515,7 +520,7 @@ RENOVATION</textarea>
                 }
             });
 
-            // Remplissage tableau
+            // Remplissage du tableau
             const tbody = document.getElementById('grades-body');
             let totalCoef = 0, totalPoints = 0;
 
@@ -557,7 +562,7 @@ RENOVATION</textarea>
             document.getElementById('lbl-moy-gen').textContent = studentGenAvg !== null ? studentGenAvg.toFixed(2).replace('.', ',') : '-';
             document.getElementById('lbl-rank').textContent = genRank;
 
-            // Cocher auto
+            // Cocher auto des appréciations
             if (studentGenAvg !== null) {
                 if (studentGenAvg >= 12) {
                     document.getElementById('chk-satisfaisant').textContent = 'X';
