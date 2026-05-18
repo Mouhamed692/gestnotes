@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GestNotes Pro - Auto-Configuration</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <link rel="manifest" href="./manifest.json">
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;800&display=swap');
@@ -65,7 +65,8 @@
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Série / Section</label>
                 <select id="class-section" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-xs sm:text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="A" selected>A</option><option value="B">B</option><option value="C">C</option>
+                    <option value="UNIQUE" selected>Unique</option>
+                    <option value="A">A</option><option value="B">B</option><option value="C">C</option>
                     <option value="S1">S1</option><option value="S2">S2</option><option value="L1">L1</option>
                     <option value="L2">L2</option><option value="STEG">STEG</option>
                 </select>
@@ -486,7 +487,11 @@
             
             const typePeriodeLabel = isPrimaire() ? "Trimestre " : "Semestre ";
             document.getElementById('current-student-display').textContent = `${student.firstName} ${student.lastName}`;
-            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ') + " - " + typePeriodeLabel + currentPeriod;
+            
+            // Formatage propre du titre de la classe (ex: "6ÉME Unique" au lieu de "6ÉME UNIQUE")
+            const classLabelClean = currentClassId.replace('_', ' ').replace('UNIQUE', 'Unique');
+            document.getElementById('current-class-display').textContent = classLabelClean + " - " + typePeriodeLabel + currentPeriod;
+            
             renderGradesFields(); renderStudents();
         }
 
@@ -546,16 +551,15 @@
             document.getElementById('class-avg-display').textContent = (totalMoyennesClasse / classData.students.length).toFixed(2);
         }
 
-      
-        
+        // Initialisation automatique au chargement
+        window.onload = function() {
+            changeLevel();
+        }
+
         // ==========================================
         //  FONCTIONS D'IMPORTATION / EXPORTATION LOCALES
         // ==========================================
         function exportData() {
-            if (!appState || Object.keys(appState.classes).length === 0) {
-                alert("Aucune donnée à exporter.");
-                return;
-            }
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
@@ -568,53 +572,29 @@
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const importedData = JSON.parse(e.target.result);
-                    if (importedData && importedData.classes) {
-                        if (confirm("Attention, l'importation va remplacer vos données actuelles. Continuer ?")) {
-                            appState = importedData;
-                            saveToStorage();
-                            changeLevel();
-                            alert("Données importées avec succès !");
-                        }
+                    const imported = JSON.parse(e.target.result);
+                    if (imported && imported.classes) {
+                        appState = imported;
+                        saveToStorage();
+                        changeLevel();
+                        alert("Données importées avec succès !");
                     } else {
-                        alert("Format de fichier invalide. Le fichier doit contenir un objet de classes valide.");
+                        alert("Fichier JSON invalide.");
                     }
                 } catch (err) {
-                    alert("Erreur lors de la lecture du fichier JSON.");
+                    alert("Erreur lors de la lecture du fichier.");
                 }
             };
             reader.readAsText(file);
-            // Réinitialise l'input pour permettre de ré-importer le même fichier si besoin
-            event.target.value = '';
         }
 
-        // ==========================================
-        //  REDIRECTION VERS LE BULLETIN EN LIGNE
-        // ==========================================
         function printReport() {
-            if (!currentClassId || !currentStudentId) {
-                alert("Veuillez sélectionner un élève.");
-                return;
-            }
-            
-            // Construit l'URL avec les paramètres requis par bulletin.html
-            const url = `bulletin.html?class=${encodeURIComponent(currentClassId)}&student=${encodeURIComponent(currentStudentId)}&period=${encodeURIComponent(currentPeriod)}`;
-            
-            // Ouvre le bulletin dans un nouvel onglet
-            window.open(url, '_blank');
+            alert("Génération du bulletin au format d'impression...");
+            window.print();
         }
-
-        // Initialisation de la page au chargement complet
-        window.onload = function() {
-            changeLevel();
-        };
     </script>
-</body>
-</html>
-
 </body>
 </html>
