@@ -103,7 +103,7 @@
             body {
                 background-color: white;
                 padding: 0;
-                font-size: 11px; /* Réduction légère pour garantir le maintien sur une page */
+                font-size: 11px;
             }
 
             .bulletin-wrapper {
@@ -123,7 +123,6 @@
                 print-color-adjust: exact;
             }
             
-            /* Évite les sauts de page maladroits à l'intérieur du bulletin */
             tr { page-break-inside: avoid; }
         }
 
@@ -465,9 +464,8 @@ RENOVATION</textarea>
             if (!cId) return false;
             const level = cId.split('_')[0].toUpperCase();
             
-            // Uniquement l'élémentaire sénégalais (CI à CM2)
+            // Élémentaire sénégalais (CI à CM2)
             const classesPrimaire = ["CI", "CP", "CE1", "CE2", "CM1", "CM2"];
-            
             return classesPrimaire.some(pLevel => level === pLevel || level.startsWith(pLevel));
         }
 
@@ -563,7 +561,7 @@ RENOVATION</textarea>
             let totalMoyennesClasse = 0;
             let totalElevesComptes = 0;
 
-            // Étape 1 : Collecter et calculer les notes de CHAQUE élève pour bâtir les classements
+            // Étape 1 : Collecter et calculer les notes de chaque élève pour les classements globaux
             classData.students.forEach(s => {
                 let stPoints = 0, stCoef = 0;
                 let primPointsObtenus = 0, primBaremeTotal = 0;
@@ -582,7 +580,7 @@ RENOVATION</textarea>
                                 const moySub = (valD1 + valCp) / 2; // Moyenne brute /20
                                  
                                 subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
-                                primPointsObtenus += (moySub / 20) * sub.coef; // Points ramenés sur le barème de la matière
+                                primPointsObtenus += (moySub / 20) * sub.coef; 
                                 primBaremeTotal += sub.coef;
                                 hasGrades = true;
                             }
@@ -627,7 +625,7 @@ RENOVATION</textarea>
             const myRankIndex = ranks.findIndex(r => r.id === studentId) + 1;
             const moyenneClasseGlobale = totalElevesComptes > 0 ? (totalMoyennesClasse / totalElevesComptes).toFixed(2) : "0,00";
 
-            // Étape 2 : Remplissage et rendu HTML des lignes du tableau de l'élève actif
+            // Étape 2 : Remplissage HTML des lignes du tableau de l'élève actif
             const tbody = document.getElementById('grades-body');
             tbody.innerHTML = "";
 
@@ -749,7 +747,7 @@ RENOVATION</textarea>
 
             // Étape 4 : Coche automatique des décisions et mentions d'honneur
             if (totalElevesComptes > 0 && ((isPrimaireMode && totalPrimBareme > 0) || (!isPrimaireMode && totalCoef > 0))) {
-                const checkAvg = isPrimaireMode ? finalAvg * 2 : finalAvg; // Calibrage systématique sur base 20 pour la logique des cases
+                const checkAvg = isPrimaireMode ? finalAvg * 2 : finalAvg; 
 
                 if (checkAvg >= 12) {
                     document.getElementById('chk-satisfaisant').textContent = 'X';
