@@ -94,6 +94,39 @@
             background-color: #047857;
         }
 
+        /* Gestion de l'impression */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background-color: white;
+                padding: 0;
+                font-size: 11px; /* Réduction légère pour garantir le maintien sur une page */
+            }
+
+            .bulletin-wrapper {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+            }
+
+            @page {
+                margin: 8mm;
+                size: A4 landscape;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Évite les sauts de page maladroits à l'intérieur du bulletin */
+            tr { page-break-inside: avoid; }
+        }
+
         /* Styles du bulletin */
         .header-container {
             display: flex;
@@ -153,8 +186,8 @@
             justify-content: space-between;
             margin-bottom: 15px;
             background: #f8fafc;
-            border: 1px solid #000;
             padding: 10px;
+            border: 1px solid #000;
         }
 
         .student-col {
@@ -279,59 +312,14 @@
             font-size: 16px;
             font-weight: bold;
         }
-
-        /* Gestion de l'impression */
-        @media print {
-            @page {
-                size: A4 portrait;
-                margin: 12mm 15mm 12mm 15mm;
-            }
-
-            #setup-panel, .no-print {
-                display: none !important;
-                visibility: hidden !important;
-                height: 0 !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                border: none !important;
-            }
-
-            body {
-                background-color: white !important;
-                background: #fff !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                font-size: 11px;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-
-            #bulletin-content.bulletin-wrapper {
-                display: block !important;
-                box-shadow: none !important;
-                border: none !important;
-                border-radius: 0 !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                max-width: 100% !important;
-                width: 100% !important;
-                background: transparent !important;
-            }
-            
-            tr { page-break-inside: avoid; }
-            .student-info { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-        }
     </style>
 </head>
 
 <body>
 
-    <div id="error-msg" class="no-print">
-        <h2>Données introuvables</h2>
-        <p>Veuillez générer le bulletin depuis la page principale de GestNotes.</p>
-    </div>
+    <div id="error-msg" class="no-print">Données introuvables. Veuillez générer le bulletin depuis la page principale.</div>
 
-    <div class="bulletin-wrapper no-print" id="setup-panel" style="display: none;">
+    <div class="bulletin-wrapper no-print" id="setup-panel">
         <div class="input-panel">
             <div class="nav-buttons">
                 <button class="btn-back" onclick="window.close(); window.history.back();">
@@ -390,7 +378,7 @@ RENOVATION</textarea>
         <table class="grades-table">
             <thead id="grades-header"></thead>
             <tbody id="grades-body"></tbody>
-            <tbody id="grades-footer"></tbody>
+            <tfoot id="grades-footer"></tfoot>
         </table>
 
         <div class="footer-sections">
@@ -476,7 +464,10 @@ RENOVATION</textarea>
         function checkIsPrimaire(cId) {
             if (!cId) return false;
             const level = cId.split('_')[0].toUpperCase();
-            const classesPrimaire = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6EME"];
+            
+            // Uniquement l'élémentaire sénégalais (CI à CM2)
+            const classesPrimaire = ["CI", "CP", "CE1", "CE2", "CM1", "CM2"];
+            
             return classesPrimaire.some(pLevel => level === pLevel || level.startsWith(pLevel));
         }
 
@@ -514,24 +505,21 @@ RENOVATION</textarea>
 
             const isPrimaireMode = checkIsPrimaire(classId);
 
-            // Tout est correct : on affiche le contenu et le panneau de contrôle
             document.getElementById('bulletin-content').style.display = 'block';
-            document.getElementById('setup-panel').style.display = 'block';
             document.title = "Bulletin - " + student.lastName;
 
-            document.getElementById('lbl-year').textContent = appState.currentYear || "2025-2026";
+            document.getElementById('lbl-year').textContent = "2025-2026";
             document.getElementById('lbl-period-type').textContent = isPrimaireMode ? "Trimestre" : "Semestre";
             document.getElementById('lbl-semester').textContent = period + (period == "1" ? "er" : "ème");
              
             document.getElementById('lbl-firstname').textContent = student.firstName || student.firstname || "";
             document.getElementById('lbl-lastname').textContent = student.lastName;
             document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
-            document.getElementById('lbl-birth').textContent = student.birthDate || student.birthday || student.birth || "-";
-            document.getElementById('lbl-birthplace').textContent = student.birthPlace || student.birthplace || "-";
             document.getElementById('lbl-matricule').textContent = student.matricule || 'REG-' + Math.floor(1000+Math.random()*9000);
             document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
             document.getElementById('lbl-abs-ret').textContent = `${student.absences || 0} Abs / ${student.retards || 0} Ret`;
 
+            // Injection dynamique de l'en-tête du tableau selon le cycle
             const thead = document.getElementById('grades-header');
             if (isPrimaireMode) {
                 thead.innerHTML = `
@@ -575,6 +563,7 @@ RENOVATION</textarea>
             let totalMoyennesClasse = 0;
             let totalElevesComptes = 0;
 
+            // Étape 1 : Collecter et calculer les notes de CHAQUE élève pour bâtir les classements
             classData.students.forEach(s => {
                 let stPoints = 0, stCoef = 0;
                 let primPointsObtenus = 0, primBaremeTotal = 0;
@@ -590,10 +579,10 @@ RENOVATION</textarea>
                             if (d1 !== null || cp !== null) {
                                 const valD1 = d1 !== null ? d1 : 0;
                                 const valCp = cp !== null ? cp : valD1;
-                                const moySub = (valD1 + valCp) / 2;
+                                const moySub = (valD1 + valCp) / 2; // Moyenne brute /20
                                  
                                 subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
-                                primPointsObtenus += (moySub / 20) * sub.coef; 
+                                primPointsObtenus += (moySub / 20) * sub.coef; // Points ramenés sur le barème de la matière
                                 primBaremeTotal += sub.coef;
                                 hasGrades = true;
                             }
@@ -629,6 +618,7 @@ RENOVATION</textarea>
                 }
             });
 
+            // Trier les listes pour extraire les rangs par matière
             Object.keys(subjectRanksMap).forEach(subId => {
                 subjectRanksMap[subId].sort((a, b) => b.score - a.score);
             });
@@ -637,6 +627,7 @@ RENOVATION</textarea>
             const myRankIndex = ranks.findIndex(r => r.id === studentId) + 1;
             const moyenneClasseGlobale = totalElevesComptes > 0 ? (totalMoyennesClasse / totalElevesComptes).toFixed(2) : "0,00";
 
+            // Étape 2 : Remplissage et rendu HTML des lignes du tableau de l'élève actif
             const tbody = document.getElementById('grades-body');
             tbody.innerHTML = "";
 
@@ -717,6 +708,7 @@ RENOVATION</textarea>
                 });
             }
 
+            // Étape 3 : Calcul final et pied de tableau
             const tfoot = document.getElementById('grades-footer');
             let finalAvg = 0;
             const displayRank = myRankIndex > 0 ? `${myRankIndex} / ${totalElevesComptes}` : "-";
@@ -755,8 +747,9 @@ RENOVATION</textarea>
                 `;
             }
 
+            // Étape 4 : Coche automatique des décisions et mentions d'honneur
             if (totalElevesComptes > 0 && ((isPrimaireMode && totalPrimBareme > 0) || (!isPrimaireMode && totalCoef > 0))) {
-                const checkAvg = isPrimaireMode ? finalAvg * 2 : finalAvg; 
+                const checkAvg = isPrimaireMode ? finalAvg * 2 : finalAvg; // Calibrage systématique sur base 20 pour la logique des cases
 
                 if (checkAvg >= 12) {
                     document.getElementById('chk-satisfaisant').textContent = 'X';
