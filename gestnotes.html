@@ -26,16 +26,19 @@
         .grade-row-item:nth-child(even) { background-color: #f1f5f9; }
 
         /* ==========================================================================
-           FONCTIONS ET STYLES D'IMPRESSION DU BULLETIN (A4 PORTRAIT COHÉRENT)
+           FONCTIONS ET STYLES D'IMPRESSION DU BULLETIN (A4 PORTRAIT NET ET PROPRE)
            ========================================================================== */
         @media print {
+            /* On masque absolument tout le reste de l'application */
             nav, 
-            .grid.grid-cols-2, 
+            .grid,
+            .grid.grid-cols-2,
+            .grid.grid-cols-3,
             .lg\:col-span-4, 
             #subjects-config-list, 
             .bg-slate-50.rounded-2xl, 
             #welcome-msg,
-            a, button,
+            a, button, input, select, label, datalist,
             .p-4.sm\3Ap-5.bg-slate-900,
             #importFile { 
                 display: none !important; 
@@ -43,7 +46,7 @@
 
             @page {
                 size: A4 portrait;
-                margin: 15mm 15mm 15mm 15mm;
+                margin: 15mm;
             }
             body {
                 background: white !important;
@@ -51,16 +54,14 @@
                 font-size: 12px;
             }
 
-            .lg\:col-span-8, #editor-panel {
+            /* On force le panneau d'édition (le bulletin) à occuper tout l'espace d'impression */
+            .lg\:col-span-8, #editor-panel, #editor-panel * {
                 display: block !important;
                 width: 100% !important;
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                margin: 0 !important;
-                padding: 0 !important;
+                position: static !important;
                 box-shadow: none !important;
                 border: none !important;
+                background: transparent !important;
             }
 
             .bg-white.rounded-3xl.shadow-xl {
@@ -72,9 +73,10 @@
             #grades-grid-container {
                 background: transparent !important;
                 padding: 0 !important;
-                margin-top: 20px;
+                margin-top: 20px !important;
             }
 
+            /* En-tête officiel du bulletin imprimé */
             #editor-panel::before {
                 content: "REPUBLIQUE DU SENEGAL\nMinistère de l'Éducation Nationale\n-------------------\nBULLETIN DE NOTES";
                 white-space: pre-line;
@@ -93,6 +95,10 @@
                 border-radius: 0 !important;
                 box-shadow: none !important;
                 padding: 8px 0 !important;
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
                 background: transparent !important;
             }
 
@@ -102,6 +108,7 @@
                 font-size: 12px !important;
                 width: auto !important;
                 height: auto !important;
+                pointer-events: none;
             }
             
             .input-moy {
@@ -109,6 +116,7 @@
                 color: black !important;
                 font-size: 13px !important;
                 font-weight: bold !important;
+                border: none !important;
             }
 
             input::placeholder {
@@ -122,12 +130,17 @@
                 border-radius: 8px !important;
                 margin-top: 30px !important;
                 padding: 15px !important;
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
             }
 
             #student-avg-display {
                 background: black !important;
                 color: white !important;
                 border-radius: 6px !important;
+                padding: 4px 12px !important;
             }
 
             #grades-grid::after {
@@ -264,9 +277,9 @@
                                 <h2 id="current-student-display" class="text-base sm:text-lg font-black uppercase tracking-tight text-emerald-400">---</h2>
                                 <p id="current-class-display" class="text-slate-400 text-[9px] font-black uppercase tracking-widest"></p>
                             </div>
-                            <a href="bulletin.pdf" target="_blank" class="w-full sm:w-auto bg-indigo-500 hover:bg-indigo-400 px-4 py-2.5 rounded-xl font-black text-[10px] transition uppercase text-center block">
-                                Bulletin PDF
-                            </a>
+                            <button onclick="window.print()" class="w-full sm:w-auto bg-indigo-500 hover:bg-indigo-400 px-4 py-2.5 rounded-xl font-black text-[10px] transition uppercase text-center block">
+                                Imprimer le Bulletin
+                            </button>
                         </div>
                         
                         <div class="p-3 sm:p-6 bg-slate-50 overflow-x-auto space-y-3" id="grades-grid-container">
@@ -608,7 +621,6 @@
             };
 
             appState.classes[currentClassId].students.push(newStudent);
-            // Tri par nom puis prénom
             appState.classes[currentClassId].students.sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
             
             saveToStorage();
@@ -661,7 +673,6 @@
             
             appState.classes[currentClassId].students = appState.classes[currentClassId].students.filter(s => s.id !== studentId);
             
-            // Nettoyage des notes
             ["1", "2", "3"].forEach(p => {
                 if (appState.classes[currentClassId].grades[p]?.[studentId]) {
                     delete appState.classes[currentClassId].grades[p][studentId];
@@ -728,7 +739,6 @@
             reader.readAsText(file);
         }
 
-        // Initialisation de la page au chargement
         window.onload = function() {
             changeLevel();
         };
