@@ -123,7 +123,7 @@
                             <option value="Seconde">Seconde</option><option value="Première">Première</option>
                             <option value="Terminale">Terminale</option>
                         </select>
-                        <input type="text" id="new-class-section" class="w-16 bg-white border border-slate-200 rounded-md px-2 py-1.5 text-xs text-center uppercase font-bold focus:outline-none" placeholder="A, B, S1...">
+                        <input type="text" id="new-class-section" class="w-16 bg-white border border-slate-200 rounded-md px-2 py-1.5 text-xs text-center uppercase font-bold focus:outline-none" placeholder="A, B...">
                     </div>
                     <button onclick="addClass()" class="w-full mt-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold py-1.5 rounded-md transition">
                         + Ajouter la classe
@@ -152,7 +152,7 @@
                             <h1 id="active-class-title" class="text-2xl font-bold text-slate-800 tracking-tight">-</h1>
                             <span id="active-class-type" class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md font-semibold border border-indigo-100">Régime Général</span>
                         </div>
-                        <p class="text-slate-400 text-xs mt-1">Identifiant système unique : <span id="active-class-key" class="font-mono bg-slate-100 text-slate-600 px-1 rounded">-</span></p>
+                        <p class="text-slate-400 text-xs mt-1">Identifiant unique : <span id="active-class-key" class="font-mono bg-slate-100 text-slate-600 px-1 rounded">-</span></p>
                     </div>
                     
                     <div class="flex items-center gap-2 self-end sm:self-auto">
@@ -160,7 +160,7 @@
                             <i class="fa-solid fa-file-csv text-emerald-600"></i> Tout exporter (CSV)
                         </button>
                         <button onclick="printAllReportCards()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2.5 rounded-lg shadow-sm transition flex items-center gap-2">
-                            <i class="fa-solid fa-print"></i> Tout imprimer (Bulletins)
+                            <i class="fa-solid fa-print"></i> Tout imprimer
                         </button>
                         <button onclick="deleteClass()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2.5 rounded-lg transition" title="Supprimer la classe">
                             <i class="fa-solid fa-trash-can"></i>
@@ -187,7 +187,7 @@
                             <input type="text" id="stud-firstname" class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="Prénom de l'élève">
                             <input type="text" id="stud-lastname" class="w-full sm:w-48 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none uppercase font-bold" placeholder="NOM">
                             <input type="text" id="stud-matricule" class="w-full sm:w-36 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="Matricule">
-                            <input type="text" id="stud-birth" class="w-full sm:w-40 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="Né(e) le (Ex: 12/04/2012)">
+                            <input type="text" id="stud-birth" class="w-full sm:w-40 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="Né(e) le (JJ/MM/AAAA)">
                             <button onclick="addStudent()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2 rounded-lg shadow-sm transition whitespace-nowrap">
                                 + Inscrire
                             </button>
@@ -209,7 +209,7 @@
 
                     <div id="tab-content-subjects" class="p-6 hidden space-y-6">
                         <div class="flex flex-col sm:flex-row gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                            <input type="text" id="sub-name" class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none font-medium" placeholder="Intitulé de la matière (Ex: Mathématiques, Histoire-Géo...)">
+                            <input type="text" id="sub-name" class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none font-medium" placeholder="Intitulé de la matière">
                             <div class="flex items-center gap-2 bg-white px-3 py-2 border border-slate-200 rounded-lg shrink-0">
                                 <label class="text-xs font-semibold text-slate-500 whitespace-nowrap">Coef Général :</label>
                                 <input type="number" id="sub-coef" class="w-12 text-center text-sm font-bold focus:outline-none" value="2" min="1">
@@ -218,14 +218,6 @@
                                 + Ajouter
                             </button>
                         </div>
-                        
-                        <div class="p-3 bg-amber-50 rounded-lg border border-amber-100 text-amber-800 text-xs flex items-start gap-2">
-                            <i class="fa-solid fa-circle-info mt-0.5 shrink-0"></i>
-                            <div>
-                                <strong>Configuration automatique des sous-coefficients d'évaluation :</strong> Chaque matière créée applique par défaut les pondérations suivantes pour le calcul de sa moyenne : <strong>Devoir 1 (coef 1)</strong>, <strong>Devoir 2 (coef 1)</strong>, et <strong>Composition (coef 2)</strong>.
-                            </div>
-                        </div>
-
                         <div class="overflow-x-auto border border-slate-100 rounded-xl">
                             <table class="w-full text-left border-collapse text-sm">
                                 <thead>
@@ -243,11 +235,11 @@
                     <div id="tab-content-grades" class="p-6 hidden space-y-4">
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-4">
                             <div class="flex items-center gap-3 w-full sm:w-auto">
-                                <label class="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Filtrer par discipline :</label>
+                                <label class="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Discipline :</label>
                                 <select id="grade-filter-subject" onchange="renderGradesGrid()" class="w-full sm:w-64 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:border-indigo-500"></select>
                             </div>
                             <div class="text-xs text-slate-400 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 font-medium">
-                                <i class="fa-solid fa-cloud-arrow-up text-indigo-500 mr-1"></i> Sauvegarde automatique immédiate en local.
+                                <i class="fa-solid fa-cloud-arrow-up text-indigo-500 mr-1"></i> Sauvegarde automatique active.
                             </div>
                         </div>
 
@@ -280,7 +272,6 @@
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
     <script>
-        // STRUCTURE DE L'ÉTAT LOCAL CENTRALISÉ
         let appState = {
             settings: { year: "2025-2026", period: "1" },
             classes: {}
@@ -291,17 +282,15 @@
         let currentFullKey = ""; 
         let activeTab = "students";
 
-        // CHARGEMENT INITIAL DES DONNÉES SÉCURISÉ
         window.addEventListener('DOMContentLoaded', () => {
             const savedData = localStorage.getItem('gestnotes_data');
             if (savedData) {
                 try {
                     appState = JSON.parse(savedData);
-                    // Rétrocompatibilité structurelle si nécessaire
                     if (!appState.settings) appState.settings = { year: "2025-2026", period: "1" };
                     if (!appState.classes) appState.classes = {};
                 } catch (e) {
-                    console.error("Erreur de décodage des données locales, réinitialisation.", e);
+                    console.error(e);
                 }
             }
             applyGlobalSettingsToUI();
@@ -313,18 +302,15 @@
             localStorage.setItem('gestnotes_data', JSON.stringify(appState));
         }
 
-        // DESIGN SYSTEM : GESTION DES TOASTS
         function showToast(message, type = "success") {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast-animate text-xs font-semibold px-4 py-3 rounded-xl shadow-lg border text-white flex items-center gap-2 min-w-[200px] ${
                 type === "error" ? "bg-rose-600 border-rose-500" : "bg-slate-900 border-slate-800"
             }`;
-            
             const icon = type === "error" ? "circle-exclamation" : "circle-check";
             toast.innerHTML = `<i class="fa-solid fa-${icon}"></i> <span>${message}</span>`;
             container.appendChild(toast);
-            
             setTimeout(() => {
                 toast.style.opacity = '0';
                 toast.style.transform = 'translateY(10px)';
@@ -333,7 +319,6 @@
             }, 3000);
         }
 
-        // PARAMÈTRES SCOLAIRES
         function applyGlobalSettingsToUI() {
             document.getElementById('cfg-year').value = appState.settings.year;
             document.getElementById('cfg-period').value = appState.settings.period;
@@ -360,23 +345,17 @@
             if (currentFullKey) renderGradesGrid();
         }
 
-        // GESTION DES STRUCTURES DE CLASSE
         function addClass() {
             const lvl = document.getElementById('new-class-level').value;
             const sec = document.getElementById('new-class-section').value.trim().toUpperCase();
             
             if (!lvl) return showToast("Sélectionnez un niveau", "error");
-            if (!sec) return showToast("Spécifiez la section/série (Ex: A, B, S1)", "error");
+            if (!sec) return showToast("Spécifiez la section (Ex: A, B)", "error");
             
             const targetKey = `${lvl}_${sec}`;
             if (appState.classes[targetKey]) return showToast("Cette classe existe déjà", "error");
             
-            appState.classes[targetKey] = {
-                students: [],
-                subjects: [],
-                grades: {}
-            };
-            
+            appState.classes[targetKey] = { students: [], subjects: [], grades: {} };
             saveState();
             renderClassesList();
             selectClass(lvl, sec);
@@ -415,32 +394,26 @@
             currentClass = lvl;
             currentSection = sec;
             currentFullKey = `${lvl}_${sec}`;
-            
             renderClassesList();
             updateUIState();
             applyGlobalSettingsToUI();
-            
-            if (activeTab === 'grades') {
-                updateSubjectFilterOptions();
-            }
+            if (activeTab === 'grades') updateSubjectFilterOptions();
             switchTab(activeTab);
-            showToast(`Navigation : ${lvl} ${sec}`);
         }
 
         function deleteClass() {
-            if (!confirm(`Supprimer définitivement la classe ${currentClass} ${currentSection} ainsi que l'ensemble de ses données de notes ?`)) return;
+            if (!confirm(`Supprimer définitivement la classe ${currentClass} ${currentSection} ?`)) return;
             delete appState.classes[currentFullKey];
             currentClass = ""; currentSection = ""; currentFullKey = "";
             saveState();
             renderClassesList();
             updateUIState();
-            showToast("Classe purgée du système");
+            showToast("Classe supprimée");
         }
 
         function updateUIState() {
             const emptyS = document.getElementById('empty-state');
             const activeS = document.getElementById('active-state');
-            
             if (!currentFullKey) {
                 emptyS.classList.remove('hidden');
                 activeS.classList.add('hidden');
@@ -449,13 +422,11 @@
                 activeS.classList.remove('hidden');
                 document.getElementById('active-class-title').textContent = `${currentClass} ${currentSection}`;
                 document.getElementById('active-class-key').textContent = currentFullKey;
-                
                 const isPrim = ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(currentClass);
                 document.getElementById('active-class-type').textContent = isPrim ? "Enseignement Élémentaire" : "Enseignement Moyen / Secondaire";
             }
         }
 
-        // NAVIGATION INTERNE PAR ONGLETS
         function switchTab(tId) {
             activeTab = tId;
             ['students', 'subjects', 'grades'].forEach(t => {
@@ -484,7 +455,6 @@
             }
         }
 
-        // GESTION DES INSCRIPTIONS ÉLÈVES
         function addStudent() {
             const fn = document.getElementById('stud-firstname').value.trim();
             const ln = document.getElementById('stud-lastname').value.trim().toUpperCase();
@@ -494,16 +464,11 @@
             if (!fn || !ln) return showToast("Le prénom et le nom sont requis", "error");
             
             const cData = appState.classes[currentFullKey];
-            const newId = 'st_' + Date.now();
-            
-            cData.students.push({ id: newId, firstName: fn, lastName: ln, matricule: mat, birthDate: bd, absences: 0, retards: 0 });
+            cData.students.push({ id: 'st_' + Date.now(), firstName: fn, lastName: ln, matricule: mat, birthDate: bd, absences: 0, retards: 0 });
             cData.students.sort((a, b) => a.lastName.localeCompare(b.lastName));
             
             saveState();
             renderStudentsTable();
-            document.getElementById('badge-count-students').textContent = cData.students.length;
-            renderClassesList();
-            
             document.getElementById('stud-firstname').value = "";
             document.getElementById('stud-lastname').value = "";
             document.getElementById('stud-matricule').value = "";
@@ -512,28 +477,23 @@
         }
 
         function removeStudent(sId) {
-            if (!confirm("Radié cet élève ? Toutes ses notes associées seront effacées de cette classe.")) return;
+            if (!confirm("Radié cet élève ?")) return;
             const cData = appState.classes[currentFullKey];
             cData.students = cData.students.filter(s => s.id !== sId);
             if (cData.grades[sId]) delete cData.grades[sId];
-            
             saveState();
             renderStudentsTable();
-            document.getElementById('badge-count-students').textContent = cData.students.length;
-            renderClassesList();
-            showToast("Élève retiré des registres");
+            showToast("Élève radié");
         }
 
         function renderStudentsTable() {
             const tbody = document.getElementById('table-students-body');
             tbody.innerHTML = "";
             const students = appState.classes[currentFullKey]?.students || [];
-            
             if (students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400 font-medium text-xs">Aucun élève inscrit dans cette classe.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400 font-medium text-xs">Aucun élève inscrit.</td></tr>`;
                 return;
             }
-            
             students.forEach(s => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/50 transition";
@@ -549,47 +509,28 @@
             });
         }
 
-        // GESTION DES DISCIPLINES
         function addSubject() {
             const name = document.getElementById('sub-name').value.trim();
             const coef = parseInt(document.getElementById('sub-coef').value) || 2;
-            
-            if (!name) return showToast("Veuillez donner un nom à la matière", "error");
+            if (!name) return showToast("Veuillez spécifier la matière", "error");
             
             const cData = appState.classes[currentFullKey];
-            if (cData.subjects.some(s => s.name.toLowerCase() === name.toLowerCase())) {
-                return showToast("Cette matière existe déjà", "error");
-            }
+            if (cData.subjects.some(s => s.name.toLowerCase() === name.toLowerCase())) return showToast("Existe déjà", "error");
             
-            cData.subjects.push({
-                id: 'sub_' + Date.now(),
-                name: name,
-                coef: coef,
-                coefD1: 1, // Sous-coefficient Devoir 1 par défaut
-                coefD2: 1, // Sous-coefficient Devoir 2 par défaut
-                coefC: 2   // Sous-coefficient Compo par défaut
-            });
-            
+            cData.subjects.push({ id: 'sub_' + Date.now(), name: name, coef: coef, coefD1: 1, coefD2: 1, coefC: 2 });
             saveState();
             renderSubjectsTable();
-            document.getElementById('badge-count-subjects').textContent = cData.subjects.length;
             document.getElementById('sub-name').value = "";
             showToast(`Matière ajoutée : ${name}`);
         }
 
         function removeSubject(subId) {
-            if (!confirm("Supprimer cette discipline ? Les notes saisies dans cette matière seront perdues.")) return;
+            if (!confirm("Supprimer cette discipline ?")) return;
             const cData = appState.classes[currentFullKey];
             cData.subjects = cData.subjects.filter(s => s.id !== subId);
-            
-            // Nettoyage des notes associées
-            Object.keys(cData.grades).forEach(sId => {
-                if (cData.grades[sId][subId]) delete cData.grades[sId][subId];
-            });
-            
+            Object.keys(cData.grades).forEach(sId => { if (cData.grades[sId][subId]) delete cData.grades[sId][subId]; });
             saveState();
             renderSubjectsTable();
-            document.getElementById('badge-count-subjects').textContent = cData.subjects.length;
             showToast("Discipline supprimée");
         }
 
@@ -597,12 +538,10 @@
             const tbody = document.getElementById('table-subjects-body');
             tbody.innerHTML = "";
             const subjects = appState.classes[currentFullKey]?.subjects || [];
-            
             if (subjects.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="py-8 text-center text-slate-400 font-medium text-xs">Aucune matière configurée pour le moment.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="py-8 text-center text-slate-400 font-medium text-xs">Aucune matière configurée.</td></tr>`;
                 return;
             }
-            
             subjects.forEach(s => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/50 transition text-center";
@@ -617,65 +556,40 @@
             });
         }
 
-        // GRILLE DE SAISIE ET ALGORITHME DE CALCUL DES MOYENNES
         function updateSubjectFilterOptions() {
             const select = document.getElementById('grade-filter-subject');
             select.innerHTML = "";
             const subjects = appState.classes[currentFullKey]?.subjects || [];
-            
             subjects.forEach(s => {
                 const opt = document.createElement('option');
-                opt.value = s.id;
-                opt.textContent = s.name;
+                opt.value = s.id; opt.textContent = s.name;
                 select.appendChild(opt);
             });
         }
 
-        // FONCTION CRITIQUE : CALCUL DU RANG ET MOYENNE PAR MATIÈRE
         function calculateRanks(subId) {
             const classData = appState.classes[currentFullKey];
             if (!classData || !subId) return {};
-
             const subject = classData.subjects.find(s => s.id === subId);
             if (!subject) return {};
 
             let scores = [];
-
             classData.students.forEach(student => {
                 const g = classData.grades[student.id]?.[subId] || {};
-                let totalPoints = 0;
-                let totalCoefs = 0;
-
-                if (g.d1 !== undefined && g.d1 !== '') {
-                    totalPoints += Number(g.d1) * (subject.coefD1 || 1);
-                    totalCoefs += (subject.coefD1 || 1);
-                }
-                if (g.d2 !== undefined && g.d2 !== '') {
-                    totalPoints += Number(g.d2) * (subject.coefD2 || 1);
-                    totalCoefs += (subject.coefD2 || 1);
-                }
-                if (g.c !== undefined && g.c !== '') {
-                    totalPoints += Number(g.c) * (subject.coefC || 2);
-                    totalCoefs += (subject.coefC || 2);
-                }
-
-                if (totalCoefs > 0) {
-                    scores.push({ sId: student.id, avg: totalPoints / totalCoefs });
-                }
+                let totalPoints = 0, totalCoefs = 0;
+                if (g.d1 !== undefined && g.d1 !== '') { totalPoints += Number(g.d1) * (subject.coefD1 || 1); totalCoefs += (subject.coefD1 || 1); }
+                if (g.d2 !== undefined && g.d2 !== '') { totalPoints += Number(g.d2) * (subject.coefD2 || 1); totalCoefs += (subject.coefD2 || 1); }
+                if (g.c !== undefined && g.c !== '') { totalPoints += Number(g.c) * (subject.coefC || 2); totalCoefs += (subject.coefC || 2); }
+                if (totalCoefs > 0) scores.push({ sId: student.id, avg: totalPoints / totalCoefs });
             });
 
-            // Tri décroissant pour le classement scolaire
             scores.sort((a, b) => b.avg - a.avg);
-
             let ranks = {};
             let currentRank = 1;
             scores.forEach((item, index) => {
-                if (index > 0 && item.avg < scores[index - 1].avg) {
-                    currentRank = index + 1; // Gestion rigoureuse des ex-æquo (saute le rang intermédiaire)
-                }
+                if (index > 0 && item.avg < scores[index - 1].avg) currentRank = index + 1;
                 ranks[item.sId] = currentRank;
             });
-
             return ranks;
         }
 
@@ -690,30 +604,56 @@
             return "Excellent";
         }
 
+        /* ----------------------------------------------------
+           FONCTION LOGIQUE CORRIGÉE ET ERGONOMIQUE POUR D1, D2, CP
+           ---------------------------------------------------- */
         function updateGradeValue(studentId, subId, field, val) {
             const classData = appState.classes[currentFullKey];
+            if (!classData || !classData.grades) return;
             if (!classData.grades[studentId]) classData.grades[studentId] = {};
             if (!classData.grades[studentId][subId]) classData.grades[studentId][subId] = {};
             
+            // Extraction ciblée du champ input modifié dans l'arbre HTML
+            const inputEl = document.querySelector(`input[oninput*="'${studentId}'"][oninput*="'${subId}'"][oninput*="'${field}'"]`) 
+                            || (window.event ? window.event.target : null);
+
+            // 1. Gestion de la purge / Effacement total du champ
             if (val.trim() === "") {
                 delete classData.grades[studentId][subId][field];
-            } else {
-                let num = parseFloat(val.replace(',', '.'));
-                if (isNaN(num) || num < 0 || num > 20) return; // Sécurité de saisie sur 20
-                classData.grades[studentId][subId][field] = num;
+                if (inputEl) inputEl.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-700');
+                saveState();
+                refreshRowCalculations(studentId, subId);
+                return;
             }
-            saveState();
+
+            // 2. Alignement et substitution de la virgule vers le point numérique
+            let sanitizedVal = val.replace(',', '.');
             
-            // Recalcul en direct de la ligne sans re-render complet pour la fluidité du curseur
+            // Protection : Tolérer la phase intermédiaire d'écriture (un point isolé ou final comme "14.")
+            if (sanitizedVal === '.' || sanitizedVal.endsWith('.')) {
+                if (inputEl) inputEl.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-700');
+                return; 
+            }
+
+            let num = parseFloat(sanitizedVal);
+
+            // 3. Validation de l'intervalle légal sur 20
+            if (isNaN(num) || num < 0 || num > 20) {
+                if (inputEl) inputEl.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-700');
+                return; // Protection : La note invalide n'est pas envoyée à l'état applicatif
+            }
+
+            // 4. Validation réussie : Restauration des styles natifs et mise à jour
+            if (inputEl) inputEl.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-700');
+            
+            classData.grades[studentId][subId][field] = num;
+            saveState();
             refreshRowCalculations(studentId, subId);
         }
 
         function updateAttendance(studentId, field, val) {
             const student = appState.classes[currentFullKey].students.find(s => s.id === studentId);
-            if (student) {
-                student[field] = parseInt(val) || 0;
-                saveState();
-            }
+            if (student) { student[field] = parseInt(val) || 0; saveState(); }
         }
 
         function refreshRowCalculations(studentId, subId) {
@@ -721,9 +661,7 @@
             const subject = classData.subjects.find(s => s.id === subId);
             const g = classData.grades[studentId]?.[subId] || {};
             
-            let totalPoints = 0;
-            let totalCoefs = 0;
-
+            let totalPoints = 0, totalCoefs = 0;
             if (g.d1 !== undefined && g.d1 !== '') { totalPoints += g.d1 * (subject.coefD1 || 1); totalCoefs += (subject.coefD1 || 1); }
             if (g.d2 !== undefined && g.d2 !== '') { totalPoints += g.d2 * (subject.coefD2 || 1); totalCoefs += (subject.coefD2 || 1); }
             if (g.c !== undefined && g.c !== '') { totalPoints += g.c * (subject.coefC || 2); totalCoefs += (subject.coefC || 2); }
@@ -737,12 +675,9 @@
                 mCell.className = `font-bold text-center ${finalAvg >= 10 ? 'text-emerald-600' : 'text-rose-600'}`;
                 aCell.textContent = getAppreciation(finalAvg);
             } else {
-                mCell.textContent = "-";
-                mCell.className = "text-slate-300 text-center";
-                aCell.textContent = "";
+                mCell.textContent = "-"; mCell.className = "text-slate-300 text-center"; aCell.textContent = "";
             }
 
-            // Rafraîchissement des rangs de la classe pour cette matière spécifique
             const ranks = calculateRanks(subId);
             classData.students.forEach(s => {
                 const rCell = document.getElementById(`rank-${s.id}`);
@@ -753,7 +688,6 @@
         function renderGradesGrid() {
             const tbody = document.getElementById('table-grades-body');
             tbody.innerHTML = "";
-            
             const classData = appState.classes[currentFullKey];
             const subId = document.getElementById('grade-filter-subject').value;
             
@@ -767,9 +701,7 @@
 
             classData.students.forEach(s => {
                 const g = classData.grades[s.id]?.[subId] || {};
-                
-                let totalPoints = 0;
-                let totalCoefs = 0;
+                let totalPoints = 0, totalCoefs = 0;
                 if (g.d1 !== undefined && g.d1 !== '') { totalPoints += g.d1 * (subject.coefD1 || 1); totalCoefs += (subject.coefD1 || 1); }
                 if (g.d2 !== undefined && g.d2 !== '') { totalPoints += g.d2 * (subject.coefD2 || 1); totalCoefs += (subject.coefD2 || 1); }
                 if (g.c !== undefined && g.c !== '') { totalPoints += g.c * (subject.coefC || 2); totalCoefs += (subject.coefC || 2); }
@@ -781,16 +713,15 @@
                     displayAvg = finalAvg.toFixed(2).replace('.', ',');
                     avgClass = finalAvg >= 10 ? "font-bold text-emerald-600" : "font-bold text-rose-600";
                 }
-
                 const displayRank = ranks[s.id] ? ranks[s.id] + (ranks[s.id] === 1 ? 'er' : 'e') : '-';
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/40 transition text-center";
                 tr.innerHTML = `
                     <td class="py-2 px-4 text-left font-semibold text-slate-800">${s.lastName} <span class="font-normal text-slate-600">${s.firstName}</span></td>
-                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-medium focus:bg-white" value="${g.d1 !== undefined ? g.d1 : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'd1', this.value)"></td>
-                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-medium focus:bg-white" value="${g.d2 !== undefined ? g.d2 : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'd2', this.value)"></td>
-                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-bold text-indigo-700 focus:bg-white" value="${g.c !== undefined ? g.c : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'c', this.value)"></td>
+                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-medium focus:bg-white transition" value="${g.d1 !== undefined ? g.d1 : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'd1', this.value)"></td>
+                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-medium focus:bg-white transition" value="${g.d2 !== undefined ? g.d2 : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'd2', this.value)"></td>
+                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-bold text-indigo-700 focus:bg-white transition" value="${g.c !== undefined ? g.c : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'c', this.value)"></td>
                     <td class="py-2 px-4 ${avgClass}" id="avg-${s.id}">${displayAvg}</td>
                     <td class="py-2 px-4 text-xs font-bold text-slate-600" id="rank-${s.id}">${displayRank}</td>
                     <td class="py-2 px-4 text-left text-xs text-slate-500 font-medium font-mono" id="app-${s.id}">${getAppreciation(totalCoefs > 0 ? (totalPoints / totalCoefs) : null)}</td>
@@ -804,7 +735,6 @@
             });
         }
 
-        // EDITIONS LOGICIELLES ET OUVERTURE DES BULLETINS
         window.printReportCard = function (studentId) {
             window.open(`bulletin.html?class=${encodeURIComponent(currentFullKey)}&student=${encodeURIComponent(studentId)}`, '_blank');
         };
@@ -812,27 +742,19 @@
         window.printAllReportCards = function () {
             const students = appState.classes[currentFullKey]?.students || [];
             if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
-            if (students.length > 6 && !confirm(`Vous vous apprêtez à ouvrir ${students.length} onglets de bulletins simultanément. Continuer ?`)) return;
-            
-            students.forEach((s, i) => {
-                setTimeout(() => printReportCard(s.id), i * 250);
-            });
-            showToast("Ouverture groupée lancée...");
+            if (students.length > 6 && !confirm(`Ouvrir ${students.length} bulletins ?`)) return;
+            students.forEach((s, i) => setTimeout(() => printReportCard(s.id), i * 250));
         };
 
-        // PIPELINE D'EXPORTATION COMPATIBLE EXCEL (FR)
         window.exportCSV = function (studentId) {
             const classData = appState.classes[currentFullKey];
             const student = classData.students.find(s => s.id === studentId);
             if (!student) return;
 
-            // En-tête du fichier CSV
             let csv = `Discipline;Devoir 1;Devoir 2;Composition;Moyenne Matiere;Coefficient;Points Coef;Rang;Appreciation\n`;
-
             classData.subjects.forEach(sub => {
                 const g = classData.grades[studentId]?.[sub.id] || {};
                 let p = 0, c = 0;
-                
                 const d1 = g.d1 !== undefined ? g.d1 : '';
                 const d2 = g.d2 !== undefined ? g.d2 : '';
                 const comp = g.c !== undefined ? g.c : '';
@@ -848,17 +770,10 @@
                     ptsCoef = (m * sub.coef).toFixed(2).replace('.', ',');
                     app = getAppreciation(m);
                 }
-
                 csv += `${sub.name};${d1};${d2};${comp};${subAvg};${sub.coef};${ptsCoef};;${app}\n`;
             });
 
-            // Lignes de métadonnées de l'élève
-            csv += `\nAnnee Scolaire;${appState.settings.year}\n`;
-            csv += `Periode;${appState.settings.period}\n`;
-            csv += `Eleve;${student.lastName} ${student.firstName}\n`;
-            csv += `Absences;${student.absences || 0}\n`;
-            csv += `Retards;${student.retards || 0}\n`;
-
+            csv += `\nAnnee Scolaire;${appState.settings.year}\nPeriode;${appState.settings.period}\nEleve;${student.lastName} ${student.firstName}\nAbsences;${student.absences || 0}\nRetards;${student.retards || 0}\n`;
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -869,10 +784,8 @@
         window.exportAllCSV = function () {
             const students = appState.classes[currentFullKey]?.students || [];
             if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
-            students.forEach((s, i) => {
-                setTimeout(() => exportCSV(s.id), i * 250);
-            });
-            showToast("Téléchargement des fichiers CSV démarré.");
+            students.forEach((s, i) => setTimeout(() => exportCSV(s.id), i * 250));
+            showToast("Téléchargement lancé...");
         };
     </script>
 </body>
