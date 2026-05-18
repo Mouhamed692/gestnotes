@@ -1,769 +1,810 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GestNotes Pro - Auto-Configuration</title>
+    <title>GestNotes – Administration scolaire</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="manifest" href="./manifest.json">
-    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
-        .student-item { display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; cursor: pointer; }
-        .btn-delete-student { display: none; color: #f87171; padding: 4px; border-radius: 6px; }
-        .student-item:hover .btn-delete-student { display: block; }
-        .grade-input {
-            width: 50px; height: 40px; border: 2px solid #e2e8f0; background: #f8fafc;
-            text-align: center; font-weight: 800; font-size: 14px; border-radius: 10px; transition: all 0.2s;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
         }
-        @media (min-width: 640px) {
-            .grade-input { width: 60px; height: 45px; font-size: 16px; }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-        .grade-input:focus { border-color: #4f46e5; background: white; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); outline: none; }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .grade-row-item:nth-child(odd) { background-color: #ffffff; }
-        .grade-row-item:nth-child(even) { background-color: #f1f5f9; }
 
-        /* ==========================================================================
-           FONCTIONS ET STYLES D'IMPRESSION DU BULLETIN (CORRECTION FINALE)
-           ========================================================================== */
-        @media print {
-            nav, 
-            .container > div:first-child, 
-            .grid, 
-            .lg\:col-span-4,
-            #welcome-msg,
-            #subjects-config-list,
-            button, input, select, label, datalist {
-                display: none !important;
-                opacity: 0 !important;
-                visibility: hidden !important;
-                height: 0 !important;
-                margin: 0 !important;
-                padding: 0 !important;
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
             }
 
-            @page {
-                size: A4 portrait;
-                margin: 20mm 15mm 20mm 15mm;
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
             }
 
-            body {
-                background: white !important;
-                color: black !important;
-                font-size: 12px !important;
+            to {
+                opacity: 0;
             }
+        }
 
-            .container {
-                max-width: 100% !important;
-                width: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
+        .toast-enter {
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
 
-            .lg\:col-span-8, #editor-panel {
-                display: block !important;
-                opacity: 1 !important;
-                visibility: visible !important;
-                width: 100% !important;
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-                background: transparent !important;
-            }
+        .toast-leave {
+            animation: fadeOut 0.4s ease-out forwards;
+        }
 
-            .bg-slate-900.text-white {
-                display: none !important;
-            }
+        .sticky-left-shadow {
+            box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.05);
+        }
 
-            .bg-white.rounded-3xl.shadow-xl {
-                border: none !important;
-                box-shadow: none !important;
-                background: transparent !important;
-                padding: 0 !important;
-            }
-
-            #grades-grid-container {
-                background: transparent !important;
-                padding: 0 !important;
-                margin-top: 0 !important;
-            }
-
-            #grades-grid::before {
-                content: "REPUBLIQUE DU SENEGAL\nMinistère de l'Éducation Nationale\n-------------------\nBULLETIN DE NOTES";
-                white-space: pre-line;
-                display: block;
-                text-align: center;
-                font-weight: 800;
-                font-size: 15px;
-                margin-bottom: 35px;
-                line-height: 1.5;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-            .grade-row-item {
-                page-break-inside: avoid;
-                border-bottom: 1px solid #94a3b8 !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-                padding: 10px 0 !important;
-                display: flex !important;
-                flex-direction: row !important;
-                justify-content: space-between !important;
-                align-items: center !important;
-                background: transparent !important;
-            }
-
-            .grade-input {
-                display: none !important;
-            }
-            
-            .input-moy {
-                background: transparent !important;
-                color: black !important;
-                font-size: 14px !important;
-                font-weight: bold !important;
-                border: none !important;
-                width: auto !important;
-                text-align: right !important;
-            }
-
-            #student-summary-row {
-                background: #f1f5f9 !important;
-                color: black !important;
-                border: 2px solid #000000 !important;
-                border-radius: 8px !important;
-                margin-top: 40px !important;
-                padding: 15px !important;
-                display: flex !important;
-                flex-direction: row !important;
-                justify-content: space-between !important;
-                align-items: center !important;
-            }
-
-            #student-avg-display {
-                background: #000000 !important;
-                color: #ffffff !important;
-                border-radius: 6px !important;
-                padding: 6px 16px !important;
-                font-size: 16px !important;
-                font-weight: 900 !important;
-            }
-
-            #grades-grid::after {
-                content: "Observations du Directeur :                                         Signature :";
-                display: block;
-                margin-top: 60px;
-                font-weight: bold;
-                font-size: 13px;
-                border-top: 1px dashed #94a3b8;
-                padding-top: 20px;
-            }
+        .sticky-right-shadow {
+            box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
-<body>
-    
-    <nav class="bg-indigo-950 text-white p-4 shadow-xl sticky top-0 z-50">
-        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div class="flex items-center gap-3">
-                <div class="bg-emerald-500 p-2 rounded-lg font-black italic text-white text-xs">GN</div>
-                <h1 class="text-xs font-black uppercase tracking-widest text-emerald-400">GestNotes Pro - Multi-Périodes</h1>
-            </div>
-            <div class="flex gap-2 w-full sm:w-auto justify-end">
-                <button onclick="exportData()" class="flex-1 sm:flex-none bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-[9px] font-bold uppercase">Exporter</button>
-                <button onclick="document.getElementById('importFile').click()" class="flex-1 sm:flex-none bg-indigo-600 px-3 py-2 rounded-lg text-[9px] font-bold uppercase text-center">Importer</button>
-                <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
-            </div>
-        </div>
-    </nav>
 
-    <div class="container mx-auto p-3 sm:p-4 lg:p-8">
-        
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 bg-white p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-200 items-end">
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Classe / Niveau</label>
-                <select id="class-level" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-xs sm:text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500">
-                    <optgroup label="Primaire">
-                        <option value="CI">CI</option><option value="CP">CP</option><option value="CE1">CE1</option>
-                        <option value="CE2">CE2</option><option value="CM1">CM1</option><option value="CM2">CM2</option>
-                    </optgroup>
-                    <optgroup label="Moyen">
-                        <option value="6ÉME" selected>6ÉME</option><option value="5ÉME">5ÉME</option>
-                        <option value="4ÉME">4ÉME</option><option value="3ÉME">3ÉME</option>
-                    </optgroup>
-                    <optgroup label="Secondaire">
-                        <option value="SECONDE">SECONDE</option><option value="PREMIERE">PREMIERE</option><option value="TERMINALE">TERMINALE</option>
-                    </optgroup>
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- En-tête -->
+    <header class="bg-indigo-700 text-white shadow-md z-20 shrink-0">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-white/20 p-2.5 rounded-lg">
+                    <i class="fa-solid fa-graduation-cap text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold">GestNotes</h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <input type="text" id="setting-year" title="Année scolaire"
+                            class="bg-white/10 text-white placeholder-white/70 border border-white/20 rounded px-2 py-0.5 text-xs w-24 focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
+                        <select id="setting-semester" title="Semestre"
+                            class="bg-white/10 text-white border border-white/20 rounded px-2 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
+                            <option value="1" class="text-slate-800">Semestre 1</option>
+                            <option value="2" class="text-slate-800">Semestre 2</option>
+                        </select>
+                        <input type="number" id="setting-effectif" title="Nombre total d'élèves (Effectif)"
+                            placeholder="Effectif"
+                            class="bg-white/10 text-white placeholder-white/70 border border-white/20 rounded px-2 py-0.5 text-xs w-20 focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="flex items-center gap-3 bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20">
+                <label for="class-select"
+                    class="font-medium text-sm uppercase tracking-wider text-indigo-100">Niveau</label>
+                <select id="class-select"
+                    class="bg-white text-indigo-900 rounded px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold cursor-pointer shadow-sm border-0">
+                    <option value="6ème">6ème</option>
+                    <option value="5ème">5ème</option>
+                    <option value="4ème">4ème</option>
+                    <option value="3ème">3ème</option>
+                    <option value="Seconde">Seconde</option>
+                    <option value="Première">Première</option>
+                    <option value="Terminale">Terminale</option>
                 </select>
             </div>
-
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Série / Section</label>
-                <select id="class-section" onchange="changeLevel()" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-xs sm:text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="UNIQUE" selected>Unique</option>
-                    <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                    <option value="S1">S1</option><option value="S2">S2</option><option value="L1">L1</option>
-                    <option value="L2">L2</option><option value="STEG">STEG</option>
-                </select>
-            </div>
-            
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Effectif Réel</label>
-                <input type="number" id="input-effectif" placeholder="0" class="w-full bg-slate-50 border-none rounded-2xl p-3 text-xs sm:text-sm font-bold outline-none text-slate-700" onchange="saveEffectif()">
-            </div>
-
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Période</label>
-                <select id="semester" onchange="updatePeriod()" class="w-full bg-indigo-600 text-white border-none rounded-2xl p-3 text-xs sm:text-sm font-black shadow-lg"></select>
-            </div>
-
-            <div class="col-span-2 sm:col-span-3 lg:col-span-1 bg-emerald-50 rounded-2xl p-3 flex flex-col justify-center text-center border border-emerald-100 mt-2 sm:mt-0">
-                <p class="text-[9px] font-black text-emerald-500 uppercase">Moyenne Classe</p>
-                <p id="class-avg-display" class="text-xl sm:text-2xl font-black text-emerald-900">0.00</p>
-            </div>
         </div>
+    </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="lg:col-span-4">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6">
-                    <h2 class="font-black text-slate-800 text-[10px] uppercase mb-4 tracking-widest">Liste des Élèves</h2>
-                    <div class="flex flex-col gap-2 mb-6">
-                        <input type="text" id="new-student-lastname" placeholder="NOM" class="w-full bg-slate-100 border-none rounded-xl p-3 text-xs font-bold outline-none uppercase text-slate-700">
+    <!-- Contenu Principal -->
+    <main class="flex-1 overflow-auto p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0">
+            <!-- 1. Gestion des Élèves -->
+            <section
+                class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[340px] overflow-hidden">
+                <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
+                    <h2 class="text-base font-semibold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-users text-indigo-500 w-5"></i> Liste des élèves
+                    </h2>
+                    <span id="students-count"
+                        class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                </div>
+                <div class="p-3 bg-white border-b border-slate-100">
+                    <form id="add-student-form" class="flex gap-2">
+                        <input type="text" id="new-student-first" placeholder="Prénom" required
+                            class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-indigo-500">
+                        <input type="text" id="new-student-last" placeholder="Nom" required
+                            class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-indigo-500">
+
+                        <button type="submit"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"><i
+                                class="fa-solid fa-plus"></i></button>
+                    </form>
+                </div>
+                <div class="flex-1 overflow-y-auto p-2">
+                    <ul id="students-list" class="space-y-1"></ul>
+                </div>
+            </section>
+
+            <!-- 2. Gestion des Matières -->
+            <section
+                class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[340px] overflow-hidden">
+                <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
+                    <h2 class="text-base font-semibold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Matières & Coefficients
+                    </h2>
+                    <span id="subjects-count"
+                        class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                </div>
+                <div class="p-3 bg-white border-b border-slate-100">
+                    <form id="add-subject-form" class="flex flex-col gap-2">
                         <div class="flex gap-2">
-                            <input type="text" id="new-student-firstname" placeholder="PRÉNOM" class="flex-1 bg-slate-100 border-none rounded-xl p-3 text-xs font-bold outline-none uppercase text-slate-700" onkeydown="if(event.key === 'Enter') addStudent()">
-                            <button onclick="addStudent()" class="bg-indigo-600 text-white w-12 h-12 rounded-xl font-black shadow-lg hover:bg-indigo-700 transition flex items-center justify-center text-xl">+</button>
+                            <input type="text" id="new-subject-name" placeholder="Nom de la matière" required
+                                class="flex-[2] rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-emerald-500">
+                            <input type="number" id="new-subject-coef" placeholder="Coef G."
+                                title="Coefficient de la matière (pour la moyenne générale)" step="0.5" min="0.5"
+                                required
+                                class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-emerald-500">
+                            <button type="submit"
+                                class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"><i
+                                    class="fa-solid fa-plus"></i></button>
                         </div>
-                    </div>
-                    <ul id="student-list" class="space-y-2 max-h-[300px] lg:max-h-[450px] overflow-y-auto pr-1"></ul>
+                    </form>
+                </div>
+                <div class="flex-1 overflow-y-auto p-2">
+                    <ul id="subjects-list" class="space-y-1"></ul>
+                </div>
+            </section>
+        </div>
+
+        <!-- 3. Notes & Moyennes -->
+        <section
+            class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 min-h-[500px] mb-6 overflow-hidden relative">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 shrink-0">
+                <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-table text-amber-500 w-5"></i> Saisie des Notes
+                    <span
+                        class="text-xs font-normal text-slate-500 ml-2 bg-white px-2 py-1 border rounded shadow-sm">(D1
+                        = Devoir 1, D2 = Devoir 2, C = Compo)</span>
+                </h2>
+                <div class="flex items-center gap-3">
+                    <button onclick="printAllReportCards()"
+                        class="text-sm bg-amber-50 hover:bg-amber-100 text-amber-700 font-medium px-4 py-1.5 rounded-lg border border-amber-200 transition-colors shadow-sm">
+                        <i class="fa-solid fa-print mr-1"></i> Imprimer
+                    </button>
+                    <button onclick="exportAllCSV()"
+                        class="text-sm bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium px-4 py-1.5 rounded-lg border border-indigo-200 transition-colors shadow-sm">
+                        <i class="fa-solid fa-file-zipper mr-1"></i> Exporter
+                    </button>
                 </div>
             </div>
 
-            <div class="lg:col-span-8 space-y-6">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6">
-                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
-                        <h2 class="font-black text-slate-800 text-[10px] uppercase tracking-widest">Configuration des Matières</h2>
-                        <button onclick="autoLoadSubjects()" class="w-full sm:w-auto text-left bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase hover:bg-indigo-100 transition">
-                            ⚡ Charger Matières Standard
-                        </button>
-                    </div>
-                    
-                    <div class="flex flex-wrap gap-2 mb-4" id="subjects-config-list"></div>
-                    
-                    <div class="flex flex-col sm:flex-row gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100">
-                        <input type="text" id="new-sub-name" list="standard-subjects" placeholder="CHOISIR OU TAPER UNE MATIÈRE" class="flex-1 bg-transparent border-none p-2 text-xs font-bold outline-none uppercase text-slate-700">
-                        <datalist id="standard-subjects">
-                            <option value="LANGUE ET COMMUNICATION"></option>
-                            <option value="MATHÉMATIQUES"></option>
-                            <option value="DÉCOUVERTE DU MONDE"></option>
-                            <option value="DÉVELOPPEMENT DURABLE"></option>
-                            <option value="ÉDUCATION ARTISTIQUE"></option>
-                            <option value="ÉDUCATION PHYSIQUE"></option>
-                            <option value="ARABE"></option>
-                            <option value="FRANÇAIS"></option>
-                            <option value="ANGLAIS"></option>
-                            <option value="HISTOIRE-GÉO"></option>
-                            <option value="SVT"></option>
-                            <option value="PHYSIQUE-CHIMIE"></option>
-                            <option value="EPS"></option>
-                            <option value="ARTS"></option>
-                            <option value="PHILOSOPHIE"></option>
-                        </datalist>
-                        
-                        <div class="flex gap-2 w-full sm:w-auto">
-                            <input type="number" id="new-sub-coef" placeholder="Coef" class="flex-1 sm:w-16 bg-white border-none rounded-lg p-2 text-xs font-bold text-center outline-none text-slate-700">
-                            <button onclick="addSubject()" class="bg-emerald-500 text-white px-4 py-2 sm:py-0 rounded-xl font-black text-[10px] uppercase shadow-md whitespace-nowrap">Ajouter</button>
-                        </div>
-                    </div>
+            <div class="flex-1 overflow-auto relative">
+                <table class="w-full text-sm text-left whitespace-nowrap hidden" id="grades-table">
+                    <thead class="text-xs text-slate-600 uppercase bg-slate-100 sticky top-0 z-20 shadow-sm"
+                        id="grades-thead"></thead>
+                    <tbody id="grades-tbody" class="divide-y divide-slate-100"></tbody>
+                </table>
+                <div id="grades-empty"
+                    class="absolute inset-0 flex flex-col items-center justify-center p-12 text-slate-400 bg-slate-50/50">
+                    <div class="bg-white p-6 rounded-full shadow-sm mb-4 border border-slate-100"><i
+                            class="fa-solid fa-clipboard-list text-5xl text-slate-300"></i></div>
+                    <p class="text-lg font-medium text-slate-600 mb-1">Aucune donnée</p>
+                    <p class="text-sm">Ajoutez des élèves et des matières.</p>
                 </div>
+            </div>
+        </section>
+    </main>
 
-                <div id="editor-panel" class="hidden">
-                    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-                        <div class="p-4 sm:p-5 bg-slate-900 text-white flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-                            <div>
-                                <h2 id="current-student-display" class="text-base sm:text-lg font-black uppercase tracking-tight text-emerald-400">---</h2>
-                                <p id="current-class-display" class="text-slate-400 text-[9px] font-black uppercase tracking-widest"></p>
-                            </div>
-                            <button onclick="window.print()" class="w-full sm:w-auto bg-indigo-500 hover:bg-indigo-400 px-4 py-2.5 rounded-xl font-black text-[10px] transition uppercase text-center block">
-                                Imprimer le Bulletin
-                            </button>
-                        </div>
-                        
-                        <div class="p-3 sm:p-6 bg-slate-50 overflow-x-auto space-y-3" id="grades-grid-container">
-                            <div class="flex flex-col gap-3" id="grades-grid"></div>
-                            
-                            <div id="student-summary-row" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-indigo-950 text-white rounded-2xl border border-indigo-900 shadow-md min-w-[320px] mt-4">
-                                <div class="font-black text-[12px] uppercase tracking-wider text-indigo-300">
-                                    MOYENNE GÉNÉRALE DE L'ÉLÈVE
-                                </div>
-                                <div class="flex items-center gap-2 justify-end">
-                                    <div class="flex flex-col items-center">
-                                        <span id="student-summary-label" class="text-[8px] text-emerald-400 font-black uppercase mb-0.5">MOYENNE</span>
-                                        <span id="student-avg-display" class="w-20 py-2 bg-emerald-500 text-slate-950 font-black text-center text-base rounded-xl shadow-inner block">0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Modal Édition Élève -->
+    <div id="student-modal"
+        class="hidden fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 border border-slate-100">
+            <h3 class="text-lg font-bold mb-4 text-slate-800 border-b pb-2"><i
+                    class="fa-solid fa-user-edit text-indigo-500 mr-2"></i>Détails de l'élève</h3>
+            <input type="hidden" id="edit-student-id">
+            <div class="space-y-4">
+                <div class="flex gap-3">
+                    <div class="flex-1"><label class="text-xs font-bold text-slate-500 uppercase">Nom</label><input
+                            type="text" id="edit-student-last"
+                            class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-indigo-500"></div>
+                    <div class="flex-1"><label class="text-xs font-bold text-slate-500 uppercase">Prénom</label><input
+                            type="text" id="edit-student-first"
+                            class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-indigo-500"></div>
                 </div>
-
-                <div id="welcome-msg" class="bg-white rounded-3xl p-10 sm:p-16 text-center border-2 border-dashed border-slate-200">
-                    <p class="text-slate-400 font-bold uppercase text-[9px] tracking-widest italic">Sélectionnez un élève pour saisir les notes. Appuyez sur ENTRÉE pour passer à l'élève suivant.</p>
+                <div class="flex gap-3">
+                    <div class="flex-1"><label
+                            class="text-xs font-bold text-slate-500 uppercase">Matricule</label><input type="text"
+                            id="edit-student-mat" placeholder="Optionnel"
+                            class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-indigo-500"></div>
+                    <div class="flex-1"><label class="text-xs font-bold text-slate-500 uppercase">Né(e) le</label><input
+                            type="text" id="edit-student-birth" placeholder="JJ/MM/AAAA"
+                            class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-indigo-500"></div>
                 </div>
+                <div class="flex gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <div class="flex-1"><label class="text-xs font-bold text-slate-500 uppercase">Absences</label><input
+                            type="number" id="edit-student-abs"
+                            class="w-full border rounded p-1.5 text-sm mt-1 bg-white" min="0"></div>
+                    <div class="flex-1"><label class="text-xs font-bold text-slate-500 uppercase">Retards</label><input
+                            type="number" id="edit-student-ret"
+                            class="w-full border rounded p-1.5 text-sm mt-1 bg-white" min="0"></div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="closeModal('student-modal')"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Annuler</button>
+                <button onclick="saveStudentModal()"
+                    class="px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm transition-colors">Enregistrer</button>
             </div>
         </div>
     </div>
 
-    <script>
-        let appState = JSON.parse(localStorage.getItem('gestnotes_v4')) || { classes: {} };
-        let currentClassId = "";
-        let currentStudentId = null;
-        let currentPeriod = "1";
+    <!-- Modal Édition Matière -->
+    <div id="subject-modal"
+        class="hidden fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 border border-slate-100">
+            <h3 class="text-lg font-bold mb-4 text-slate-800 border-b pb-2"><i
+                    class="fa-solid fa-book text-emerald-500 mr-2"></i>Paramètres de la matière</h3>
+            <input type="hidden" id="edit-sub-id">
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase">Nom de la matière</label>
+                    <input type="text" id="edit-sub-name"
+                        class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase">Coef. Général (pour moyenne G.)</label>
+                    <input type="number" step="0.5" min="0.5" id="edit-sub-coef"
+                        class="w-full border rounded-lg p-2 text-sm mt-1 focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div class="p-3 bg-emerald-50/50 rounded-lg border border-emerald-100">
+                    <label class="text-xs font-bold text-emerald-800 uppercase block mb-2">Coefficients internes (calcul
+                        moyenne matière)</label>
+                    <div class="flex gap-2">
+                        <div class="flex-1 text-center"><label
+                                class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Devoir 1</label><input
+                                type="number" id="edit-sub-d1"
+                                class="w-full border border-emerald-200 rounded p-1.5 text-sm text-center"></div>
+                        <div class="flex-1 text-center"><label
+                                class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Devoir 2</label><input
+                                type="number" id="edit-sub-d2"
+                                class="w-full border border-emerald-200 rounded p-1.5 text-sm text-center"></div>
+                        <div class="flex-1 text-center"><label
+                                class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Compo</label><input
+                                type="number" id="edit-sub-c"
+                                class="w-full border border-emerald-200 rounded p-1.5 text-sm text-center bg-white font-bold">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="closeModal('subject-modal')"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Annuler</button>
+                <button onclick="saveSubjectModal()"
+                    class="px-4 py-2 text-sm font-bold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-sm transition-colors">Enregistrer</button>
+            </div>
+        </div>
+    </div>
 
-        const DEFAULT_SUBJECTS = {
-            primaire: [
-                {name: "LANGUE ET COMMUNICATION", coef: 40},
-                {name: "MATHÉMATIQUES", coef: 40}, 
-                {name: "DÉCOUVERTE DU MONDE", coef: 40}, 
-                {name: "DÉVELOPPEMENT DURABLE", coef: 20},
-                {name: "ÉDUCATION ARTISTIQUE", coef: 10}, 
-                {name: "ÉDUCATION PHYSIQUE", coef: 10},
-                {name: "ARABE", coef: 10}
-            ],
-            moyen: [
-                {name: "FRANÇAIS", coef: 5}, {name: "MATHÉMATIQUES", coef: 5}, 
-                {name: "ANGLAIS", coef: 3}, {name: "HISTOIRE-GÉO", coef: 3},
-                {name: "SVT", coef: 2}, {name: "PHYSIQUE-CHIMIE", coef: 2},
-                {name: "EPS", coef: 1}, {name: "ARTS", coef: 1}
-            ],
-            secondaire: [
-                {name: "PHILOSOPHIE", coef: 4}, {name: "FRANÇAIS", coef: 4},
-                {name: "MATHÉMATIQUES", coef: 5}, {name: "ANGLAIS", coef: 3},
-                {name: "HISTOIRE-GÉO", coef: 3}, {name: "EPS", coef: 1}
-            ]
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <script>
+        // --- ÉTAT ET MIGRATION ---
+        const defaultState = { settings: { year: '2023-2024', semester: '1' }, classes: {} };
+        const classNames = ["6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+        classNames.forEach(c => defaultState.classes[c] = { students: [], subjects: [], grades: {} });
+
+        let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
+        if (!appState.settings) appState.settings = { year: '2023-2024', semester: '1' };
+
+        // Migration automatique des données vers le nouveau format
+        Object.keys(appState.classes).forEach(cls => {
+            const data = appState.classes[cls];
+            if (!data.students) data.students = [];
+            if (!data.subjects) data.subjects = [];
+            if (!data.grades) data.grades = {};
+            if (data.effectif === undefined) data.effectif = '';
+
+            data.subjects.forEach(sub => {
+                if (sub.coefD1 === undefined) sub.coefD1 = 1;
+                if (sub.coefD2 === undefined) sub.coefD2 = 1;
+                if (sub.coefC === undefined) sub.coefC = 2;
+            });
+
+            Object.keys(data.grades).forEach(sId => {
+                Object.keys(data.grades[sId]).forEach(subId => {
+                    const val = data.grades[sId][subId];
+                    if (typeof val === 'number' || typeof val === 'string') {
+                        // Migration de l'ancienne note unique vers la composition (ou D1 au choix)
+                        data.grades[sId][subId] = { d1: '', d2: '', c: val };
+                    }
+                });
+            });
+        });
+
+        let currentClass = document.getElementById('class-select').value;
+        document.getElementById('setting-year').value = appState.settings.year;
+        document.getElementById('setting-semester').value = appState.settings.semester;
+
+        document.getElementById('setting-year').addEventListener('change', e => { appState.settings.year = e.target.value; saveState(); });
+        document.getElementById('setting-semester').addEventListener('change', e => { appState.settings.semester = e.target.value; saveState(); });
+
+        document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
+        document.getElementById('setting-effectif').addEventListener('input', e => {
+            appState.classes[currentClass].effectif = e.target.value;
+            saveState();
+        });
+
+        function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
+        function generateId() { return Math.random().toString(36).substr(2, 9); }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const styles = { success: 'bg-slate-800 border-emerald-500', error: 'bg-slate-800 border-red-500', info: 'bg-slate-800 border-indigo-500' };
+            const icons = { success: 'fa-check text-emerald-400', error: 'fa-exclamation text-red-400', info: 'fa-info text-indigo-400' };
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded shadow-xl text-white border-l-4 ${styles[type]} toast-enter pointer-events-auto text-sm`;
+            toast.innerHTML = `<i class="fa-solid ${icons[type]}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.replace('toast-enter', 'toast-leave'); setTimeout(() => toast.remove(), 400); }, 3000);
+        }
+
+        // --- MOTEUR DE RENDU ---
+        const els = {
+            classSelect: document.getElementById('class-select'),
+            studentsList: document.getElementById('students-list'),
+            subjectsList: document.getElementById('subjects-list'),
+            gradesTable: document.getElementById('grades-table'),
+            gradesThead: document.getElementById('grades-thead'),
+            gradesTbody: document.getElementById('grades-tbody'),
+            gradesEmpty: document.getElementById('grades-empty')
         };
 
-        function saveToStorage() {
-            localStorage.setItem('gestnotes_v4', JSON.stringify(appState));
-        }
-
-        function isPrimaire() {
-            const level = document.getElementById('class-level').value;
-            return ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(level);
-        }
-
-        function updatePeriodDropdownOptions() {
-            const periodSelect = document.getElementById('semester');
-            const oldVal = periodSelect.value;
-            
-            if (isPrimaire()) {
-                periodSelect.innerHTML = `
-                    <option value="1">1er Trimestre</option>
-                    <option value="2">2ème Trimestre</option>
-                    <option value="3">3ème Trimestre</option>
-                `;
-            } else {
-                periodSelect.innerHTML = `
-                    <option value="1">1er Semestre</option>
-                    <option value="2">2ème Semestre</option>
-                `;
-            }
-            
-            if ([...periodSelect.options].some(o => o.value === oldVal)) {
-                periodSelect.value = oldVal;
-            } else {
-                periodSelect.value = "1";
-            }
-            currentPeriod = periodSelect.value;
-        }
-
-        function autoLoadSubjects() {
-            const level = document.getElementById('class-level').value;
-            let list = [];
-            
-            if (isPrimaire()) list = DEFAULT_SUBJECTS.primaire;
-            else if (["6ÉME", "5ÉME", "4ÉME", "3ÉME"].includes(level)) list = DEFAULT_SUBJECTS.moyen;
-            else list = DEFAULT_SUBJECTS.secondaire;
-
-            if (confirm(`Charger les ${list.length} matières standard pour le niveau ${level} ?`)) {
-                appState.classes[currentClassId].subjects = list.map(s => ({ id: 'sub_' + Math.random().toString(36).substr(2, 9), ...s }));
-                saveToStorage();
-                renderSubjectsConfig();
-                if(currentStudentId) renderGradesFields();
-                renderStats();
-            }
-        }
-
-        function changeLevel() {
-            currentClassId = `${document.getElementById('class-level').value}_${document.getElementById('class-section').value}`;
-            
-            updatePeriodDropdownOptions();
-            
-            if (!appState.classes[currentClassId]) {
-                appState.classes[currentClassId] = { students: [], subjects: [], grades: { "1": {}, "2": {}, "3": {} }, effectif: "" };
-            }
-            
-            const coefInput = document.getElementById('new-sub-coef');
-            if (isPrimaire()) {
-                coefInput.placeholder = "Max";
-            } else {
-                coefInput.placeholder = "Coef";
-            }
-
-            document.getElementById('input-effectif').value = appState.classes[currentClassId].effectif || "";
-            
-            currentStudentId = null;
-            document.getElementById('editor-panel').classList.add('hidden');
-            document.getElementById('welcome-msg').classList.remove('hidden');
-
-            renderSubjectsConfig(); 
-            renderStudents(); 
-            renderStats();
-        }
-
-        function saveEffectif() { 
-            if (currentClassId) appState.classes[currentClassId].effectif = document.getElementById('input-effectif').value; 
-            saveToStorage(); 
-        }
-
-        function updatePeriod() { 
-            currentPeriod = document.getElementById('semester').value; 
-            if(currentStudentId) renderGradesFields(); 
-            renderStats(); 
-        }
-
-        function addSubject() {
-            const nameInput = document.getElementById('new-sub-name');
-            const name = nameInput.value.trim().toUpperCase();
-            const defaultVal = isPrimaire() ? 40 : 1;
-            const coef = parseFloat(document.getElementById('new-sub-coef').value) || defaultVal;
-            
-            if(!name) return;
-            
-            appState.classes[currentClassId].subjects.push({ id: 'sub_' + Date.now(), name, coef });
-            saveToStorage(); 
-            renderSubjectsConfig(); 
-            
-            nameInput.value = ''; 
-            document.getElementById('new-sub-coef').value = '';
-            
-            if(currentStudentId) renderGradesFields();
-            renderStats();
-        }
-
-        function renderSubjectsConfig() {
-            const list = document.getElementById('subjects-config-list');
-            const subjects = appState.classes[currentClassId]?.subjects || [];
-            const labelType = isPrimaire() ? "Max" : "x";
-            
-            list.innerHTML = subjects.map(s => `
-                <div class="flex items-center bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 gap-2">
-                    <span class="text-[9px] font-black text-indigo-900 uppercase">${s.name} (${labelType}${s.coef})</span>
-                    <button onclick="removeSubject('${s.id}')" class="text-red-500 font-bold hover:text-red-700">×</button>
-                </div>`).join('');
-        }
-
-        function removeSubject(subId) {
-            if(!confirm("Supprimer la matière ?")) return;
-            appState.classes[currentClassId].subjects = appState.classes[currentClassId].subjects.filter(s => s.id !== subId);
-            saveToStorage(); 
-            renderSubjectsConfig(); 
-            if(currentStudentId) renderGradesFields(); 
-            renderStats();
-        }
-
-        function calculateSingleMoyenne(d1, d2, c) {
-            const vD1 = d1 !== '' ? parseFloat(d1) : null;
-            const vD2 = d2 !== '' ? parseFloat(d2) : vD1;
-            const vComp = c !== '' ? parseFloat(c) : null;
-
-            if (vD1 === null && vComp === null) return '--';
-
-            if (isPrimaire()) {
-                const noteMensuelle = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
-                const noteFinale = vComp !== null ? (noteMensuelle + vComp) / 2 : noteMensuelle;
-                return noteFinale.toFixed(2);
-            } else {
-                const moyDev = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
-                const finalMoy = vComp !== null ? (moyDev + (vComp * 2)) / 3 : moyDev;
-                return finalMoy.toFixed(2);
-            }
-        }
-
-        function calculateCurrentStudentAverage(studentId = currentStudentId) {
-            const classData = appState.classes[currentClassId];
-            if (!classData || !studentId) return "0.00";
-
-            if (isPrimaire()) {
-                let totalPointsObtenus = 0;
-                let totalBaremesMax = 0;
-
-                classData.subjects.forEach(sub => {
-                    const g = classData.grades[currentPeriod]?.[studentId]?.[sub.id] || {d1:'', d2:'', c:''};
-                    const mS = calculateSingleMoyenne(g.d1, g.d2, g.c);
-                    if (mS !== '--') {
-                        totalPointsObtenus += parseFloat(mS);
-                        totalBaremesMax += sub.coef;
-                    }
-                });
-                return totalBaremesMax > 0 ? ((totalPointsObtenus / totalBaremesMax) * 10).toFixed(2) : "0.00";
-            } else {
-                let p = 0, c = 0;
-                classData.subjects.forEach(sub => {
-                    const g = classData.grades[currentPeriod]?.[studentId]?.[sub.id] || {d1:'', d2:'', c:''};
-                    const vD1 = g.d1 !== '' ? parseFloat(g.d1) : null;
-                    const vD2 = g.d2 !== '' ? parseFloat(g.d2) : vD1;
-                    const vComp = g.c !== '' ? parseFloat(g.c) : null;
-
-                    if (vD1 !== null || vComp !== null) {
-                        const mS = (((vD1||0) + (vD2||vD1||0))/2 + (vComp||0)*2)/3;
-                        p += mS * sub.coef; 
-                        c += sub.coef;
-                    }
-                });
-                return c > 0 ? (p / c).toFixed(2) : "0.00";
-            }
-        }
-
-        function updateVal(subId, type, val, inputElement) {
-            const periodGrades = appState.classes[currentClassId].grades[currentPeriod];
-            if(!periodGrades[currentStudentId]) periodGrades[currentStudentId] = {};
-            if(!periodGrades[currentStudentId][subId]) periodGrades[currentStudentId][subId] = {d1:'', d2:'', c:''};
-            
-            periodGrades[currentStudentId][subId][type] = val;
-            saveToStorage(); 
-
-            const row = inputElement.closest('.grade-row-item');
-            const d1 = row.querySelector('.input-d1').value;
-            const d2 = row.querySelector('.input-d2').value;
-            const c = row.querySelector('.input-c').value;
-            
-            row.querySelector('.input-moy').value = calculateSingleMoyenne(d1, d2, c);
-            
-            document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
-            renderStats();
-        }
-
-        function handleKeyDown(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                const students = appState.classes[currentClassId]?.students || [];
-                const currentIndex = students.findIndex(s => s.id === currentStudentId);
-                
-                if (currentIndex !== -1 && currentIndex < students.length - 1) {
-                    const nextStudent = students[currentIndex + 1];
-                    let activeClassName = "";
-                    if (document.activeElement.classList.contains('input-d1')) activeClassName = '.input-d1';
-                    else if (document.activeElement.classList.contains('input-d2')) activeClassName = '.input-d2';
-                    else if (document.activeElement.classList.contains('input-c')) activeClassName = '.input-c';
-                    
-                    const activeRowIndex = [...document.querySelectorAll('.grade-row-item')].indexOf(document.activeElement.closest('.grade-row-item'));
-
-                    selectStudent(nextStudent.id);
-                    
-                    setTimeout(() => {
-                        const rows = document.querySelectorAll('.grade-row-item');
-                        if (rows[activeRowIndex] && activeClassName) {
-                            const targetInput = rows[activeRowIndex].querySelector(activeClassName);
-                            if (targetInput) {
-                                targetInput.focus();
-                                targetInput.select();
-                            }
-                        }
-                    }, 60);
-                }
-            }
-        }
-
-        function renderGradesFields() {
-            const container = document.getElementById('grades-grid');
-            const classData = appState.classes[currentClassId];
-            if (!classData || !currentStudentId) return;
-
-            if (!classData.grades[currentPeriod]) classData.grades[currentPeriod] = {};
-            const periodGrades = classData.grades[currentPeriod];
-            
-            container.innerHTML = classData.subjects.map(sub => {
-                const g = periodGrades[currentStudentId]?.[sub.id] || { d1: '', d2: '', c: '' };
-                const initialMoy = calculateSingleMoyenne(g.d1, g.d2, g.c);
-                
-                const pD1 = isPrimaire() ? "Ev1" : "D1";
-                const pD2 = isPrimaire() ? "Ev2" : "D2";
-                const pC = isPrimaire() ? "Comp" : "CP";
-                const labelMoy = isPrimaire() ? `/${sub.coef}` : "Moy";
-
-                return `
-                    <div class="grade-row-item flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm min-w-[320px]" data-sub-id="${sub.id}">
-                        <div class="flex-1">
-                            <p class="text-xs font-black text-slate-800 uppercase">${sub.name}</p>
-                            <p class="text-[9px] text-slate-400 font-bold uppercase">${isPrimaire() ? 'Note max :' : 'Coefficient :'} ${sub.coef}</p>
-                        </div>
-                        <div class="flex items-center gap-2 justify-end">
-                            <div class="flex flex-col items-center">
-                                <span class="text-[8px] font-black text-slate-400 uppercase mb-1">${pD1}</span>
-                                <input type="number" step="any" class="grade-input input-d1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value, this)" onkeydown="handleKeyDown(event)">
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <span class="text-[8px] font-black text-slate-400 uppercase mb-1">${pD2}</span>
-                                <input type="number" step="any" class="grade-input input-d2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value, this)" onkeydown="handleKeyDown(event)">
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <span class="text-[8px] font-black text-slate-400 uppercase mb-1">${pC}</span>
-                                <input type="number" step="any" class="grade-input input-c" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value, this)" onkeydown="handleKeyDown(event)">
-                            </div>
-                            <div class="flex flex-col items-center ml-2">
-                                <span class="text-[8px] font-black text-indigo-500 uppercase mb-1">${labelMoy}</span>
-                                <input type="text" readonly class="input-moy w-14 h-10 bg-indigo-50 text-indigo-900 font-black text-center text-xs rounded-xl outline-none" value="${initialMoy}">
-                            </div>
-                        </div>
-                    </div>`;
-            }).join('');
-        }
-
-        function addStudent() {
-            const lnInput = document.getElementById('new-student-lastname');
-            const fnInput = document.getElementById('new-student-firstname');
-            const lastname = lnInput.value.trim().toUpperCase();
-            const firstname = fnInput.value.trim().toUpperCase();
-
-            if (!lastname || !firstname) return;
-
-            const newStudent = { id: 'std_' + Date.now(), lastname, firstname };
-            appState.classes[currentClassId].students.push(newStudent);
-            
-            appState.classes[currentClassId].students.sort((a, b) => 
-                (a.lastname + " " + a.firstname).localeCompare(b.lastname + " " + b.firstname)
-            );
-
-            saveToStorage();
+        function render() {
             renderStudents();
-            renderStats();
-
-            lnInput.value = '';
-            fnInput.value = '';
-            lnInput.focus();
+            renderSubjects();
+            renderGradesTable();
         }
 
         function renderStudents() {
-            const list = document.getElementById('student-list');
-            const students = appState.classes[currentClassId]?.students || [];
+            const students = appState.classes[currentClass].students;
+            students.sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
+            els.studentsList.innerHTML = '';
+            document.getElementById('students-count').textContent = students.length;
 
-            if (students.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-400 font-bold text-center py-4 uppercase">Aucun élève</p>`;
-                return;
-            }
+            if (students.length === 0) { els.studentsList.innerHTML = `<li class="text-sm text-slate-400 p-3 text-center italic">Aucun élève</li>`; return; }
 
-            list.innerHTML = students.map(s => {
-                const isActive = s.id === currentStudentId ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-transparent hover:bg-slate-100';
-                return `
-                    <li onclick="selectStudent('${s.id}')" class="student-item p-3 rounded-xl border text-xs font-bold text-slate-700 ${isActive}">
-                        <span class="uppercase">${s.lastname} ${s.firstname}</span>
-                        <button onclick="deleteStudent('${s.id}', event)" class="btn-delete-student font-black text-sm hover:text-red-600">×</button>
-                    </li>`;
-            }).join('');
-        }
-
-        function selectStudent(studentId) {
-            currentStudentId = studentId;
-            renderStudents();
-
-            const student = appState.classes[currentClassId].students.find(s => s.id === studentId);
-            if (student) {
-                document.getElementById('welcome-msg').classList.add('hidden');
-                document.getElementById('editor-panel').classList.remove('hidden');
-                document.getElementById('current-student-display').textContent = `${student.lastname} ${student.firstname}`;
-                document.getElementById('current-class-display').textContent = `Classe : ${document.getElementById('class-level').value} ${document.getElementById('class-section').value}`;
-                
-                renderGradesFields();
-                document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
-            }
-        }
-
-        function deleteStudent(studentId, event) {
-            event.stopPropagation();
-            if (!confirm("Supprimer cet élève ainsi que toutes ses notes ?")) return;
-
-            appState.classes[currentClassId].students = appState.classes[currentClassId].students.filter(s => s.id !== studentId);
-            
-            ["1", "2", "3"].forEach(p => {
-                if (appState.classes[currentClassId].grades[p]) {
-                    delete appState.classes[currentClassId].grades[p][studentId];
-                }
+            students.forEach(student => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded group border border-transparent transition-colors';
+                li.innerHTML = `
+                    <div>
+                        <div class="font-bold text-slate-800 uppercase text-[13px] tracking-wide">${student.lastName} <span class="capitalize text-slate-500 font-medium ml-1">${student.firstName}</span></div>
+                        ${student.matricule ? `<div class="text-[10px] text-slate-400">Mat: ${student.matricule}</div>` : ''}
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="exportCSV('${student.id}')" class="text-slate-400 hover:text-amber-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Bulletin CSV"><i class="fa-solid fa-file-csv text-xs"></i></button>
+                        <button onclick="openStudentModal('${student.id}')" class="text-slate-400 hover:text-indigo-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Modifier"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="deleteStudent('${student.id}')" class="text-slate-400 hover:text-red-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Supprimer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>
+                `;
+                els.studentsList.appendChild(li);
             });
-
-            if (currentStudentId === studentId) {
-                currentStudentId = null;
-                document.getElementById('editor-panel').classList.add('hidden');
-                document.getElementById('welcome-msg').classList.remove('hidden');
-            }
-
-            saveToStorage();
-            renderStudents();
-            renderStats();
         }
 
-        function renderStats() {
-            const classData = appState.classes[currentClassId];
-            if (!classData || classData.students.length === 0) {
-                document.getElementById('class-avg-display').textContent = "0.00";
-                return;
-            }
+        function renderSubjects() {
+            const subjects = appState.classes[currentClass].subjects;
+            els.subjectsList.innerHTML = '';
+            document.getElementById('subjects-count').textContent = subjects.length;
 
-            let totalAverages = 0;
-            let activeCount = 0;
+            if (subjects.length === 0) { els.subjectsList.innerHTML = `<li class="text-sm text-slate-400 p-3 text-center italic">Aucune matière</li>`; return; }
 
-            classData.students.forEach(s => {
-                const avgStr = calculateCurrentStudentAverage(s.id);
-                if (avgStr !== "0.00") {
-                    totalAverages += parseFloat(avgStr);
-                    activeCount++;
-                }
+            subjects.forEach(subject => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-2 hover:bg-slate-50 rounded group border border-transparent transition-colors';
+                li.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold text-slate-700 text-[13px]">${subject.name}</span>
+                        <span class="bg-emerald-50 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded border border-emerald-100 font-bold">Coef ${subject.coef}</span>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="openSubjectModal('${subject.id}')" class="text-slate-400 hover:text-emerald-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Réglages des coefficients"><i class="fa-solid fa-sliders text-xs"></i></button>
+                        <button onclick="deleteSubject('${subject.id}')" class="text-slate-400 hover:text-red-500 bg-white shadow-sm border border-slate-200 w-7 h-7 rounded flex items-center justify-center" title="Supprimer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>
+                `;
+                els.subjectsList.appendChild(li);
             });
-
-            const classAvg = activeCount > 0 ? (totalAverages / activeCount).toFixed(2) : "0.00";
-            document.getElementById('class-avg-display').textContent = classAvg;
         }
 
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `backup_gestnotes_${new Date().toISOString().split('T')[0]}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
+        function renderGradesTable() {
+            const data = appState.classes[currentClass];
+            const { students, subjects, grades } = data;
+
+            if (students.length === 0 || subjects.length === 0) {
+                els.gradesTable.classList.add('hidden'); els.gradesEmpty.classList.remove('hidden'); return;
+            }
+            els.gradesTable.classList.remove('hidden'); els.gradesEmpty.classList.add('hidden');
+
+            let trHead = `<tr><th class="px-4 py-3 font-bold w-48 bg-slate-100 border-b border-slate-200 sticky left-0 z-30 sticky-left-shadow text-slate-700">Élève</th>`;
+            subjects.forEach(sub => {
+                trHead += `
+                <th class="px-2 py-2 text-center bg-white border-b border-slate-200 border-l min-w-[160px]">
+                    <div class="font-bold text-slate-700 text-xs">${sub.name} <span class="text-emerald-600 font-normal">(x${sub.coef})</span></div>
+                    <div class="flex justify-center gap-2 mt-1 text-[9px] text-slate-400 font-normal">
+                        <span>D1(x${sub.coefD1})</span><span>D2(x${sub.coefD2})</span><span class="font-bold text-indigo-400">C(x${sub.coefC})</span>
+                    </div>
+                </th>`;
+            });
+            trHead += `<th class="px-3 py-3 font-bold text-center bg-indigo-50 text-indigo-900 border-b border-slate-200 border-l sticky right-0 z-30 sticky-right-shadow">Moyenne Générale</th>
+                       <th class="px-3 py-3 font-bold text-center bg-slate-100 border-b border-slate-200 border-l sticky right-0 z-30">Export</th></tr>`;
+            els.gradesThead.innerHTML = trHead;
+
+            els.gradesTbody.innerHTML = '';
+
+            // Pré-calcul des moyennes générales pour le rendu initial
+            const ranks = getClassRanks(currentClass);
+
+            students.forEach(student => {
+                const sGrades = grades[student.id] || {};
+                let tr = document.createElement('tr');
+                tr.className = 'hover:bg-indigo-50/30 transition-colors group';
+
+                let html = `
+                    <td class="px-4 py-2 border-b border-slate-100 bg-white group-hover:bg-indigo-50/30 sticky left-0 z-10 sticky-left-shadow">
+                        <div class="font-bold text-slate-800 uppercase text-xs truncate max-w-[160px]" title="${student.lastName}">${student.lastName}</div>
+                        <div class="capitalize text-slate-500 text-[11px] font-medium truncate max-w-[160px]">${student.firstName}</div>
+                    </td>`;
+
+                subjects.forEach(sub => {
+                    const g = sGrades[sub.id] || { d1: '', d2: '', c: '' };
+
+                    // Calcul moyenne locale pour l'affichage initial
+                    let sp = 0, sc = 0;
+                    if (g.d1 !== '') { sp += Number(g.d1) * sub.coefD1; sc += sub.coefD1; }
+                    if (g.d2 !== '') { sp += Number(g.d2) * sub.coefD2; sc += sub.coefD2; }
+                    if (g.c !== '') { sp += Number(g.c) * sub.coefC; sc += sub.coefC; }
+                    let avgDisplay = sc > 0 ? (sp / sc).toFixed(2) : '--';
+                    let avgClass = sc > 0 ? ((sp / sc) >= 10 ? 'text-emerald-600' : 'text-red-500') : 'text-slate-300';
+
+                    html += `
+                        <td class="px-2 py-2 border-b border-slate-100 border-l text-center">
+                            <div class="flex flex-col items-center gap-1">
+                                <div class="flex gap-1 justify-center">
+                                    <input type="text" inputmode="decimal" value="${g.d1}" onblur="updateGrade('${student.id}', '${sub.id}', 'd1', this.value, this)" class="w-10 px-1 py-1 border border-slate-200 rounded text-center text-xs focus:ring-1 focus:ring-indigo-400 transition-shadow bg-slate-50 focus:bg-white" placeholder="D1">
+                                    <input type="text" inputmode="decimal" value="${g.d2}" onblur="updateGrade('${student.id}', '${sub.id}', 'd2', this.value, this)" class="w-10 px-1 py-1 border border-slate-200 rounded text-center text-xs focus:ring-1 focus:ring-indigo-400 transition-shadow bg-slate-50 focus:bg-white" placeholder="D2">
+                                    <input type="text" inputmode="decimal" value="${g.c}" onblur="updateGrade('${student.id}', '${sub.id}', 'c', this.value, this)" class="w-10 px-1 py-1 border border-indigo-200 rounded text-center text-xs font-bold focus:ring-1 focus:ring-indigo-500 transition-shadow bg-indigo-50/50 focus:bg-white" placeholder="C">
+                                </div>
+                                <div class="text-[10px] font-bold text-slate-400 mt-0.5">Moy: <span id="avg-${student.id}-${sub.id}" class="${avgClass}">${avgDisplay}</span></div>
+                            </div>
+                        </td>`;
+                });
+
+                const stats = ranks[student.id];
+                const genAvgStr = stats.avg !== null ? stats.avg.toFixed(2) : '—';
+                const genClass = stats.avg !== null ? (stats.avg >= 10 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-red-700 bg-red-100 border-red-200') : 'text-slate-300 border-transparent';
+
+                html += `
+                    <td class="px-3 py-2 border-b border-slate-100 border-l text-center bg-white group-hover:bg-indigo-50/30 sticky right-[60px] sticky-right-shadow">
+                        <div id="genavg-${student.id}" class="px-2 py-1 rounded font-bold text-sm border shadow-sm min-w-[60px] inline-block ${genClass}">${genAvgStr}</div>
+                    </td>
+                    <td class="px-2 py-2 border-b border-slate-100 border-l text-center bg-white group-hover:bg-indigo-50/30 sticky right-0">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="printReportCard('${student.id}')" class="text-amber-600 hover:text-white hover:bg-amber-600 border border-amber-200 w-8 h-8 rounded transition-colors shadow-sm" title="Imprimer Bulletin"><i class="fa-solid fa-print text-xs"></i></button>
+                            <button onclick="exportCSV('${student.id}')" class="text-indigo-600 hover:text-white hover:bg-indigo-600 border border-indigo-200 w-8 h-8 rounded transition-colors shadow-sm" title="Exporter Bulletin"><i class="fa-solid fa-download text-xs"></i></button>
+                        </div>
+                    </td>`;
+
+                tr.innerHTML = html;
+                els.gradesTbody.appendChild(tr);
+            });
         }
 
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        // --- GESTION DES NOTES (SANS PERTE DE FOCUS) ---
+        window.updateGrade = function (studentId, subjectId, type, value, inputEl) {
+            const data = appState.classes[currentClass];
+            if (!data.grades[studentId]) data.grades[studentId] = {};
+            if (!data.grades[studentId][subjectId]) data.grades[studentId][subjectId] = { d1: '', d2: '', c: '' };
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedState = JSON.parse(e.target.result);
-                    if (importedState && importedState.classes) {
-                        appState = importedState;
-                        saveToStorage();
-                        changeLevel();
-                        alert("Données importées avec succès !");
-                    } else {
-                        alert("Format de fichier invalide.");
-                    }
-                } catch (err) {
-                    alert("Erreur lors de la lecture du fichier JSON.");
-                }
-            };
-            reader.readAsText(file);
-        }
+            value = value.toString().trim();
+            let numValue = '';
+            if (value !== '') {
+                numValue = parseFloat(value.replace(',', '.'));
+                if (isNaN(numValue)) { showToast('Format invalide', 'error'); inputEl.value = data.grades[studentId][subjectId][type]; return; }
+                if (numValue < 0) numValue = 0; if (numValue > 20) numValue = 20;
+                numValue = Math.round(numValue * 100) / 100;
+                inputEl.value = numValue;
+            } else { inputEl.value = ''; }
 
-        window.onload = function() {
-            changeLevel();
+            data.grades[studentId][subjectId][type] = numValue;
+            saveState();
+            updateDOMAverages(studentId, subjectId);
         };
+
+        function updateDOMAverages(studentId, subjectId) {
+            const data = appState.classes[currentClass];
+            const sub = data.subjects.find(s => s.id === subjectId);
+            const g = data.grades[studentId][subjectId];
+
+            // Update Subject Average
+            let sp = 0, sc = 0;
+            if (g.d1 !== '') { sp += Number(g.d1) * sub.coefD1; sc += sub.coefD1; }
+            if (g.d2 !== '') { sp += Number(g.d2) * sub.coefD2; sc += sub.coefD2; }
+            if (g.c !== '') { sp += Number(g.c) * sub.coefC; sc += sub.coefC; }
+
+            const avgSpan = document.getElementById(`avg-${studentId}-${subjectId}`);
+            if (sc > 0) {
+                const val = sp / sc;
+                avgSpan.textContent = val.toFixed(2);
+                avgSpan.className = val >= 10 ? 'text-emerald-600' : 'text-red-500';
+            } else { avgSpan.textContent = '--'; avgSpan.className = 'text-slate-300'; }
+
+            // Update General Average
+            let totP = 0, totC = 0;
+            data.subjects.forEach(s => {
+                const sg = data.grades[studentId][s.id] || {};
+                let lsp = 0, lsc = 0;
+                if (sg.d1 !== '') { lsp += Number(sg.d1) * s.coefD1; lsc += s.coefD1; }
+                if (sg.d2 !== '') { lsp += Number(sg.d2) * s.coefD2; lsc += s.coefD2; }
+                if (sg.c !== '') { lsp += Number(sg.c) * s.coefC; lsc += s.coefC; }
+                if (lsc > 0) { totP += (lsp / lsc) * s.coef; totC += s.coef; }
+            });
+
+            const genAvgSpan = document.getElementById(`genavg-${studentId}`);
+            if (totC > 0) {
+                const val = totP / totC;
+                genAvgSpan.textContent = val.toFixed(2);
+                genAvgSpan.className = `px-2 py-1 rounded font-bold text-sm border shadow-sm min-w-[60px] inline-block ${val >= 10 ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-red-700 bg-red-100 border-red-200'}`;
+            } else {
+                genAvgSpan.textContent = '—';
+                genAvgSpan.className = 'px-2 py-1 rounded font-bold text-sm border shadow-sm min-w-[60px] inline-block text-slate-300 border-transparent';
+            }
+        }
+
+        // --- MODALES ET FORMULAIRES ---
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        window.closeModal = function (id) { document.getElementById(id).classList.add('hidden'); }
+
+        // Élèves
+        document.getElementById('add-student-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const last = document.getElementById('new-student-last'); const first = document.getElementById('new-student-first');
+            if (last.value.trim() && first.value.trim()) {
+                appState.classes[currentClass].students.push({ id: generateId(), lastName: last.value.trim(), firstName: first.value.trim(), matricule: '', birthDate: '', absences: 0, retards: 0 });
+                saveState(); render(); last.value = ''; first.value = ''; last.focus(); showToast('Élève ajouté');
+            }
+        });
+
+        window.deleteStudent = function (id) {
+            if (confirm('Supprimer cet élève et toutes ses notes ?')) {
+                appState.classes[currentClass].students = appState.classes[currentClass].students.filter(s => s.id !== id);
+                delete appState.classes[currentClass].grades[id];
+                saveState(); render(); showToast('Élève supprimé', 'info');
+            }
+        };
+
+        window.openStudentModal = function (id) {
+            const student = appState.classes[currentClass].students.find(s => s.id === id);
+            document.getElementById('edit-student-id').value = id;
+            document.getElementById('edit-student-last').value = student.lastName || '';
+            document.getElementById('edit-student-first').value = student.firstName || '';
+            document.getElementById('edit-student-mat').value = student.matricule || '';
+            document.getElementById('edit-student-birth').value = student.birthDate || '';
+            document.getElementById('edit-student-abs').value = student.absences || 0;
+            document.getElementById('edit-student-ret').value = student.retards || 0;
+            openModal('student-modal');
+        };
+
+        window.saveStudentModal = function () {
+            const id = document.getElementById('edit-student-id').value;
+            const student = appState.classes[currentClass].students.find(s => s.id === id);
+            student.lastName = document.getElementById('edit-student-last').value.trim();
+            student.firstName = document.getElementById('edit-student-first').value.trim();
+            student.matricule = document.getElementById('edit-student-mat').value.trim();
+            student.birthDate = document.getElementById('edit-student-birth').value.trim();
+            student.absences = parseInt(document.getElementById('edit-student-abs').value) || 0;
+            student.retards = parseInt(document.getElementById('edit-student-ret').value) || 0;
+            saveState(); render(); closeModal('student-modal'); showToast('Détails modifiés');
+        };
+
+        // Matières
+        document.getElementById('add-subject-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('new-subject-name'); const coef = document.getElementById('new-subject-coef');
+            if (name.value.trim() && parseFloat(coef.value) > 0) {
+                appState.classes[currentClass].subjects.push({ id: generateId(), name: name.value.trim(), coef: parseFloat(coef.value), coefD1: 1, coefD2: 1, coefC: 2 });
+                saveState(); render(); name.value = ''; coef.value = ''; name.focus(); showToast('Matière ajoutée');
+            }
+        });
+
+        window.deleteSubject = function (id) {
+            if (confirm('Supprimer cette matière et ses notes ?')) {
+                appState.classes[currentClass].subjects = appState.classes[currentClass].subjects.filter(s => s.id !== id);
+                Object.keys(appState.classes[currentClass].grades).forEach(sId => delete appState.classes[currentClass].grades[sId][id]);
+                saveState(); render(); showToast('Matière supprimée', 'info');
+            }
+        };
+
+        window.openSubjectModal = function (id) {
+            const subject = appState.classes[currentClass].subjects.find(s => s.id === id);
+            document.getElementById('edit-sub-id').value = id;
+            document.getElementById('edit-sub-name').value = subject.name;
+            document.getElementById('edit-sub-coef').value = subject.coef;
+            document.getElementById('edit-sub-d1').value = subject.coefD1;
+            document.getElementById('edit-sub-d2').value = subject.coefD2;
+            document.getElementById('edit-sub-c').value = subject.coefC;
+            openModal('subject-modal');
+        };
+
+        window.saveSubjectModal = function () {
+            const id = document.getElementById('edit-sub-id').value;
+            const subject = appState.classes[currentClass].subjects.find(s => s.id === id);
+            subject.name = document.getElementById('edit-sub-name').value.trim();
+            subject.coef = parseFloat(document.getElementById('edit-sub-coef').value) || 1;
+            subject.coefD1 = parseFloat(document.getElementById('edit-sub-d1').value) || 1;
+            subject.coefD2 = parseFloat(document.getElementById('edit-sub-d2').value) || 1;
+            subject.coefC = parseFloat(document.getElementById('edit-sub-c').value) || 1;
+            saveState(); render(); closeModal('subject-modal'); showToast('Matière modifiée');
+        };
+
+        els.classSelect.addEventListener('change', (e) => {
+            currentClass = e.target.value;
+            document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
+            render();
+        });
+
+        // --- CALCULS ET EXPORT CSV ---
+        function getAppreciation(note) {
+            if (note === null || note === undefined) return "";
+            if (note < 4) return "Très Faible";
+            if (note < 8) return "Faible";
+            if (note < 10) return "Insuffisant";
+            if (note < 12) return "Passable";
+            if (note < 14) return "A. Bien";
+            if (note < 16) return "Bien";
+            return "Excellent";
+        }
+
+        function getClassRanks(classId) {
+            const data = appState.classes[classId];
+            const averages = data.students.map(student => {
+                let tP = 0, tC = 0;
+                data.subjects.forEach(sub => {
+                    const g = data.grades[student.id]?.[sub.id] || {};
+                    let p = 0, c = 0;
+                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * sub.coefD1; c += sub.coefD1; }
+                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * sub.coefD2; c += sub.coefD2; }
+                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * sub.coefC; c += sub.coefC; }
+                    if (c > 0) { tP += (p / c) * sub.coef; tC += sub.coef; }
+                });
+                return { id: student.id, avg: tC > 0 ? (tP / tC) : null };
+            });
+
+            averages.sort((a, b) => {
+                if (a.avg === null) return 1; if (b.avg === null) return -1;
+                return b.avg - a.avg;
+            });
+
+            const ranks = {}; let currentRank = 1;
+            averages.forEach((item, index) => {
+                if (index > 0 && item.avg !== averages[index - 1].avg) currentRank = index + 1;
+                ranks[item.id] = { avg: item.avg, rank: item.avg !== null ? currentRank : '-' };
+            });
+            return ranks;
+        }
+
+        window.exportCSV = function (studentId) {
+            const data = appState.classes[currentClass];
+            const student = data.students.find(s => s.id === studentId);
+            const ranks = getClassRanks(currentClass);
+            const stats = ranks[studentId];
+            const year = appState.settings.year;
+            const semester = appState.settings.semester;
+
+            let csv = '\ufeff'; // BOM pour Excel
+            csv += `Classe;${currentClass}\n`;
+            csv += `Année scolaire;${year};Semestre;${semester}\n`;
+            csv += `Élève;${student.firstName} ${student.lastName};Matricule;${student.matricule || ''};Né(e) le;${student.birthDate || ''};\n`;
+            csv += `;;Nbre élèves;${data.students.length};Rang classe;${stats.rank}\n\n`;
+
+            csv += `Discipline;Devoir1;Devoir2;Composition;Moyenne/20;Coefficient;Moy × Coef;Appréciation\n`;
+
+            let totalCoef = 0, totalPoints = 0;
+
+            data.subjects.forEach(sub => {
+                const g = data.grades[studentId]?.[sub.id] || {};
+                let p = 0, c = 0;
+                const d1 = g.d1 !== undefined && g.d1 !== '' ? Number(g.d1) : '';
+                const d2 = g.d2 !== undefined && g.d2 !== '' ? Number(g.d2) : '';
+                const comp = g.c !== undefined && g.c !== '' ? Number(g.c) : '';
+
+                if (d1 !== '') { p += d1 * sub.coefD1; c += sub.coefD1; }
+                if (d2 !== '') { p += d2 * sub.coefD2; c += sub.coefD2; }
+                if (comp !== '') { p += comp * sub.coefC; c += sub.coefC; }
+
+                let sAvgStr = '', mxcStr = '', app = '';
+                if (c > 0) {
+                    const sAvg = p / c;
+                    sAvgStr = sAvg.toFixed(2).replace('.', ',');
+                    const mxc = sAvg * sub.coef;
+                    mxcStr = mxc.toFixed(2).replace('.', ',');
+                    totalCoef += sub.coef; totalPoints += mxc;
+                    app = getAppreciation(sAvg);
+                }
+
+                const fD1 = d1 !== '' ? d1.toString().replace('.', ',') : '';
+                const fD2 = d2 !== '' ? d2.toString().replace('.', ',') : '';
+                const fC = comp !== '' ? comp.toString().replace('.', ',') : '';
+
+                csv += `${sub.name};${fD1};${fD2};${fC};${sAvgStr};${sub.coef};${mxcStr};${app}\n`;
+            });
+
+            csv += `TOTAL;;;;;${totalCoef};${totalPoints.toFixed(2).replace('.', ',')};\n`;
+            const gAvgStr = stats.avg !== null ? stats.avg.toFixed(2).replace('.', ',') : '';
+            csv += `Moyenne générale;;;${gAvgStr}/20;Rang;${stats.rank};Absences;${student.absences || 0};Retards;${student.retards || 0}\n`;
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Bulletin_${currentClass}_${student.lastName.replace(/\s/g, '')}_${student.firstName.replace(/\s/g, '')}.csv`;
+            link.click();
+        };
+
+        window.exportAllCSV = function () {
+            const students = appState.classes[currentClass].students;
+            if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
+            students.forEach((s, i) => setTimeout(() => exportCSV(s.id), i * 300));
+            showToast("Téléchargement des bulletins lancé");
+        };
+
+        window.printReportCard = function (studentId) {
+            // Ouvrir le fichier bulletin.html et passer les informations via l'URL
+            window.open(`bulletin.html?class=${encodeURIComponent(currentClass)}&student=${encodeURIComponent(studentId)}`, '_blank');
+        };
+
+        window.printAllReportCards = function () {
+            const students = appState.classes[currentClass].students;
+            if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
+
+            if (students.length > 5 && !confirm("Vous allez ouvrir " + students.length + " onglets d'impression. Continuer ?")) {
+                return;
+            }
+
+            students.forEach((s, i) => {
+                setTimeout(() => printReportCard(s.id), i * 300);
+            });
+            showToast("Ouverture des bulletins pour impression...");
+        };
+
+        els.classSelect.value = currentClass;
+        render();
+
+
     </script>
 </body>
+
 </html>
