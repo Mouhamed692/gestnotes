@@ -29,7 +29,6 @@
            FONCTIONS ET STYLES D'IMPRESSION DU BULLETIN (CORRECTION FINALE)
            ========================================================================== */
         @media print {
-            /* 1. On cache absolument TOUTE l'interface globale */
             nav, 
             .container > div:first-child, 
             .grid, 
@@ -45,7 +44,6 @@
                 padding: 0 !important;
             }
 
-            /* 2. Configuration de la page A4 */
             @page {
                 size: A4 portrait;
                 margin: 20mm 15mm 20mm 15mm;
@@ -57,7 +55,6 @@
                 font-size: 12px !important;
             }
 
-            /* 3. On force le conteneur du bulletin à s'afficher seul et à prendre toute la page */
             .container {
                 max-width: 100% !important;
                 width: 100% !important;
@@ -78,7 +75,6 @@
                 background: transparent !important;
             }
 
-            /* On cache la bannière sombre du haut (contenant le nom et le bouton) uniquement à l'impression */
             .bg-slate-900.text-white {
                 display: none !important;
             }
@@ -96,7 +92,6 @@
                 margin-top: 0 !important;
             }
 
-            /* 4. Génération dynamique de l'en-tête officiel sénégalais */
             #grades-grid::before {
                 content: "REPUBLIQUE DU SENEGAL\nMinistère de l'Éducation Nationale\n-------------------\nBULLETIN DE NOTES";
                 white-space: pre-line;
@@ -110,7 +105,6 @@
                 letter-spacing: 1px;
             }
 
-            /* 5. Mise en page propre des lignes de notes */
             .grade-row-item {
                 page-break-inside: avoid;
                 border-bottom: 1px solid #94a3b8 !important;
@@ -124,12 +118,10 @@
                 background: transparent !important;
             }
 
-            /* Masquer les inputs d'évaluation individuelles si on ne veut laisser que la moyenne finale */
             .grade-input {
                 display: none !important;
             }
             
-            /* Rendre la moyenne visible et propre sans fond sombre */
             .input-moy {
                 background: transparent !important;
                 color: black !important;
@@ -140,7 +132,6 @@
                 text-align: right !important;
             }
 
-            /* 6. Bloc de résumé de la moyenne générale */
             #student-summary-row {
                 background: #f1f5f9 !important;
                 color: black !important;
@@ -163,7 +154,6 @@
                 font-weight: 900 !important;
             }
 
-            /* 7. Zone de signatures */
             #grades-grid::after {
                 content: "Observations du Directeur :                                         Signature :";
                 display: block;
@@ -584,19 +574,10 @@
                                 targetInput.select();
                             }
                         }
-                    }, 50);
+                    }, 60);
                 }
             }
         }
-        function imprimerBulletin() {
-    if (!currentClassId || !currentStudentId) {
-        alert("Veuillez sélectionner une classe et un élève avant d'imprimer.");
-        return;
-    }
-    // Ouvre ton fichier bulletin.html avec les bons paramètres de requêtes URL
-    const url = `bulletin.html?class=${currentClassId}&student=${currentStudentId}&period=${currentPeriod}`;
-    window.open(url, '_blank');
-}
 
         function renderGradesFields() {
             const container = document.getElementById('grades-grid');
@@ -616,95 +597,100 @@
                 const labelMoy = isPrimaire() ? `/${sub.coef}` : "Moy";
 
                 return `
-                    <div class="grade-row-item flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm min-w-[320px]" data-coef="${sub.coef}">
-                        <div class="font-bold text-slate-700 text-[11px] uppercase tracking-wide truncate max-w-[180px]">
-                            ${sub.name} <span class="text-indigo-400 font-normal text-[9px]">${isPrimaire() ? '(Sur ' + sub.coef + ')' : ''}</span>
+                    <div class="grade-row-item flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm min-w-[320px]" data-sub-id="${sub.id}">
+                        <div class="flex-1">
+                            <p class="text-xs font-black text-slate-800 uppercase">${sub.name}</p>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase">${isPrimaire() ? 'Note max :' : 'Coefficient :'} ${sub.coef}</p>
                         </div>
                         <div class="flex items-center gap-2 justify-end">
-                            <input type="number" step="0.25" class="input-d1 grade-input text-slate-700" placeholder="${pD1}" value="${g.d1}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd1', this.value, this)" onkeydown="handleKeyDown(event)">
-                            <input type="number" step="0.25" class="input-d2 grade-input text-slate-700" placeholder="${pD2}" value="${g.d2}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'd2', this.value, this)" onkeydown="handleKeyDown(event)">
-                            <input type="number" step="0.25" class="input-c grade-input bg-indigo-50 text-slate-700" placeholder="${pC}" value="${g.c}" onfocus="this.select()" oninput="updateVal('${sub.id}', 'c', this.value, this)" onkeydown="handleKeyDown(event)">
-                            <div class="flex flex-col items-center ml-1">
-                                <span class="text-[8px] text-indigo-500 font-black uppercase mb-0.5">${labelMoy}</span>
-                                <input type="text" value="${initialMoy}" disabled class="input-moy w-12 h-10 bg-indigo-900 text-emerald-400 font-black text-center text-xs rounded-xl border-none cursor-not-allowed">
+                            <div class="flex flex-col items-center">
+                                <span class="text-[8px] font-black text-slate-400 uppercase mb-1">${pD1}</span>
+                                <input type="number" step="any" class="grade-input input-d1" value="${g.d1}" oninput="updateVal('${sub.id}', 'd1', this.value, this)" onkeydown="handleKeyDown(event)">
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-[8px] font-black text-slate-400 uppercase mb-1">${pD2}</span>
+                                <input type="number" step="any" class="grade-input input-d2" value="${g.d2}" oninput="updateVal('${sub.id}', 'd2', this.value, this)" onkeydown="handleKeyDown(event)">
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-[8px] font-black text-slate-400 uppercase mb-1">${pC}</span>
+                                <input type="number" step="any" class="grade-input input-c" value="${g.c}" oninput="updateVal('${sub.id}', 'c', this.value, this)" onkeydown="handleKeyDown(event)">
+                            </div>
+                            <div class="flex flex-col items-center ml-2">
+                                <span class="text-[8px] font-black text-indigo-500 uppercase mb-1">${labelMoy}</span>
+                                <input type="text" readonly class="input-moy w-14 h-10 bg-indigo-50 text-indigo-900 font-black text-center text-xs rounded-xl outline-none" value="${initialMoy}">
                             </div>
                         </div>
                     </div>`;
             }).join('');
-
-            document.getElementById('student-summary-label').textContent = isPrimaire() ? "NOTE /10" : "MOY /20";
-            document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
         }
 
         function addStudent() {
-            const lastNameInput = document.getElementById('new-student-lastname');
-            const firstNameInput = document.getElementById('new-student-firstname');     
-            const lastname = lastNameInput.value.trim().toUpperCase();
-            const firstname = firstNameInput.value.trim().toUpperCase();
+            const lnInput = document.getElementById('new-student-lastname');
+            const fnInput = document.getElementById('new-student-firstname');
+            const lastname = lnInput.value.trim().toUpperCase();
+            const firstname = fnInput.value.trim().toUpperCase();
 
             if (!lastname || !firstname) return;
 
-            const newStudent = {
-                id: 'stud_' + Date.now(),
-                lastname,
-                firstname
-            };
-
+            const newStudent = { id: 'std_' + Date.now(), lastname, firstname };
             appState.classes[currentClassId].students.push(newStudent);
-            appState.classes[currentClassId].students.sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
             
+            appState.classes[currentClassId].students.sort((a, b) => 
+                (a.lastname + " " + a.firstname).localeCompare(b.lastname + " " + b.firstname)
+            );
+
             saveToStorage();
             renderStudents();
-            
-            lastNameInput.value = '';
-            firstNameInput.value = '';
-            lastNameInput.focus();
             renderStats();
+
+            lnInput.value = '';
+            fnInput.value = '';
+            lnInput.focus();
         }
 
         function renderStudents() {
             const list = document.getElementById('student-list');
             const students = appState.classes[currentClassId]?.students || [];
 
-            list.innerHTML = students.map((s, idx) => {
-                const avg = calculateCurrentStudentAverage(s.id);
-                const activeClass = currentStudentId === s.id ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-slate-50 border-slate-100 hover:bg-slate-100';
+            if (students.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 font-bold text-center py-4 uppercase">Aucun élève</p>`;
+                return;
+            }
+
+            list.innerHTML = students.map(s => {
+                const isActive = s.id === currentStudentId ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-transparent hover:bg-slate-100';
                 return `
-                    <li class="student-item border p-3 rounded-xl ${activeClass}" onclick="selectStudent('${s.id}')">
-                        <div class="flex items-center gap-3 truncate">
-                            <span class="text-[10px] font-black text-slate-400 w-5">${idx + 1}</span>
-                            <div class="truncate">
-                                <p class="text-xs font-black text-slate-800 truncate">${s.lastname} ${s.firstname}</p>
-                                <p class="text-[9px] font-bold text-indigo-500">Moy: ${avg}</p>
-                            </div>
-                        </div>
-                        <button onclick="event.stopPropagation(); removeStudent('${s.id}')" class="btn-delete-student text-xs font-bold">✕</button>
-                    </li>
-                `;
+                    <li onclick="selectStudent('${s.id}')" class="student-item p-3 rounded-xl border text-xs font-bold text-slate-700 ${isActive}">
+                        <span class="uppercase">${s.lastname} ${s.firstname}</span>
+                        <button onclick="deleteStudent('${s.id}', event)" class="btn-delete-student font-black text-sm hover:text-red-600">×</button>
+                    </li>`;
             }).join('');
         }
 
         function selectStudent(studentId) {
             currentStudentId = studentId;
-            const student = appState.classes[currentClassId].students.find(s => s.id === studentId);
-            
-            document.getElementById('current-student-display').textContent = `${student.lastname} ${student.firstname}`;
-            document.getElementById('current-class-display').textContent = currentClassId.replace('_', ' ');
-            
-            document.getElementById('welcome-msg').classList.add('hidden');
-            document.getElementById('editor-panel').classList.remove('hidden');
-            
             renderStudents();
-            renderGradesFields();
+
+            const student = appState.classes[currentClassId].students.find(s => s.id === studentId);
+            if (student) {
+                document.getElementById('welcome-msg').classList.add('hidden');
+                document.getElementById('editor-panel').classList.remove('hidden');
+                document.getElementById('current-student-display').textContent = `${student.lastname} ${student.firstname}`;
+                document.getElementById('current-class-display').textContent = `Classe : ${document.getElementById('class-level').value} ${document.getElementById('class-section').value}`;
+                
+                renderGradesFields();
+                document.getElementById('student-avg-display').textContent = calculateCurrentStudentAverage();
+            }
         }
 
-        function removeStudent(studentId) {
-            if (!confirm("Supprimer cet élève ainsi que ses notes ?")) return;
-            
+        function deleteStudent(studentId, event) {
+            event.stopPropagation();
+            if (!confirm("Supprimer cet élève ainsi que toutes ses notes ?")) return;
+
             appState.classes[currentClassId].students = appState.classes[currentClassId].students.filter(s => s.id !== studentId);
             
             ["1", "2", "3"].forEach(p => {
-                if (appState.classes[currentClassId].grades[p]?.[studentId]) {
+                if (appState.classes[currentClassId].grades[p]) {
                     delete appState.classes[currentClassId].grades[p][studentId];
                 }
             });
@@ -728,19 +714,25 @@
             }
 
             let totalAverages = 0;
+            let activeCount = 0;
+
             classData.students.forEach(s => {
-                totalAverages += parseFloat(calculateCurrentStudentAverage(s.id));
+                const avgStr = calculateCurrentStudentAverage(s.id);
+                if (avgStr !== "0.00") {
+                    totalAverages += parseFloat(avgStr);
+                    activeCount++;
+                }
             });
 
-            const classAvg = totalAverages / classData.students.length;
-            document.getElementById('class-avg-display').textContent = classAvg.toFixed(2);
+            const classAvg = activeCount > 0 ? (totalAverages / activeCount).toFixed(2) : "0.00";
+            document.getElementById('class-avg-display').textContent = classAvg;
         }
 
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `gestnotes_export_${new Date().toISOString().slice(0,10)}.json`);
+            downloadAnchor.setAttribute("download", `backup_gestnotes_${new Date().toISOString().split('T')[0]}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
@@ -757,13 +749,13 @@
                     if (importedState && importedState.classes) {
                         appState = importedState;
                         saveToStorage();
-                        alert("Données importées avec succès !");
                         changeLevel();
+                        alert("Données importées avec succès !");
                     } else {
                         alert("Format de fichier invalide.");
                     }
                 } catch (err) {
-                    alert("Erreur lors de la lecture du fichier.");
+                    alert("Erreur lors de la lecture du fichier JSON.");
                 }
             };
             reader.readAsText(file);
