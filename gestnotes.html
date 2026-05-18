@@ -176,7 +176,7 @@
         </div>
     </div>
 <script>
-        let appState = JSON.parse(localStorage.getItem('gestnotes_v4')) || { classes: {} };
+    let appState = JSON.parse(localStorage.getItem('gestnotes_v4')) || { classes: {} };
         let currentClassId = "";
         let currentStudentId = null;
         let currentPeriod = "1";
@@ -508,10 +508,10 @@
             const list = document.getElementById('student-list');
             const students = appState.classes[currentClassId]?.students || [];
             list.innerHTML = students.map(s => `
-                <li class="student-item p-3 rounded-xl cursor-pointer mb-2 ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
+                <li class="student-item p-3 rounded-xl cursor-pointer mb-2 flex items-center justify-between ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
                     <span onclick="selectStudent('${s.id}')" class="font-bold text-[10px] uppercase flex-1">${s.firstName} ${s.lastName}</span>
-                    <button onclick="deleteStudent('${s.id}')" class="btn-delete-student hover:bg-red-50">×</button>
-                </div>`).join('');
+                    <button onclick="deleteStudent('${s.id}')" class="btn-delete-student hover:bg-red-50 text-xs px-1">×</button>
+                </li>`).join('');
         }
 
         function deleteStudent(id) {
@@ -637,6 +637,7 @@
 
             const printWindow = window.open('', '_blank');
             printWindow.document.write(`
+                <!DOCTYPE html>
                 <html>
                 <head>
                     <title>Bulletin - ${student.firstName} ${student.lastName}</title>
@@ -691,10 +692,11 @@
                         <div>Le Titulaire de la Classe</div>
                         <div>La Direction</div>
                     </div>
-                    
+                    <script>
                         window.onload = function() { window.print(); setTimeout(() => { window.close(); }, 500); }
-                
-
+                    <\/script>
+                </body>
+                </html>
             `);
             printWindow.document.close();
         }
@@ -703,9 +705,10 @@
         window.onload = function() {
             changeLevel();
         };
+
 </script>
-
-
-
 </body>
 </html>
+
+
+
