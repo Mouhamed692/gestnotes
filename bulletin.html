@@ -3,596 +3,547 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GestNotes – Administration scolaire</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Bulletin de Notes</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #000;
+            margin: 0;
+            padding: 20px;
+            font-size: 13px;
+            background-color: #f1f5f9;
         }
 
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        .bulletin-wrapper {
+            max-width: 1000px;
+            margin: 0 auto 20px auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
 
-        ::-webkit-scrollbar-track {
-            background: transparent;
+        .input-panel {
+            background: #ffffff;
+            padding: 15px;
+            border: 2px solid #fbbf24;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
+        .input-panel label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            margin-top: 10px;
+            color: #1e293b;
+        }
+
+        .input-panel label:first-child {
+            margin-top: 0;
+        }
+
+        .input-panel textarea, 
+        .input-panel input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
             border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+            resize: vertical;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+        /* Zone d'importation du Logo Modernisée */
+        .logo-inputs {
+            display: flex;
+            gap: 20px;
+            margin-top: 12px;
+            background: #f8fafc;
+            padding: 15px;
+            border: 1px dashed #cbd5e1;
+            border-radius: 6px;
         }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
+        .logo-file-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-url-wrapper {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Customisation du bouton d'importation de fichier */
+        .logo-file-wrapper input[type="file"] {
+            width: 100%;
+            padding: 6px;
+            font-size: 13px;
+            color: #475569;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .logo-file-wrapper input[type="file"]::file-selector-button {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 10px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .logo-file-wrapper input[type="file"]::file-selector-button:hover {
+            background-color: #cbd5e1;
+        }
+
+        /* Amélioration visuelle de l'input URL */
+        .input-panel input[type="text"]#logo-url {
+            margin-top: 5px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-panel input[type="text"]#logo-url:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+        }
+
+        .actions-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn-print {
+            padding: 10px 20px;
+            background-color: #059669;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-print:hover {
+            background-color: #047857;
+        }
+
+        .btn-back {
+            padding: 10px 15px;
+            background-color: #4f46e5;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-back:hover {
+            background-color: #4338ca;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
             }
-            to {
-                transform: translateX(0);
-                opacity: 1;
+
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .bulletin-wrapper {
+                box-shadow: none;
+                margin: 0;
+                padding: 10px;
+                max-width: 100%;
+            }
+
+            @page {
+                margin: 10mm;
+                size: A4 landscape;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
         }
 
-        .toast-animate {
-            animation: slideIn 0.3s ease forwards;
+        /* En-tête réorganisé avec support Logo */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: bold;
+            font-size: 12px;
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .flag {
+            width: 50px;
+            height: 35px;
+            display: flex;
+            border: 1px solid #000;
+            flex-shrink: 0;
+        }
+
+        .flag .green {
+            background-color: #00853f;
+            flex: 1;
+        }
+
+        .flag .yellow {
+            background-color: #fdef42;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flag .red {
+            background-color: #e31b23;
+            flex: 1;
+        }
+
+        .flag .star {
+            color: #00853f;
+            font-size: 12px;
+        }
+
+        .header-center {
+            text-align: center;
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header-center h1 {
+            margin: 0;
+            font-size: 20px;
+            text-transform: uppercase;
+            text-decoration: underline;
+            letter-spacing: 1px;
+        }
+
+        .logo-container {
+            height: 75px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-container img {
+            max-height: 100%;
+            max-width: 180px;
+            object-fit: contain;
+        }
+
+        .header-right {
+            font-size: 13px;
+            text-align: right;
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .student-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .student-col {
+            width: 48%;
+            line-height: 1.6;
+        }
+
+        .student-col strong {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .field {
+            display: inline-block;
+            min-width: 150px;
+        }
+
+        table.grades-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+
+        table.grades-table th,
+        table.grades-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            text-align: center;
+        }
+
+        table.grades-table .col-discipline {
+            text-align: left;
+            text-transform: uppercase;
+            font-weight: bold;
+            width: 25%;
+        }
+
+        .total-row td {
+            font-weight: bold;
+        }
+
+        .summary-row td {
+            font-weight: bold;
+            font-size: 13px;
+            background-color: #f0f0f0;
+        }
+
+        .footer-sections {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .decision-table,
+        .sanction-table {
+            border-collapse: collapse;
+            width: 300px;
+            font-size: 12px;
+        }
+
+        .decision-table td,
+        .sanction-table td {
+            border: 1px solid #000;
+            padding: 4px 8px;
+        }
+
+        .check-box {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .observations {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .obs-right {
+            text-align: center;
+            width: 300px;
+        }
+
+        #error-msg {
+            display: none;
+            color: red;
+            text-align: center;
+            padding: 50px;
+            font-size: 16px;
         }
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col text-slate-800">
+<body>
 
-    <nav class="bg-indigo-900 text-white shadow-md sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <div class="bg-amber-500 p-2 rounded-lg text-indigo-950 font-bold text-xl tracking-wider shadow">
-                        GN
-                    </div>
-                    <div>
-                        <span class="font-bold text-lg block tracking-wide">GestNotes</span>
-                        <span class="text-xs text-indigo-200 block -mt-1">Sénégal • Management des Évaluations</span>
-                    </div>
+    <div id="error-msg" class="no-print">Données introuvables. Veuillez générer le bulletin depuis la page principale.
+    </div>
+
+    <div class="bulletin-wrapper no-print" id="setup-panel">
+        <div class="input-panel">
+            <label for="header-input">Modifier l'en-tête de l'établissement (IEF, École, etc.) :</label>
+            <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE
+IEF PIKINE
+RENOVATION</textarea>
+            
+            <div class="logo-inputs">
+                <div class="logo-file-wrapper">
+                    <label for="logo-file">Importer un Logo (Image locale) :</label>
+                    <input type="file" id="logo-file" accept="image/*">
                 </div>
-                <div class="flex items-center gap-6 text-sm">
-                    <div class="bg-indigo-800 px-3 py-1.5 rounded-md border border-indigo-700">
-                        <span class="text-indigo-300 font-medium mr-1">Année:</span>
-                        <span id="nav-year" class="font-bold text-amber-400">-</span>
-                    </div>
-                    <div class="bg-indigo-800 px-3 py-1.5 rounded-md border border-indigo-700">
-                        <span id="nav-period-lbl" class="text-indigo-300 font-medium mr-1">Période:</span>
-                        <span id="nav-period" class="font-bold text-amber-400">-</span>
-                    </div>
+                <div class="logo-url-wrapper">
+                    <label for="logo-url">Ou coller l'URL d'un logo sur le web :</label>
+                    <input type="text" id="logo-url" placeholder="https://exemple.com/logo.png">
                 </div>
+            </div>
+
+            <p style="font-size: 11px; color: #64748b; margin-top: 8px;">Les modifications et le logo s'appliquent en direct ci-dessous.</p>
+            
+            <div class="actions-row">
+                <a href="gestnotes.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Retour à GestNotes</a>
+                <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col md:flex-row gap-6">
-        
-        <aside class="w-full md:w-80 shrink-0 flex flex-col gap-6">
+    <div class="bulletin-wrapper" id="bulletin-content" style="display: none;">
+
+        <div class="header-container">
+            <div class="header-left">
+                <div class="flag">
+                    <div class="green"></div>
+                    <div class="yellow"><span class="star">★</span></div>
+                    <div class="red"></div>
+                </div>
+                <div id="header-text-display">
+                    IA PIKINE / GUEDIAWAYE<br>
+                    IEF PIKINE<br>
+                    RENOVATION
+                </div>
+            </div>
             
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-gear text-indigo-600"></i> Configuration Globale
-                </h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Année Scolaire</label>
-                        <input type="text" id="cfg-year" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 font-medium" placeholder="Ex: 2025-2026">
+            <div class="header-center">
+                <div class="logo-container" id="logo-preview-box">
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Période Active</label>
-                        <select id="cfg-period" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 font-medium">
-                            <option value="1">1er Semestre / Trimestre</option>
-                            <option value="2">2ème Semestre / Trimestre</option>
-                            <option value="3">3ème Trimestre (Primaire)</option>
-                        </select>
-                    </div>
-                    <button onclick="saveGlobalSettings()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-2.5 rounded-lg shadow-sm transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-floppy-disk"></i> Enregistrer
-                    </button>
-                </div>
+                <h1>BULLETIN DE NOTES</h1>
             </div>
-
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex-1 flex flex-col min-h-[300px]">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
-                    <span><i class="fa-solid fa-school text-indigo-600"></i> Classes</span>
-                    <span id="class-count" class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">0</span>
-                </h2>
-
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
-                    <div class="flex gap-2">
-                        <select id="new-class-level" class="flex-1 bg-white border border-slate-200 rounded-md px-2 py-1.5 text-xs font-medium focus:outline-none">
-                            <option value="">Niveau...</option>
-                            <option value="CI">CI</option><option value="CP">CP</option>
-                            <option value="CE1">CE1</option><option value="CE2">CE2</option>
-                            <option value="CM1">CM1</option><option value="CM2">CM2</option>
-                            <option value="6ème">6ème</option><option value="5ème">5ème</option>
-                            <option value="4ème">4ème</option><option value="3ème">3ème</option>
-                            <option value="Seconde">Seconde</option><option value="Première">Première</option>
-                            <option value="Terminale">Terminale</option>
-                        </select>
-                        <input type="text" id="new-class-section" class="w-16 bg-white border border-slate-200 rounded-md px-2 py-1.5 text-xs text-center uppercase font-bold focus:outline-none" placeholder="A, B...">
-                    </div>
-                    <button onclick="addClass()" class="w-full mt-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold py-1.5 rounded-md transition">
-                        + Ajouter la classe
-                    </button>
-                </div>
-
-                <div class="flex-1 overflow-y-auto space-y-1.5 max-h-[250px] pr-1" id="classes-list"></div>
-            </div>
-        </aside>
-
-        <section class="flex-1 flex flex-col gap-6 min-w-0" id="main-content-panel">
             
-            <div id="empty-state" class="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center my-auto flex flex-col items-center justify-center shadow-sm">
-                <div class="bg-indigo-50 text-indigo-600 w-16 h-16 rounded-full flex items-center justify-center text-2xl mb-4 animate-bounce">
-                    <i class="fa-solid fa-folder-open"></i>
-                </div>
-                <h3 class="text-lg font-bold text-slate-700 mb-1">Aucune classe sélectionnée</h3>
-                <p class="text-slate-400 text-sm max-w-sm">Choisissez une classe existante dans le menu latéral ou créez-en une nouvelle pour commencer à gérer vos élèves et leurs notes.</p>
+            <div class="header-right">
+                Année Scolaire: <span id="lbl-year"></span><br>
+                Période: <span id="lbl-semester"></span>
             </div>
+        </div>
 
-            <div id="active-state" class="hidden space-y-6">
-                
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <div class="flex items-center gap-2.5">
-                            <h1 id="active-class-title" class="text-2xl font-bold text-slate-800 tracking-tight">-</h1>
-                            <span id="active-class-type" class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md font-semibold border border-indigo-100">Régime Général</span>
-                        </div>
-                        <p class="text-slate-400 text-xs mt-1">Identifiant unique : <span id="active-class-key" class="font-mono bg-slate-100 text-slate-600 px-1 rounded">-</span></p>
-                    </div>
-                    
-                    <div class="flex items-center gap-2 self-end sm:self-auto">
-                        <button onclick="exportAllCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-4 py-2.5 rounded-lg transition flex items-center gap-2">
-                            <i class="fa-solid fa-file-csv text-emerald-600"></i> Tout exporter (CSV)
-                        </button>
-                        <button onclick="printAllReportCards()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2.5 rounded-lg shadow-sm transition flex items-center gap-2">
-                            <i class="fa-solid fa-print"></i> Tout imprimer
-                        </button>
-                        <button onclick="deleteClass()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2.5 rounded-lg transition" title="Supprimer la classe">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                    
-                    <div class="flex border-b border-slate-100 bg-slate-50/70 p-2 gap-1">
-                        <button onclick="switchTab('students')" id="tab-btn-students" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition">
-                            <i class="fa-solid fa-user-graduate"></i> Élèves <span id="badge-count-students" class="text-xs ml-1 bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full font-bold">0</span>
-                        </button>
-                        <button onclick="switchTab('subjects')" id="tab-btn-subjects" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition">
-                            <i class="fa-solid fa-book"></i> Matières <span id="badge-count-subjects" class="text-xs ml-1 bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full font-bold">0</span>
-                        </button>
-                        <button onclick="switchTab('grades')" id="tab-btn-grades" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition">
-                            <i class="fa-solid fa-star"></i> Saisie des Notes
-                        </button>
-                    </div>
-
-                    <div id="tab-content-students" class="p-6 hidden space-y-6">
-                        <div class="flex flex-col sm:flex-row gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                            <input type="text" id="stud-firstname" class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="Prénom de l'élève">
-                            <input type="text" id="stud-lastname" class="w-full sm:w-48 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none uppercase font-bold" placeholder="NOM">
-                            <input type="text" id="stud-matricule" class="w-full sm:w-36 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="Matricule">
-                            <input type="text" id="stud-birth" class="w-full sm:w-40 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="Né(e) le (JJ/MM/AAAA)">
-                            <button onclick="addStudent()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2 rounded-lg shadow-sm transition whitespace-nowrap">
-                                + Inscrire
-                            </button>
-                        </div>
-                        <div class="overflow-x-auto border border-slate-100 rounded-xl">
-                            <table class="w-full text-left border-collapse text-sm">
-                                <thead>
-                                    <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold text-xs uppercase tracking-wider">
-                                        <th class="py-3 px-4">Matricule</th>
-                                        <th class="py-3 px-4">Nom complet</th>
-                                        <th class="py-3 px-4">Date de Naissance</th>
-                                        <th class="py-3 px-4 text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="table-students-body" class="divide-y divide-slate-100"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div id="tab-content-subjects" class="p-6 hidden space-y-6">
-                        <div class="flex flex-col sm:flex-row gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                            <input type="text" id="sub-name" class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none font-medium" placeholder="Intitulé de la matière">
-                            <div class="flex items-center gap-2 bg-white px-3 py-2 border border-slate-200 rounded-lg shrink-0">
-                                <label class="text-xs font-semibold text-slate-500 whitespace-nowrap">Coef Général :</label>
-                                <input type="number" id="sub-coef" class="w-12 text-center text-sm font-bold focus:outline-none" value="2" min="1">
-                            </div>
-                            <button onclick="addSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2 rounded-lg shadow-sm transition whitespace-nowrap">
-                                + Ajouter
-                            </button>
-                        </div>
-                        <div class="overflow-x-auto border border-slate-100 rounded-xl">
-                            <table class="w-full text-left border-collapse text-sm">
-                                <thead>
-                                    <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold text-xs uppercase tracking-wider">
-                                        <th class="py-3 px-4">Discipline / Domaine</th>
-                                        <th class="py-3 px-4 text-center">Coefficient Général</th>
-                                        <th class="py-3 px-4 text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="table-subjects-body" class="divide-y divide-slate-100"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div id="tab-content-grades" class="p-6 hidden space-y-4">
-                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-4">
-                            <div class="flex items-center gap-3 w-full sm:w-auto">
-                                <label class="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Discipline :</label>
-                                <select id="grade-filter-subject" onchange="renderGradesGrid()" class="w-full sm:w-64 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:border-indigo-500"></select>
-                            </div>
-                            <div class="text-xs text-slate-400 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 font-medium">
-                                <i class="fa-solid fa-cloud-arrow-up text-indigo-500 mr-1"></i> Sauvegarde automatique active.
-                            </div>
-                        </div>
-
-                        <div class="overflow-x-auto border border-slate-100 rounded-xl">
-                            <table class="w-full text-left border-collapse text-sm">
-                                <thead>
-                                    <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold text-xs uppercase tracking-wider text-center">
-                                        <th class="py-3 px-4 text-left">Nom de l'élève</th>
-                                        <th class="py-3 px-2 w-24">Devoir 1 (c1)</th>
-                                        <th class="py-3 px-2 w-24">Devoir 2 (c1)</th>
-                                        <th class="py-3 px-2 w-24">Composition (c2)</th>
-                                        <th class="py-3 px-4 w-28">Moy/20</th>
-                                        <th class="py-3 px-4 w-24">Rang</th>
-                                        <th class="py-3 px-4 text-left w-44">Appréciation</th>
-                                        <th class="py-3 px-4 w-24">Absences</th>
-                                        <th class="py-3 px-4 w-24">Retards</th>
-                                        <th class="py-3 px-4">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="table-grades-body" class="divide-y divide-slate-100"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                </div>
+        <div class="student-info">
+            <div class="student-col">
+                <div><span class="field">Prénoms</span> <strong><span id="lbl-firstname"></span></strong></div>
+                <div><span class="field">Né(e) le</span> <strong id="lbl-birth"></strong> à <strong id="lbl-birthplace">Dakar</strong></div>
+                <div><span class="field">Matricule:</span> <strong id="lbl-matricule"></strong></div>
             </div>
-        </section>
-    </main>
+            <div class="student-col">
+                <div><span class="field">Nom</span> <strong><span id="lbl-lastname"></span></strong></div>
+                <div><span class="field">Classe / Série:</span> <strong><span id="lbl-class"></span></strong></div>
+                <div><span class="field">Nbre d'élèves:</span> <strong id="lbl-effectif"></strong>
+                    &nbsp;&nbsp;&nbsp;&nbsp; Classe Redoublée <strong id="lbl-redouble">0</strong></div>
+            </div>
+        </div>
 
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+        <table class="grades-table">
+            <thead>
+                <tr>
+                    <th rowspan="2" id="th-discipline">DISCIPLINES</th>
+                    <th colspan="2" id="th-note-group">Devoir</th>
+                    <th rowspan="2" id="th-final">Comp</th>
+                    <th rowspan="2">Moy/20</th>
+                    <th rowspan="2">Coef</th>
+                    <th rowspan="2">Moy x Coef</th>
+                    <th rowspan="2">T.H</th>
+                    <th rowspan="2">Rang</th>
+                    <th rowspan="2">Appréciations</th>
+                </tr>
+                <tr>
+                    <th id="th-n1">D1</th>
+                    <th id="th-n2">D2</th>
+                </tr>
+            </thead>
+            <tbody id="grades-body"></tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="5" class="lbl-total">TOTAL</td>
+                    <td id="lbl-tot-coef"></td>
+                    <td id="lbl-tot-pts"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="summary-row">
+                    <td colspan="5" class="lbl-moy">Moyenne <span id="lbl-moy-gen"></span> /20</td>
+                    <td colspan="2">Rang <span id="lbl-rank"></span></td>
+                    <td colspan="2">Retards <span id="lbl-ret"></span></td>
+                    <td>Absences <span id="lbl-abs"></span></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="footer-sections">
+            <table class="decision-table">
+                <tr>
+                    <td>Satisfaisant doit continuer</td>
+                    <td class="check-box" id="chk-satisfaisant"></td>
+                </tr>
+                <tr>
+                    <td>Peut Mieux Faire</td>
+                    <td class="check-box" id="chk-peut-mieux"></td>
+                </tr>
+                <tr>
+                    <td>Insuffisant</td>
+                    <td class="check-box" id="chk-insuffisant"></td>
+                </tr>
+                <tr>
+                    <td>Risque de Redoubler</td>
+                    <td class="check-box" id="chk-risque-redoubler"></td>
+                </tr>
+                <tr>
+                    <td>Risque l'exclusion</td>
+                    <td class="check-box" id="chk-risque-exclusion"></td>
+                </tr>
+            </table>
+
+            <table class="sanction-table">
+                <tr>
+                    <td>Félicitations</td>
+                    <td class="check-box" id="chk-felicitations"></td>
+                </tr>
+                <tr>
+                    <td>Encouragement</td>
+                    <td class="check-box" id="chk-encouragement"></td>
+                </tr>
+                <tr>
+                    <td>Tableau d'honneur</td>
+                    <td class="check-box" id="chk-tableau-honneur"></td>
+                </tr>
+                <tr>
+                    <td>Avertissement</td>
+                    <td class="check-box" id="chk-avertissement"></td>
+                </tr>
+                <tr>
+                    <td>Blâme</td>
+                    <td class="check-box" id="chk-blame"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="observations">
+            <div id="lbl-obs-conseil">Observations du conseil des professeurs</div>
+            <div class="obs-right">Le Chef d'Etablissement</div>
+        </div>
+    </div>
 
     <script>
-        let appState = {
-            settings: { year: "2025-2026", period: "1" },
-            classes: {}
-        };
-
-        let currentClass = ""; 
-        let currentSection = ""; 
-        let currentFullKey = ""; 
-        let activeTab = "students";
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedData = localStorage.getItem('gestnotes_data');
-            if (savedData) {
-                try {
-                    appState = JSON.parse(savedData);
-                    if (!appState.settings) appState.settings = { year: "2025-2026", period: "1" };
-                    if (!appState.classes) appState.classes = {};
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-            applyGlobalSettingsToUI();
-            renderClassesList();
-            updateUIState();
-        });
-
-        function saveState() {
-            localStorage.setItem('gestnotes_data', JSON.stringify(appState));
-        }
-
-        function showToast(message, type = "success") {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast-animate text-xs font-semibold px-4 py-3 rounded-xl shadow-lg border text-white flex items-center gap-2 min-w-[200px] ${
-                type === "error" ? "bg-rose-600 border-rose-500" : "bg-slate-900 border-slate-800"
-            }`;
-            const icon = type === "error" ? "circle-exclamation" : "circle-check";
-            toast.innerHTML = `<i class="fa-solid fa-${icon}"></i> <span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px)';
-                toast.style.transition = 'all 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        function applyGlobalSettingsToUI() {
-            document.getElementById('cfg-year').value = appState.settings.year;
-            document.getElementById('cfg-period').value = appState.settings.period;
-            document.getElementById('nav-year').textContent = appState.settings.year;
-            
-            const isPrim = ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(currentClass);
-            document.getElementById('nav-period-lbl').textContent = isPrim ? "Trimestre:" : "Période:";
-            
-            if (isPrim) {
-                document.getElementById('nav-period').textContent = appState.settings.period + (appState.settings.period === "1" ? "er Trim" : "ème Trim");
-            } else {
-                document.getElementById('nav-period').textContent = appState.settings.period === "1" ? "1er Sem" : "2ème Sem";
-            }
-        }
-
-        function saveGlobalSettings() {
-            const yr = document.getElementById('cfg-year').value.trim();
-            if (!yr) return showToast("Veuillez saisir l'année scolaire", "error");
-            appState.settings.year = yr;
-            appState.settings.period = document.getElementById('cfg-period').value;
-            saveState();
-            applyGlobalSettingsToUI();
-            showToast("Paramètres globaux mis à jour");
-            if (currentFullKey) renderGradesGrid();
-        }
-
-        function addClass() {
-            const lvl = document.getElementById('new-class-level').value;
-            const sec = document.getElementById('new-class-section').value.trim().toUpperCase();
-            
-            if (!lvl) return showToast("Sélectionnez un niveau", "error");
-            if (!sec) return showToast("Spécifiez la section (Ex: A, B)", "error");
-            
-            const targetKey = `${lvl}_${sec}`;
-            if (appState.classes[targetKey]) return showToast("Cette classe existe déjà", "error");
-            
-            appState.classes[targetKey] = { students: [], subjects: [], grades: {} };
-            saveState();
-            renderClassesList();
-            selectClass(lvl, sec);
-            document.getElementById('new-class-section').value = "";
-            showToast(`Classe de ${lvl} ${sec} configurée`);
-        }
-
-        function renderClassesList() {
-            const container = document.getElementById('classes-list');
-            container.innerHTML = "";
-            const keys = Object.keys(appState.classes).sort();
-            document.getElementById('class-count').textContent = keys.length;
-            
-            keys.forEach(k => {
-                const [lvl, sec] = k.split('_');
-                const isSelected = k === currentFullKey;
-                const btn = document.createElement('button');
-                btn.onclick = () => selectClass(lvl, sec);
-                btn.className = `w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-between transition ${
-                    isSelected ? "bg-indigo-600 text-white shadow" : "bg-slate-50 hover:bg-slate-100 text-slate-700"
-                }`;
-                btn.innerHTML = `
-                    <span class="flex items-center gap-2">
-                        <i class="fa-solid fa-graduation-cap ${isSelected ? 'text-amber-300' : 'text-indigo-600'}"></i>
-                        <span>${lvl} ${sec}</span>
-                    </span>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-200 text-slate-500'}">
-                        ${appState.classes[k].students.length} él.
-                    </span>
-                `;
-                container.appendChild(btn);
-            });
-        }
-
-        function selectClass(lvl, sec) {
-            currentClass = lvl;
-            currentSection = sec;
-            currentFullKey = `${lvl}_${sec}`;
-            renderClassesList();
-            updateUIState();
-            applyGlobalSettingsToUI();
-            if (activeTab === 'grades') updateSubjectFilterOptions();
-            switchTab(activeTab);
-        }
-
-        function deleteClass() {
-            if (!confirm(`Supprimer définitivement la classe ${currentClass} ${currentSection} ?`)) return;
-            delete appState.classes[currentFullKey];
-            currentClass = ""; currentSection = ""; currentFullKey = "";
-            saveState();
-            renderClassesList();
-            updateUIState();
-            showToast("Classe supprimée");
-        }
-
-        function updateUIState() {
-            const emptyS = document.getElementById('empty-state');
-            const activeS = document.getElementById('active-state');
-            if (!currentFullKey) {
-                emptyS.classList.remove('hidden');
-                activeS.classList.add('hidden');
-            } else {
-                emptyS.classList.add('hidden');
-                activeS.classList.remove('hidden');
-                document.getElementById('active-class-title').textContent = `${currentClass} ${currentSection}`;
-                document.getElementById('active-class-key').textContent = currentFullKey;
-                const isPrim = ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(currentClass);
-                document.getElementById('active-class-type').textContent = isPrim ? "Enseignement Élémentaire" : "Enseignement Moyen / Secondaire";
-            }
-        }
-
-        function switchTab(tId) {
-            activeTab = tId;
-            ['students', 'subjects', 'grades'].forEach(t => {
-                const btn = document.getElementById(`tab-btn-${t}`);
-                const content = document.getElementById(`tab-content-${t}`);
-                if (t === tId) {
-                    btn.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold bg-white text-indigo-900 shadow-sm border border-slate-200/60";
-                    content.classList.remove('hidden');
-                } else {
-                    btn.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-800 hover:bg-white/50";
-                    content.classList.add('hidden');
-                }
-            });
-
-            const cData = appState.classes[currentFullKey];
-            if (cData) {
-                document.getElementById('badge-count-students').textContent = cData.students.length;
-                document.getElementById('badge-count-subjects').textContent = cData.subjects.length;
-            }
-
-            if (tId === 'students') renderStudentsTable();
-            if (tId === 'subjects') renderSubjectsTable();
-            if (tId === 'grades') {
-                updateSubjectFilterOptions();
-                renderGradesGrid();
-            }
-        }
-
-        function addStudent() {
-            const fn = document.getElementById('stud-firstname').value.trim();
-            const ln = document.getElementById('stud-lastname').value.trim().toUpperCase();
-            const mat = document.getElementById('stud-matricule').value.trim();
-            const bd = document.getElementById('stud-birth').value.trim();
-            
-            if (!fn || !ln) return showToast("Le prénom et le nom sont requis", "error");
-            
-            const cData = appState.classes[currentFullKey];
-            cData.students.push({ id: 'st_' + Date.now(), firstName: fn, lastName: ln, matricule: mat, birthDate: bd, absences: 0, retards: 0 });
-            cData.students.sort((a, b) => a.lastName.localeCompare(b.lastName));
-            
-            saveState();
-            renderStudentsTable();
-            document.getElementById('stud-firstname').value = "";
-            document.getElementById('stud-lastname').value = "";
-            document.getElementById('stud-matricule').value = "";
-            document.getElementById('stud-birth').value = "";
-            showToast(`${fn} ${ln} inscrit(e)`);
-        }
-
-        function removeStudent(sId) {
-            if (!confirm("Radié cet élève ?")) return;
-            const cData = appState.classes[currentFullKey];
-            cData.students = cData.students.filter(s => s.id !== sId);
-            if (cData.grades[sId]) delete cData.grades[sId];
-            saveState();
-            renderStudentsTable();
-            showToast("Élève radié");
-        }
-
-        function renderStudentsTable() {
-            const tbody = document.getElementById('table-students-body');
-            tbody.innerHTML = "";
-            const students = appState.classes[currentFullKey]?.students || [];
-            if (students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400 font-medium text-xs">Aucun élève inscrit.</td></tr>`;
-                return;
-            }
-            students.forEach(s => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/50 transition";
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-mono text-xs text-slate-500">${s.matricule || '-'}</td>
-                    <td class="py-3 px-4 font-semibold text-slate-800">${s.lastName} <span class="font-normal text-slate-600">${s.firstName}</span></td>
-                    <td class="py-3 px-4 text-xs text-slate-600">${s.birthDate || '-'}</td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="removeStudent('${s.id}')" class="text-rose-500 hover:text-rose-700 font-semibold text-xs px-2 py-1">Radiation</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function addSubject() {
-            const name = document.getElementById('sub-name').value.trim();
-            const coef = parseInt(document.getElementById('sub-coef').value) || 2;
-            if (!name) return showToast("Veuillez spécifier la matière", "error");
-            
-            const cData = appState.classes[currentFullKey];
-            if (cData.subjects.some(s => s.name.toLowerCase() === name.toLowerCase())) return showToast("Existe déjà", "error");
-            
-            cData.subjects.push({ id: 'sub_' + Date.now(), name: name, coef: coef, coefD1: 1, coefD2: 1, coefC: 2 });
-            saveState();
-            renderSubjectsTable();
-            document.getElementById('sub-name').value = "";
-            showToast(`Matière ajoutée : ${name}`);
-        }
-
-        function removeSubject(subId) {
-            if (!confirm("Supprimer cette discipline ?")) return;
-            const cData = appState.classes[currentFullKey];
-            cData.subjects = cData.subjects.filter(s => s.id !== subId);
-            Object.keys(cData.grades).forEach(sId => { if (cData.grades[sId][subId]) delete cData.grades[sId][subId]; });
-            saveState();
-            renderSubjectsTable();
-            showToast("Discipline supprimée");
-        }
-
-        function renderSubjectsTable() {
-            const tbody = document.getElementById('table-subjects-body');
-            tbody.innerHTML = "";
-            const subjects = appState.classes[currentFullKey]?.subjects || [];
-            if (subjects.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="py-8 text-center text-slate-400 font-medium text-xs">Aucune matière configurée.</td></tr>`;
-                return;
-            }
-            subjects.forEach(s => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/50 transition text-center";
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-semibold text-slate-700 text-left">${s.name}</td>
-                    <td class="py-3 px-4 font-bold text-indigo-600">${s.coef}</td>
-                    <td class="py-3 px-4">
-                        <button onclick="removeSubject('${s.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 font-semibold">Supprimer</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function updateSubjectFilterOptions() {
-            const select = document.getElementById('grade-filter-subject');
-            select.innerHTML = "";
-            const subjects = appState.classes[currentFullKey]?.subjects || [];
-            subjects.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.id; opt.textContent = s.name;
-                select.appendChild(opt);
-            });
-        }
-
-        function calculateRanks(subId) {
-            const classData = appState.classes[currentFullKey];
-            if (!classData || !subId) return {};
-            const subject = classData.subjects.find(s => s.id === subId);
-            if (!subject) return {};
-
-            let scores = [];
-            classData.students.forEach(student => {
-                const g = classData.grades[student.id]?.[subId] || {};
-                let totalPoints = 0, totalCoefs = 0;
-                if (g.d1 !== undefined && g.d1 !== '') { totalPoints += Number(g.d1) * (subject.coefD1 || 1); totalCoefs += (subject.coefD1 || 1); }
-                if (g.d2 !== undefined && g.d2 !== '') { totalPoints += Number(g.d2) * (subject.coefD2 || 1); totalCoefs += (subject.coefD2 || 1); }
-                if (g.c !== undefined && g.c !== '') { totalPoints += Number(g.c) * (subject.coefC || 2); totalCoefs += (subject.coefC || 2); }
-                if (totalCoefs > 0) scores.push({ sId: student.id, avg: totalPoints / totalCoefs });
-            });
-
-            scores.sort((a, b) => b.avg - a.avg);
-            let ranks = {};
-            let currentRank = 1;
-            scores.forEach((item, index) => {
-                if (index > 0 && item.avg < scores[index - 1].avg) currentRank = index + 1;
-                ranks[item.sId] = currentRank;
-            });
-            return ranks;
-        }
-
         function getAppreciation(note) {
             if (note === null || note === undefined || note === '') return "";
             if (note < 4) return "Très Faible";
@@ -604,189 +555,199 @@
             return "Excellent";
         }
 
-        /* ----------------------------------------------------
-           FONCTION LOGIQUE CORRIGÉE ET ERGONOMIQUE POUR D1, D2, CP
-           ---------------------------------------------------- */
-        function updateGradeValue(studentId, subId, field, val) {
-            const classData = appState.classes[currentFullKey];
-            if (!classData || !classData.grades) return;
-            if (!classData.grades[studentId]) classData.grades[studentId] = {};
-            if (!classData.grades[studentId][subId]) classData.grades[studentId][subId] = {};
-            
-            // Extraction ciblée du champ input modifié dans l'arbre HTML
-            const inputEl = document.querySelector(`input[oninput*="'${studentId}'"][oninput*="'${subId}'"][oninput*="'${field}'"]`) 
-                            || (window.event ? window.event.target : null);
-
-            // 1. Gestion de la purge / Effacement total du champ
-            if (val.trim() === "") {
-                delete classData.grades[studentId][subId][field];
-                if (inputEl) inputEl.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-700');
-                saveState();
-                refreshRowCalculations(studentId, subId);
-                return;
-            }
-
-            // 2. Alignement et substitution de la virgule vers le point numérique
-            let sanitizedVal = val.replace(',', '.');
-            
-            // Protection : Tolérer la phase intermédiaire d'écriture (un point isolé ou final comme "14.")
-            if (sanitizedVal === '.' || sanitizedVal.endsWith('.')) {
-                if (inputEl) inputEl.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-700');
-                return; 
-            }
-
-            let num = parseFloat(sanitizedVal);
-
-            // 3. Validation de l'intervalle légal sur 20
-            if (isNaN(num) || num < 0 || num > 20) {
-                if (inputEl) inputEl.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-700');
-                return; // Protection : La note invalide n'est pas envoyée à l'état applicatif
-            }
-
-            // 4. Validation réussie : Restauration des styles natifs et mise à jour
-            if (inputEl) inputEl.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-700');
-            
-            classData.grades[studentId][subId][field] = num;
-            saveState();
-            refreshRowCalculations(studentId, subId);
+        function isPrimary(className) {
+            return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className.split('_')[0]);
         }
 
-        function updateAttendance(studentId, field, val) {
-            const student = appState.classes[currentFullKey].students.find(s => s.id === studentId);
-            if (student) { student[field] = parseInt(val) || 0; saveState(); }
-        }
+        window.onload = function () {
+            const headerInput = document.getElementById('header-input');
+            const headerDisplay = document.getElementById('header-text-display');
+            const logoFileInput = document.getElementById('logo-file');
+            const logoUrlInput = document.getElementById('logo-url');
+            const logoPreviewBox = document.getElementById('logo-preview-box');
 
-        function refreshRowCalculations(studentId, subId) {
-            const classData = appState.classes[currentFullKey];
-            const subject = classData.subjects.find(s => s.id === subId);
-            const g = classData.grades[studentId]?.[subId] || {};
-            
-            let totalPoints = 0, totalCoefs = 0;
-            if (g.d1 !== undefined && g.d1 !== '') { totalPoints += g.d1 * (subject.coefD1 || 1); totalCoefs += (subject.coefD1 || 1); }
-            if (g.d2 !== undefined && g.d2 !== '') { totalPoints += g.d2 * (subject.coefD2 || 1); totalCoefs += (subject.coefD2 || 1); }
-            if (g.c !== undefined && g.c !== '') { totalPoints += g.c * (subject.coefC || 2); totalCoefs += (subject.coefC || 2); }
-
-            const mCell = document.getElementById(`avg-${studentId}`);
-            const aCell = document.getElementById(`app-${studentId}`);
-            
-            if (totalCoefs > 0) {
-                const finalAvg = totalPoints / totalCoefs;
-                mCell.textContent = finalAvg.toFixed(2).replace('.', ',');
-                mCell.className = `font-bold text-center ${finalAvg >= 10 ? 'text-emerald-600' : 'text-rose-600'}`;
-                aCell.textContent = getAppreciation(finalAvg);
-            } else {
-                mCell.textContent = "-"; mCell.className = "text-slate-300 text-center"; aCell.textContent = "";
-            }
-
-            const ranks = calculateRanks(subId);
-            classData.students.forEach(s => {
-                const rCell = document.getElementById(`rank-${s.id}`);
-                if (rCell) rCell.textContent = ranks[s.id] ? ranks[s.id] + (ranks[s.id] === 1 ? 'er' : 'e') : '-';
+            // Gestion du changement de texte de l'en-tête
+            headerInput.addEventListener('input', function () {
+                headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
             });
-        }
 
-        function renderGradesGrid() {
-            const tbody = document.getElementById('table-grades-body');
-            tbody.innerHTML = "";
-            const classData = appState.classes[currentFullKey];
-            const subId = document.getElementById('grade-filter-subject').value;
-            
-            if (!subId) {
-                tbody.innerHTML = `<tr><td colspan="10" class="py-8 text-center text-slate-400 font-medium text-xs">Veuillez d'abord configurer au moins une matière.</td></tr>`;
-                return;
-            }
-
-            const subject = classData.subjects.find(s => s.id === subId);
-            const ranks = calculateRanks(subId);
-
-            classData.students.forEach(s => {
-                const g = classData.grades[s.id]?.[subId] || {};
-                let totalPoints = 0, totalCoefs = 0;
-                if (g.d1 !== undefined && g.d1 !== '') { totalPoints += g.d1 * (subject.coefD1 || 1); totalCoefs += (subject.coefD1 || 1); }
-                if (g.d2 !== undefined && g.d2 !== '') { totalPoints += g.d2 * (subject.coefD2 || 1); totalCoefs += (subject.coefD2 || 1); }
-                if (g.c !== undefined && g.c !== '') { totalPoints += g.c * (subject.coefC || 2); totalCoefs += (subject.coefC || 2); }
-
-                let displayAvg = "-";
-                let avgClass = "text-slate-300";
-                if (totalCoefs > 0) {
-                    const finalAvg = totalPoints / totalCoefs;
-                    displayAvg = finalAvg.toFixed(2).replace('.', ',');
-                    avgClass = finalAvg >= 10 ? "font-bold text-emerald-600" : "font-bold text-rose-600";
+            // Gestion du chargement du logo via fichier local
+            logoFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        logoPreviewBox.innerHTML = `<img src="${event.target.result}" alt="Logo Établissement">`;
+                        logoUrlInput.value = ""; // Réinitialise le champ URL
+                    };
+                    reader.readAsDataURL(file);
                 }
-                const displayRank = ranks[s.id] ? ranks[s.id] + (ranks[s.id] === 1 ? 'er' : 'e') : '-';
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/40 transition text-center";
-                tr.innerHTML = `
-                    <td class="py-2 px-4 text-left font-semibold text-slate-800">${s.lastName} <span class="font-normal text-slate-600">${s.firstName}</span></td>
-                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-medium focus:bg-white transition" value="${g.d1 !== undefined ? g.d1 : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'd1', this.value)"></td>
-                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-medium focus:bg-white transition" value="${g.d2 !== undefined ? g.d2 : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'd2', this.value)"></td>
-                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-bold text-indigo-700 focus:bg-white transition" value="${g.c !== undefined ? g.c : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'c', this.value)"></td>
-                    <td class="py-2 px-4 ${avgClass}" id="avg-${s.id}">${displayAvg}</td>
-                    <td class="py-2 px-4 text-xs font-bold text-slate-600" id="rank-${s.id}">${displayRank}</td>
-                    <td class="py-2 px-4 text-left text-xs text-slate-500 font-medium font-mono" id="app-${s.id}">${getAppreciation(totalCoefs > 0 ? (totalPoints / totalCoefs) : null)}</td>
-                    <td class="py-1 px-1"><input type="number" class="w-14 bg-slate-50 border border-slate-200 rounded p-1 text-center text-xs" value="${s.absences || 0}" min="0" oninput="updateAttendance('${s.id}', 'absences', this.value)"></td>
-                    <td class="py-1 px-1"><input type="number" class="w-14 bg-slate-50 border border-slate-200 rounded p-1 text-center text-xs" value="${s.retards || 0}" min="0" oninput="updateAttendance('${s.id}', 'retards', this.value)"></td>
-                    <td class="py-2 px-4">
-                        <button onclick="printReportCard('${s.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold flex items-center gap-1 mx-auto"><i class="fa-solid fa-print"></i> Éditer</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
             });
-        }
 
-        window.printReportCard = function (studentId) {
-            window.open(`bulletin.html?class=${encodeURIComponent(currentFullKey)}&student=${encodeURIComponent(studentId)}`, '_blank');
-        };
+            // Gestion du logo via URL internet
+            logoUrlInput.addEventListener('input', function() {
+                if (this.value.trim() !== "") {
+                    logoPreviewBox.innerHTML = `<img src="${this.value.trim()}" alt="Logo Établissement">`;
+                    logoFileInput.value = ""; // Réinitialise le champ Fichier
+                } else {
+                    logoPreviewBox.innerHTML = "";
+                }
+            });
 
-        window.printAllReportCards = function () {
-            const students = appState.classes[currentFullKey]?.students || [];
-            if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
-            if (students.length > 6 && !confirm(`Ouvrir ${students.length} bulletins ?`)) return;
-            students.forEach((s, i) => setTimeout(() => printReportCard(s.id), i * 250));
-        };
+            const urlParams = new URLSearchParams(window.location.search);
+            const classId = urlParams.get('class'); 
+            const studentId = urlParams.get('student');
 
-        window.exportCSV = function (studentId) {
-            const classData = appState.classes[currentFullKey];
+            const rawData = localStorage.getItem('gestnotes_data');
+            if (!rawData || !classId || !studentId) {
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('setup-panel').style.display = 'none';
+                return;
+            }
+
+            const appState = JSON.parse(rawData);
+            const classData = appState.classes[classId];
+            if (!classData) {
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('setup-panel').style.display = 'none';
+                return;
+            }
+
             const student = classData.students.find(s => s.id === studentId);
             if (!student) return;
 
-            let csv = `Discipline;Devoir 1;Devoir 2;Composition;Moyenne Matiere;Coefficient;Points Coef;Rang;Appreciation\n`;
+            document.getElementById('bulletin-content').style.display = 'block';
+            document.title = "Bulletin - " + student.lastName + " " + student.firstName;
+
+            // Détection du primaire
+            if (isPrimary(classId)) {
+                document.getElementById('th-discipline').textContent = "DOMAINES D'APPRENTISSAGE";
+                document.getElementById('th-note-group').textContent = "Notes";
+                document.getElementById('th-n1').textContent = "N1";
+                document.getElementById('th-n2').textContent = "N2";
+                document.getElementById('th-final').textContent = "Év.";
+                document.getElementById('lbl-obs-conseil').textContent = "Observations de l'Enseignant";
+                document.getElementById('lbl-semester').textContent = appState.settings.semester + (appState.settings.semester == '1' ? 'er Trimestre' : 'ème Trimestre');
+            } else {
+                document.getElementById('lbl-semester').textContent = appState.settings.semester == '1' ? '1er Semestre' : '2ème Semestre';
+            }
+
+            document.getElementById('lbl-year').textContent = appState.settings.year;
+            document.getElementById('lbl-firstname').textContent = student.firstName;
+            document.getElementById('lbl-lastname').textContent = student.lastName;
+            
+            // Format d'affichage propre sans le underscore pour la série (ex: "6ème A" ou "Terminale S1")
+            document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
+            
+            document.getElementById('lbl-birth').textContent = student.birthDate || '';
+            document.getElementById('lbl-matricule').textContent = student.matricule || '';
+            document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
+            document.getElementById('lbl-abs').textContent = student.absences || 0;
+            document.getElementById('lbl-ret').textContent = student.retards || 0;
+
+            // Calcul des moyennes par matière pour le rang
+            const subjectRanks = {};
+            classData.subjects.forEach(sub => {
+                let subAvgs = [];
+                classData.students.forEach(s => {
+                    const g = classData.grades[s.id]?.[sub.id] || {};
+                    let p = 0, c = 0;
+                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * (sub.coefD1 || 1); c += (sub.coefD1 || 1); }
+                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * (sub.coefD2 || 1); c += (sub.coefD2 || 1); }
+                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * (sub.coefC || 2); c += (sub.coefC || 2); }
+                    if (c > 0) subAvgs.push({ id: s.id, avg: p / c });
+                });
+                subAvgs.sort((a, b) => b.avg - a.avg);
+                subjectRanks[sub.id] = {};
+                let currentRank = 1;
+                subAvgs.forEach((item, idx) => {
+                    if (idx > 0 && item.avg < subAvgs[idx - 1].avg) currentRank = idx + 1;
+                    subjectRanks[sub.id][item.id] = currentRank;
+                });
+            });
+
+            // Calcul Moyenne Générale
+            const generalAvgs = classData.students.map(s => {
+                let tP = 0, tC = 0;
+                classData.subjects.forEach(sub => {
+                    const g = classData.grades[s.id]?.[sub.id] || {};
+                    let p = 0, c = 0;
+                    if (g.d1 !== '' && g.d1 !== undefined) { p += Number(g.d1) * (sub.coefD1 || 1); c += (sub.coefD1 || 1); }
+                    if (g.d2 !== '' && g.d2 !== undefined) { p += Number(g.d2) * (sub.coefD2 || 1); c += (sub.coefD2 || 1); }
+                    if (g.c !== '' && g.c !== undefined) { p += Number(g.c) * (sub.coefC || 2); c += (sub.coefC || 2); }
+                    if (c > 0) { tP += (p / c) * sub.coef; tC += sub.coef; }
+                });
+                return { id: s.id, avg: tC > 0 ? (tP / tC) : null };
+            });
+
+            generalAvgs.sort((a, b) => (b.avg || 0) - (a.avg || 0));
+
+            let genRank = '-', studentGenAvg = null;
+            let currentGenRank = 1;
+            generalAvgs.forEach((item, index) => {
+                if (index > 0 && item.avg !== generalAvgs[index - 1].avg) currentGenRank = index + 1;
+                if (item.id === studentId) {
+                    genRank = item.avg !== null ? currentGenRank : '-';
+                    studentGenAvg = item.avg;
+                }
+            });
+
+            // Remplissage du tableau
+            const tbody = document.getElementById('grades-body');
+            let totalCoef = 0, totalPoints = 0;
+
             classData.subjects.forEach(sub => {
                 const g = classData.grades[studentId]?.[sub.id] || {};
                 let p = 0, c = 0;
-                const d1 = g.d1 !== undefined ? g.d1 : '';
-                const d2 = g.d2 !== undefined ? g.d2 : '';
-                const comp = g.c !== undefined ? g.c : '';
+                const d1 = g.d1 !== undefined && g.d1 !== '' ? Number(g.d1) : '';
+                const d2 = g.d2 !== undefined && g.d2 !== '' ? Number(g.d2) : '';
+                const comp = g.c !== undefined && g.c !== '' ? Number(g.c) : '';
 
                 if (d1 !== '') { p += d1 * (sub.coefD1 || 1); c += (sub.coefD1 || 1); }
                 if (d2 !== '') { p += d2 * (sub.coefD2 || 1); c += (sub.coefD2 || 1); }
                 if (comp !== '') { p += comp * (sub.coefC || 2); c += (sub.coefC || 2); }
 
-                let subAvg = '', ptsCoef = '', app = '';
+                let sAvgStr = '', mxcStr = '', app = '', rankSub = '';
                 if (c > 0) {
-                    const m = p / c;
-                    subAvg = m.toFixed(2).replace('.', ',');
-                    ptsCoef = (m * sub.coef).toFixed(2).replace('.', ',');
-                    app = getAppreciation(m);
+                    const sAvg = p / c;
+                    sAvgStr = sAvg.toFixed(2).replace('.', ',');
+                    const mxc = sAvg * sub.coef;
+                    mxcStr = mxc.toFixed(2).replace('.', ',');
+                    totalCoef += sub.coef;
+                    totalPoints += mxc;
+                    app = getAppreciation(sAvg);
+                    rankSub = subjectRanks[sub.id]?.[studentId] || '';
                 }
-                csv += `${sub.name};${d1};${d2};${comp};${subAvg};${sub.coef};${ptsCoef};;${app}\n`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="col-discipline">${sub.name}</td>
+                    <td>${d1}</td><td>${d2}</td><td>${comp}</td>
+                    <td>${sAvgStr}</td><td>${sub.coef}</td><td>${mxcStr}</td>
+                    <td></td><td>${rankSub}</td><td>${app}</td>
+                `;
+                tbody.appendChild(tr);
             });
 
-            csv += `\nAnnee Scolaire;${appState.settings.year}\nPeriode;${appState.settings.period}\nEleve;${student.lastName} ${student.firstName}\nAbsences;${student.absences || 0}\nRetards;${student.retards || 0}\n`;
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Bulletin_${currentFullKey}_${student.lastName}_${student.firstName}.csv`;
-            link.click();
-        };
+            document.getElementById('lbl-tot-coef').textContent = totalCoef || '';
+            document.getElementById('lbl-tot-pts').textContent = totalPoints ? totalPoints.toFixed(2).replace('.', ',') : '';
+            document.getElementById('lbl-moy-gen').textContent = studentGenAvg !== null ? studentGenAvg.toFixed(2).replace('.', ',') : '-';
+            document.getElementById('lbl-rank').textContent = genRank;
 
-        window.exportAllCSV = function () {
-            const students = appState.classes[currentFullKey]?.students || [];
-            if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
-            students.forEach((s, i) => setTimeout(() => exportCSV(s.id), i * 250));
-            showToast("Téléchargement lancé...");
+            // Cocher auto des appréciations
+            if (studentGenAvg !== null) {
+                if (studentGenAvg >= 12) {
+                    document.getElementById('chk-satisfaisant').textContent = 'X';
+                    if (studentGenAvg >= 14) document.getElementById('chk-felicitations').textContent = 'X';
+                    else if (studentGenAvg >= 13) document.getElementById('chk-encouragement').textContent = 'X';
+                    else document.getElementById('chk-tableau-honneur').textContent = 'X';
+                } else if (studentGenAvg >= 10) { document.getElementById('chk-peut-mieux').textContent = 'X'; }
+                else if (studentGenAvg >= 8) { document.getElementById('chk-insuffisant').textContent = 'X'; }
+                else if (studentGenAvg >= 5) { document.getElementById('chk-risque-redoubler').textContent = 'X'; }
+                else { document.getElementById('chk-risque-exclusion').textContent = 'X'; }
+            }
         };
     </script>
 </body>
+
 </html>
