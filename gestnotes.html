@@ -52,6 +52,12 @@
         .sticky-right-shadow {
             box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.1);
         }
+
+        /* Force les options des selects de l'en-tête à s'afficher proprement en noir sur fond blanc */
+        select option {
+            color: #000000 !important;
+            background-color: #ffffff !important;
+        }
     </style>
 </head>
 
@@ -70,7 +76,7 @@
                             class="bg-white/10 text-white placeholder-white/70 border border-white/20 rounded px-2 py-0.5 text-xs w-24 focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
                         
                         <select id="setting-term" title="Période académique"
-                            class="bg-white/10 text-white border border-white/20 rounded px-2 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
+                            class="bg-white/10 text-white border border-white/20 rounded px-2 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors cursor-pointer">
                         </select>
 
                         <input type="number" id="setting-effectif" title="Nombre total d'élèves" placeholder="Effectif"
@@ -79,10 +85,17 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 bg-white/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg backdrop-blur-sm border border-white/20 w-full sm:w-auto justify-between sm:justify-start">
-                <label for="class-select" class="font-medium text-xs sm:text-sm uppercase tracking-wider text-indigo-100">Classe</label>
-                <select id="class-select" class="bg-white text-indigo-900 rounded px-3 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold cursor-pointer shadow-sm border-0 max-w-[200px] sm:max-w-none">
-                    </select>
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm border border-white/20 w-full sm:w-auto justify-center sm:justify-start">
+                <div class="flex items-center gap-1">
+                    <label for="level-select" class="font-medium text-[11px] sm:text-xs uppercase tracking-wider text-indigo-100">Niveau</label>
+                    <select id="level-select" class="bg-white text-indigo-900 rounded px-2 py-1 text-xs font-bold cursor-pointer shadow-sm border-0 focus:ring-2 focus:ring-indigo-300 w-28 sm:w-36">
+                        </select>
+                </div>
+                <div class="flex items-center gap-1">
+                    <label for="section-select" class="font-medium text-[11px] sm:text-xs uppercase tracking-wider text-indigo-100">Classe</label>
+                    <select id="section-select" class="bg-white text-indigo-900 rounded px-2 py-1 text-xs font-bold cursor-pointer shadow-sm border-0 focus:ring-2 focus:ring-indigo-300 w-24 sm:w-28">
+                        </select>
+                </div>
             </div>
         </div>
     </header>
@@ -167,7 +180,7 @@
                         <i class="fa-solid fa-clipboard-list text-4xl sm:text-5xl text-slate-300"></i>
                     </div>
                     <p class="text-base sm:text-lg font-medium text-slate-600 mb-1">Aucune donnée</p>
-                    <p class="text-xs sm:text-sm text-center">Sélectionnez une classe, chargez les standards puis ajoutez des élèves.</p>
+                    <p class="text-xs sm:text-sm text-center">Sélectionnez un niveau et sa classe, injectez les standards puis ajoutez des élèves.</p>
                 </div>
             </div>
         </section>
@@ -230,25 +243,14 @@
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
     <script>
-        // --- CARTOGRAPHIE SCOLAIRE AVEC SÉPARATION NIVEAU / SECTIONS ---
-        const ROADMAP_CYCLES = {
-            "PRIMAIRE": [
-                "CI Unique", "CI A", "CI B", "CP Unique", "CP A", "CP B", 
-                "CE1 Unique", "CE1 A", "CE1 B", "CE2 Unique", "CE2 A", "CE2 B", 
-                "CM1 Unique", "CM1 A", "CM1 B", "CM2 Unique", "CM2 A", "CM2 B"
-            ],
-            "COLLEGE": [
-                "6ème Unique", "6ème A", "6ème B", "5ème Unique", "5ème A", "5ème B", 
-                "4ème Unique", "4ème A", "4ème B", "3ème Unique", "3ème A", "3ème B"
-            ],
-            "LYCEE": [
-                "Seconde L Unique", "Seconde L A", "Seconde L B", "Seconde S Unique", "Seconde S A", "Seconde S B", 
-                "Première L1 Unique", "Première L1 A", "Première L1 B", "Première L2 Unique", "Première L2 A", "Première L2 B", 
-                "Première S1 Unique", "Première S1 A", "Première S2 Unique", "Première S2 A",
-                "Terminale L1 Unique", "Terminale L1 A", "Terminale L1 B", "Terminale L2 Unique", "Terminale L2 A", "Terminale L2 B", 
-                "Terminale S1 Unique", "Terminale S1 A", "Terminale S2 Unique", "Terminale S2 A"
-            ]
+        // --- CARTOGRAPHIE RAFFINÉE : SÉPARATION STRUCTURÉE NIVEAUX VS SECTIONS ---
+        const LEVELS_DATABASE = {
+            "PRIMAIRE": ["CI", "CP", "CE1", "CE2", "CM1", "CM2"],
+            "COLLEGE": ["6ème", "5ème", "4ème", "3ème"],
+            "LYCEE": ["Seconde L", "Seconde S", "Première L1", "Première L2", "Première S1", "Première S2", "Terminale L1", "Terminale L2", "Terminale S1", "Terminale S2"]
         };
+
+        const AVAILABLE_SECTIONS = ["Unique", "A", "B"];
 
         const STANDARDS_PRESETS = {
             "PRIMAIRE": [
@@ -275,58 +277,75 @@
             }
         };
 
+        // Génération de la base à plat (Niveau + Section) pour le localStorage
         const defaultState = { settings: { year: '2025-2026', term: '1' }, classes: {} };
-        Object.values(ROADMAP_CYCLES).flat().forEach(cls => {
-            defaultState.classes[cls] = { students: [], subjects: [], grades: {}, effectif: '' };
+        Object.values(LEVELS_DATABASE).flat().forEach(lvl => {
+            AVAILABLE_SECTIONS.forEach(sec => {
+                const fullClassName = `${lvl} ${sec}`;
+                defaultState.classes[fullClassName] = { students: [], subjects: [], grades: {}, effectif: '' };
+            });
         });
 
         let appState = JSON.parse(localStorage.getItem('gestnotes_data_v2')) || defaultState;
         
-        // Alignement et rétrocompatibilité des structures
+        // Rétrocompatibilité et consolidation des clés de stockage
         if (!appState.settings) appState.settings = { year: '2025-2026', term: '1' };
-        Object.values(ROADMAP_CYCLES).flat().forEach(cls => {
-            if (!appState.classes[cls]) appState.classes[cls] = { students: [], subjects: [], grades: {}, effectif: '' };
+        Object.values(LEVELS_DATABASE).flat().forEach(lvl => {
+            AVAILABLE_SECTIONS.forEach(sec => {
+                const fullClassName = `${lvl} ${sec}`;
+                if (!appState.classes[fullClassName]) {
+                    appState.classes[fullClassName] = { students: [], subjects: [], grades: {}, effectif: '' };
+                }
+            });
         });
 
-        function checkCycle(className) {
-            if (!className) return "COLLEGE";
-            if (className.match(/(CI|CP|CE1|CE2|CM1|CM2)/)) return "PRIMAIRE";
-            if (className.match(/(Seconde|Première|Terminale)/)) return "LYCEE";
+        function checkCycle(levelName) {
+            if (!levelName) return "COLLEGE";
+            if (levelName.match(/(CI|CP|CE1|CE2|CM1|CM2)/)) return "PRIMAIRE";
+            if (levelName.match(/(Seconde|Première|Terminale)/)) return "LYCEE";
             return "COLLEGE";
         }
 
-        let currentClass = localStorage.getItem('gestnotes_current_class') || "6ème Unique";
-        
-        function populateClassSelect() {
-            const select = document.getElementById('class-select');
+        // Récupération sécurisée du dernier état actif séparé
+        let currentLevel = localStorage.getItem('gestnotes_current_level') || "6ème";
+        let currentSection = localStorage.getItem('gestnotes_current_section') || "Unique";
+        let currentClass = `${currentLevel} ${currentSection}`;
+
+        // Construction du DOM pour le sélecteur de Niveaux
+        function initLevelSelectors() {
+            const lvlSelect = document.getElementById('level-select');
             let html = '';
-            Object.entries(ROADMAP_CYCLES).forEach(([cycle, classes]) => {
-                html += `<optgroup label="${cycle}" class="text-slate-900 font-bold bg-slate-100">`;
-                classes.forEach(c => {
-                    html += `<option value="${c}" ${c === currentClass ? 'selected' : ''} class="text-slate-800 font-medium bg-white">${c}</option>`;
+            Object.entries(LEVELS_DATABASE).forEach(([cycle, levels]) => {
+                html += `<optgroup label="${cycle}">`;
+                levels.forEach(l => {
+                    html += `<option value="${l}" ${l === currentLevel ? 'selected' : ''}>${l}</option>`;
                 });
                 html += `</optgroup>`;
             });
-            select.innerHTML = html;
+            lvlSelect.innerHTML = html;
+
+            // Sélecteur de sections constant
+            const secSelect = document.getElementById('section-select');
+            let secHtml = '';
+            AVAILABLE_SECTIONS.forEach(s => {
+                secHtml += `<option value="${s}" ${s === currentSection ? 'selected' : ''}>${s}</option>`;
+            });
+            secSelect.innerHTML = secHtml;
         }
 
-        // --- GESTION ADAPTATIVE DE LA PÉRIODE (TRIMESTRE VS SEMESTRE) ---
         function updatePeriodSelector() {
             const periodSelect = document.getElementById('setting-term');
-            const cycle = checkCycle(currentClass);
+            const cycle = checkCycle(currentLevel);
             let optionsHtml = '';
 
             if (cycle === "PRIMAIRE") {
-                // Le Primaire requiert impérativement un cursus sur 3 Trimestres
                 optionsHtml = `
                     <option value="1">1er Trimestre</option>
                     <option value="2">2ème Trimestre</option>
                     <option value="3">3ème Trimestre</option>
                 `;
-                // Ajustement si la valeur sauvegardée était un semestre inadéquat
                 if (!['1', '2', '3'].includes(appState.settings.term)) appState.settings.term = '1';
             } else {
-                // Le Secondaire (Collège/Lycée) se base traditionnellement sur 2 Semestres
                 optionsHtml = `
                     <option value="1">1er Semestre</option>
                     <option value="2">2ème Semestre</option>
@@ -338,8 +357,7 @@
             periodSelect.value = appState.settings.term;
         }
 
-        populateClassSelect();
-        currentClass = document.getElementById('class-select').value;
+        initLevelSelectors();
         updatePeriodSelector();
 
         document.getElementById('setting-year').value = appState.settings.year || '2025-2026';
@@ -351,7 +369,8 @@
 
         function saveState() { 
             localStorage.setItem('gestnotes_data_v2', JSON.stringify(appState)); 
-            localStorage.setItem('gestnotes_current_class', currentClass);
+            localStorage.setItem('gestnotes_current_level', currentLevel);
+            localStorage.setItem('gestnotes_current_section', currentSection);
         }
         function generateId() { return Math.random().toString(36).substr(2, 9); }
 
@@ -367,7 +386,8 @@
         }
 
         const els = {
-            classSelect: document.getElementById('class-select'),
+            levelSelect: document.getElementById('level-select'),
+            sectionSelect: document.getElementById('section-select'),
             studentsList: document.getElementById('students-list'),
             subjectsList: document.getElementById('subjects-list'),
             gradesTable: document.getElementById('grades-table'),
@@ -379,7 +399,7 @@
         };
 
         function adjustLabelsByCycle() {
-            const cycle = checkCycle(currentClass);
+            const cycle = checkCycle(currentLevel);
             if (cycle === "PRIMAIRE") {
                 els.newSubjectVal.placeholder = "Note Max (ex: 10)";
                 els.newSubjectVal.title = "Note maximale pour cette discipline au primaire";
@@ -392,6 +412,7 @@
         }
 
         function render() {
+            currentClass = `${currentLevel} ${currentSection}`;
             adjustLabelsByCycle();
             renderStudents();
             renderSubjects();
@@ -426,7 +447,7 @@
 
         function renderSubjects() {
             const subjects = appState.classes[currentClass].subjects;
-            const cycle = checkCycle(currentClass);
+            const cycle = checkCycle(currentLevel);
             els.subjectsList.innerHTML = '';
             document.getElementById('subjects-count').textContent = subjects.length;
 
@@ -451,7 +472,7 @@
         }
 
         window.loadStandardSubjects = function() {
-            const cycle = checkCycle(currentClass);
+            const cycle = checkCycle(currentLevel);
             let listToLoad = [];
 
             if (cycle === "PRIMAIRE") {
@@ -459,7 +480,7 @@
             } else if (cycle === "COLLEGE") {
                 listToLoad = STANDARDS_PRESETS.COLLEGE;
             } else if (cycle === "LYCEE") {
-                if (currentClass.includes(" S")) {
+                if (currentLevel.includes(" S")) {
                     listToLoad = STANDARDS_PRESETS.LYCEE.S;
                 } else {
                     listToLoad = STANDARDS_PRESETS.LYCEE.L;
@@ -486,7 +507,7 @@
         function renderGradesTable() {
             const data = appState.classes[currentClass];
             const { students, subjects, grades } = data;
-            const cycle = checkCycle(currentClass);
+            const cycle = checkCycle(currentLevel);
 
             if (students.length === 0 || subjects.length === 0) {
                 els.gradesTable.classList.add('hidden'); els.gradesEmpty.classList.remove('hidden'); return;
@@ -577,7 +598,7 @@
         window.updateGrade = function (studentId, subjectId, type, value, inputEl) {
             const data = appState.classes[currentClass];
             const sub = data.subjects.find(s => s.id === subjectId);
-            const cycle = checkCycle(currentClass);
+            const cycle = checkCycle(currentLevel);
             
             if (!data.grades[studentId]) data.grades[studentId] = {};
             if (!data.grades[studentId][subjectId]) data.grades[studentId][subjectId] = { d1: '', d2: '', c: '' };
@@ -608,7 +629,7 @@
             const data = appState.classes[currentClass];
             const sub = data.subjects.find(s => s.id === subjectId);
             const g = data.grades[studentId][subjectId];
-            const cycle = checkCycle(currentClass);
+            const cycle = checkCycle(currentLevel);
 
             let sp = 0, sc = 0;
             if (g.d1 !== '' && g.d1 !== undefined) { sp += Number(g.d1) * (sub.coefD1 || 1); sc += (sub.coefD1 || 1); }
@@ -714,7 +735,7 @@
 
         window.openSubjectModal = function (id) {
             const subject = appState.classes[currentClass].subjects.find(s => s.id === id);
-            const cycle = checkCycle(currentClass);
+            const cycle = checkCycle(currentLevel);
             
             document.getElementById('edit-sub-id').value = id;
             document.getElementById('edit-sub-name').value = subject.name;
@@ -738,10 +759,21 @@
             saveState(); render(); closeModal('subject-modal'); showToast('Matière modifiée');
         };
 
-        els.classSelect.addEventListener('change', (e) => {
-            currentClass = e.target.value;
+        // Écouteurs de changements sur les nouveaux sélecteurs séparés
+        els.levelSelect.addEventListener('change', (e) => {
+            currentLevel = e.target.value;
+            currentClass = `${currentLevel} ${currentSection}`;
             document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
-            updatePeriodSelector(); // Met à jour Trimestre vs Semestre en direct
+            updatePeriodSelector();
+            saveState();
+            render();
+        });
+
+        els.sectionSelect.addEventListener('change', (e) => {
+            currentSection = e.target.value;
+            currentClass = `${currentLevel} ${currentSection}`;
+            document.getElementById('setting-effectif').value = appState.classes[currentClass].effectif || '';
+            saveState();
             render();
         });
 
@@ -758,7 +790,8 @@
 
         function getClassRanks(classId) {
             const data = appState.classes[classId];
-            const cycle = checkCycle(classId);
+            const lvl = classId.split(' ')[0];
+            const cycle = checkCycle(lvl);
             
             const averages = data.students.map(student => {
                 let totalPoints = 0;
@@ -805,7 +838,7 @@
             const stats = ranks[studentId];
             const year = appState.settings.year;
             const term = appState.settings.term;
-            const cycle = checkCycle(currentClass);
+            const cycle = checkCycle(currentLevel);
             const labelPeriode = cycle === "PRIMAIRE" ? "Trimestre" : "Semestre";
 
             let csv = '\ufeff'; 
