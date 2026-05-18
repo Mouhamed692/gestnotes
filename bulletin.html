@@ -34,11 +34,17 @@
         .input-panel label {
             font-weight: bold;
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
+            margin-top: 10px;
             color: #1e293b;
         }
 
-        .input-panel textarea {
+        .input-panel label:first-child {
+            margin-top: 0;
+        }
+
+        .input-panel textarea, 
+        .input-panel input[type="text"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #cbd5e1;
@@ -49,11 +55,27 @@
             resize: vertical;
         }
 
+        .logo-inputs {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+        }
+
+        .logo-file-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-url-wrapper {
+            flex: 2;
+        }
+
         .actions-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 10px;
+            margin-top: 15px;
             flex-wrap: wrap;
             gap: 10px;
         }
@@ -118,11 +140,14 @@
             }
         }
 
+        /* En-tête réorganisé avec support Logo */
         .header-container {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
         }
 
         .header-left {
@@ -132,6 +157,7 @@
             font-weight: bold;
             font-size: 12px;
             line-height: 1.4;
+            flex: 1;
         }
 
         .flag {
@@ -139,6 +165,7 @@
             height: 35px;
             display: flex;
             border: 1px solid #000;
+            flex-shrink: 0;
         }
 
         .flag .green {
@@ -166,27 +193,46 @@
 
         .header-center {
             text-align: center;
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .header-center h1 {
             margin: 0;
-            font-size: 22px;
+            font-size: 20px;
             text-transform: uppercase;
             text-decoration: underline;
             letter-spacing: 1px;
-            margin-top: 10px;
+        }
+
+        .logo-container {
+            height: 75px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-container img {
+            max-height: 100%;
+            max-width: 180px;
+            object-fit: contain;
         }
 
         .header-right {
             font-size: 13px;
             text-align: right;
             line-height: 1.5;
+            flex: 1;
         }
 
         .student-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .student-col {
@@ -295,7 +341,21 @@
             <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE
 IEF PIKINE
 RENOVATION</textarea>
-            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Les modifications s'appliquent en direct ci-dessous.</p>
+            
+            <div class="logo-inputs">
+                <div class="logo-file-wrapper">
+                    <div>
+                        <label for="logo-file">Importer un Logo (Image locale) :</label>
+                        <input type="file" id="logo-file" accept="image/*">
+                    </div>
+                </div>
+                <div class="logo-url-wrapper">
+                    <label for="logo-url">Ou coller l'URL d'un logo sur le web :</label>
+                    <input type="text" id="logo-url" placeholder="https://exemple.com/logo.png">
+                </div>
+            </div>
+
+            <p style="font-size: 11px; color: #64748b; margin-top: 8px;">Les modifications et le logo s'appliquent en direct ci-dessous.</p>
             
             <div class="actions-row">
                 <a href="gestnotes (1).html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Retour à GestNotes</a>
@@ -319,11 +379,13 @@ RENOVATION</textarea>
                     RENOVATION
                 </div>
             </div>
-            <div class="header-container center">
-                <div class="header-center">
-                    <h1>BULLETIN DE NOTES</h1>
-                </div>
+            
+            <div class="header-center">
+                <div class="logo-container" id="logo-preview-box">
+                    </div>
+                <h1>BULLETIN DE NOTES</h1>
             </div>
+            
             <div class="header-right">
                 Année Scolaire: <span id="lbl-year"></span><br>
                 Période: <span id="lbl-semester"></span>
@@ -454,13 +516,40 @@ RENOVATION</textarea>
         window.onload = function () {
             const headerInput = document.getElementById('header-input');
             const headerDisplay = document.getElementById('header-text-display');
+            const logoFileInput = document.getElementById('logo-file');
+            const logoUrlInput = document.getElementById('logo-url');
+            const logoPreviewBox = document.getElementById('logo-preview-box');
 
+            // Gestion du changement de texte de l'en-tête
             headerInput.addEventListener('input', function () {
                 headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
             });
 
+            // Gestion du chargement du logo via fichier local
+            logoFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        logoPreviewBox.innerHTML = `<img src="${event.target.result}" alt="Logo Établissement">`;
+                        logoUrlInput.value = ""; // Réinitialise le champ URL
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Gestion du logo via URL internet
+            logoUrlInput.addEventListener('input', function() {
+                if (this.value.trim() !== "") {
+                    logoPreviewBox.innerHTML = `<img src="${this.value.trim()}" alt="Logo Établissement">`;
+                    logoFileInput.value = ""; // Réinitialise le champ Fichier
+                } else {
+                    logoPreviewBox.innerHTML = "";
+                }
+            });
+
             const urlParams = new URLSearchParams(window.location.search);
-            const classId = urlParams.get('class'); // Reçoit la clé combinée, ex: "6ème_A" ou "Terminale_S1"
+            const classId = urlParams.get('class'); 
             const studentId = urlParams.get('student');
 
             const rawData = localStorage.getItem('gestnotes_data');
@@ -501,7 +590,7 @@ RENOVATION</textarea>
             document.getElementById('lbl-firstname').textContent = student.firstName;
             document.getElementById('lbl-lastname').textContent = student.lastName;
             
-            // Format d'affichage propre sans le underscore pour la série (ex: "6ème A")
+            // Format d'affichage propre sans le underscore pour la série (ex: "6ème A" ou "Terminale S1")
             document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
             
             document.getElementById('lbl-birth').textContent = student.birthDate || '';
