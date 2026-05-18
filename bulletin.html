@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Bulletin de Notes - GestNotes</title>
-<style>
+    <style>
         /* Styles de base pour l'écran */
         body {
             font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
@@ -92,41 +92,6 @@
 
         .btn-print:hover {
             background-color: #047857;
-        }
-
-        /* Gestion de l'impression optimisée */
-        @media print {
-            @page {
-                size: A4 portrait; /* Changement en portrait pour correspondre au design */
-                margin: 10mm;      /* Marges équilibrées */
-            }
-
-            .no-print, #setup-panel {
-                display: none !important;
-                height: 0 !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                border: none !important;
-            }
-
-            body {
-                background-color: white !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                font-size: 11px;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .bulletin-wrapper {
-                box-shadow: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                max-width: 100% !important;
-                background: transparent !important;
-            }
-            
-            tr { page-break-inside: avoid; }
         }
 
         /* Styles du bulletin */
@@ -314,6 +279,54 @@
             font-size: 16px;
             font-weight: bold;
         }
+
+        /* ==========================================
+           GESTION DE L'IMPRESSION - CORRECTION FINALE
+           ========================================== */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 12mm 15mm 12mm 15mm;
+            }
+
+            /* 1. Forcer la disparition complète du panneau de config */
+            #setup-panel, .no-print {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+            }
+
+            /* 2. Reset du Body pour l'impression */
+            body {
+                background-color: white !important;
+                background: #fff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                font-size: 11px;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* 3. Forcer le conteneur du bulletin à ignorer ses styles d'écran */
+            #bulletin-content.bulletin-wrapper {
+                display: block !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                background: transparent !important;
+            }
+            
+            /* Anti-coupure des lignes de tableau */
+            tr { page-break-inside: avoid; }
+            .student-info { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
 
@@ -380,8 +393,7 @@ RENOVATION</textarea>
         <table class="grades-table">
             <thead id="grades-header"></thead>
             <tbody id="grades-body"></tbody>
-            <tfoot id="grades-footer"></tfoot>
-        </table>
+            <tbody id="grades-footer"></tbody> </table>
 
         <div class="footer-sections">
             <table class="decision-table">
@@ -466,8 +478,6 @@ RENOVATION</textarea>
         function checkIsPrimaire(cId) {
             if (!cId) return false;
             const level = cId.split('_')[0].toUpperCase();
-            
-            // Élémentaire sénégalais (CI à CM2)
             const classesPrimaire = ["CI", "CP", "CE1", "CE2", "CM1", "CM2"];
             return classesPrimaire.some(pLevel => level === pLevel || level.startsWith(pLevel));
         }
@@ -520,7 +530,6 @@ RENOVATION</textarea>
             document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
             document.getElementById('lbl-abs-ret').textContent = `${student.absences || 0} Abs / ${student.retards || 0} Ret`;
 
-            // Injection dynamique de l'en-tête du tableau selon le cycle
             const thead = document.getElementById('grades-header');
             if (isPrimaireMode) {
                 thead.innerHTML = `
@@ -564,7 +573,6 @@ RENOVATION</textarea>
             let totalMoyennesClasse = 0;
             let totalElevesComptes = 0;
 
-            // Étape 1 : Collecter et calculer les notes de chaque élève pour les classements globaux
             classData.students.forEach(s => {
                 let stPoints = 0, stCoef = 0;
                 let primPointsObtenus = 0, primBaremeTotal = 0;
@@ -580,7 +588,7 @@ RENOVATION</textarea>
                             if (d1 !== null || cp !== null) {
                                 const valD1 = d1 !== null ? d1 : 0;
                                 const valCp = cp !== null ? cp : valD1;
-                                const moySub = (valD1 + valCp) / 2; // Moyenne brute /20
+                                const moySub = (valD1 + valCp) / 2;
                                  
                                 subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
                                 primPointsObtenus += (moySub / 20) * sub.coef; 
@@ -619,7 +627,6 @@ RENOVATION</textarea>
                 }
             });
 
-            // Trier les listes pour extraire les rangs par matière
             Object.keys(subjectRanksMap).forEach(subId => {
                 subjectRanksMap[subId].sort((a, b) => b.score - a.score);
             });
@@ -628,7 +635,6 @@ RENOVATION</textarea>
             const myRankIndex = ranks.findIndex(r => r.id === studentId) + 1;
             const moyenneClasseGlobale = totalElevesComptes > 0 ? (totalMoyennesClasse / totalElevesComptes).toFixed(2) : "0,00";
 
-            // Étape 2 : Remplissage HTML des lignes du tableau de l'élève actif
             const tbody = document.getElementById('grades-body');
             tbody.innerHTML = "";
 
@@ -709,7 +715,6 @@ RENOVATION</textarea>
                 });
             }
 
-            // Étape 3 : Calcul final et pied de tableau
             const tfoot = document.getElementById('grades-footer');
             let finalAvg = 0;
             const displayRank = myRankIndex > 0 ? `${myRankIndex} / ${totalElevesComptes}` : "-";
@@ -748,7 +753,6 @@ RENOVATION</textarea>
                 `;
             }
 
-            // Étape 4 : Coche automatique des décisions et mentions d'honneur
             if (totalElevesComptes > 0 && ((isPrimaireMode && totalPrimBareme > 0) || (!isPrimaireMode && totalCoef > 0))) {
                 const checkAvg = isPrimaireMode ? finalAvg * 2 : finalAvg; 
 
