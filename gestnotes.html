@@ -588,6 +588,15 @@
                 }
             }
         }
+        function imprimerBulletin() {
+    if (!currentClassId || !currentStudentId) {
+        alert("Veuillez sélectionner une classe et un élève avant d'imprimer.");
+        return;
+    }
+    // Ouvre ton fichier bulletin.html avec les bons paramètres de requêtes URL
+    const url = `bulletin.html?class=${currentClassId}&student=${currentStudentId}&period=${currentPeriod}`;
+    window.open(url, '_blank');
+}
 
         function renderGradesFields() {
             const container = document.getElementById('grades-grid');
