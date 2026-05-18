@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Bulletin de Notes - GestNotes</title>
-    <style>
+<style>
         /* Styles de base pour l'écran */
         body {
             font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
@@ -94,33 +94,36 @@
             background-color: #047857;
         }
 
-        /* Gestion de l'impression */
+        /* Gestion de l'impression optimisée */
         @media print {
-            .no-print {
+            @page {
+                size: A4 portrait; /* Changement en portrait pour correspondre au design */
+                margin: 10mm;      /* Marges équilibrées */
+            }
+
+            .no-print, #setup-panel {
                 display: none !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
             }
 
             body {
-                background-color: white;
-                padding: 0;
+                background-color: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
                 font-size: 11px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
 
             .bulletin-wrapper {
-                box-shadow: none;
-                margin: 0;
-                padding: 0;
-                max-width: 100%;
-            }
-
-            @page {
-                margin: 8mm;
-                size: A4 landscape;
-            }
-
-            body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+                background: transparent !important;
             }
             
             tr { page-break-inside: avoid; }
@@ -185,8 +188,8 @@
             justify-content: space-between;
             margin-bottom: 15px;
             background: #f8fafc;
-            padding: 10px;
             border: 1px solid #000;
+            padding: 10px;
         }
 
         .student-col {
