@@ -470,17 +470,12 @@ RENOVATION</textarea>
             return "Excellent";
         }
 
-        // Détection élargie pour inclure la 6ème et le système d'étapes de l'élémentaire sénégalais
         function checkIsPrimaire(cId) {
             if (!cId) return false;
             const level = cId.split('_')[0].toUpperCase();
             
-            // Inclusion des niveaux classiques (CI à CM2) et des étapes (1ère à 6ème)
-            const classesPrimaire = [
-                "CI", "CP", "CE1", "CE2", "CM1", "CM2", 
-                "6EME", "5EME", "4EME", "3EME", "2EME", "1ERE"
-            ];
-            
+            // Les classes de l'élémentaire sénégalais (CI à CM2) et la 6ème si rattachée au primaire d'application
+            const classesPrimaire = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6EME"];
             return classesPrimaire.some(pLevel => level === pLevel || level.startsWith(pLevel));
         }
 
@@ -521,13 +516,15 @@ RENOVATION</textarea>
             document.getElementById('bulletin-content').style.display = 'block';
             document.title = "Bulletin - " + student.lastName;
 
-            document.getElementById('lbl-year').textContent = "2025-2026";
+            document.getElementById('lbl-year').textContent = appState.currentYear || "2025-2026";
             document.getElementById('lbl-period-type').textContent = isPrimaireMode ? "Trimestre" : "Semestre";
             document.getElementById('lbl-semester').textContent = period + (period == "1" ? "er" : "ème");
              
             document.getElementById('lbl-firstname').textContent = student.firstName || student.firstname || "";
             document.getElementById('lbl-lastname').textContent = student.lastName;
             document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
+            document.getElementById('lbl-birth').textContent = student.birthDate || student.birthday || student.birth || "-";
+            document.getElementById('lbl-birthplace').textContent = student.birthPlace || student.birthplace || "-";
             document.getElementById('lbl-matricule').textContent = student.matricule || 'REG-' + Math.floor(1000+Math.random()*9000);
             document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
             document.getElementById('lbl-abs-ret').textContent = `${student.absences || 0} Abs / ${student.retards || 0} Ret`;
