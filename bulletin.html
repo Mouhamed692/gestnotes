@@ -326,9 +326,12 @@
 
 <body>
 
-    <div id="error-msg" class="no-print">Données introuvables. Veuillez générer le bulletin depuis la page principale.</div>
+    <div id="error-msg" class="no-print">
+        <h2>Données introuvables</h2>
+        <p>Veuillez générer le bulletin depuis la page principale de GestNotes.</p>
+    </div>
 
-    <div class="bulletin-wrapper no-print" id="setup-panel">
+    <div class="bulletin-wrapper no-print" id="setup-panel" style="display: none;">
         <div class="input-panel">
             <div class="nav-buttons">
                 <button class="btn-back" onclick="window.close(); window.history.back();">
@@ -458,31 +461,6 @@ RENOVATION</textarea>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-    // On récupère les données de l'élève sélectionné (adaptez la clé selon votre logique)
-    const studentData = sessionStorage.getItem("selectedStudent");
-
-    const bulletinContent = document.getElementById("bulletin-content");
-    const errorContainer = document.getElementById("error-container");
-
-    if (!studentData) {
-        // Si aucune donnée n'est trouvée, on affiche le message d'erreur
-        bulletinContent.style.display = "none";
-        errorContainer.style.display = "block";
-    } else {
-        // Si les données existent, on les charge et on affiche le bulletin
-        bulletinContent.style.display = "block";
-        errorContainer.style.display = "none";
-        
-        // Exemple de fonction pour remplir votre bulletin
-        initBulletin(JSON.parse(studentData));
-    }
-});
-
-function initBulletin(data) {
-    console.log("Génération du bulletin pour :", data.nom);
-    // Votre logique de remplissage des notes ici...
-}
         function getAppreciation(note, max = 20) {
             if (note === null || note === undefined || note === '') return "";
             const note20 = max !== 20 ? (note / max) * 20 : note;
@@ -498,8 +476,6 @@ function initBulletin(data) {
         function checkIsPrimaire(cId) {
             if (!cId) return false;
             const level = cId.split('_')[0].toUpperCase();
-            
-            // Les classes de l'élémentaire sénégalais (CI à CM2) et la 6ème si rattachée au primaire d'application
             const classesPrimaire = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6EME"];
             return classesPrimaire.some(pLevel => level === pLevel || level.startsWith(pLevel));
         }
@@ -538,7 +514,9 @@ function initBulletin(data) {
 
             const isPrimaireMode = checkIsPrimaire(classId);
 
+            // Tout est correct : on affiche le contenu et le panneau de contrôle
             document.getElementById('bulletin-content').style.display = 'block';
+            document.getElementById('setup-panel').style.display = 'block';
             document.title = "Bulletin - " + student.lastName;
 
             document.getElementById('lbl-year').textContent = appState.currentYear || "2025-2026";
