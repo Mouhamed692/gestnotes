@@ -24,6 +24,37 @@
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .grade-row-item:nth-child(odd) { background-color: #ffffff; }
         .grade-row-item:nth-child(even) { background-color: #f1f5f9; }
+        @media print {
+    /* Masquer la navigation, les formulaires, la liste des élèves et les boutons */
+    nav, 
+    .grid.grid-cols-2, 
+    .lg\:col-span-4, 
+    #subjects-config-list, 
+    .bg-slate-50.rounded-2xl, 
+    button, 
+    #welcome-msg {
+        display: none !important;
+    }
+
+    /* Forcer le panneau d'édition (le bulletin) à prendre toute la page */
+    .lg\:col-span-8, #editor-panel, .bg-white.rounded-3xl {
+        width: 100% !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        box-shadow: none !important;
+        border: none !important;
+        background: white !important;
+        color: black !important;
+    }
+
+    /* Ajuster la taille des inputs pour qu'ils s'intègrent bien sur papier */
+    .grade-input {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+    }
+}
     </style>
 </head>
 <body>
