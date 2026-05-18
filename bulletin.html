@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Bulletin de Notes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         /* Styles de base pour l'écran */
         body {
@@ -92,6 +93,100 @@
         .btn-print:hover {
             background-color: #047857;
         }
+
+        /* Nouveau style pour le bouton de téléchargement PDF */
+        .btn-pdf {
+            padding: 10px 20px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+            margin-right: 10px;
+        }
+
+        .btn-pdf:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Styles pour la boîte de dialogue (Fenêtre Modale d'aperçu) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
+            width: 95%;
+            max-width: 1050px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 16px;
+            color: #1e293b;
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            flex-grow: 1;
+            background: #f1f5f9;
+            padding: 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+
+        .btn-modal-cancel {
+            padding: 10px 20px;
+            background-color: #cbd5e1;
+            color: #1e293b;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-modal-cancel:hover { background-color: #94a3b8; }
+
+        .btn-modal-confirm {
+            padding: 10px 20px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-modal-confirm:hover { background-color: #1d4ed8; }
 
         /* Gestion de l'impression */
         @media print {
@@ -331,7 +426,10 @@
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Retour à l'application
                 </button>
-                <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
+                <div>
+                    <button class="btn-pdf" onclick="openPDFPreviewModal()">Télécharger en PDF</button>
+                    <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
+                </div>
             </div>
             <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 10px 0; width:100%;">
             <label for="header-input">Modifier l'en-tête de l'établissement (IEF, École, etc.) :</label>
@@ -453,6 +551,28 @@ RENOVATION</textarea>
         </div>
     </div>
 
+    <div id="pdf-modal" class="modal-overlay no-print">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Aperçu de contrôle avant téléchargement du PDF</h2>
+                <button onclick="closePDFModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; font-weight: bold;">✕</button>
+            </div>
+            
+            <p style="margin: 0; font-size: 12.5px; color: #475569;">
+                Vérifiez la mise en page ci-dessous. Si des ajustements ou des modifications d'en-tête sont nécessaires, cliquez sur <strong>"Annuler & Modifier"</strong>.
+            </p>
+
+            <div class="modal-body">
+                <div id="pdf-preview-area"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-modal-cancel" onclick="closePDFModal()">Annuler & Modifier</button>
+                <button class="btn-modal-confirm" onclick="generateAndSavePDF()">Accepter & Télécharger</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function getAppreciation(note, max = 20) {
             if (note === null || note === undefined || note === '') return "";
@@ -479,6 +599,59 @@ RENOVATION</textarea>
             // On vérifie si l'identifiant commence par l'un de ces mots-clés
             return classesPrimaire.some(pLevel => level === pLevel || level.startsWith(pLevel));
         }
+
+        // --- FONCTIONS POUR LA GESTION ET LA VALIDATION DU PDF ---
+        
+        // 1. Ouvre la boîte de dialogue et y met une copie dynamique du bulletin
+        function openPDFPreviewModal() {
+            const modal = document.getElementById('pdf-modal');
+            const previewArea = document.getElementById('pdf-preview-area');
+            
+            // Vider les anciens aperçus
+            previewArea.innerHTML = "";
+            
+            // Cloner l'élément complet du bulletin avec les données en cours
+            const bulletinClone = document.getElementById('bulletin-content').cloneNode(true);
+            bulletinClone.style.display = 'block'; 
+            bulletinClone.style.boxShadow = 'none';
+            bulletinClone.style.padding = '0px';
+            bulletinClone.style.margin = '0px';
+            
+            // Injecter le clone dans la modale
+            previewArea.appendChild(bulletinClone);
+            
+            // Rendre la modale visible
+            modal.style.display = 'flex';
+        }
+
+        // 2. Ferme la boîte de dialogue si l'utilisateur refuse ou veut corriger
+        function closePDFModal() {
+            document.getElementById('pdf-modal').style.display = 'none';
+        }
+
+        // 3. L'utilisateur a accepté, on génère le document PDF à partir de l'aperçu validé
+        function generateAndSavePDF() {
+            const element = document.getElementById('pdf-preview-area').firstElementChild;
+            
+            const lastName = document.getElementById('lbl-lastname').textContent || "Nom";
+            const firstName = document.getElementById('lbl-firstname').textContent || "Prenom";
+            const period = document.getElementById('lbl-semester').textContent || "";
+            const fileName = `Bulletin_${lastName}_${firstName}_${period}.pdf`.replace(/\s+/g, '_');
+
+            const opt = {
+                margin:       [8, 8, 8, 8],
+                filename:     fileName,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Fermeture de la boîte après exécution du téléchargement
+                closePDFModal();
+            });
+        }
+        // ---------------------------------------------------------
 
         window.onload = function () {
             const headerInput = document.getElementById('header-input');
