@@ -175,8 +175,9 @@
             </div>
         </div>
     </div>
-<script>
-    let appState = JSON.parse(localStorage.getItem('gestnotes_v4')) || { classes: {} };
+
+    <script>
+        let appState = JSON.parse(localStorage.getItem('gestnotes_v4')) || { classes: {} };
         let currentClassId = "";
         let currentStudentId = null;
         let currentPeriod = "1";
@@ -251,7 +252,6 @@
                 saveToStorage();
                 renderSubjectsConfig();
                 if(currentStudentId) renderGradesFields();
-                renderStats();
             }
         }
 
@@ -273,16 +273,7 @@
 
             document.getElementById('input-effectif').value = appState.classes[currentClassId].effectif || "";
             renderSubjectsConfig(); renderStudents(); renderStats();
-            if(currentStudentId) {
-                const standardList = appState.classes[currentClassId].students;
-                if(standardList.some(s => s.id === currentStudentId)) {
-                    selectStudent(currentStudentId);
-                } else {
-                    currentStudentId = null;
-                    document.getElementById('welcome-msg').classList.remove('hidden');
-                    document.getElementById('editor-panel').classList.add('hidden');
-                }
-            }
+            if(currentStudentId) selectStudent(currentStudentId);
         }
 
         function saveEffectif() { if (currentClassId) appState.classes[currentClassId].effectif = document.getElementById('input-effectif').value; saveToStorage(); }
@@ -304,7 +295,6 @@
             document.getElementById('new-sub-coef').value = '';
             
             if(currentStudentId) renderGradesFields();
-            renderStats();
         }
 
         function renderSubjectsConfig() {
@@ -320,7 +310,7 @@
         }
 
         function removeSubject(subId) {
-            if(!confirm("Supprimer cette matière ?")) return;
+            if(!confirm("Supprimer ?")) return;
             appState.classes[currentClassId].subjects = appState.classes[currentClassId].subjects.filter(s => s.id !== subId);
             saveToStorage(); renderSubjectsConfig(); if(currentStudentId) renderGradesFields(); renderStats();
         }
@@ -431,7 +421,7 @@
         function renderGradesFields() {
             const container = document.getElementById('grades-grid');
             const classData = appState.classes[currentClassId];
-            const periodGrades = classData.grades[currentPeriod] || {};
+            const periodGrades = classData.grades[currentPeriod];
             
             container.innerHTML = classData.subjects.map(sub => {
                 const g = periodGrades[currentStudentId]?.[sub.id] || { d1: '', d2: '', c: '' };
@@ -498,6 +488,7 @@
             const typePeriodeLabel = isPrimaire() ? "Trimestre " : "Semestre ";
             document.getElementById('current-student-display').textContent = `${student.firstName} ${student.lastName}`;
             
+            // Formatage propre du titre de la classe (ex: "6ÉME Unique" au lieu de "6ÉME UNIQUE")
             const classLabelClean = currentClassId.replace('_', ' ').replace('UNIQUE', 'Unique');
             document.getElementById('current-class-display').textContent = classLabelClean + " - " + typePeriodeLabel + currentPeriod;
             
@@ -508,9 +499,9 @@
             const list = document.getElementById('student-list');
             const students = appState.classes[currentClassId]?.students || [];
             list.innerHTML = students.map(s => `
-                <li class="student-item p-3 rounded-xl cursor-pointer mb-2 flex items-center justify-between ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
+                <li class="student-item p-3 rounded-xl cursor-pointer mb-2 ${currentStudentId === s.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-slate-100 hover:bg-indigo-50'}">
                     <span onclick="selectStudent('${s.id}')" class="font-bold text-[10px] uppercase flex-1">${s.firstName} ${s.lastName}</span>
-                    <button onclick="deleteStudent('${s.id}')" class="btn-delete-student hover:bg-red-50 text-xs px-1">×</button>
+                    <button onclick="deleteStudent('${s.id}')" class="btn-delete-student hover:bg-red-50">×</button>
                 </li>`).join('');
         }
 
@@ -530,13 +521,11 @@
             }
             
             let totalMoyennesClasse = 0;
-            let countValidStudents = 0;
 
             classData.students.forEach(s => {
                 if (isPrimaire()) {
                     let totalPointsObtenus = 0;
                     let totalBaremesMax = 0;
-                    let hasGrades = false;
 
                     classData.subjects.forEach(sub => {
                         const g = classData.grades[currentPeriod]?.[s.id]?.[sub.id] || {d1:'', d2:'', c:''};
@@ -544,46 +533,37 @@
                         if (mS !== '--') {
                             totalPointsObtenus += parseFloat(mS);
                             totalBaremesMax += sub.coef;
-                            hasGrades = true;
                         }
                     });
-                    if(hasGrades && totalBaremesMax > 0) {
-                        totalMoyennesClasse += (totalPointsObtenus / totalBaremesMax) * 10;
-                        countValidStudents++;
-                    }
+                    const moyenneEleve = totalBaremesMax > 0 ? (totalPointsObtenus / totalBaremesMax) * 10 : 0;
+                    totalMoyennesClasse += moyenneEleve;
                 } else {
                     let p = 0, c = 0;
-                    let hasGrades = false;
                     classData.subjects.forEach(sub => {
-                        const g = classData.grades[currentPeriod]?.[s.id]?.[sub.id] || {d1:'', d2:'', c:''};
-                        const vD1 = g.d1 !== '' ? parseFloat(g.d1) : null;
-                        const vD2 = g.d2 !== '' ? parseFloat(g.d2) : vD1;
-                        const vComp = g.c !== '' ? parseFloat(g.c) : null;
-
-                        if (vD1 !== null || vComp !== null) {
-                            const mS = (((vD1||0) + (vD2||vD1||0))/2 + (vComp||0)*2)/3;
-                            p += mS * sub.coef; c += sub.coef;
-                            hasGrades = true;
-                        }
+                        const g = classData.grades[currentPeriod]?.[s.id]?.[sub.id] || {d1:0,d2:0,c:0};
+                        const mS = (((parseFloat(g.d1)||0) + (parseFloat(g.d2)||parseFloat(g.d1)||0))/2 + (parseFloat(g.c)||0)*2)/3;
+                        p += mS * sub.coef; c += sub.coef;
                     });
-                    if(hasGrades && c > 0) {
-                        totalMoyennesClasse += (p / c);
-                        countValidStudents++;
-                    }
+                    totalMoyennesClasse += (c > 0 ? p/c : 0);
                 }
             });
 
-            const finalAvg = countValidStudents > 0 ? (totalMoyennesClasse / countValidStudents).toFixed(2) : "0.00";
-            document.getElementById('class-avg-display').textContent = finalAvg;
+            document.getElementById('class-avg-display').textContent = (totalMoyennesClasse / classData.students.length).toFixed(2);
         }
 
-        // --- FONCTIONNALITÉS COMPLÉTÉES (EXPORT, IMPORT, PRINT) ---
+        // Initialisation automatique au chargement
+        window.onload = function() {
+            changeLevel();
+        }
 
+        // ==========================================
+        //  FONCTIONS D'IMPORTATION / EXPORTATION LOCALES
+        // ==========================================
         function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `gestnotes_database.json`);
+            downloadAnchor.setAttribute("download", `gestnotes_backup_${new Date().toISOString().slice(0,10)}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
@@ -595,120 +575,26 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const importedState = JSON.parse(e.target.result);
-                    if (importedState && importedState.classes) {
-                        appState = importedState;
+                    const imported = JSON.parse(e.target.result);
+                    if (imported && imported.classes) {
+                        appState = imported;
                         saveToStorage();
                         changeLevel();
                         alert("Données importées avec succès !");
                     } else {
-                        alert("Format de fichier invalide.");
+                        alert("Fichier JSON invalide.");
                     }
                 } catch (err) {
-                    alert("Erreur lors de la lecture du fichier JSON.");
+                    alert("Erreur lors de la lecture du fichier.");
                 }
             };
             reader.readAsText(file);
         }
 
         function printReport() {
-            const classData = appState.classes[currentClassId];
-            const student = classData.students.find(s => s.id === currentStudentId);
-            if (!student) return;
-
-            const typePeriodeLabel = isPrimaire() ? "Trimestre" : "Semestre";
-            const unitLabel = isPrimaire() ? "/10" : "/20";
-
-            let subjectsHTML = classData.subjects.map(sub => {
-                const g = classData.grades[currentPeriod]?.[student.id]?.[sub.id] || {d1:'', d2:'', c:''};
-                const moy = calculateSingleMoyenne(g.d1, g.d2, g.c, sub.coef);
-                return `
-                    <tr>
-                        <td style="padding: 10px; border: 1px solid #cbd5e1; text-transform: uppercase; font-size: 12px;">${sub.name}</td>
-                        <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">${sub.coef}</td>
-                        <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">${g.d1 || '-'}</td>
-                        <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">${g.d2 || '-'}</td>
-                        <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">${g.c || '-'}</td>
-                        <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #1e1b4b;">${moy}</td>
-                    </tr>`;
-            }).join('');
-
-            const studentAvg = calculateCurrentStudentAverage();
-
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Bulletin - ${student.firstName} ${student.lastName}</title>
-                    <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; background: #fff; }
-                        .header { text-align: center; border-bottom: 3px double #1e1b4b; padding-bottom: 20px; margin-bottom: 30px; }
-                        .header h1 { margin: 0; font-size: 24px; color: #1e1b4b; text-transform: uppercase; letter-spacing: 1px; }
-                        .header p { margin: 5px 0 0 0; font-size: 12px; color: #64748b; font-weight: bold; text-transform: uppercase; }
-                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
-                        .info-grid p { margin: 4px 0; font-size: 13px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                        th { background-color: #1e1b4b; color: white; padding: 12px; font-size: 11px; text-transform: uppercase; border: 1px solid #1e1b4b; }
-                        .total-row { background-color: #f0fdf4; font-weight: bold; font-size: 14px; color: #14532d; }
-                        .footer-sig { margin-top: 50px; display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>GestNotes Pro</h1>
-                        <p>Administration Scolaire & Suivi Académique</p>
-                    </div>
-                    <div class="info-grid">
-                        <div>
-                            <p><strong>ÉLÈVE :</strong> <span style="text-transform: uppercase;">${student.firstName} ${student.lastName}</span></p>
-                            <p><strong>CLASSE :</strong> ${currentClassId.split('_')[0]} (${currentClassId.split('_')[1].toLowerCase()})</p>
-                        </div>
-                        <div style="text-align: right;">
-                            <p><strong>PÉRIODE :</strong> ${typePeriodeLabel} ${currentPeriod}</p>
-                            <p><strong>DATE :</strong> ${new Date().toLocaleDateString('fr-FR')}</p>
-                        </div>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="text-align: left;">Matières</th>
-                                <th>${isPrimaire() ? 'Max' : 'Coef'}</th>
-                                <th>${isPrimaire() ? 'Ev1' : 'D1'}</th>
-                                <th>${isPrimaire() ? 'Ev2' : 'D2'}</th>
-                                <th>${isPrimaire() ? 'Comp' : 'CP'}</th>
-                                <th>Moyenne</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${subjectsHTML}
-                            <tr class="total-row">
-                                <td colspan="5" style="padding: 15px; border: 1px solid #cbd5e1; text-align: right; text-transform: uppercase; letter-spacing: 0.5px;">Moyenne Générale :</td>
-                                <td style="padding: 15px; border: 1px solid #cbd5e1; text-align: center; font-size: 16px;">${studentAvg} ${unitLabel}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="footer-sig">
-                        <div>Le Titulaire de la Classe</div>
-                        <div>La Direction</div>
-                    </div>
-                    <script>
-                        window.onload = function() { window.print(); setTimeout(() => { window.close(); }, 500); }
-                    <\/script>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
+            alert("Génération du bulletin au format d'impression...");
+            window.print();
         }
-
-        // Lancement initial de l'application au chargement
-        window.onload = function() {
-            changeLevel();
-        };
-
-</script>
+    </script>
 </body>
 </html>
-
-
-
