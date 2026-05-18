@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Bulletin de Notes</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         /* Styles de base pour l'écran */
         body {
@@ -31,40 +30,12 @@
             border: 2px solid #fbbf24;
             border-radius: 8px;
             margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-        }
-
-        .btn-back {
-            padding: 10px 20px;
-            background-color: #ffffff;
-            color: #1e293b;
-            border: 1px solid #cbd5e1;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s;
-        }
-
-        .btn-back:hover {
-            background-color: #f8fafc;
         }
 
         .input-panel label {
             font-weight: bold;
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
             color: #1e293b;
         }
 
@@ -80,6 +51,7 @@
         }
 
         .btn-print {
+            margin-top: 10px;
             padding: 10px 20px;
             background-color: #059669;
             color: white;
@@ -93,100 +65,6 @@
         .btn-print:hover {
             background-color: #047857;
         }
-
-        /* Nouveau style pour le bouton de téléchargement PDF */
-        .btn-pdf {
-            padding: 10px 20px;
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-            margin-right: 10px;
-        }
-
-        .btn-pdf:hover {
-            background-color: #1d4ed8;
-        }
-
-        /* Styles pour la boîte de dialogue (Fenêtre Modale d'aperçu) */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-box {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
-            width: 95%;
-            max-width: 1050px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 10px;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-size: 16px;
-            color: #1e293b;
-        }
-
-        .modal-body {
-            overflow-y: auto;
-            flex-grow: 1;
-            background: #f1f5f9;
-            padding: 15px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 10px;
-        }
-
-        .btn-modal-cancel {
-            padding: 10px 20px;
-            background-color: #cbd5e1;
-            color: #1e293b;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-modal-cancel:hover { background-color: #94a3b8; }
-
-        .btn-modal-confirm {
-            padding: 10px 20px;
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-modal-confirm:hover { background-color: #1d4ed8; }
 
         /* Gestion de l'impression */
         @media print {
@@ -318,11 +196,6 @@
             text-align: center;
         }
 
-        table.grades-table th {
-            background-color: #f8fafc;
-            font-weight: bold;
-        }
-
         table.grades-table .col-discipline {
             text-align: left;
             text-transform: uppercase;
@@ -374,35 +247,9 @@
             font-size: 13px;
         }
 
-        .obs-box-container {
-            width: 45%;
-            margin-top: 10px;
-        }
-
-        .obs-box {
-            border-top: 1px solid #000;
-            border-bottom: 1px solid #000;
-            border-right: 1px solid #000;
-            border-left: none;
-            height: 60px;
-            margin-top: 5px;
-        }
-
-        .signatures-container {
-            width: 50%;
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            margin-top: 10px;
-        }
-
-        .sig-block {
+        .obs-right {
             text-align: center;
-            width: 48%;
-        }
-
-        .sig-space {
-            height: 60px;
+            width: 300px;
         }
 
         #error-msg {
@@ -421,22 +268,12 @@
 
     <div class="bulletin-wrapper no-print" id="setup-panel">
         <div class="input-panel">
-            <div class="nav-buttons">
-                <button class="btn-back" onclick="window.close(); window.history.back();">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Retour à l'application
-                </button>
-                <div>
-                    <button class="btn-pdf" onclick="openPDFPreviewModal()">Télécharger en PDF</button>
-                    <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
-                </div>
-            </div>
-            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 10px 0; width:100%;">
             <label for="header-input">Modifier l'en-tête de l'établissement (IEF, École, etc.) :</label>
             <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE
 IEF PIKINE
 RENOVATION</textarea>
-            <p style="font-size: 11px; color: #64748b; margin: 0;">Les modifications s'appliquent en direct ci-dessous.</p>
+            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Les modifications s'appliquent en direct ci-dessous.</p>
+            <button class="btn-print" onclick="window.print()">Imprimer le Bulletin</button>
         </div>
     </div>
 
@@ -460,28 +297,57 @@ RENOVATION</textarea>
             </div>
             <div class="header-right">
                 Année Scolaire: <span id="lbl-year">2025-2026</span><br>
-                <span id="lbl-period-type">Semestre</span> : <span id="lbl-semester">1er</span>
+                <span id="lbl-period-kind">1er Semestre</span>
             </div>
         </div>
 
         <div class="student-info">
             <div class="student-col">
-                <div><span class="field">Prénoms:</span> <strong><span id="lbl-firstname"></span></strong></div>
+                <div><span class="field">Prénoms</span> <strong><span id="lbl-firstname"></span></strong></div>
                 <div><span class="field">Né(e) le</span> <strong id="lbl-birth"></strong> à <strong id="lbl-birthplace"></strong></div>
                 <div><span class="field">Matricule:</span> <strong id="lbl-matricule"></strong></div>
             </div>
             <div class="student-col">
-                <div><span class="field">Nom :</span> <strong><span id="lbl-lastname"></span></strong></div>
+                <div><span class="field">Nom</span> <strong><span id="lbl-lastname"></span></strong></div>
                 <div><span class="field">Classe:</span> <strong><span id="lbl-class"></span></strong></div>
                 <div><span class="field">Nbre d'élèves:</span> <strong id="lbl-effectif"></strong></div>
-                <div><span class="field">Absences / Retards:</span> <strong id="lbl-abs-ret">0</strong></div>
             </div>
         </div>
 
         <table class="grades-table">
-            <thead id="grades-header"></thead>
+            <thead>
+                <tr>
+                    <th rowspan="2">DISCIPLINES</th>
+                    <th colspan="2" id="lbl-devoir-header">Devoir</th>
+                    <th rowspan="2" id="lbl-comp-header">Comp</th>
+                    <th rowspan="2" id="lbl-moy-header">Moy/20</th>
+                    <th rowspan="2">Coef</th>
+                    <th rowspan="2">Moy x Coef</th>
+                    <th rowspan="2" class="th-column" style="display: none;">T.H</th>
+                    <th rowspan="2">Rang</th>
+                    <th rowspan="2">Appréciations</th>
+                </tr>
+                <tr>
+                    <th id="lbl-d1">D1</th>
+                    <th id="lbl-d2">D2</th>
+                </tr>
+            </thead>
             <tbody id="grades-body"></tbody>
-            <tfoot id="grades-footer"></tfoot>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="5" class="lbl-total">TOTAL</td>
+                    <td id="lbl-tot-coef"></td>
+                    <td id="lbl-tot-pts"></td>
+                    <td class="th-column" style="display: none;"></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="summary-row">
+                    <td colspan="5" id="lbl-moy-gen-container">Moyenne <span id="lbl-moy-gen"></span> /20</td>
+                    <td colspan="2">Rang <span id="lbl-rank"></span></td>
+                    <td colspan="3" id="lbl-absences-container">Absences / Retards non spécifiés</td>
+                </tr>
+            </tfoot>
         </table>
 
         <div class="footer-sections">
@@ -533,127 +399,47 @@ RENOVATION</textarea>
         </div>
 
         <div class="observations">
-            <div class="obs-box-container">
-                <div>Observations du conseil des professeurs</div>
-                <div class="obs-box"></div>
-            </div>
-             
-            <div class="signatures-container">
-                <div class="sig-block">
-                    <div>Le Titulaire de Classe</div>
-                    <div class="sig-space"></div>
-                </div>
-                <div class="sig-block">
-                    <div>Le Chef d'Établissement</div>
-                    <div class="sig-space"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="pdf-modal" class="modal-overlay no-print">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h2>Aperçu de contrôle avant téléchargement du PDF</h2>
-                <button onclick="closePDFModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; font-weight: bold;">✕</button>
-            </div>
-            
-            <p style="margin: 0; font-size: 12.5px; color: #475569;">
-                Vérifiez la mise en page ci-dessous. Si des ajustements ou des modifications d'en-tête sont nécessaires, cliquez sur <strong>"Annuler & Modifier"</strong>.
-            </p>
-
-            <div class="modal-body">
-                <div id="pdf-preview-area"></div>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn-modal-cancel" onclick="closePDFModal()">Annuler & Modifier</button>
-                <button class="btn-modal-confirm" onclick="generateAndSavePDF()">Accepter & Télécharger</button>
-            </div>
+            <div>Observations du conseil des professeurs</div>
+            <div class="obs-right">Le Chef d'Etablissement</div>
         </div>
     </div>
 
     <script>
-        function getAppreciation(note, max = 20) {
-            if (note === null || note === undefined || note === '') return "";
-            const note20 = max !== 20 ? (note / max) * 20 : note;
-            if (note20 < 4) return "Très Faible";
-            if (note20 < 8) return "Faible";
-            if (note20 < 10) return "Insuffisant";
-            if (note20 < 12) return "Passable";
-            if (note20 < 14) return "A. Bien";
-            if (note20 < 16) return "Bien";
+        function getAppreciation(note, isPrimaire, maxCoef) {
+            if (note === null || note === undefined || note === '' || isNaN(note)) return "";
+            
+            let referenceNote = note;
+            if (isPrimaire && maxCoef) {
+                referenceNote = (note / maxCoef) * 20; 
+            }
+
+            if (referenceNote < 4) return "Très Faible";
+            if (referenceNote < 8) return "Faible";
+            if (referenceNote < 10) return "Insuffisant";
+            if (referenceNote < 12) return "Passable";
+            if (referenceNote < 14) return "A. Bien";
+            if (referenceNote < 16) return "Bien";
             return "Excellent";
         }
 
-        function checkIsPrimaire(cId) {
-            if (!cId) return false;
-            const level = cId.split('_')[0].toUpperCase();
-            
-            // Nomenclature classique du Sénégal (CI à CM2) + Nomenclature numérique personnalisée du primaire (6EME à 1ERE)
-            const classesPrimaire = [
-                "CI", "CP", "CE1", "CE2", "CM1", "CM2", 
-                "6EME", "5EME", "4EME", "3EME", "2EME", "1ERE"
-            ];
-            
-            // On vérifie si l'identifiant commence par l'un de ces mots-clés
-            return classesPrimaire.some(pLevel => level === pLevel || level.startsWith(pLevel));
+        function calculateSingleMoyenne(d1, d2, c, isPrimaire) {
+            const vD1 = d1 !== '' && d1 !== undefined ? parseFloat(d1) : null;
+            const vD2 = d2 !== '' && d2 !== undefined ? parseFloat(d2) : vD1;
+            const vComp = c !== '' && c !== undefined ? parseFloat(c) : null;
+
+            if (vD1 === null && vComp === null) return null;
+
+            if (isPrimaire) {
+                const noteMensuelle = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
+                return vComp !== null ? (noteMensuelle + vComp) / 2 : noteMensuelle;
+            } else {
+                const moyDev = vD1 !== null ? (vD2 !== null ? (vD1 + vD2) / 2 : vD1) : 0;
+                return vComp !== null ? (moyDev + (vComp * 2)) / 3 : moyDev;
+            }
         }
-
-        // --- FONCTIONS POUR LA GESTION ET LA VALIDATION DU PDF ---
-        
-        // 1. Ouvre la boîte de dialogue et y met une copie dynamique du bulletin
-        function openPDFPreviewModal() {
-            const modal = document.getElementById('pdf-modal');
-            const previewArea = document.getElementById('pdf-preview-area');
-            
-            // Vider les anciens aperçus
-            previewArea.innerHTML = "";
-            
-            // Cloner l'élément complet du bulletin avec les données en cours
-            const bulletinClone = document.getElementById('bulletin-content').cloneNode(true);
-            bulletinClone.style.display = 'block'; 
-            bulletinClone.style.boxShadow = 'none';
-            bulletinClone.style.padding = '0px';
-            bulletinClone.style.margin = '0px';
-            
-            // Injecter le clone dans la modale
-            previewArea.appendChild(bulletinClone);
-            
-            // Rendre la modale visible
-            modal.style.display = 'flex';
-        }
-
-        // 2. Ferme la boîte de dialogue si l'utilisateur refuse ou veut corriger
-        function closePDFModal() {
-            document.getElementById('pdf-modal').style.display = 'none';
-        }
-
-        // 3. L'utilisateur a accepté, on génère le document PDF à partir de l'aperçu validé
-        function generateAndSavePDF() {
-            const element = document.getElementById('pdf-preview-area').firstElementChild;
-            
-            const lastName = document.getElementById('lbl-lastname').textContent || "Nom";
-            const firstName = document.getElementById('lbl-firstname').textContent || "Prenom";
-            const period = document.getElementById('lbl-semester').textContent || "";
-            const fileName = `Bulletin_${lastName}_${firstName}_${period}.pdf`.replace(/\s+/g, '_');
-
-            const opt = {
-                margin:       [8, 8, 8, 8],
-                filename:     fileName,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            };
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                // Fermeture de la boîte après exécution du téléchargement
-                closePDFModal();
-            });
-        }
-        // ---------------------------------------------------------
 
         window.onload = function () {
+            // --- GESTION DE L'EN-TÊTE DYNAMIQUE ---
             const headerInput = document.getElementById('header-input');
             const headerDisplay = document.getElementById('header-text-display');
 
@@ -661,300 +447,189 @@ RENOVATION</textarea>
                 headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
             });
 
+            // --- CHARGEMENT DES PARAMÈTRES URL ---
             const urlParams = new URLSearchParams(window.location.search);
             const classId = urlParams.get('class');
             const studentId = urlParams.get('student');
-            const period = urlParams.get('period') || "1";
+            const period = urlParams.get('period') || "1"; // Par défaut période 1 si non spécifié
 
-            const rawData = localStorage.getItem('gestnotes_v4') || localStorage.getItem('gestnotes_data');
+            // Lecture de la base v4 unifiée
+            const rawData = localStorage.getItem('gestnotes_v4');
             if (!rawData || !classId || !studentId) {
-                showError();
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('setup-panel').style.display = 'none';
                 return;
             }
 
             const appState = JSON.parse(rawData);
-            if (!appState.classes || !appState.classes[classId]) {
-                showError();
-                return;
-            }
-
             const classData = appState.classes[classId];
-            const student = classData.students.find(s => s.id === studentId);
-            if (!student) {
-                showError();
-                return;
-            }
+            if (!classData) return;
 
-            const isPrimaireMode = checkIsPrimaire(classId);
+            const student = classData.students.find(s => s.id === studentId);
+            if (!student) return;
 
             document.getElementById('bulletin-content').style.display = 'block';
-            document.title = "Bulletin - " + student.lastName;
+            document.title = "Bulletin - " + student.lastName + " " + student.firstName;
 
-            document.getElementById('lbl-year').textContent = "2025-2026";
-            document.getElementById('lbl-period-type').textContent = isPrimaireMode ? "Trimestre" : "Semestre";
-            document.getElementById('lbl-semester').textContent = period + (period == "1" ? "er" : "ème");
-             
-            document.getElementById('lbl-firstname').textContent = student.firstName || student.firstname || "";
-            document.getElementById('lbl-lastname').textContent = student.lastName;
-            document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
-            document.getElementById('lbl-matricule').textContent = student.matricule || 'REG-' + Math.floor(1000+Math.random()*9000);
-            document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
-            document.getElementById('lbl-abs-ret').textContent = `${student.absences || 0} Abs / ${student.retards || 0} Ret`;
+            // Détection du niveau d'enseignement
+            const levelCode = classId.split('_')[0];
+            const isPrimaire = ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(levelCode);
 
-            // Injection dynamique de l'en-tête du tableau selon le cycle
-            const thead = document.getElementById('grades-header');
-            if (isPrimaireMode) {
-                thead.innerHTML = `
-                    <tr>
-                        <th rowspan="2" style="width: 30%;">Disciplines</th>
-                        <th colspan="2">Notes Évaluations</th>
-                        <th rowspan="2">Note Obtenue</th>
-                        <th rowspan="2">Barème</th>
-                        <th rowspan="2">Rang</th>
-                        <th rowspan="2">Appréciations</th>
-                    </tr>
-                    <tr>
-                        <th>Devoir scientifique / Contrôle</th>
-                        <th>Composition</th>
-                    </tr>
-                `;
+            // Remplissage des libellés de période et d'entête de tableau
+            if (isPrimaire) {
+                document.getElementById('lbl-period-kind').textContent = period + (period === '1' ? 'er Trimestre' : 'ème Trimestre');
+                document.getElementById('lbl-devoir-header').textContent = "Évaluations Continues";
+                document.getElementById('lbl-comp-header').textContent = "Compétence";
+                document.getElementById('lbl-d1').textContent = "Ev1";
+                document.getElementById('lbl-d2').textContent = "Ev2";
+                document.getElementById('lbl-moy-header').textContent = "Note Fin.";
+                document.getElementById('lbl-moy-gen-container').innerHTML = `Note Globale : <span id="lbl-moy-gen"></span> /10`;
             } else {
-                thead.innerHTML = `
-                    <tr>
-                        <th style="width: 25%;">Disciplines</th>
-                        <th>Devoir 1</th>
-                        <th>Devoir 2</th>
-                        <th>Composition</th>
-                        <th>Moyenne /20</th>
-                        <th>Coef</th>
-                        <th>Total Points</th>
-                        <th>Rang</th>
-                        <th>Appréciations</th>
-                    </tr>
-                `;
+                document.getElementById('lbl-period-kind').textContent = period + (period === '1' ? 'er Semestre' : 'ème Semestre');
             }
 
-            const periodGrades = (classData.grades && classData.grades[period]) ? classData.grades[period] : (classData.grades || {});
+            // Remplissage infos globales élève
+            document.getElementById('lbl-firstname').textContent = student.firstName;
+            document.getElementById('lbl-lastname').textContent = student.lastName;
+            document.getElementById('lbl-class').textContent = classId.replace('_', ' ').replace('UNIQUE', 'Unique');
+            document.getElementById('lbl-effectif').textContent = classData.effectif || classData.students.length;
+            
+            // Nettoyage de l'affichage des absences
+            document.getElementById('lbl-absences-container').textContent = `Absences : ${student.absences || 0} | Retards : ${student.retards || 0}`;
 
-            let subjectRanksMap = {};
-            if (classData.subjects) {
-                classData.subjects.forEach(sub => { subjectRanksMap[sub.id] = []; });
-            }
+            const periodGrades = classData.grades[period] || {};
 
-            let ranks = [];
-            let totalMoyennesClasse = 0;
-            let totalElevesComptes = 0;
+            // --- CALCUL DES RANGS PAR MATIÈRE ---
+            const subjectRanks = {};
+            classData.subjects.forEach(sub => {
+                let subAvgs = [];
+                classData.students.forEach(s => {
+                    const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
+                    const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, isPrimaire);
+                    if (mS !== null) {
+                        subAvgs.push({ id: s.id, avg: mS });
+                    }
+                });
+                
+                subAvgs.sort((a, b) => b.avg - a.avg);
+                subjectRanks[sub.id] = {};
+                let currentRank = 1;
+                subAvgs.forEach((item, idx) => {
+                    if (idx > 0 && item.avg < subAvgs[idx - 1].avg) currentRank = idx + 1;
+                    subjectRanks[sub.id][item.id] = currentRank;
+                });
+            });
 
-            // Étape 1 : Collecter et calculer les notes de CHAQUE élève pour bâtir les classements
-            classData.students.forEach(s => {
-                let stPoints = 0, stCoef = 0;
-                let primPointsObtenus = 0, primBaremeTotal = 0;
-                let hasGrades = false;
-
-                if (classData.subjects) {
+            // --- CALCUL MOYENNE GÉNÉRALE DE TOUS LES ÉLÈVES POUR LE RANG GLOBAL ---
+            const generalAvgs = classData.students.map(s => {
+                if (isPrimaire) {
+                    let totalPointsObtenus = 0;
+                    let totalBaremesMax = 0;
                     classData.subjects.forEach(sub => {
                         const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
-                        const d1 = g.d1 !== '' ? parseFloat(g.d1) : null;
-                        const cp = g.c !== '' ? parseFloat(g.c) : null;
-
-                        if (isPrimaireMode) {
-                            if (d1 !== null || cp !== null) {
-                                const valD1 = d1 !== null ? d1 : 0;
-                                const valCp = cp !== null ? cp : valD1;
-                                const moySub = (valD1 + valCp) / 2;
-                                 
-                                subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
-                                primPointsObtenus += (moySub / 20) * sub.coef;
-                                primBaremeTotal += sub.coef;
-                                hasGrades = true;
-                            }
-                        } else {
-                            const d2 = g.d2 !== '' ? parseFloat(g.d2) : d1;
-                            if (d1 !== null || cp !== null) {
-                                const valD1 = d1 !== null ? d1 : 0;
-                                const valD2 = d2 !== null ? d2 : valD1;
-                                const valComp = cp !== null ? cp : 0;
-
-                                const moyDev = (valD1 + valD2) / 2;
-                                const moySub = cp !== null ? (moyDev + (valComp * 2)) / 3 : moyDev;
-
-                                subjectRanksMap[sub.id].push({ studentId: s.id, score: moySub });
-                                stPoints += moySub * sub.coef;
-                                stCoef += sub.coef;
-                                hasGrades = true;
-                            }
+                        const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, isPrimaire);
+                        if (mS !== null) {
+                            totalPointsObtenus += mS;
+                            totalBaremesMax += sub.coef;
                         }
                     });
-                }
-
-                if (isPrimaireMode && hasGrades) {
-                    const finalPrimAvg = primBaremeTotal > 0 ? (primPointsObtenus / primBaremeTotal) * 10 : 0;
-                    ranks.push({ id: s.id, avg: finalPrimAvg });
-                    totalMoyennesClasse += finalPrimAvg;
-                    totalElevesComptes++;
-                } else if (!isPrimaireMode && hasGrades) {
-                    const finalSecAvg = stCoef > 0 ? (stPoints / stCoef) : 0;
-                    ranks.push({ id: s.id, avg: finalSecAvg });
-                    totalMoyennesClasse += finalSecAvg;
-                    totalElevesComptes++;
-                }
-            });
-
-            // Trier les listes pour extraire les rangs par matière
-            Object.keys(subjectRanksMap).forEach(subId => {
-                subjectRanksMap[subId].sort((a, b) => b.score - a.score);
-            });
-
-            ranks.sort((a, b) => b.avg - a.avg);
-            const myRankIndex = ranks.findIndex(r => r.id === studentId) + 1;
-            const moyenneClasseGlobale = totalElevesComptes > 0 ? (totalMoyennesClasse / totalElevesComptes).toFixed(2) : "0,00";
-
-            // Étape 2 : Remplissage et rendu HTML des lignes du tableau de l'élève actif
-            const tbody = document.getElementById('grades-body');
-            tbody.innerHTML = "";
-
-            let totalCoef = 0, totalPoints = 0;
-            let totalPrimObtenu = 0, totalPrimBareme = 0;
-
-            if (classData.subjects) {
-                classData.subjects.forEach(sub => {
-                    const g = periodGrades[studentId]?.[sub.id] || { d1: '', d2: '', c: '' };
-                    const d1 = g.d1 !== '' ? parseFloat(g.d1) : '';
-                    const d2 = g.d2 !== '' ? parseFloat(g.d2) : '';
-                    const comp = g.c !== '' ? parseFloat(g.c) : '';
-
-                    const rankInSubjectList = subjectRanksMap[sub.id] || [];
-                    const itemIndex = rankInSubjectList.findIndex(x => x.studentId === studentId);
-                    let subjectRankStr = "-";
-                    if (itemIndex !== -1) {
-                        const r = itemIndex + 1;
-                        subjectRankStr = r + (r === 1 ? "er" : "e");
-                    }
-
-                    const tr = document.createElement('tr');
-
-                    if (isPrimaireMode) {
-                        let noteObtenueStr = '', app = '';
-                        if (d1 !== '' || comp !== '') {
-                            const valD1 = d1 !== '' ? d1 : 0;
-                            const valComp = comp !== '' ? comp : valD1;
-                            const calculatedMoy = (valD1 + valComp) / 2;
-
-                            const noteSurBareme = (calculatedMoy / 20) * sub.coef;
-
-                            noteObtenueStr = noteSurBareme.toFixed(2).replace('.', ',');
-                            totalPrimObtenu += noteSurBareme;
-                            totalPrimBareme += sub.coef;
-                            app = getAppreciation(calculatedMoy, 20);
-                        }
-
-                        tr.innerHTML = `
-                            <td class="col-discipline">${sub.name}</td>
-                            <td>${d1 !== '' ? d1.toFixed(2).replace('.', ',') : ''}</td>
-                            <td>${comp !== '' ? comp.toFixed(2).replace('.', ',') : ''}</td>
-                            <td style="font-weight: bold;">${noteObtenueStr}</td>
-                            <td style="color: #475569;">/${sub.coef}</td>
-                            <td style="font-weight: bold; color: #1e1b4b;">${subjectRankStr}</td>
-                            <td>${app}</td>
-                        `;
-                    } else {
-                        let moy20 = '', mxcoef = '', app = '';
-                        if (d1 !== '' || comp !== '') {
-                            const valD1 = d1 !== '' ? d1 : 0;
-                            const valD2 = d2 !== '' ? d2 : valD1;
-                            const valComp = comp !== '' ? comp : 0;
-
-                            const moyDev = (valD1 + valD2) / 2;
-                            const calculatedMoy = comp !== '' ? (moyDev + (valComp * 2)) / 3 : moyDev;
-
-                            moy20 = calculatedMoy.toFixed(2);
-                            const points = calculatedMoy * sub.coef;
-                            mxcoef = points.toFixed(2);
-
-                            totalCoef += sub.coef;
-                            totalPoints += points;
-                            app = getAppreciation(calculatedMoy, 20);
-                        }
-
-                        tr.innerHTML = `
-                            <td class="col-discipline">${sub.name}</td>
-                            <td>${d1}</td><td>${d2}</td><td>${comp}</td>
-                            <td style="font-weight: bold;">${moy20.replace('.', ',')}</td>
-                            <td>${sub.coef}</td>
-                            <td style="font-weight: bold;">${mxcoef.replace('.', ',')}</td>
-                            <td style="font-weight: bold; color: #1e1b4b;">${subjectRankStr}</td>
-                            <td>${app}</td>
-                        `;
-                    }
-                    tbody.appendChild(tr);
-                });
-            }
-
-            // Étape 3 : Calcul final et pied de tableau
-            const tfoot = document.getElementById('grades-footer');
-            let finalAvg = 0;
-            const displayRank = myRankIndex > 0 ? `${myRankIndex} / ${totalElevesComptes}` : "-";
-
-            if (isPrimaireMode) {
-                finalAvg = totalPrimBareme > 0 ? (totalPrimObtenu / totalPrimBareme) * 10 : 0;
-                tfoot.innerHTML = `
-                    <tr class="total-row">
-                        <td colspan="3" class="lbl-total" style="text-align: right; padding-right: 15px;">TOTAL DES POINTS :</td>
-                        <td id="lbl-tot-pts" colspan="2" style="text-align: left; padding-left: 15px;">${totalPrimObtenu.toFixed(2).replace('.', ',')} / ${totalPrimBareme}</td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr class="summary-row">
-                        <td colspan="3" class="lbl-moy">Moyenne Générale : <span id="lbl-moy-gen">${finalAvg.toFixed(2).replace('.', ',')}</span> /10</td>
-                        <td colspan="2">Rang : <span id="lbl-rank">${displayRank}</span></td>
-                        <td colspan="2">Moyenne Classe : <span>${moyenneClasseGlobale.replace('.', ',')}</span> /10</td>
-                    </tr>
-                `;
-            } else {
-                finalAvg = totalCoef > 0 ? (totalPoints / totalCoef) : 0;
-                tfoot.innerHTML = `
-                    <tr class="total-row">
-                        <td colspan="4" class="lbl-total">TOTAL</td>
-                        <td></td>
-                        <td id="lbl-tot-coef">${totalCoef || ''}</td>
-                        <td id="lbl-tot-pts">${totalPoints ? totalPoints.toFixed(2).replace('.', ',') : ''}</td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr class="summary-row">
-                        <td colspan="4" class="lbl-moy">Moyenne Générale : <span id="lbl-moy-gen">${finalAvg.toFixed(2).replace('.', ',')}</span> /20</td>
-                        <td colspan="2">Rang : <span id="lbl-rank">${displayRank}</span></td>
-                        <td colspan="3">Moyenne Classe : <span>${moyenneClasseGlobale.replace('.', ',')}</span> /20</td>
-                    </tr>
-                `;
-            }
-
-            // Étape 4 : Coche automatique des décisions et mentions d'honneur
-            if (totalElevesComptes > 0 && ((isPrimaireMode && totalPrimBareme > 0) || (!isPrimaireMode && totalCoef > 0))) {
-                const checkAvg = isPrimaireMode ? finalAvg * 2 : finalAvg;
-
-                if (checkAvg >= 12) {
-                    document.getElementById('chk-satisfaisant').textContent = 'X';
-                    if (checkAvg >= 16) document.getElementById('chk-felicitations').textContent = 'X';
-                    else if (checkAvg >= 14) document.getElementById('chk-encouragement').textContent = 'X';
-                    else document.getElementById('chk-tableau-honneur').textContent = 'X';
-                } else if (checkAvg >= 10) {
-                    document.getElementById('chk-peut-mieux').textContent = 'X';
-                } else if (checkAvg >= 8) {
-                    document.getElementById('chk-insuffisant').textContent = 'X';
-                } else if (checkAvg >= 6) {
-                    document.getElementById('chk-risque-redoubler').textContent = 'X';
+                    return { id: s.id, avg: totalBaremesMax > 0 ? (totalPointsObtenus / totalBaremesMax) * 10 : null };
                 } else {
-                    document.getElementById('chk-risque-exclusion').textContent = 'X';
+                    let p = 0, c = 0;
+                    classData.subjects.forEach(sub => {
+                        const g = periodGrades[s.id]?.[sub.id] || { d1: '', d2: '', c: '' };
+                        const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, isPrimaire);
+                        if (mS !== null) {
+                            p += mS * sub.coef;
+                            c += sub.coef;
+                        }
+                    });
+                    return { id: s.id, avg: c > 0 ? (p / c) : null };
+                }
+            });
+
+            generalAvgs.sort((a, b) => (b.avg || 0) - (a.avg || 0));
+
+            let genRank = '-', studentGenAvg = null;
+            let currentGenRank = 1;
+            generalAvgs.forEach((item, index) => {
+                if (index > 0 && item.avg !== generalAvgs[index - 1].avg) currentGenRank = index + 1;
+                if (item.id === studentId) {
+                    genRank = item.avg !== null ? currentGenRank : '-';
+                    studentGenAvg = item.avg;
+                }
+            });
+
+            // --- REMPLISSAGE DU TABLEAU DES MATIÈRES ---
+            const tbody = document.getElementById('grades-body');
+            let totalCoef = 0, totalPoints = 0;
+
+            classData.subjects.forEach(sub => {
+                const g = periodGrades[studentId]?.[sub.id] || { d1: '', d2: '', c: '' };
+                const mS = calculateSingleMoyenne(g.d1, g.d2, g.c, isPrimaire);
+
+                let sAvgStr = '', mxcStr = '', app = '', rankSub = '';
+                if (mS !== null) {
+                    sAvgStr = mS.toFixed(2).replace('.', ',');
+                    
+                    let mxc = 0;
+                    if (isPrimaire) {
+                        mxc = mS; // Au primaire, la note finale est déjà ramenée / calculée sur le barème max (coef)
+                        totalCoef += sub.coef;
+                        totalPoints += mxc;
+                    } else {
+                        mxc = mS * sub.coef;
+                        totalCoef += sub.coef;
+                        totalPoints += mxc;
+                    }
+
+                    mxcStr = mxc.toFixed(2).replace('.', ',');
+                    app = getAppreciation(mS, isPrimaire, sub.coef);
+                    rankSub = subjectRanks[sub.id]?.[studentId] || '';
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="col-discipline">${sub.name}</td>
+                    <td>${g.d1 || ''}</td>
+                    <td>${g.d2 || ''}</td>
+                    <td>${g.c || ''}</td>
+                    <td>${sAvgStr}</td>
+                    <td>${sub.coef}</td>
+                    <td>${mxcStr}</td>
+                    <td class="th-column" style="display: none;">TH</td>
+                    <td>${rankSub}</td>
+                    <td>${app}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Injection des totaux dans le pied de page du tableau
+            document.getElementById('lbl-tot-coef').textContent = totalCoef || '';
+            document.getElementById('lbl-tot-pts').textContent = totalPoints ? totalPoints.toFixed(2).replace('.', ',') : '';
+            document.getElementById('lbl-moy-gen').textContent = studentGenAvg !== null ? studentGenAvg.toFixed(2).replace('.', ',') : '-';
+            document.getElementById('lbl-rank').textContent = genRank + ' / ' + classData.students.length;
+
+            // --- COCHAGE AUTOMATIQUE DES SECTIONS DÉCISIONS & SANCTIONS ---
+            if (studentGenAvg !== null) {
+                const noteSur20 = isPrimaire ? (studentGenAvg * 2) : studentGenAvg;
+
+                if (noteSur20 >= 12) {
+                    document.getElementById('chk-satisfaisant').textContent = 'X';
+                    if (noteSur20 >= 14) document.getElementById('chk-felicitations').textContent = 'X';
+                    else if (noteSur20 >= 13) document.getElementById('chk-encouragement').textContent = 'X';
+                    else document.getElementById('chk-tableau-honneur').textContent = 'X';
+                } else if (noteSur20 >= 10) { 
+                    document.getElementById('chk-peut-mieux').textContent = 'X'; 
+                } else if (noteSur20 >= 8) { 
+                    document.getElementById('chk-insuffisant').textContent = 'X'; 
+                } else if (noteSur20 >= 5) { 
+                    document.getElementById('chk-risque-redoubler').textContent = 'X'; 
+                } else { 
+                    document.getElementById('chk-risque-exclusion').textContent = 'X'; 
                 }
             }
         };
-
-        function showError() {
-            document.getElementById('error-msg').style.display = 'block';
-            document.getElementById('setup-panel').style.display = 'none';
-            document.getElementById('bulletin-content').style.display = 'none';
-        }
     </script>
 </body>
 
