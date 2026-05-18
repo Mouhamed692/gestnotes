@@ -618,6 +618,94 @@
         window.onload = function() {
             changeLevel();
         };
+        function printReport() {
+    // 1. Vérifications de sécurité
+    const classData = appState.classes[currentClassId];
+    if (!classData || !currentStudentId) {
+        alert("Veuillez sélectionner un élève valide.");
+        return;
+    }
+
+    const student = classData.students.find(s => s.id === currentStudentId);
+    if (!student) {
+        alert("Élève introuvable.");
+        return;
+    }
+
+    // 2. Récupération des matières et des notes de l'élève pour la période actuelle
+    const periodGrades = classData.grades[currentPeriod] || {};
+    const studentGrades = periodGrades[currentStudentId] || {};
+
+    const bulletinData = {
+        studentInfo: {
+            id: student.id,
+            firstName: student.firstName,
+            lastName: student.lastName,
+            classLevel: document.getElementById('class-level').value,
+            classSection: document.getElementById('class-section').value,
+            effectif: classData.effectif || classData.students.length
+        },
+        period: currentPeriod,
+        isPrimaire: isPrimaire(),
+        studentAverage: calculateCurrentStudentAverage(),
+        classAverage: document.getElementById('class-avg-display').textContent,
+        subjects: classData.subjects.map(sub => {
+            const g = studentGrades[sub.id] || { d1: '', d2: '', c: '' };
+            return {
+                name: sub.name,
+                coef: sub.coef,
+                d1: g.d1,
+                d2: g.d2,
+                c: g.c,
+                moyenne: calculateSingleMoyenne(g.d1, g.d2, g.c, sub.coef)
+            };
+        })
+    };
+
+    // 3. Sauvegarde dans le localStorage sous la clé attendue par le bulletin
+    localStorage.setItem('bulletinSelectionne', JSON.stringify(bulletinData));
+
+    // 4. Redirection vers la page du bulletin
+    window.location.href = 'bulletin.html';
+}
+
+// Pour éviter que l'import/export manque à l'appel si tu cliques dessus :
+function exportData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `gestnotes_backup_${currentClassId || 'all'}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedState = JSON.parse(e.target.result);
+            if (importedState && importedState.classes) {
+                appState = importedState;
+                saveToStorage();
+                changeLevel();
+                alert("Données importées avec succès !");
+            } else {
+                alert("Format de fichier invalide.");
+            }
+        } catch (err) {
+            alert("Erreur lors de la lecture du fichier.");
+        }
+    };
+    reader.readAsText(file);
+}
+
+// Initialisation au premier chargement de la page principale
+window.addEventListener('DOMContentLoaded', () => {
+    changeLevel(); 
+});
     </script>
 </body>
 </html>
