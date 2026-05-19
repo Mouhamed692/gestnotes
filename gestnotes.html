@@ -582,6 +582,13 @@
                 const compo = parseFloat(grades[`${student.id}_${sub.id}_c`]);
 
                 let subMoy = null;
+
+                // BLOQUANT : Pas de composition = Pas de moyenne pour la matière
+                if (isNaN(compo)) {
+                    completeData = false;
+                    return; // On passe à la matière suivante (subMoy reste null)
+                }
+
                 const cD1 = sub.coefD1 !== undefined ? parseFloat(sub.coefD1) : 1;
                 const cD2 = sub.coefD2 !== undefined ? parseFloat(sub.coefD2) : 1;
                 const cC = sub.coefC !== undefined ? parseFloat(sub.coefC) : 2;
@@ -591,20 +598,17 @@
                 if (!isNaN(d1)) { devSum += d1 * cD1; devCoefSum += cD1; }
                 if (!isNaN(d2)) { devSum += d2 * cD2; devCoefSum += cD2; }
 
-                if (devCoefSum > 0 && !isNaN(compo)) {
+                if (devCoefSum > 0) {
                     const devAvg = devSum / devCoefSum;
                     subMoy = ((devAvg * (cD1 + cD2)) + (compo * cC)) / (cD1 + cD2 + cC);
-                } else if (devCoefSum === 0 && !isNaN(compo)) {
+                } else {
+                    // Pas de devoir mais une compo
                     subMoy = compo;
-                } else if (devCoefSum > 0 && isNaN(compo)) {
-                    subMoy = devSum / devCoefSum;
                 }
 
                 if (subMoy !== null) {
                     totalWeightedSum += subMoy * parseFloat(sub.coef);
                     totalCoefSum += parseFloat(sub.coef);
-                } else {
-                    completeData = false;
                 }
             });
 
@@ -913,20 +917,22 @@
                 const c = currentData.grades[`${student.id}_${sub.id}_c`];
                 
                 let subMoy = null;
-                const cD1 = sub.coefD1 !== undefined ? parseFloat(sub.coefD1) : 1;
-                const cD2 = sub.coefD2 !== undefined ? parseFloat(sub.coefD2) : 1;
-                const cC = sub.coefC !== undefined ? parseFloat(sub.coefC) : 2;
 
-                let devSum = 0; let devCoef = 0;
-                if(d1 !== undefined && d1 !== '') { devSum += parseFloat(d1)*cD1; devCoef += cD1; }
-                if(d2 !== undefined && d2 !== '') { devSum += parseFloat(d2)*cD2; devCoef += cD2; }
+                // On applique la même règle pour l'export Excel
+                if (c !== undefined && c !== '') {
+                    const cD1 = sub.coefD1 !== undefined ? parseFloat(sub.coefD1) : 1;
+                    const cD2 = sub.coefD2 !== undefined ? parseFloat(sub.coefD2) : 1;
+                    const cC = sub.coefC !== undefined ? parseFloat(sub.coefC) : 2;
 
-                if (devCoef > 0 && c !== undefined && c !== '') {
-                    subMoy = ((devSum / devCoef) * (cD1 + cD2) + parseFloat(c) * cC) / (cD1 + cD2 + cC);
-                } else if (devCoef === 0 && c !== undefined && c !== '') {
-                    subMoy = parseFloat(c);
-                } else if (devCoef > 0 && (c === undefined || c === '')) {
-                    subMoy = devSum / devCoef;
+                    let devSum = 0; let devCoef = 0;
+                    if(d1 !== undefined && d1 !== '') { devSum += parseFloat(d1)*cD1; devCoef += cD1; }
+                    if(d2 !== undefined && d2 !== '') { devSum += parseFloat(d2)*cD2; devCoef += cD2; }
+
+                    if (devCoef > 0) {
+                        subMoy = ((devSum / devCoef) * (cD1 + cD2) + parseFloat(c) * cC) / (cD1 + cD2 + cC);
+                    } else {
+                        subMoy = parseFloat(c);
+                    }
                 }
 
                 csv += `"${sub.name}";${sub.coef};${d1 !== undefined ? d1 : ''};${d2 !== undefined ? d2 : ''};${c !== undefined ? c : ''};${subMoy !== null ? subMoy.toFixed(2) : '-'}\n`;
