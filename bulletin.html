@@ -402,6 +402,29 @@
             return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className.split('_')[0]);
         }
 
+        // Fonction centralisée pour calculer proprement la moyenne d'une matière
+        function calculateSubjectAverage(d1Raw, d2Raw, compRaw) {
+            let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
+            let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
+            let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
+
+            let devAvg = null;
+            let sum = 0, count = 0;
+            if (d1 !== null) { sum += d1; count++; }
+            if (d2 !== null) { sum += d2; count++; }
+            if (count > 0) devAvg = sum / count;
+
+            // Calcul harmonisé : (Moyenne Devoirs + Compo) / 2
+            if (devAvg !== null && compo !== null) {
+                return (devAvg + compo) / 2;
+            } else if (compo !== null) {
+                return compo;
+            } else if (devAvg !== null) {
+                return devAvg;
+            }
+            return null;
+        }
+
         window.onload = function() {
             try {
                 const params = new URLSearchParams(window.location.search);
@@ -444,7 +467,7 @@
                 document.getElementById('lbl-abs').textContent = student.absences || '0';
                 document.getElementById('lbl-ret').textContent = student.retards || '0';
 
-                // Calcul des moyennes de TOUS les élèves pour le Rang et la Moyenne de Classe
+                // Calcul de toutes les moyennes d'élèves
                 const allAverages = classData.students.map(st => {
                     let totalP = 0, totalC = 0;
                     classData.subjects.forEach(sub => {
@@ -452,19 +475,7 @@
                         const d2Raw = classData.grades[`${st.id}_${sub.id}_d2`];
                         const compRaw = classData.grades[`${st.id}_${sub.id}_compo`];
 
-                        let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
-                        let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
-                        let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
-
-                        let subjectAvg = null;
-                        if (compo !== null) {
-                            subjectAvg = compo;
-                        } else if (d1 !== null || d2 !== null) {
-                            let sum = 0, count = 0;
-                            if(d1 !== null) { sum += d1; count++; }
-                            if(d2 !== null) { sum += d2; count++; }
-                            subjectAvg = sum / count;
-                        }
+                        let subjectAvg = calculateSubjectAverage(d1Raw, d2Raw, compRaw);
 
                         if (subjectAvg !== null) {
                             totalP += subjectAvg * sub.coef;
@@ -474,16 +485,15 @@
                     return { id: st.id, avg: totalC > 0 ? (totalP / totalC) : null };
                 });
 
-                // Filtrage des moyennes valides
                 const validAverages = allAverages.filter(x => x.avg !== null);
 
-                // Calcul de la moyenne de l'effectif de la classe
+                // Moyenne générale globale de la classe
                 let classAverageSum = 0;
                 validAverages.forEach(x => { classAverageSum += x.avg; });
                 let classGlobalAverage = validAverages.length > 0 ? (classAverageSum / validAverages.length) : null;
                 document.getElementById('lbl-moy-classe').textContent = classGlobalAverage !== null ? classGlobalAverage.toFixed(2).replace('.', ',') : '-';
 
-                // Calcul du rang
+                // Classement des rangs
                 const sortedAverages = [...validAverages].sort((a, b) => b.avg - a.avg);
                 const targetIdx = sortedAverages.findIndex(x => x.id === studentId);
                 let genRank = '-';
@@ -507,15 +517,7 @@
                     let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
                     let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
 
-                    let subjectAvg = null;
-                    if (compo !== null) {
-                        subjectAvg = compo;
-                    } else if (d1 !== null || d2 !== null) {
-                        let sum = 0, count = 0;
-                        if(d1 !== null) { sum += d1; count++; }
-                        if(d2 !== null) { sum += d2; count++; }
-                        subjectAvg = sum / count;
-                    }
+                    let subjectAvg = calculateSubjectAverage(d1Raw, d2Raw, compRaw);
 
                     let mxcStr = '', sAvgStr = '';
                     if (subjectAvg !== null) {
@@ -526,21 +528,16 @@
                         totalPoints += mxc;
                     }
 
-                    let subRank = '-';
+                    // Calcul du rang par matière
                     let subStudentsAvgs = classData.students.map(s => {
                         const sd1 = classData.grades[`${s.id}_${sub.id}_d1`];
                         const sd2 = classData.grades[`${s.id}_${sub.id}_d2`];
                         const scom = classData.grades[`${s.id}_${sub.id}_compo`];
-                        let v1 = (sd1 !== undefined && sd1 !== '') ? parseFloat(sd1) : null;
-                        let v2 = (sd2 !== undefined && sd2 !== '') ? parseFloat(sd2) : null;
-                        let vc = (scom !== undefined && scom !== '') ? parseFloat(scom) : null;
-                        if(vc !== null) return { id: s.id, v: vc };
-                        if(v1 !== null || v2 !== null) return { id: s.id, v: ((v1||0)+(v2||0))/((v1!==null?1:0)+(v2!==null?1:0)) };
-                        return { id: s.id, v: null };
+                        return { id: s.id, v: calculateSubjectAverage(sd1, sd2, scom) };
                     }).filter(x => x.v !== null).sort((a,b) => b.v - a.v);
 
                     let subRankIdx = subStudentsAvgs.findIndex(x => x.id === studentId);
-                    if(subRankIdx !== -1) subRank = (subRankIdx + 1);
+                    let subRank = subRankIdx !== -1 ? (subRankIdx + 1) : '-';
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
