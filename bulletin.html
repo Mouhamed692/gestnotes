@@ -9,18 +9,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-          @media print {
-    .flag div {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-}
-@media print {
-    .flag, .flag div {
-        background-color: inherit !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
+    @media print {
+  .flag, .flag div {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: initial !important;
+  }
 }
         body {
             font-family: 'Inter', sans-serif;
