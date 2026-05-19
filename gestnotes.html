@@ -703,18 +703,16 @@
             n.value = ''; c.value = '';
             saveState(); render(); showToast("Matière ajoutée !");
         });
-
-      window.updateGrade = function (studentId, subjectId, field, value) {
-    if (!appState.classes[currentFullKey].grades[studentId]) {
-        appState.classes[currentFullKey].grades[studentId] = {};
-    }
-    if (!appState.classes[currentFullKey].grades[studentId][subjectId]) {
-        appState.classes[currentFullKey].grades[studentId][subjectId] = {};
-    }
-    appState.classes[currentFullKey].grades[studentId][subjectId][field] = value;
+        window.updateGrade = function (studentId, subjectId, field, value) {
+    if (!appState.classes[currentFullKey]) return;
+    
+    // Utilisation de la structure normalisée attendue par le tableau des notes
+    const storageKey = `${studentId}_${subjectId}_${field}`;
+    appState.classes[currentFullKey].grades[storageKey] = value;
+    
     saveState();
 };
-        window.deleteStudent = function(id) {
+       window.deleteStudent = function(id) {
             if(!confirm("Supprimer cet élève ainsi que toutes ses notes ?")) return;
             appState.classes[currentFullKey].students = appState.classes[currentFullKey].students.filter(s => s.id !== id);
             for (let k in appState.classes[currentFullKey].grades) {
