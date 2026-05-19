@@ -612,9 +612,10 @@
             data.students.sort((a,b) => a.lastName.localeCompare(b.lastName)).forEach(st => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/80 transition-colors";
-                
-                let row = `<td class="px-4 py-2.5 font-semibold sticky left-0 bg-white z-10 text-slate-700 truncate max-w-[240px] sticky-left-shadow border-r" title="${st.lastName} ${st.firstName}">
+
+                let row = `<td class="px-4 py-2.5 font-semibold sticky left-0 bg-white z-10 text-slate-700 truncate max-w-[240px] sticky-left-shadow border-r flex items-center gap-2" title="${st.lastName} ${st.firstName}">
                     <span class="uppercase">${st.lastName}</span> ${st.firstName}
+                    <button onclick=\"printReportCard('${st.id}')\" title=\"Imprimer le bulletin\" class=\"ml-2 text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-full p-1 transition-colors shadow-sm\"><i class=\"fa-solid fa-print\"></i></button>
                 </td>`;
 
                 data.subjects.forEach(sub => {
@@ -624,13 +625,13 @@
 
                     row += `
                         <td class="p-1 border-l border-slate-100 text-center">
-                            <input type="text" value="${d1}" onchange="updateGrade('${st.id}','${sub.id}','d1',this.value)" class="w-9 h-7 text-center rounded border border-slate-200 text-xs focus:ring-1 focus:ring-amber-500 p-0">
+                            <input type="text" value="${d1}" onchange="updateGrade('${st.id}','${sub.id}','d1',this.value)" class="w-14 h-9 text-center rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-amber-400 bg-white shadow-sm transition-all">
                         </td>
                         <td class="p-1 text-center">
-                            <input type="text" value="${d2}" onchange="updateGrade('${st.id}','${sub.id}','d2',this.value)" class="w-9 h-7 text-center rounded border border-slate-200 text-xs focus:ring-1 focus:ring-amber-500 p-0">
+                            <input type="text" value="${d2}" onchange="updateGrade('${st.id}','${sub.id}','d2',this.value)" class="w-14 h-9 text-center rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-amber-400 bg-white shadow-sm transition-all">
                         </td>
                         <td class="p-1 text-center bg-amber-50/20">
-                            <input type="text" value="${c}" onchange="updateGrade('${st.id}','${sub.id}','c',this.value)" class="w-11 h-7 text-center rounded border border-amber-200 text-xs font-bold bg-amber-50/50 text-amber-900 focus:ring-1 focus:ring-amber-500 p-0">
+                            <input type="text" value="${c}" onchange="updateGrade('${st.id}','${sub.id}','c',this.value)" class="w-16 h-9 text-center rounded-lg border border-amber-300 text-sm font-bold bg-amber-50/70 text-amber-900 focus:ring-2 focus:ring-amber-400 shadow-sm transition-all">
                         </td>
                     `;
                 });
