@@ -717,6 +717,186 @@
             document.getElementById('edit-student-ret').value = s.retards || 0;
             document.getElementById('student-modal').classList.remove('hidden');
         };
+        window.renderGradesTable = function () {
+            const isPrimary = ["CP", "CE1", "CE2", "CM1", "CM2"].includes(currentClass);
+            const table = document.getElementById('grades-table');
+            const thead = document.getElementById('grades-thead');
+            const tbody = document.getElementById('grades-tbody');
+            const emptyState = document.getElementById('grades-empty');
+
+            if (!table || !thead || !tbody || !emptyState) return;
+
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            const data = appState.classes[currentFullKey];
+            if (!data || data.students.length === 0 || data.subjects.length === 0) {
+                table.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                document.getElementById('grades-table-subtitle').textContent = '';
+                return;
+            }
+
+            table.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            document.getElementById('grades-table-subtitle').textContent = `${currentClass} ${currentSection} • ${data.students.length} élève(s) • ${data.subjects.length} matière(s)`;
+
+            // --- 1. Construction de l'en-tête du tableau ---
+            let headerRow = `<tr>
+                <th class="p-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider sticky left-0 bg-slate-100 z-30 border-r w-48 sticky-left-shadow">Élève</th>
+            `;
+
+            data.subjects.forEach(sub => {
+                if (isPrimary) {
+                    headerRow += `
+                        <th class="p-3 text-center text-xs font-bold text-slate-600 uppercase tracking-wider border-r bg-slate-50 min-w-[90px]">
+                            <div class="truncate text-[11px]" title="${sub.name}">${sub.name}</div>
+                            <div class="text-[10px] text-slate-400 font-normal mt-0.5">Note (x${sub.coef})</div>
+                        </th>
+                    `;
+                } else {
+                    headerRow += `
+                        <th class="p-2 text-center text-xs font-bold text-slate-600 uppercase tracking-wider border-r bg-slate-50 min-w-[200px]">
+                            <div class="truncate text-[11px] border-b border-slate-200 pb-1 mb-1 px-1" title="${sub.name}">${sub.name} (x${sub.coef})</div>
+                            <div class="grid grid-cols-4 gap-1 text-[10px] text-slate-400 font-normal">
+                                <div>D1</div>
+                                <div>D2</div>
+                                <div>Comp.</div>
+                                <div class="text-indigo-600 font-bold bg-indigo-50/50 rounded">Moy.</div>
+                            </div>
+                        </th>
+                    `;
+                }
+            });
+
+            // Colonne Finale de la Moyenne Générale
+            headerRow += `
+                <th class="p-3 text-center text-xs font-bold text-white uppercase tracking-wider bg-indigo-600 sticky right-0 z-30 w-24 border-l sticky-right-shadow">
+                    Moy. Gén.
+                </th>
+            </tr>`;
+            thead.innerHTML = headerRow;
+
+            // --- 2. Remplissage des lignes élèves ---
+            data.students.sort((a, b) => a.lastName.localeCompare(b.lastName)).forEach(st => {
+                let rowHtml = `
+                    <td class="p-3 border-b border-slate-100 text-sm font-medium text-slate-900 sticky left-0 bg-white z-10 border-r shadow-sm truncate sticky-left-shadow" title="${st.lastName} ${st.firstName}">
+                        <span class="uppercase font-semibold text-slate-700">${st.lastName}</span> <span class="text-slate-600">${st.firstName}</span>
+                    </td>
+                `;
+
+                let totalWeightedPoints = 0;
+                let totalCoefficients = 0;
+
+                data.subjects.forEach(sub => {
+                    if (isPrimary) {
+                        // --- ENSEIGNEMENT PRIMAIRE ---
+                        const noteStr = data.grades[`${st.id}_${sub.id}_note`] ?? '';
+                        const note = parseFloat(noteStr.replace(',', '.'));
+
+                        rowHtml += `
+                            <td class="p-2 border-b border-slate-100 border-r text-center bg-white">
+                                <input type="text" value="${noteStr}" 
+                                    onchange="updateGrade('${st.id}','${sub.id}','note',this.value)" 
+                                    class="w-14 h-8 text-center rounded-md border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                            </td>
+                        `;
+
+                        if (!isNaN(note)) {
+                            totalWeightedPoints += note * sub.coef;
+                            totalCoefficients += sub.coef;
+                        }
+                    } else {
+                        // --- ENSEIGNEMENT SECONDAIRE (D1, D2, Composition) ---
+                        const d1Str = data.grades[`${st.id}_${sub.id}_d1`] ?? '';
+                        const d2Str = data.grades[`${st.id}_${sub.id}_d2`] ?? '';
+                        const compStr = data.grades[`${st.id}_${sub.id}_c`] ?? '';
+
+                        const d1 = parseFloat(d1Str.replace(',', '.'));
+                        const d2 = parseFloat(d2Str.replace(',', '.'));
+                        const comp = parseFloat(compStr.replace(',', '.'));
+
+                        // Calcul de la moyenne de la matière
+                        let subAvg = null;
+                        let sumDevoir = 0;
+                        let countDevoir = 0;
+
+                        if (!isNaN(d1)) { sumDevoir += d1; countDevoir++; }
+                        if (!isNaN(d2)) { sumDevoir += d2; countDevoir++; }
+
+                        let moyenneDevoirs = countDevoir > 0 ? sumDevoir / countDevoir : null;
+
+                        // Si on a des devoirs et une composition
+                        if (moyenneDevoirs !== null && !isNaN(comp)) {
+                            subAvg = (moyenneDevoirs + (comp * 2)) / 3;
+                        } else if (moyenneDevoirs !== null && isNaN(comp)) {
+                            subAvg = moyenneDevoirs; // Provisoire sans compo
+                        } else if (moyenneDevoirs === null && !isNaN(comp)) {
+                            subAvg = comp;
+                        }
+
+                        let subAvgDisplay = subAvg !== null ? subAvg.toFixed(2).replace('.', ',') : '-';
+
+                        rowHtml += `
+                            <td class="p-1.5 border-b border-slate-100 border-r bg-white">
+                                <div class="grid grid-cols-4 gap-1 items-center text-center">
+                                    <input type="text" value="${d1Str}" onchange="updateGrade('${st.id}','${sub.id}','d1',this.value)" class="w-full h-8 text-center rounded-md border border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 outline-none">
+                                    <input type="text" value="${d2Str}" onchange="updateGrade('${st.id}','${sub.id}','d2',this.value)" class="w-full h-8 text-center rounded-md border border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 outline-none">
+                                    <input type="text" value="${compStr}" onchange="updateGrade('${st.id}','${sub.id}','c',this.value)" class="w-full h-8 text-center rounded-md border border-slate-200 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none">
+                                    <div class="text-xs font-bold text-indigo-600 bg-indigo-50/70 h-8 flex items-center justify-center rounded-md border border-transparent select-none">${subAvgDisplay}</div>
+                                </div>
+                            </td>
+                        `;
+
+                        if (subAvg !== null) {
+                            totalWeightedPoints += subAvg * sub.coef;
+                            totalCoefficients += sub.coef;
+                        }
+                    }
+                });
+
+                // Calcul de la Moyenne Générale de l'élève
+                let genAvgDisplay = '-';
+                let badgeColor = 'bg-slate-100 text-slate-600 font-medium';
+
+                if (totalCoefficients > 0) {
+                    const genAvg = totalWeightedPoints / totalCoefficients;
+                    genAvgDisplay = genAvg.toFixed(2).replace('.', ',');
+                    
+                    if (genAvg >= 14) badgeColor = 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-200';
+                    else if (genAvg >= 10) badgeColor = 'bg-blue-100 text-blue-800 font-bold border border-blue-200';
+                    else badgeColor = 'bg-rose-100 text-rose-800 font-bold border border-rose-200';
+                }
+
+                rowHtml += `
+                    <td class="p-3 border-b border-slate-100 text-center sticky right-0 bg-slate-50 z-10 border-l shadow-sm sticky-right-shadow">
+                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs min-w-[64px] ${badgeColor}">
+                            ${genAvgDisplay}
+                        </span>
+                    </td>
+                `;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-indigo-50/30 transition-colors";
+                tr.innerHTML = rowHtml;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.updateGrade = function (studentId, subjectId, field, value) {
+            if (!appState.classes[currentFullKey]) return;
+            const key = `${studentId}_${subjectId}_${field}`;
+            
+            if (value.trim() === '') {
+                delete appState.classes[currentFullKey].grades[key];
+            } else {
+                appState.classes[currentFullKey].grades[key] = value.trim();
+            }
+            saveState();
+            
+            // Recalculer et rafraîchir instantanément les moyennes à l'écran
+            renderGradesTable();
+        };
 
         window.saveStudentModal = function() {
             const id = document.getElementById('edit-student-id').value;
