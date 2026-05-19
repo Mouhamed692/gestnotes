@@ -10,6 +10,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        @media print {
+    .flag div {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+@media print {
+    .flag, .flag div {
+        background-color: inherit !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
@@ -182,6 +195,8 @@
                             <input type="text" id="new-subject-name" placeholder="Nom de la matière" required
                                 class="flex-[2] rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-emerald-500">
                             <div class="flex gap-2 flex-1">
+                                <input type="number" id="new-subject-coef" placeholder="Coef G." step="0.5" min="0.5" required
+                                    class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-emerald-500">
                                 <button type="submit"
                                     class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center w-full">
                                     <i class="fa-solid fa-plus mr-1"></i> Ajouter
@@ -792,27 +807,30 @@ document.querySelectorAll('.grade-input').forEach(input => {
             showToast("Élève inscrit avec succès !");
         });
 
-        document.getElementById('add-subject-form').addEventListener('submit', e => {
-            e.preventDefault();
-            const nameInput = document.getElementById('new-subject-name');
-            if (!appState.classes[currentFullKey]) return;
+       document.getElementById('add-subject-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const nameInput = document.getElementById('new-subject-name');
+    const coefInput = document.getElementById('new-subject-coef');
+    if (!appState.classes[currentFullKey]) return;
 
-            const name = nameInput.value.trim();
-            const exists = appState.classes[currentFullKey].subjects.some(s => s.name.toLowerCase() === name.toLowerCase());
-            if (exists) {
-                showToast("Cette matière existe déjà.", "error");
-                return;
-            }
+    const name = nameInput.value.trim();
+    const coef = parseFloat(coefInput.value) || 1;
+    const exists = appState.classes[currentFullKey].subjects.some(s => s.name.toLowerCase() === name.toLowerCase());
+    if (exists) {
+        showToast("Cette matière existe déjà.", "error");
+        return;
+    }
 
-            appState.classes[currentFullKey].subjects.push({
-                id: generateId(), name: name, coef: 2, coefD1: 1, coefD2: 1, coefC: 2
-            });
-            saveState();
-            nameInput.value = ''; nameInput.focus();
-            render();
-            showToast("Matière ajoutée au programme.");
-        });
-
+    appState.classes[currentFullKey].subjects.push({
+        id: generateId(), name: name, coef: coef, coefD1: 1, coefD2: 1, coefC: 2
+    });
+    saveState();
+    nameInput.value = '';
+    coefInput.value = '';
+    nameInput.focus();
+    render();
+    showToast("Matière ajoutée au programme.");
+});
         window.deleteStudent = function (id) {
             if (!confirm("Supprimer définitivement cet élève et l'ensemble de ses notes ?")) return;
             appState.classes[currentFullKey].students = appState.classes[currentFullKey].students.filter(s => s.id !== id);
