@@ -669,23 +669,16 @@
             saveState(); render(); showToast("Matière ajoutée !");
         });
 
-        window.updateGrade = function(stId, subId, type, val) {
-            val = val.replace(',', '.');
-            const key = `${stId}_${subId}_${type}`;
-            if(val === '') {
-                delete appState.classes[currentFullKey].grades[key];
-            } else {
-                const num = parseFloat(val);
-                if(isNaN(num) || num < 0 || num > 20) {
-                    showToast("Note invalide (doit être entre 0 et 20)", "error");
-                    render();
-                    return;
-                }
-                appState.classes[currentFullKey].grades[key] = num;
-            }
-            saveState();
-        };
-
+      window.updateGrade = function (studentId, subjectId, field, value) {
+    if (!appState.classes[currentFullKey].grades[studentId]) {
+        appState.classes[currentFullKey].grades[studentId] = {};
+    }
+    if (!appState.classes[currentFullKey].grades[studentId][subjectId]) {
+        appState.classes[currentFullKey].grades[studentId][subjectId] = {};
+    }
+    appState.classes[currentFullKey].grades[studentId][subjectId][field] = value;
+    saveState();
+};
         window.deleteStudent = function(id) {
             if(!confirm("Supprimer cet élève ainsi que toutes ses notes ?")) return;
             appState.classes[currentFullKey].students = appState.classes[currentFullKey].students.filter(s => s.id !== id);
