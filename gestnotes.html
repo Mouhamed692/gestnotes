@@ -717,206 +717,31 @@
             document.getElementById('edit-student-ret').value = s.retards || 0;
             document.getElementById('student-modal').classList.remove('hidden');
         };
-window.renderGradesTable = function () {
-            const isPrimary = ["CP", "CE1", "CE2", "CM1", "CM2"].includes(currentClass);
-            const table = document.getElementById('grades-table');
-            const thead = document.getElementById('grades-thead');
-            const tbody = document.getElementById('grades-tbody');
-            const emptyState = document.getElementById('grades-empty');
-
-            if (!table || !thead || !tbody || !emptyState) return;
-
-            thead.innerHTML = '';
-            tbody.innerHTML = '';
-
-            const data = appState.classes[currentFullKey];
-            if (!data || data.students.length === 0 || data.subjects.length === 0) {
-                table.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-                document.getElementById('grades-table-subtitle').textContent = '';
-                return;
-            }
-
-            table.classList.remove('hidden');
-            emptyState.classList.add('hidden');
-            document.getElementById('grades-table-subtitle').textContent = `${currentClass} ${currentSection} • ${data.students.length} élève(s) • ${data.subjects.length} matière(s)`;
-
-            // --- 1. EN-TÊTE DU TABLEAU PRO STYLE ---
-            let headerRow = `<tr>
-                <th class="p-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider sticky left-0 bg-slate-100 z-30 border-r w-44 sm:w-52 sticky-left-shadow">Élève</th>
-            `;
-
-            data.subjects.forEach(sub => {
-                if (isPrimary) {
-                    headerRow += `
-                        <th class="p-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r bg-slate-50 min-w-[110px]">
-                            <div class="truncate text-[11px] font-bold" title="${sub.name}">${sub.name}</div>
-                            <div class="text-[10px] text-slate-400 font-normal mt-0.5">Coef. ${sub.coef}</div>
-                        </th>
-                    `;
-                } else {
-                    headerRow += `
-                        <th class="p-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r bg-slate-50 min-w-[200px] sm:min-w-[260px]">
-                            <div class="truncate text-[11px] font-bold border-b border-slate-200 pb-1 mb-1 px-1" title="${sub.name}">${sub.name} <span class="text-slate-400 font-normal">(x${sub.coef})</span></div>
-                            <div class="hidden sm:grid grid-cols-4 gap-1 text-[10px] text-slate-400 font-bold px-1">
-                                <div class="py-0.5">Dev. 1</div>
-                                <div class="py-0.5">Dev. 2</div>
-                                <div class="text-amber-700 bg-amber-50 rounded py-0.5">Comp.</div>
-                                <div class="text-indigo-600 bg-indigo-50 rounded py-0.5">Moy.</div>
-                            </div>
-                            <div class="block sm:hidden text-[10px] text-slate-400 font-medium">Saisie des notes & Moy.</div>
-                        </th>
-                    `;
-                }
-            });
-
-            headerRow += `
-                <th class="p-3 text-center text-xs font-bold text-white uppercase tracking-wider bg-indigo-600 sticky right-0 z-30 w-24 border-l sticky-right-shadow">
-                    Moy. Gén.
-                </th>
-            </tr>`;
-            thead.innerHTML = headerRow;
-
-            // --- 2. RENDU DES LIGNES ÉLÈVES ---
-            data.students.sort((a, b) => a.lastName.localeCompare(b.lastName)).forEach(st => {
-                let rowHtml = `
-                    <td class="p-3 border-b border-slate-100 text-sm font-medium text-slate-900 sticky left-0 bg-white z-10 border-r shadow-sm truncate sticky-left-shadow" title="${st.lastName} ${st.firstName}">
-                        <span class="uppercase font-bold text-slate-800 text-xs sm:text-sm">${st.lastName}</span> <span class="text-slate-500 font-normal text-xs sm:text-sm">${st.firstName}</span>
-                    </td>
-                `;
-
-                let totalWeightedPoints = 0;
-                let totalCoefficients = 0;
-
-                data.subjects.forEach(sub => {
-                    if (isPrimary) {
-                        // --- INTERFACE PRIMAIRE ---
-                        const noteStr = data.grades[`${st.id}_${sub.id}_note`] ?? '';
-                        const note = parseFloat(noteStr.replace(',', '.'));
-
-                        rowHtml += `
-                            <td class="p-2 border-b border-slate-100 border-r text-center bg-white">
-                                <input type="text" value="${noteStr}" 
-                                    onchange="window.updateGrade('${st.id}','${sub.id}','note',this.value)" 
-                                    class="w-16 h-8 text-center rounded-lg border border-slate-200 bg-slate-50/50 text-sm font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-150">
-                            </td>
-                        `;
-
-                        if (!isNaN(note)) {
-                            totalWeightedPoints += note * sub.coef;
-                            totalCoefficients += sub.coef;
-                        }
-                    } else {
-                        // --- INTERFACE SECONDAIRE ---
-                        const d1Str = data.grades[`${st.id}_${sub.id}_d1`] ?? '';
-                        const d2Str = data.grades[`${st.id}_${sub.id}_d2`] ?? '';
-                        const compStr = data.grades[`${st.id}_${sub.id}_c`] ?? '';
-
-                        const d1 = parseFloat(d1Str.replace(',', '.'));
-                        const d2 = parseFloat(d2Str.replace(',', '.'));
-                        const comp = parseFloat(compStr.replace(',', '.'));
-
-                        // Calcul identique à la formule de bulletin.html
-                        let subAvg = null;
-                        let sumDevoir = 0;
-                        let countDevoir = 0;
-
-                        if (!isNaN(d1)) { sumDevoir += d1; countDevoir++; }
-                        if (!isNaN(d2)) { sumDevoir += d2; countDevoir++; }
-
-                        let moyenneDevoirs = countDevoir > 0 ? sumDevoir / countDevoir : null;
-
-                        if (moyenneDevoirs !== null && !isNaN(comp)) {
-                            subAvg = (moyenneDevoirs + (comp * 2)) / 3;
-                        } else if (moyenneDevoirs !== null && isNaN(comp)) {
-                            subAvg = moyenneDevoirs;
-                        } else if (moyenneDevoirs === null && !isNaN(comp)) {
-                            subAvg = comp;
-                        }
-
-                        let subAvgDisplay = subAvg !== null ? subAvg.toFixed(2).replace('.', ',') : '-';
-
-                        rowHtml += `
-                            <td class="p-2 border-b border-slate-100 border-r bg-white min-w-[200px] sm:min-w-[260px]">
-                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-1 items-center text-center">
-                                    
-                                    <div class="flex flex-col sm:block">
-                                        <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tight block sm:hidden mb-0.5 text-left pl-1">D1</span>
-                                        <input type="text" value="${d1Str}" onchange="window.updateGrade('${st.id}','${sub.id}','d1',this.value)" 
-                                            class="w-full h-8 text-center rounded-md border border-slate-200 bg-slate-50/60 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-150" placeholder="-">
-                                    </div>
-                                    
-                                    <div class="flex flex-col sm:block">
-                                        <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tight block sm:hidden mb-0.5 text-left pl-1">D2</span>
-                                        <input type="text" value="${d2Str}" onchange="window.updateGrade('${st.id}','${sub.id}','d2',this.value)" 
-                                            class="w-full h-8 text-center rounded-md border border-slate-200 bg-slate-50/60 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-150" placeholder="-">
-                                    </div>
-                                    
-                                    <div class="flex flex-col sm:block">
-                                        <span class="text-[9px] text-amber-600 font-bold uppercase tracking-tight block sm:hidden mb-0.5 text-left pl-1">Comp</span>
-                                        <input type="text" value="${compStr}" onchange="window.updateGrade('${st.id}','${sub.id}','c',this.value)" 
-                                            class="w-full h-8 text-center rounded-md border border-amber-200 bg-amber-50/30 text-slate-900 font-bold focus:bg-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all duration-150" placeholder="-">
-                                    </div>
-                                    
-                                    <div class="flex flex-col sm:block">
-                                        <span class="text-[9px] text-indigo-600 font-bold uppercase tracking-tight block sm:hidden mb-0.5 text-left pl-1">Moy</span>
-                                        <div class="w-full h-8 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100/70 flex items-center justify-center rounded-md select-none">${subAvgDisplay}</div>
-                                    </div>
-
-                                </div>
-                            </td>
-                        `;
-
-                        if (subAvg !== null) {
-                            totalWeightedPoints += subAvg * sub.coef;
-                            totalCoefficients += sub.coef;
-                        }
-                    }
-                });
-
-                // --- 3. BADGES DE MOYENNE GÉNÉRALE ---
-                let genAvgDisplay = '-';
-                let badgeColor = 'bg-slate-100 text-slate-600 font-medium';
-
-                if (totalCoefficients > 0) {
-                    const genAvg = totalWeightedPoints / totalCoefficients;
-                    genAvgDisplay = genAvg.toFixed(2).replace('.', ',');
-                    
-                    if (genAvg >= 14) badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold';
-                    else if (genAvg >= 10) badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200 font-bold';
-                    else badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200 font-bold';
-                }
-
-                rowHtml += `
-                    <td class="p-3 border-b border-slate-100 text-center sticky right-0 bg-slate-50 z-10 border-l shadow-sm sticky-right-shadow">
-                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs min-w-[55px] sm:min-w-[64px] ${badgeColor}">
-                            ${genAvgDisplay}
-                        </span>
-                    </td>
-                `;
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-indigo-50/20 transition-colors duration-150";
-                tr.innerHTML = rowHtml;
-                tbody.appendChild(tr);
-            });
-        };
-
-        window.updateGrade = function (studentId, subjectId, field, value) {
-            if (!appState.classes[currentFullKey]) return;
+        window.renderGradesTable = function () {
+    const tableBody = document.getElementById('grades-tbody');
+    tableBody.innerHTML = '';
+    const data = appState.classes[currentFullKey] || { students: [], subjects: [], grades: {} };
+    
+    data.students.sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName)).forEach(st => {
+        let tr = document.createElement('tr');
+        tr.innerHTML = `<td class="px-2 py-2 border-b border-slate-200 border-l font-medium text-sm truncate" title="${st.lastName} ${st.firstName}">
+            <span class="uppercase">${st.lastName}</span> ${st.firstName} </td>`;
             
-            // Correction de la clé pour correspondre exactement aux attentes de bulletin.html
-            const key = `${studentId}_${subjectId}_${field}`;
-            
-            if (value.trim() === '') {
-                delete appState.classes[currentFullKey].grades[key];
-            } else {
-                appState.classes[currentFullKey].grades[key] = value.trim();
-            }
-            saveState();
-            renderGradesTable();
-        };
-        window.saveStudentModal = function() {
+        data.subjects.forEach(sub => {
+            const sg = data.grades[st.id] ? (data.grades[st.id][sub.id] || {}) : {};
+            tr.innerHTML += `
+                <td class="px-2 py-2 border-b border-slate-200 border-l text-center">
+                    <div class="flex gap-1 justify-center">
+                        <input type="text" value="${sg.d1 || ''}" onchange="updateGrade('${st.id}', '${sub.id}', 'd1', this.value)" class="w-12 text-center text-xs border rounded p-1">
+                        <input type="text" value="${sg.d2 || ''}" onchange="updateGrade('${st.id}', '${sub.id}', 'd2', this.value)" class="w-12 text-center text-xs border rounded p-1">
+                        <input type="text" value="${sg.c || ''}" onchange="updateGrade('${st.id}', '${sub.id}', 'c', this.value)" class="w-12 text-center text-xs border rounded p-1 bg-amber-50">
+                    </div>
+                </td>`;
+        });
+        tableBody.appendChild(tr);
+    });
+};
+       window.saveStudentModal = function() {
             const id = document.getElementById('edit-student-id').value;
             const s = appState.classes[currentFullKey].students.find(x => x.id === id);
             if(s) {
