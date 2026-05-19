@@ -44,765 +44,820 @@
             }
         }
 
-        @keyframes fadeOut {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0;
-            }
-        }
-
-        .toast-enter {
-            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        .toast-leave {
-            animation: fadeOut 0.4s ease-out forwards;
-        }
-
-        .sticky-left-shadow {
-            box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.05);
-        }
-
-        .sticky-right-shadow {
-            box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.05);
+        .toast-animate {
+            animation: slideIn 0.3s ease forwards;
         }
     </style>
 </head>
 
-<body class="text-slate-800 md:h-screen flex flex-col md:overflow-hidden">
+<body class="min-h-screen flex flex-col text-slate-800">
 
-    <header class="bg-indigo-700 text-white shadow-md z-20 shrink-0">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col lg:flex-row justify-between items-center gap-4">
-            <div class="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto text-center sm:text-left">
-                <div class="bg-white/20 p-2.5 rounded-lg hidden sm:block">
-                    <i class="fa-solid fa-graduation-cap text-xl"></i>
-                </div>
-                <div class="w-full sm:w-auto">
-                    <h1 class="text-2xl font-bold">GestNotes</h1>
-                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-1">
-                        <input type="text" id="setting-year" title="Année scolaire"
-                            class="bg-white/10 text-white placeholder-white/70 border border-white/20 rounded px-2 py-0.5 text-xs w-24 focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
-                        <select id="setting-semester" title="Période"
-                            class="bg-white/10 text-white border border-white/20 rounded px-2 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
-                            </select>
-                        <input type="number" id="setting-effectif" title="Nombre total d'élèves (Effectif)"
-                            placeholder="Effectif"
-                            class="bg-white/10 text-white placeholder-white/70 border border-white/20 rounded px-2 py-0.5 text-xs w-20 focus:outline-none focus:ring-1 focus:ring-white/50 transition-colors">
+    <nav class="bg-indigo-900 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="bg-amber-500 p-2 rounded-lg text-indigo-950 font-bold text-xl tracking-wider shadow">
+                        GN
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg block tracking-wide">GestNotes</span>
+                        <span class="text-xs text-indigo-200 block -mt-1">Sénégal • Management des Évaluations</span>
                     </div>
                 </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row items-center gap-3 bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20 w-full lg:w-auto">
-                <span class="font-medium text-sm uppercase tracking-wider text-indigo-100 font-bold">Structure</span>
-                <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
-                    <select id="class-select" title="Niveau général"
-                        class="bg-white text-indigo-900 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold cursor-pointer shadow-sm border-0 text-sm">
-                        <optgroup label="Enseignement Primaire" class="text-slate-500 font-normal">
-                            <option value="CP">CP</option>
-                            <option value="CE1">CE1</option>
-                            <option value="CE2">CE2</option>
-                            <option value="CM1">CM1</option>
-                            <option value="CM2">CM2</option>
-                        </optgroup>
-                        <optgroup label="Enseignement Secondaire" class="text-slate-500 font-normal">
-                            <option value="6ème" selected>6ème</option>
-                            <option value="5ème">5ème</option>
-                            <option value="4ème">4ème</option>
-                            <option value="3ème">3ème</option>
-                            <option value="Seconde">Seconde</option>
-                            <option value="Première">Première</option>
-                            <option value="Terminale">Terminale</option>
-                        </optgroup>
-                    </select>
-
-                    <select id="section-select" title="Classe / Série"
-                        class="bg-white text-indigo-900 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold cursor-pointer shadow-sm border-0 text-sm">
-                    </select>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="bg-indigo-800 px-3 py-1.5 rounded-md border border-indigo-700">
+                        <span class="text-indigo-300 font-medium mr-1">Année:</span>
+                        <span id="nav-year" class="font-bold text-amber-400">-</span>
+                    </div>
+                    <div class="bg-indigo-800 px-3 py-1.5 rounded-md border border-indigo-700">
+                        <span id="nav-period-lbl" class="text-indigo-300 font-medium mr-1">Période:</span>
+                        <span id="nav-period" class="font-bold text-amber-400">-</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <main class="flex-1 overflow-auto p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0">
-            <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[360px] overflow-hidden">
-                <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
-                    <h2 class="text-base font-semibold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-users text-indigo-500 w-5"></i> Liste des élèves
-                    </h2>
-                    <span id="students-count" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col md:flex-row gap-6">
+        
+        <aside class="w-full md:w-80 shrink-0 flex flex-col gap-6">
+            
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-gear text-indigo-600"></i> Configuration Globale
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Année Scolaire</label>
+                        <input type="text" id="cfg-year" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 font-medium" placeholder="Ex: 2025-2026">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Période Active</label>
+                        <select id="cfg-period" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 font-medium">
+                            <option value="1">1er Semestre / Trimestre</option>
+                            <option value="2">2ème Semestre / Trimestre</option>
+                            <option value="3">3ème Trimestre (Primaire)</option>
+                        </select>
+                    </div>
+                    <button onclick="saveGlobalSettings()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-2.5 rounded-lg shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Enregistrer
+                    </button>
                 </div>
-                <div class="p-3 bg-white border-b border-slate-100">
-                    <form id="add-student-form" class="flex flex-col sm:flex-row gap-2">
-                        <input type="text" id="new-student-first" placeholder="Prénom" required
-                            class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-indigo-500">
-                        <input type="text" id="new-student-last" placeholder="Nom" required
-                            class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-indigo-500">
-                        <button type="submit"
-                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex justify-center items-center gap-1">
-                            <i class="fa-solid fa-plus"></i> <span class="sm:hidden">Ajouter</span>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex-1 flex flex-col min-h-[300px]">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+                    <span><i class="fa-solid fa-school text-indigo-600"></i> Classes</span>
+                    <span id="class-count" class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">0</span>
+                </h2>
+
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
+                    <div class="flex gap-2">
+                        <select id="new-class-level" class="flex-1 bg-white border border-slate-200 rounded-md px-2 py-1.5 text-xs font-medium focus:outline-none">
+                            <option value="">Niveau...</option>
+                            <option value="CI">CI</option><option value="CP">CP</option>
+                            <option value="CE1">CE1</option><option value="CE2">CE2</option>
+                            <option value="CM1">CM1</option><option value="CM2">CM2</option>
+                            <option value="6ème">6ème</option><option value="5ème">5ème</option>
+                            <option value="4ème">4ème</option><option value="3ème">3ème</option>
+                            <option value="Seconde">Seconde</option><option value="Première">Première</option>
+                            <option value="Terminale">Terminale</option>
+                        </select>
+                        <input type="text" id="new-class-section" class="w-16 bg-white border border-slate-200 rounded-md px-2 py-1.5 text-xs text-center uppercase font-bold focus:outline-none" placeholder="A, B, S1...">
+                    </div>
+                    <button onclick="addClass()" class="w-full mt-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold py-1.5 rounded-md transition">
+                        + Ajouter la classe
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto space-y-1.5 max-h-[250px] pr-1" id="classes-list"></div>
+            </div>
+        </aside>
+
+        <section class="flex-1 flex flex-col gap-6 min-w-0" id="main-content-panel">
+            
+            <div id="empty-state" class="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center my-auto flex flex-col items-center justify-center shadow-sm">
+                <div class="bg-indigo-50 text-indigo-600 w-16 h-16 rounded-full flex items-center justify-center text-2xl mb-4 animate-bounce">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-700 mb-1">Aucune classe sélectionnée</h3>
+                <p class="text-slate-400 text-sm max-w-sm">Choisissez une classe existante dans le menu latéral ou créez-en une nouvelle pour commencer à gérer vos élèves et leurs notes.</p>
+            </div>
+
+            <div id="active-state" class="hidden space-y-6">
+                
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2.5">
+                            <h1 id="active-class-title" class="text-2xl font-bold text-slate-800 tracking-tight">-</h1>
+                            <span id="active-class-type" class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md font-semibold border border-indigo-100">Régime Général</span>
+                        </div>
+                        <p class="text-slate-400 text-xs mt-1">Identifiant système unique : <span id="active-class-key" class="font-mono bg-slate-100 text-slate-600 px-1 rounded">-</span></p>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 self-end sm:self-auto">
+                        <button onclick="exportAllCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-4 py-2.5 rounded-lg transition flex items-center gap-2">
+                            <i class="fa-solid fa-file-csv text-emerald-600"></i> Tout exporter (CSV)
                         </button>
-                    </form>
-                </div>
-                <div class="flex-1 overflow-y-auto p-2">
-                    <ul id="students-list" class="space-y-1"></ul>
-                </div>
-            </section>
-
-            <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-[360px] overflow-hidden">
-                <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
-                    <h2 class="text-base font-semibold text-slate-800 flex items-center gap-2" id="subject-section-title">
-                        <i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Matières & Coefficients
-                    </h2>
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="loadStandardSubjects()" title="Ajouter les matières officielles"
-                            class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded border border-emerald-200 transition-colors flex items-center gap-1 shadow-sm">
-                            <i class="fa-solid fa-bolt"></i> Standards
+                        <button onclick="printAllReportCards()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2.5 rounded-lg shadow-sm transition flex items-center gap-2">
+                            <i class="fa-solid fa-print"></i> Tout imprimer (Bulletins)
                         </button>
-                        <span id="subjects-count" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                        <button onclick="deleteClass()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2.5 rounded-lg transition" title="Supprimer la classe">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
                     </div>
                 </div>
-                <div class="p-3 bg-white border-b border-slate-100">
-                    <form id="add-subject-form" class="flex flex-col gap-2">
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <input type="text" id="new-subject-name" placeholder="Nom de la matière" required
-                                class="flex-[2] rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-emerald-500">
-                            <div class="flex gap-2 flex-1">
-                                <input type="number" id="new-subject-coef" placeholder="Coef" title="Coefficient" step="0.5" min="0.5" required
-                                    class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-1 focus:ring-emerald-500">
-                                <button type="submit"
-                                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    
+                    <div class="flex border-b border-slate-100 bg-slate-50/70 p-2 gap-1">
+                        <button onclick="switchTab('students')" id="tab-btn-students" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition">
+                            <i class="fa-solid fa-user-graduate"></i> Élèves <span id="badge-count-students" class="text-xs ml-1 bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full font-bold">0</span>
+                        </button>
+                        <button onclick="switchTab('subjects')" id="tab-btn-subjects" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition">
+                            <i class="fa-solid fa-book"></i> Matières <span id="badge-count-subjects" class="text-xs ml-1 bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full font-bold">0</span>
+                        </button>
+                        <button onclick="switchTab('grades')" id="tab-btn-grades" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition">
+                            <i class="fa-solid fa-star"></i> Saisie des Notes
+                        </button>
+                    </div>
+
+                    <div id="tab-content-students" class="p-6 hidden space-y-6">
+                        <div class="flex flex-col sm:flex-row gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <input type="text" id="stud-firstname" class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="Prénom de l'élève">
+                            <input type="text" id="stud-lastname" class="w-full sm:w-48 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none uppercase font-bold" placeholder="NOM">
+                            <input type="text" id="stud-matricule" class="w-full sm:w-36 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="Matricule">
+                            <input type="text" id="stud-birth" class="w-full sm:w-40 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="Né(e) le (Ex: 12/04/2012)">
+                            <button onclick="addStudent()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2 rounded-lg shadow-sm transition whitespace-nowrap">
+                                + Inscrire
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto border border-slate-100 rounded-xl">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold text-xs uppercase tracking-wider">
+                                        <th class="py-3 px-4">Matricule</th>
+                                        <th class="py-3 px-4">Nom complet</th>
+                                        <th class="py-3 px-4">Date de Naissance</th>
+                                        <th class="py-3 px-4 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-students-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-subjects" class="p-6 hidden space-y-6">
+                        <div class="flex flex-col sm:flex-row gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <input type="text" id="sub-name" class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none font-medium" placeholder="Intitulé de la matière (Ex: Mathématiques, Histoire-Géo...)">
+                            <div class="flex items-center gap-2 bg-white px-3 py-2 border border-slate-200 rounded-lg shrink-0">
+                                <label class="text-xs font-semibold text-slate-500 whitespace-nowrap">Coef Général :</label>
+                                <input type="number" id="sub-coef" class="w-12 text-center text-sm font-bold focus:outline-none" value="2" min="1">
+                            </div>
+                            <button onclick="addSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2 rounded-lg shadow-sm transition whitespace-nowrap">
+                                + Ajouter
+                            </button>
+                        </div>
+                        
+                        <div class="p-3 bg-amber-50 rounded-lg border border-amber-100 text-amber-800 text-xs flex items-start gap-2">
+                            <i class="fa-solid fa-circle-info mt-0.5 shrink-0"></i>
+                            <div>
+                                <strong>Configuration automatique des sous-coefficients d'évaluation :</strong> Chaque matière créée applique par défaut les pondérations suivantes pour le calcul de sa moyenne : <strong>Devoir 1 (coef 1)</strong>, <strong>Devoir 2 (coef 1)</strong>, et <strong>Composition (coef 2)</strong>.
                             </div>
                         </div>
-                    </form>
-                </div>
-                <div class="flex-1 overflow-y-auto p-2">
-                    <div id="subjects-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
-                </div>
-            </section>
-        </div>
 
-        <section class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 min-h-[400px] overflow-hidden">
-            <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50 shrink-0">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <i class="fa-solid fa-table-list text-indigo-600"></i> Grille de Saisie des Notes
-                    </h2>
-                    <p class="text-xs text-slate-500 mt-0.5">Saisie directe : Devoirs (D1, D2) et Composition (Comp.).</p>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <button onclick="window.printAllReportCards()"
-                        class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
-                        <i class="fa-solid fa-print"></i> Tout imprimer
-                    </button>
-                    <button onclick="window.exportAllCSV()"
-                        class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                        <i class="fa-solid fa-file-csv"></i> Exporter CSV
-                    </button>
-                    <button onclick="clearCurrentGrades()"
-                        class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                        title="Réinitialiser toutes les notes de cette classe">
-                        <i class="fa-solid fa-trash-can"></i> Effacer notes
-                    </button>
-                </div>
-            </div>
+                        <div class="overflow-x-auto border border-slate-100 rounded-xl">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold text-xs uppercase tracking-wider">
+                                        <th class="py-3 px-4">Discipline / Domaine</th>
+                                        <th class="py-3 px-4 text-center">Coefficient Général</th>
+                                        <th class="py-3 px-4 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-subjects-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
 
-            <div class="flex-1 overflow-auto relative">
-                <table class="w-full text-left text-sm border-collapse min-w-[1000px]">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-700 uppercase text-xs font-bold tracking-wider border-b border-slate-200 sticky top-0 z-10">
-                            <th class="py-3 px-4 sticky left-0 bg-slate-100 z-20 min-w-[180px] border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">Élève</th>
-                            <th class="py-3 px-4 min-w-[200px] border-r border-slate-200">Discipline / Évaluations</th>
-                            <th class="py-3 px-3 text-center w-24">Moy. Gen</th>
-                            <th class="py-3 px-3 text-center w-16">Rang</th>
-                            <th class="py-3 px-3 text-center w-20">Absences</th>
-                            <th class="py-3 px-3 text-center w-20">Retards</th>
-                            <th class="py-3 px-4 text-center w-36 sticky right-0 bg-slate-100 z-20 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="grades-table-body" class="divide-y divide-slate-200 bg-white">
-                        </tbody>
-                </table>
-                <div id="empty-state" class="hidden flex-col items-center justify-center p-12 text-slate-400 gap-3">
-                    <i class="fa-solid fa-folder-open text-4xl text-slate-300"></i>
-                    <p class="text-sm">Aucun élève enregistré dans cette section.</p>
+                    <div id="tab-content-grades" class="p-6 hidden space-y-4">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                            <div class="flex items-center gap-3 w-full sm:w-auto">
+                                <label class="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Filtrer par discipline :</label>
+                                <select id="grade-filter-subject" onchange="renderGradesGrid()" class="w-full sm:w-64 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:border-indigo-500"></select>
+                            </div>
+                            <div class="text-xs text-slate-400 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 font-medium">
+                                <i class="fa-solid fa-cloud-arrow-up text-indigo-500 mr-1"></i> Sauvegarde automatique immédiate en local.
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto border border-slate-100 rounded-xl">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold text-xs uppercase tracking-wider text-center">
+                                        <th class="py-3 px-4 text-left">Nom de l'élève</th>
+                                        <th class="py-3 px-2 w-24">Devoir 1 (c1)</th>
+                                        <th class="py-3 px-2 w-24">Devoir 2 (c1)</th>
+                                        <th class="py-3 px-2 w-24">Composition (c2)</th>
+                                        <th class="py-3 px-4 w-28">Moy/20</th>
+                                        <th class="py-3 px-4 w-24">Rang</th>
+                                        <th class="py-3 px-4 text-left w-44">Appréciation</th>
+                                        <th class="py-3 px-4 w-24">Absences</th>
+                                        <th class="py-3 px-4 w-24">Retards</th>
+                                        <th class="py-3 px-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-grades-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
     </main>
 
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
     <script>
-        // --- CONFIGURATION PAR DÉFAUT & STRUCTURES ---
-        const SECTIONS_CONFIG = {
-            "CP": ["A", "B"], "CE1": ["A", "B"], "CE2": ["A", "B"], "CM1": ["A", "B"], "CM2": ["A", "B"],
-            "6ème": ["M1", "M2", "A", "B"], "5ème": ["A", "B"], "4ème": ["A", "B"], "3ème": ["A", "B"],
-            "Seconde": ["L", "S"], "Première": ["L1", "L2", "S1", "S2"], "Terminale": ["L1", "L2", "S1", "S2"]
-        };
-
-        const STANDARDS_SUBJECTS = {
-            "primaire": [
-                { name: "Langage et Communication", coef: 2 },
-                { name: "Mathématiques", coef: 2 },
-                { name: "Éducation Science / Techno", coef: 1 },
-                { name: "Éducation Sociale", coef: 1 },
-                { name: "Arts Plastiques / Éduc. Musicale", coef: 1 },
-                { name: "Éducation Physique", coef: 1 }
-            ],
-            "college": [
-                { name: "Français", coef: 5 },
-                { name: "Mathématiques", coef: 4 },
-                { name: "Sciences de la Vie et de la Terre", coef: 2 },
-                { name: "Sciences Physiques", coef: 2 },
-                { name: "Histoire-Géographie", coef: 3 },
-                { name: "Anglais", coef: 3 },
-                { name: "Éducation Physique & Sportive", coef: 2 }
-            ],
-            "lycee_s": [
-                { name: "Mathématiques", coef: 6 },
-                { name: "Sciences Physiques", coef: 6 },
-                { name: "Sciences de la Vie et de la Terre", coef: 4 },
-                { name: "Français", coef: 3 },
-                { name: "Philosophie", coef: 2 },
-                { name: "Histoire-Géographie", coef: 2 },
-                { name: "Anglais", coef: 2 }
-            ],
-            "lycee_l": [
-                { name: "Français", coef: 5 },
-                { name: "Philosophie", coef: 5 },
-                { name: "Histoire-Géographie", coef: 4 },
-                { name: "Anglais", coef: 4 },
-                { name: "Mathématiques", coef: 2 },
-                { name: "Sciences de la Vie et de la Terre", coef: 2 }
-            ]
-        };
-
-        // --- ÉTAT DE L'APPLICATION ---
+        // STRUCTURE DE L'ÉTAT LOCAL CENTRALISÉ
         let appState = {
-            settings: { year: "2025-2026", period: "1", effectif: "" },
-            classes: {} // Clé: "Niveau_Section" -> { students: [], subjects: [] }
+            settings: { year: "2025-2026", period: "1" },
+            classes: {}
         };
 
-        let currentClass = "6ème";
-        let currentSection = "M1";
-        let currentFullKey = "6ème_M1";
+        let currentClass = ""; 
+        let currentSection = ""; 
+        let currentFullKey = ""; 
+        let activeTab = "students";
 
-        // --- INITIALISATION ---
-        document.addEventListener("DOMContentLoaded", () => {
-            loadLocalStorage();
-            initSettingsForm();
-            setupEventListeners();
-            updateSectionsDropdown();
-            syncCurrentKeys();
-            renderAll();
+        // CHARGEMENT INITIAL DES DONNÉES SÉCURISÉ
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedData = localStorage.getItem('gestnotes_data');
+            if (savedData) {
+                try {
+                    appState = JSON.parse(savedData);
+                    // Rétrocompatibilité structurelle si nécessaire
+                    if (!appState.settings) appState.settings = { year: "2025-2026", period: "1" };
+                    if (!appState.classes) appState.classes = {};
+                } catch (e) {
+                    console.error("Erreur de décodage des données locales, réinitialisation.", e);
+                }
+            }
+            applyGlobalSettingsToUI();
+            renderClassesList();
+            updateUIState();
         });
 
+        function saveState() {
+            localStorage.setItem('gestnotes_data', JSON.stringify(appState));
+        }
+
+        // DESIGN SYSTEM : GESTION DES TOASTS
         function showToast(message, type = "success") {
-            const container = document.getElementById("toast-container");
-            const toast = document.createElement("div");
-            toast.className = `toast-enter flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium max-w-sm pointer-events-auto ${
-                type === "error" ? "bg-rose-50 text-rose-800 border-rose-200" : "bg-emerald-50 text-emerald-800 border-emerald-200"
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-animate text-xs font-semibold px-4 py-3 rounded-xl shadow-lg border text-white flex items-center gap-2 min-w-[200px] ${
+                type === "error" ? "bg-rose-600 border-rose-500" : "bg-slate-900 border-slate-800"
             }`;
-            const icon = type === "error" ? "fa-circle-exclamation text-rose-500" : "fa-circle-check text-emerald-500";
-            toast.innerHTML = `<i class="fa-solid ${icon} text-base shrink-0"></i><div class="flex-1">${message}</div>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.replace("toast-enter", "toast-leave");
-                toast.addEventListener("animationend", () => toast.remove());
-            }, 3500);
-        }
-
-        function saveLocalStorage() {
-            localStorage.setItem("gestnotes_state_v3", JSON.stringify(appState));
-        }
-
-        function loadLocalStorage() {
-            const raw = localStorage.getItem("gestnotes_state_v3");
-            if (raw) {
-                try { appState = JSON.parse(raw); } catch (e) { console.error("Erreur de restauration", e); }
-            }
-            if (!appState.settings) appState.settings = { year: "2025-2026", period: "1", effectif: "" };
-            if (!appState.classes) appState.classes = {};
-        }
-
-        function initSettingsForm() {
-            document.getElementById("setting-year").value = appState.settings.year || "2025-2026";
-            document.getElementById("setting-effectif").value = appState.settings.effectif || "";
-            updatePeriodSelectOptions();
-        }
-
-        function updatePeriodSelectOptions() {
-            const select = document.getElementById("setting-semester");
-            const isPrimaire = ["CP", "CE1", "CE2", "CM1", "CM2"].includes(currentClass);
-            select.innerHTML = "";
-
-            if (isPrimaire) {
-                select.innerHTML = `
-                    <option value="1" class="text-slate-800">1er Trimestre</option>
-                    <option value="2" class="text-slate-800">2ème Trimestre</option>
-                    <option value="3" class="text-slate-800">3ème Trimestre</option>
-                `;
-            } else {
-                select.innerHTML = `
-                    <option value="1" class="text-slate-800">1er Semestre</option>
-                    <option value="2" class="text-slate-800">2ème Semestre</option>
-                `;
-            }
-
-            if (["1", "2", "3"].includes(appState.settings.period)) {
-                if (!isPrimaire && appState.settings.period === "3") appState.settings.period = "2";
-                select.value = appState.settings.period;
-            } else {
-                select.value = "1";
-                appState.settings.period = "1";
-            }
-        }
-
-        function setupEventListeners() {
-            document.getElementById("setting-year").addEventListener("input", (e) => {
-                appState.settings.year = e.target.value;
-                saveLocalStorage();
-            });
-
-            document.getElementById("setting-semester").addEventListener("change", (e) => {
-                appState.settings.period = e.target.value;
-                saveLocalStorage();
-            });
-
-            document.getElementById("setting-effectif").addEventListener("input", (e) => {
-                appState.settings.effectif = e.target.value;
-                saveLocalStorage();
-                calculateRanksAndRenderGrades();
-            });
-
-            document.getElementById("class-select").addEventListener("change", (e) => {
-                currentClass = e.target.value;
-                updatePeriodSelectOptions();
-                updateSectionsDropdown();
-                syncCurrentKeys();
-                renderAll();
-            });
-
-            document.getElementById("section-select").addEventListener("change", (e) => {
-                currentSection = e.target.value;
-                syncCurrentKeys();
-                renderAll();
-            });
-
-            document.getElementById("add-student-form").addEventListener("submit", (e) => {
-                e.preventDefault();
-                const first = document.getElementById("new-student-first").value.trim();
-                const last = document.getElementById("new-student-last").value.trim();
-                if (!first || !last) return;
-
-                const newStudent = {
-                    id: "stu_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
-                    firstName: first,
-                    lastName: last.toUpperCase(),
-                    grades: {}, absences: 0, retards: 0
-                };
-
-                initClassKeyStructure();
-                appState.classes[currentFullKey].students.push(newStudent);
-                appState.classes[currentFullKey].students.sort((a, b) => a.lastName.localeCompare(b.lastName));
-                
-                saveLocalStorage();
-                document.getElementById("add-student-form").reset();
-                document.getElementById("new-student-first").focus();
-                showToast(`Élève <b>${newStudent.lastName}</b> ajouté avec succès !`);
-                renderAll();
-            });
-
-            document.getElementById("add-subject-form").addEventListener("submit", (e) => {
-                e.preventDefault();
-                const name = document.getElementById("new-subject-name").value.trim();
-                const coef = parseFloat(document.getElementById("new-subject-coef").value);
-                if (!name || isNaN(coef) || coef <= 0) return;
-
-                initClassKeyStructure();
-                const exists = appState.classes[currentFullKey].subjects.some(s => s.name.toLowerCase() === name.toLowerCase());
-                if (exists) return showToast("Cette matière existe déjà.", "error");
-
-                appState.classes[currentFullKey].subjects.push({
-                    id: "sub_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
-                    name: name, coef: coef
-                });
-
-                saveLocalStorage();
-                document.getElementById("add-subject-form").reset();
-                document.getElementById("new-subject-name").focus();
-                showToast(`Matière <b>${name}</b> ajoutée.`);
-                renderAll();
-            });
-        }
-
-        function updateSectionsDropdown() {
-            const sectionSelect = document.getElementById("section-select");
-            sectionSelect.innerHTML = "";
-            const list = SECTIONS_CONFIG[currentClass] || ["A"];
-            list.forEach(sec => {
-                const opt = document.createElement("option");
-                opt.value = sec; opt.textContent = sec;
-                sectionSelect.appendChild(opt);
-            });
-            currentSection = sectionSelect.value || "A";
-        }
-
-        function syncCurrentKeys() {
-            currentFullKey = `${currentClass}_${currentSection}`;
-        }
-
-        function initClassKeyStructure() {
-            if (!appState.classes[currentFullKey]) {
-                appState.classes[currentFullKey] = { students: [], subjects: [] };
-            }
-        }
-
-        // --- ACTIONS MATIÈRES ET NOTES ---
-        window.loadStandardSubjects = function() {
-            initClassKeyStructure();
-            let set = STANDARDS_SUBJECTS.college;
-            if (["CP", "CE1", "CE2", "CM1", "CM2"].includes(currentClass)) set = STANDARDS_SUBJECTS.primaire;
-            else if (["Seconde", "Première", "Terminale"].includes(currentClass)) {
-                set = currentSection.startsWith("S") ? STANDARDS_SUBJECTS.lycee_s : STANDARDS_SUBJECTS.lycee_l;
-            }
-
-            appState.classes[currentFullKey].subjects = [];
-            set.forEach(sub => {
-                appState.classes[currentFullKey].subjects.push({
-                    id: "sub_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
-                    name: sub.name, coef: sub.coef
-                });
-            });
-
-            saveLocalStorage();
-            showToast("Modèle de matières appliqué.");
-            renderAll();
-        };
-
-        window.deleteSubject = function(subId) {
-            if (!confirm("Supprimer cette matière ainsi que toutes ses notes rattachées ?")) return;
-            if (appState.classes[currentFullKey]) {
-                appState.classes[currentFullKey].subjects = appState.classes[currentFullKey].subjects.filter(s => s.id !== subId);
-                appState.classes[currentFullKey].students.forEach(st => { delete st.grades[subId]; });
-                saveLocalStorage();
-                showToast("Matière supprimée.");
-                renderAll();
-            }
-        };
-
-        window.deleteStudent = function(stuId) {
-            if (!confirm("Voulez-vous retirer cet élève de la base ?")) return;
-            if (appState.classes[currentFullKey]) {
-                appState.classes[currentFullKey].students = appState.classes[currentFullKey].students.filter(s => s.id !== stuId);
-                saveLocalStorage();
-                showToast("Élève retiré.");
-                renderAll();
-            }
-        };
-
-        window.clearCurrentGrades = function() {
-            if (!confirm("Effacer toutes les notes d'évaluation de la classe active ?")) return;
-            if (appState.classes[currentFullKey]) {
-                appState.classes[currentFullKey].students.forEach(st => { st.grades = {}; });
-                saveLocalStorage();
-                showToast("Toutes les notes ont été effacées.");
-                renderAll();
-            }
-        };
-
-        // --- CALCULS ET RENDU ---
-        function calculateStudentAverage(student, subjects) {
-            if (!subjects || subjects.length === 0) return null;
-            let totalWeighted = 0;
-            let totalCoef = 0;
-            let countMatiere = 0;
-
-            subjects.forEach(sub => {
-                const g = student.grades[sub.id];
-                if (g) {
-                    let sum = 0, c = 0;
-                    if (g.d1 !== undefined && g.d1 !== null) { sum += g.d1; c++; }
-                    if (g.d2 !== undefined && g.d2 !== null) { sum += g.d2; c++; }
-                    
-                    let subAvg = null;
-                    if (c > 0) {
-                        const devAvg = sum / c;
-                        if (g.comp !== undefined && g.comp !== null) {
-                            subAvg = (devAvg + g.comp) / 2;
-                        } else {
-                            subAvg = devAvg;
-                        }
-                    } else if (g.comp !== undefined && g.comp !== null) {
-                        subAvg = g.comp;
-                    }
-
-                    if (subAvg !== null) {
-                        totalWeighted += subAvg * sub.coef;
-                        totalCoef += sub.coef;
-                        countMatiere++;
-                    }
-                }
-            });
-
-            return totalCoef > 0 ? (totalWeighted / totalCoef) : null;
-        }
-
-        function calculateRanksAndRenderGrades() {
-            const data = appState.classes[currentFullKey] || { students: [], subjects: [] };
-            const students = data.students || [];
-            const subjects = data.subjects || [];
-
-            // Étape 1 : Calculer toutes les moyennes individuelles
-            const calculatedMap = {};
-            students.forEach(st => {
-                calculatedMap[st.id] = calculateStudentAverage(st, subjects);
-            });
-
-            // Étape 2 : Établir le classement
-            const validAvgs = Object.values(calculatedMap).filter(v => v !== null).sort((a, b) => b - a);
-            const ranksMap = {};
-            students.forEach(st => {
-                const avg = calculatedMap[st.id];
-                if (avg === null) {
-                    ranksMap[st.id] = "-";
-                } else {
-                    const r = validAvgs.indexOf(avg) + 1;
-                    const countSame = validAvgs.filter(v => v === avg).length;
-                    ranksMap[st.id] = r + (countSame > 1 ? " ex" : "");
-                }
-            });
-
-            // Étape 3 : Génération HTML
-            const tbody = document.getElementById("grades-table-body");
-            const emptyState = document.getElementById("empty-state");
-            tbody.innerHTML = "";
-
-            if (students.length === 0) {
-                emptyState.classList.remove("hidden");
-                emptyState.classList.add("flex");
-                return;
-            }
-            emptyState.classList.remove("flex");
-            emptyState.classList.add("hidden");
-
-            students.forEach(st => {
-                const genAvg = calculatedMap[st.id];
-                const displayAvg = genAvg !== null ? genAvg.toFixed(2).replace(".", ",") : "-";
-                const rank = ranksMap[st.id];
-
-                // Première ligne : Métadonnées générales de l'élève
-                const trHeader = document.createElement("tr");
-                trHeader.className = "bg-slate-50/60 font-semibold text-slate-900 border-t-2 border-slate-200";
-                trHeader.innerHTML = `
-                    <td class="py-2.5 px-4 sticky left-0 bg-slate-50 font-bold border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
-                        ${st.lastName} ${st.firstName}
-                    </td>
-                    <td class="py-2.5 px-4 text-xs text-slate-500 italic">Moyenne Générale et Assiduité</td>
-                    <td class="py-2.5 px-3 text-center text-indigo-700 font-bold text-base bg-indigo-50/30">${displayAvg}</td>
-                    <td class="py-2.5 px-3 text-center text-amber-800 font-bold">${rank}</td>
-                    <td class="py-2.5 px-1 text-center">
-                        <input type="number" value="${st.absences || 0}" min="0" onchange="updateAttendance('${st.id}', 'absences', this.value)"
-                            class="w-14 text-center border border-slate-300 rounded p-1 text-xs focus:ring-1 focus:ring-indigo-500">
-                    </td>
-                    <td class="py-2.5 px-1 text-center">
-                        <input type="number" value="${st.retards || 0}" min="0" onchange="updateAttendance('${st.id}', 'retards', this.value)"
-                            class="w-14 text-center border border-slate-300 rounded p-1 text-xs focus:ring-1 focus:ring-indigo-500">
-                    </td>
-                    <td class="py-2.5 px-4 text-center sticky right-0 bg-slate-50 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]">
-                        <button onclick="window.printReportCard('${st.id}')" class="text-indigo-600 hover:text-indigo-900 text-xs font-bold inline-flex items-center gap-1 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm hover:bg-slate-50">
-                            <i class="fa-solid fa-file-invoice"></i> Bulletin
-                        </button>
-                        <button onclick="deleteStudent('${st.id}')" class="text-rose-600 hover:text-rose-900 ml-2" title="Retirer l'élève">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(trHeader);
-
-                // Lignes de saisie par matière rattachée
-                if (subjects.length === 0) {
-                    const trEmpty = document.createElement("tr");
-                    trEmpty.innerHTML = `<td colspan="7" class="py-2 px-4 text-xs text-center text-slate-400">Aucune discipline configurée.</td>`;
-                    tbody.appendChild(trEmpty);
-                } else {
-                    subjects.forEach(sub => {
-                        const g = st.grades[sub.id] || { d1: "", d2: "", comp: "" };
-                        const trSub = document.createElement("tr");
-                        trSub.className = "hover:bg-slate-50/50 text-xs transition-colors";
-                        trSub.innerHTML = `
-                            <td class="py-1.5 px-4 sticky left-0 bg-white border-r border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-slate-400 font-medium">${st.lastName}</td>
-                            <td class="py-1.5 px-4 border-r border-slate-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-medium text-slate-700">${sub.name}</span>
-                                    <span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-bold">Coef ${sub.coef}</span>
-                                </div>
-                            </td>
-                            <td colspan="4" class="py-1 px-3">
-                                <div class="flex items-center gap-3 py-0.5">
-                                    <div class="flex items-center gap-1">
-                                        <span class="text-[10px] uppercase text-slate-400 w-4">D1:</span>
-                                        <input type="text" placeholder="-" value="${g.d1 !== undefined ? String(g.d1).replace('.', ',') : ''}" 
-                                            onchange="saveGradeField('${st.id}', '${sub.id}', 'd1', this)"
-                                            class="w-12 border border-slate-200 rounded px-1.5 py-1 text-center font-semibold focus:border-indigo-500 focus:outline-none">
-                                    </div>
-                                    <div class="flex items-center gap-1">
-                                        <span class="text-[10px] uppercase text-slate-400 w-4">D2:</span>
-                                        <input type="text" placeholder="-" value="${g.d2 !== undefined ? String(g.d2).replace('.', ',') : ''}" 
-                                            onchange="saveGradeField('${st.id}', '${sub.id}', 'd2', this)"
-                                            class="w-12 border border-slate-200 rounded px-1.5 py-1 text-center font-semibold focus:border-indigo-500 focus:outline-none">
-                                    </div>
-                                    <div class="flex items-center gap-1 border-l pl-3 border-slate-200">
-                                        <span class="text-[10px] uppercase text-slate-500 font-bold w-9">Comp.:</span>
-                                        <input type="text" placeholder="-" value="${g.comp !== undefined ? String(g.comp).replace('.', ',') : ''}" 
-                                            onchange="saveGradeField('${st.id}', '${sub.id}', 'comp', this)"
-                                            class="w-12 border border-slate-300 rounded px-1.5 py-1 text-center font-bold bg-emerald-50/50 text-emerald-900 focus:border-emerald-500 focus:outline-none">
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="sticky right-0 bg-white shadow-[-2px_0_5px_rgba(0,0,0,0.05)] border-l border-slate-100"></td>
-                        `;
-                        tbody.appendChild(trSub);
-                    });
-                }
-            });
-        }
-
-        window.saveGradeField = function(stuId, subId, field, inputElem) {
-            let rawVal = inputElem.value.trim().replace(",", ".");
             
-            if (rawVal === "") {
-                if (appState.classes[currentFullKey]) {
-                    const st = appState.classes[currentFullKey].students.find(s => s.id === stuId);
-                    if (st && st.grades[subId]) {
-                        delete st.grades[subId][field];
-                        saveLocalStorage();
-                    }
-                }
-                calculateRanksAndRenderGrades();
-                return;
-            }
-
-            let parsed = parseFloat(rawVal);
-            if (isNaN(parsed) || parsed < 0 || parsed > 20) {
-                inputElem.classList.add("border-rose-500", "bg-rose-50");
-                showToast("La note saisie doit obligatoirement être comprise entre 0 et 20.", "error");
-                return;
-            }
-
-            inputElem.classList.remove("border-rose-500", "bg-rose-50");
-            initClassKeyStructure();
-            const st = appState.classes[currentFullKey].students.find(s => s.id === stuId);
-            if (st) {
-                if (!st.grades[subId]) st.grades[subId] = {};
-                st.grades[subId][field] = parsed;
-                saveLocalStorage();
-            }
-
-            // Recalcul instantané sans reconstruire le focus complet de la grille
-            calculateRanksAndRenderGrades();
-        };
-
-        window.updateAttendance = function(stuId, field, value) {
-            const val = parseInt(value, 10);
-            if (appState.classes[currentFullKey]) {
-                const st = appState.classes[currentFullKey].students.find(s => s.id === stuId);
-                if (st) {
-                    st[field] = isNaN(val) || val < 0 ? 0 : val;
-                    saveLocalStorage();
-                }
-            }
-        };
-
-        function renderAll() {
-            initClassKeyStructure();
-            const currentData = appState.classes[currentFullKey];
-
-            // 1. Badge compteurs
-            document.getElementById("students-count").textContent = currentData.students.length;
-            document.getElementById("subjects-count").textContent = currentData.subjects.length;
-
-            // 2. Intitulé Matières
-            document.getElementById("subject-section-title").innerHTML = `
-                <i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Matières (${currentClass} ${currentSection})
-            `;
-
-            // 3. Render blocs de badges matières
-            const containerSub = document.getElementById("subjects-list");
-            containerSub.innerHTML = "";
-            if (currentData.subjects.length === 0) {
-                containerSub.innerHTML = `<p class="text-xs text-slate-400 p-2 italic col-span-2">Aucune matière enregistrée.</p>`;
-            } else {
-                currentData.subjects.forEach(sub => {
-                    const div = document.createElement("div");
-                    div.className = "bg-slate-50 border border-slate-200 rounded-lg p-2 flex justify-between items-center text-xs shadow-sm";
-                    div.innerHTML = `
-                        <div class="truncate mr-2">
-                            <span class="font-semibold text-slate-700 block truncate" title="${sub.name}">${sub.name}</span>
-                            <span class="text-[10px] text-emerald-700 font-bold">Coefficient: ${sub.coef}</span>
-                        </div>
-                        <button onclick="deleteSubject('${sub.id}')" class="text-slate-400 hover:text-rose-600 transition-colors shrink-0 p-1">
-                            <i class="fa-solid fa-circle-xmark text-sm"></i>
-                        </button>
-                    `;
-                    containerSub.appendChild(div);
-                });
-            }
-
-            // 4. Lancement grille principale
-            calculateRanksAndRenderGrades();
+            const icon = type === "error" ? "circle-exclamation" : "circle-check";
+            toast.innerHTML = `<i class="fa-solid fa-${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
-        // --- EXPORTS SÉCURISÉS ---
+        // PARAMÈTRES SCOLAIRES
+        function applyGlobalSettingsToUI() {
+            document.getElementById('cfg-year').value = appState.settings.year;
+            document.getElementById('cfg-period').value = appState.settings.period;
+            document.getElementById('nav-year').textContent = appState.settings.year;
+            
+            const isPrim = ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(currentClass);
+            document.getElementById('nav-period-lbl').textContent = isPrim ? "Trimestre:" : "Période:";
+            
+            if (isPrim) {
+                document.getElementById('nav-period').textContent = appState.settings.period + (appState.settings.period === "1" ? "er Trim" : "ème Trim");
+            } else {
+                document.getElementById('nav-period').textContent = appState.settings.period === "1" ? "1er Sem" : "2ème Sem";
+            }
+        }
+
+        function saveGlobalSettings() {
+            const yr = document.getElementById('cfg-year').value.trim();
+            if (!yr) return showToast("Veuillez saisir l'année scolaire", "error");
+            appState.settings.year = yr;
+            appState.settings.period = document.getElementById('cfg-period').value;
+            saveState();
+            applyGlobalSettingsToUI();
+            showToast("Paramètres globaux mis à jour");
+            if (currentFullKey) renderGradesGrid();
+        }
+
+        // GESTION DES STRUCTURES DE CLASSE
+        function addClass() {
+            const lvl = document.getElementById('new-class-level').value;
+            const sec = document.getElementById('new-class-section').value.trim().toUpperCase();
+            
+            if (!lvl) return showToast("Sélectionnez un niveau", "error");
+            if (!sec) return showToast("Spécifiez la section/série (Ex: A, B, S1)", "error");
+            
+            const targetKey = `${lvl}_${sec}`;
+            if (appState.classes[targetKey]) return showToast("Cette classe existe déjà", "error");
+            
+            appState.classes[targetKey] = {
+                students: [],
+                subjects: [],
+                grades: {}
+            };
+            
+            saveState();
+            renderClassesList();
+            selectClass(lvl, sec);
+            document.getElementById('new-class-section').value = "";
+            showToast(`Classe de ${lvl} ${sec} configurée`);
+        }
+
+        function renderClassesList() {
+            const container = document.getElementById('classes-list');
+            container.innerHTML = "";
+            const keys = Object.keys(appState.classes).sort();
+            document.getElementById('class-count').textContent = keys.length;
+            
+            keys.forEach(k => {
+                const [lvl, sec] = k.split('_');
+                const isSelected = k === currentFullKey;
+                const btn = document.createElement('button');
+                btn.onclick = () => selectClass(lvl, sec);
+                btn.className = `w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-between transition ${
+                    isSelected ? "bg-indigo-600 text-white shadow" : "bg-slate-50 hover:bg-slate-100 text-slate-700"
+                }`;
+                btn.innerHTML = `
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid fa-graduation-cap ${isSelected ? 'text-amber-300' : 'text-indigo-600'}"></i>
+                        <span>${lvl} ${sec}</span>
+                    </span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-200 text-slate-500'}">
+                        ${appState.classes[k].students.length} él.
+                    </span>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectClass(lvl, sec) {
+            currentClass = lvl;
+            currentSection = sec;
+            currentFullKey = `${lvl}_${sec}`;
+            
+            renderClassesList();
+            updateUIState();
+            applyGlobalSettingsToUI();
+            
+            if (activeTab === 'grades') {
+                updateSubjectFilterOptions();
+            }
+            switchTab(activeTab);
+            showToast(`Navigation : ${lvl} ${sec}`);
+        }
+
+        function deleteClass() {
+            if (!confirm(`Supprimer définitivement la classe ${currentClass} ${currentSection} ainsi que l'ensemble de ses données de notes ?`)) return;
+            delete appState.classes[currentFullKey];
+            currentClass = ""; currentSection = ""; currentFullKey = "";
+            saveState();
+            renderClassesList();
+            updateUIState();
+            showToast("Classe purgée du système");
+        }
+
+        function updateUIState() {
+            const emptyS = document.getElementById('empty-state');
+            const activeS = document.getElementById('active-state');
+            
+            if (!currentFullKey) {
+                emptyS.classList.remove('hidden');
+                activeS.classList.add('hidden');
+            } else {
+                emptyS.classList.add('hidden');
+                activeS.classList.remove('hidden');
+                document.getElementById('active-class-title').textContent = `${currentClass} ${currentSection}`;
+                document.getElementById('active-class-key').textContent = currentFullKey;
+                
+                const isPrim = ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(currentClass);
+                document.getElementById('active-class-type').textContent = isPrim ? "Enseignement Élémentaire" : "Enseignement Moyen / Secondaire";
+            }
+        }
+
+        // NAVIGATION INTERNE PAR ONGLETS
+        function switchTab(tId) {
+            activeTab = tId;
+            ['students', 'subjects', 'grades'].forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const content = document.getElementById(`tab-content-${t}`);
+                if (t === tId) {
+                    btn.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold bg-white text-indigo-900 shadow-sm border border-slate-200/60";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-800 hover:bg-white/50";
+                    content.classList.add('hidden');
+                }
+            });
+
+            const cData = appState.classes[currentFullKey];
+            if (cData) {
+                document.getElementById('badge-count-students').textContent = cData.students.length;
+                document.getElementById('badge-count-subjects').textContent = cData.subjects.length;
+            }
+
+            if (tId === 'students') renderStudentsTable();
+            if (tId === 'subjects') renderSubjectsTable();
+            if (tId === 'grades') {
+                updateSubjectFilterOptions();
+                renderGradesGrid();
+            }
+        }
+
+        // GESTION DES INSCRIPTIONS ÉLÈVES
+        function addStudent() {
+            const fn = document.getElementById('stud-firstname').value.trim();
+            const ln = document.getElementById('stud-lastname').value.trim().toUpperCase();
+            const mat = document.getElementById('stud-matricule').value.trim();
+            const bd = document.getElementById('stud-birth').value.trim();
+            
+            if (!fn || !ln) return showToast("Le prénom et le nom sont requis", "error");
+            
+            const cData = appState.classes[currentFullKey];
+            const newId = 'st_' + Date.now();
+            
+            cData.students.push({ id: newId, firstName: fn, lastName: ln, matricule: mat, birthDate: bd, absences: 0, retards: 0 });
+            cData.students.sort((a, b) => a.lastName.localeCompare(b.lastName));
+            
+            saveState();
+            renderStudentsTable();
+            document.getElementById('badge-count-students').textContent = cData.students.length;
+            renderClassesList();
+            
+            document.getElementById('stud-firstname').value = "";
+            document.getElementById('stud-lastname').value = "";
+            document.getElementById('stud-matricule').value = "";
+            document.getElementById('stud-birth').value = "";
+            showToast(`${fn} ${ln} inscrit(e)`);
+        }
+
+        function removeStudent(sId) {
+            if (!confirm("Radié cet élève ? Toutes ses notes associées seront effacées de cette classe.")) return;
+            const cData = appState.classes[currentFullKey];
+            cData.students = cData.students.filter(s => s.id !== sId);
+            if (cData.grades[sId]) delete cData.grades[sId];
+            
+            saveState();
+            renderStudentsTable();
+            document.getElementById('badge-count-students').textContent = cData.students.length;
+            renderClassesList();
+            showToast("Élève retiré des registres");
+        }
+
+        function renderStudentsTable() {
+            const tbody = document.getElementById('table-students-body');
+            tbody.innerHTML = "";
+            const students = appState.classes[currentFullKey]?.students || [];
+            
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400 font-medium text-xs">Aucun élève inscrit dans cette classe.</td></tr>`;
+                return;
+            }
+            
+            students.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 transition";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono text-xs text-slate-500">${s.matricule || '-'}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-800">${s.lastName} <span class="font-normal text-slate-600">${s.firstName}</span></td>
+                    <td class="py-3 px-4 text-xs text-slate-600">${s.birthDate || '-'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="removeStudent('${s.id}')" class="text-rose-500 hover:text-rose-700 font-semibold text-xs px-2 py-1">Radiation</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // GESTION DES DISCIPLINES
+        function addSubject() {
+            const name = document.getElementById('sub-name').value.trim();
+            const coef = parseInt(document.getElementById('sub-coef').value) || 2;
+            
+            if (!name) return showToast("Veuillez donner un nom à la matière", "error");
+            
+            const cData = appState.classes[currentFullKey];
+            if (cData.subjects.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+                return showToast("Cette matière existe déjà", "error");
+            }
+            
+            cData.subjects.push({
+                id: 'sub_' + Date.now(),
+                name: name,
+                coef: coef,
+                coefD1: 1, // Sous-coefficient Devoir 1 par défaut
+                coefD2: 1, // Sous-coefficient Devoir 2 par défaut
+                coefC: 2   // Sous-coefficient Compo par défaut
+            });
+            
+            saveState();
+            renderSubjectsTable();
+            document.getElementById('badge-count-subjects').textContent = cData.subjects.length;
+            document.getElementById('sub-name').value = "";
+            showToast(`Matière ajoutée : ${name}`);
+        }
+
+        function removeSubject(subId) {
+            if (!confirm("Supprimer cette discipline ? Les notes saisies dans cette matière seront perdues.")) return;
+            const cData = appState.classes[currentFullKey];
+            cData.subjects = cData.subjects.filter(s => s.id !== subId);
+            
+            // Nettoyage des notes associées
+            Object.keys(cData.grades).forEach(sId => {
+                if (cData.grades[sId][subId]) delete cData.grades[sId][subId];
+            });
+            
+            saveState();
+            renderSubjectsTable();
+            document.getElementById('badge-count-subjects').textContent = cData.subjects.length;
+            showToast("Discipline supprimée");
+        }
+
+        function renderSubjectsTable() {
+            const tbody = document.getElementById('table-subjects-body');
+            tbody.innerHTML = "";
+            const subjects = appState.classes[currentFullKey]?.subjects || [];
+            
+            if (subjects.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="py-8 text-center text-slate-400 font-medium text-xs">Aucune matière configurée pour le moment.</td></tr>`;
+                return;
+            }
+            
+            subjects.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 transition text-center";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-slate-700 text-left">${s.name}</td>
+                    <td class="py-3 px-4 font-bold text-indigo-600">${s.coef}</td>
+                    <td class="py-3 px-4">
+                        <button onclick="removeSubject('${s.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 font-semibold">Supprimer</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // GRILLE DE SAISIE ET ALGORITHME DE CALCUL DES MOYENNES
+        function updateSubjectFilterOptions() {
+            const select = document.getElementById('grade-filter-subject');
+            select.innerHTML = "";
+            const subjects = appState.classes[currentFullKey]?.subjects || [];
+            
+            subjects.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.name;
+                select.appendChild(opt);
+            });
+        }
+
+        // FONCTION CRITIQUE : CALCUL DU RANG ET MOYENNE PAR MATIÈRE
+        function calculateRanks(subId) {
+            const classData = appState.classes[currentFullKey];
+            if (!classData || !subId) return {};
+
+            const subject = classData.subjects.find(s => s.id === subId);
+            if (!subject) return {};
+
+            let scores = [];
+
+            classData.students.forEach(student => {
+                const g = classData.grades[student.id]?.[subId] || {};
+                let totalPoints = 0;
+                let totalCoefs = 0;
+
+                if (g.d1 !== undefined && g.d1 !== '') {
+                    totalPoints += Number(g.d1) * (subject.coefD1 || 1);
+                    totalCoefs += (subject.coefD1 || 1);
+                }
+                if (g.d2 !== undefined && g.d2 !== '') {
+                    totalPoints += Number(g.d2) * (subject.coefD2 || 1);
+                    totalCoefs += (subject.coefD2 || 1);
+                }
+                if (g.c !== undefined && g.c !== '') {
+                    totalPoints += Number(g.c) * (subject.coefC || 2);
+                    totalCoefs += (subject.coefC || 2);
+                }
+
+                if (totalCoefs > 0) {
+                    scores.push({ sId: student.id, avg: totalPoints / totalCoefs });
+                }
+            });
+
+            // Tri décroissant pour le classement scolaire
+            scores.sort((a, b) => b.avg - a.avg);
+
+            let ranks = {};
+            let currentRank = 1;
+            scores.forEach((item, index) => {
+                if (index > 0 && item.avg < scores[index - 1].avg) {
+                    currentRank = index + 1; // Gestion rigoureuse des ex-æquo (saute le rang intermédiaire)
+                }
+                ranks[item.sId] = currentRank;
+            });
+
+            return ranks;
+        }
+
+        function getAppreciation(note) {
+            if (note === null || note === undefined || note === '') return "";
+            if (note < 4) return "Très Faible";
+            if (note < 8) return "Faible";
+            if (note < 10) return "Insuffisant";
+            if (note < 12) return "Passable";
+            if (note < 14) return "A. Bien";
+            if (note < 16) return "Bien";
+            return "Excellent";
+        }
+
+        function updateGradeValue(studentId, subId, field, val) {
+            const classData = appState.classes[currentFullKey];
+            if (!classData.grades[studentId]) classData.grades[studentId] = {};
+            if (!classData.grades[studentId][subId]) classData.grades[studentId][subId] = {};
+            
+            if (val.trim() === "") {
+                delete classData.grades[studentId][subId][field];
+            } else {
+                let num = parseFloat(val.replace(',', '.'));
+                if (isNaN(num) || num < 0 || num > 20) return; // Sécurité de saisie sur 20
+                classData.grades[studentId][subId][field] = num;
+            }
+            saveState();
+            
+            // Recalcul en direct de la ligne sans re-render complet pour la fluidité du curseur
+            refreshRowCalculations(studentId, subId);
+        }
+
+        function updateAttendance(studentId, field, val) {
+            const student = appState.classes[currentFullKey].students.find(s => s.id === studentId);
+            if (student) {
+                student[field] = parseInt(val) || 0;
+                saveState();
+            }
+        }
+
+        function refreshRowCalculations(studentId, subId) {
+            const classData = appState.classes[currentFullKey];
+            const subject = classData.subjects.find(s => s.id === subId);
+            const g = classData.grades[studentId]?.[subId] || {};
+            
+            let totalPoints = 0;
+            let totalCoefs = 0;
+
+            if (g.d1 !== undefined && g.d1 !== '') { totalPoints += g.d1 * (subject.coefD1 || 1); totalCoefs += (subject.coefD1 || 1); }
+            if (g.d2 !== undefined && g.d2 !== '') { totalPoints += g.d2 * (subject.coefD2 || 1); totalCoefs += (subject.coefD2 || 1); }
+            if (g.c !== undefined && g.c !== '') { totalPoints += g.c * (subject.coefC || 2); totalCoefs += (subject.coefC || 2); }
+
+            const mCell = document.getElementById(`avg-${studentId}`);
+            const aCell = document.getElementById(`app-${studentId}`);
+            
+            if (totalCoefs > 0) {
+                const finalAvg = totalPoints / totalCoefs;
+                mCell.textContent = finalAvg.toFixed(2).replace('.', ',');
+                mCell.className = `font-bold text-center ${finalAvg >= 10 ? 'text-emerald-600' : 'text-rose-600'}`;
+                aCell.textContent = getAppreciation(finalAvg);
+            } else {
+                mCell.textContent = "-";
+                mCell.className = "text-slate-300 text-center";
+                aCell.textContent = "";
+            }
+
+            // Rafraîchissement des rangs de la classe pour cette matière spécifique
+            const ranks = calculateRanks(subId);
+            classData.students.forEach(s => {
+                const rCell = document.getElementById(`rank-${s.id}`);
+                if (rCell) rCell.textContent = ranks[s.id] ? ranks[s.id] + (ranks[s.id] === 1 ? 'er' : 'e') : '-';
+            });
+        }
+
+        function renderGradesGrid() {
+            const tbody = document.getElementById('table-grades-body');
+            tbody.innerHTML = "";
+            
+            const classData = appState.classes[currentFullKey];
+            const subId = document.getElementById('grade-filter-subject').value;
+            
+            if (!subId) {
+                tbody.innerHTML = `<tr><td colspan="10" class="py-8 text-center text-slate-400 font-medium text-xs">Veuillez d'abord configurer au moins une matière.</td></tr>`;
+                return;
+            }
+
+            const subject = classData.subjects.find(s => s.id === subId);
+            const ranks = calculateRanks(subId);
+
+            classData.students.forEach(s => {
+                const g = classData.grades[s.id]?.[subId] || {};
+                
+                let totalPoints = 0;
+                let totalCoefs = 0;
+                if (g.d1 !== undefined && g.d1 !== '') { totalPoints += g.d1 * (subject.coefD1 || 1); totalCoefs += (subject.coefD1 || 1); }
+                if (g.d2 !== undefined && g.d2 !== '') { totalPoints += g.d2 * (subject.coefD2 || 1); totalCoefs += (subject.coefD2 || 1); }
+                if (g.c !== undefined && g.c !== '') { totalPoints += g.c * (subject.coefC || 2); totalCoefs += (subject.coefC || 2); }
+
+                let displayAvg = "-";
+                let avgClass = "text-slate-300";
+                if (totalCoefs > 0) {
+                    const finalAvg = totalPoints / totalCoefs;
+                    displayAvg = finalAvg.toFixed(2).replace('.', ',');
+                    avgClass = finalAvg >= 10 ? "font-bold text-emerald-600" : "font-bold text-rose-600";
+                }
+
+                const displayRank = ranks[s.id] ? ranks[s.id] + (ranks[s.id] === 1 ? 'er' : 'e') : '-';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/40 transition text-center";
+                tr.innerHTML = `
+                    <td class="py-2 px-4 text-left font-semibold text-slate-800">${s.lastName} <span class="font-normal text-slate-600">${s.firstName}</span></td>
+                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-medium focus:bg-white" value="${g.d1 !== undefined ? g.d1 : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'd1', this.value)"></td>
+                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-medium focus:bg-white" value="${g.d2 !== undefined ? g.d2 : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'd2', this.value)"></td>
+                    <td class="py-1 px-1"><input type="text" class="w-16 bg-slate-50 border border-slate-200 rounded p-1 text-center font-bold text-indigo-700 focus:bg-white" value="${g.c !== undefined ? g.c : ''}" oninput="updateGradeValue('${s.id}', '${subId}', 'c', this.value)"></td>
+                    <td class="py-2 px-4 ${avgClass}" id="avg-${s.id}">${displayAvg}</td>
+                    <td class="py-2 px-4 text-xs font-bold text-slate-600" id="rank-${s.id}">${displayRank}</td>
+                    <td class="py-2 px-4 text-left text-xs text-slate-500 font-medium font-mono" id="app-${s.id}">${getAppreciation(totalCoefs > 0 ? (totalPoints / totalCoefs) : null)}</td>
+                    <td class="py-1 px-1"><input type="number" class="w-14 bg-slate-50 border border-slate-200 rounded p-1 text-center text-xs" value="${s.absences || 0}" min="0" oninput="updateAttendance('${s.id}', 'absences', this.value)"></td>
+                    <td class="py-1 px-1"><input type="number" class="w-14 bg-slate-50 border border-slate-200 rounded p-1 text-center text-xs" value="${s.retards || 0}" min="0" oninput="updateAttendance('${s.id}', 'retards', this.value)"></td>
+                    <td class="py-2 px-4">
+                        <button onclick="printReportCard('${s.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold flex items-center gap-1 mx-auto"><i class="fa-solid fa-print"></i> Éditer</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // EDITIONS LOGICIELLES ET OUVERTURE DES BULLETINS
         window.printReportCard = function (studentId) {
             window.open(`bulletin.html?class=${encodeURIComponent(currentFullKey)}&student=${encodeURIComponent(studentId)}`, '_blank');
         };
 
         window.printAllReportCards = function () {
             const students = appState.classes[currentFullKey]?.students || [];
-            if (students.length === 0) return showToast("Aucun élève dans la classe actuelle.", "error");
-            if (students.length > 6 && !confirm(`Ouvrir simultanément ${students.length} onglets d'impression ?`)) return;
-            students.forEach((s, i) => setTimeout(() => printReportCard(s.id), i * 250));
-            showToast("Génération des formulaires lancée...");
+            if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
+            if (students.length > 6 && !confirm(`Vous vous apprêtez à ouvrir ${students.length} onglets de bulletins simultanément. Continuer ?`)) return;
+            
+            students.forEach((s, i) => {
+                setTimeout(() => printReportCard(s.id), i * 250);
+            });
+            showToast("Ouverture groupée lancée...");
         };
 
+        // PIPELINE D'EXPORTATION COMPATIBLE EXCEL (FR)
         window.exportCSV = function (studentId) {
-            const data = appState.classes[currentFullKey];
-            const student = data.students.find(s => s.id === studentId);
+            const classData = appState.classes[currentFullKey];
+            const student = classData.students.find(s => s.id === studentId);
             if (!student) return;
 
-            let csv = "\uFEFF"; // BOM UTF-8
-            csv += "Discipline;Devoir 1;Devoir 2;Composition;Moyenne;Coefficient;Points Coef;Appréciation\n";
+            // En-tête du fichier CSV
+            let csv = `Discipline;Devoir 1;Devoir 2;Composition;Moyenne Matiere;Coefficient;Points Coef;Rang;Appreciation\n`;
 
-            data.subjects.forEach(sub => {
-                const g = student.grades[sub.id] || {};
-                const d1 = g.d1 !== undefined ? g.d1 : "";
-                const d2 = g.d2 !== undefined ? g.d2 : "";
-                const comp = g.comp !== undefined ? g.comp : "";
+            classData.subjects.forEach(sub => {
+                const g = classData.grades[studentId]?.[sub.id] || {};
+                let p = 0, c = 0;
                 
-                let sum = 0, c = 0;
-                if (d1 !== "") { sum += d1; c++; }
-                if (d2 !== "") { sum += d2; c++; }
-                
-                let subAvg = "", ptsCoef = "", app = "";
+                const d1 = g.d1 !== undefined ? g.d1 : '';
+                const d2 = g.d2 !== undefined ? g.d2 : '';
+                const comp = g.c !== undefined ? g.c : '';
+
+                if (d1 !== '') { p += d1 * (sub.coefD1 || 1); c += (sub.coefD1 || 1); }
+                if (d2 !== '') { p += d2 * (sub.coefD2 || 1); c += (sub.coefD2 || 1); }
+                if (comp !== '') { p += comp * (sub.coefC || 2); c += (sub.coefC || 2); }
+
+                let subAvg = '', ptsCoef = '', app = '';
                 if (c > 0) {
-                    const dev = sum / c;
-                    const m = comp !== "" ? (dev + comp) / 2 : dev;
+                    const m = p / c;
                     subAvg = m.toFixed(2).replace('.', ',');
                     ptsCoef = (m * sub.coef).toFixed(2).replace('.', ',');
-                    app = m >= 16 ? "Excellent" : m >= 14 ? "Très Bien" : m >= 12 ? "Bien" : m >= 10 ? "Passable" : "Insuffisant";
+                    app = getAppreciation(m);
                 }
 
-                csv += `"${sub.name}";${d1};${d2};${comp};${subAvg};${sub.coef};${ptsCoef};"${app}"\n`;
+                csv += `${sub.name};${d1};${d2};${comp};${subAvg};${sub.coef};${ptsCoef};;${app}\n`;
             });
 
-            csv += `\nAnnée Scolaire;${appState.settings.year}\nPériode;${appState.settings.period}\nÉlève;${student.lastName} ${student.firstName}\nAbsences;${student.absences || 0}\nRetards;${student.retards || 0}\n`;
+            // Lignes de métadonnées de l'élève
+            csv += `\nAnnee Scolaire;${appState.settings.year}\n`;
+            csv += `Periode;${appState.settings.period}\n`;
+            csv += `Eleve;${student.lastName} ${student.firstName}\n`;
+            csv += `Absences;${student.absences || 0}\n`;
+            csv += `Retards;${student.retards || 0}\n`;
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -814,10 +869,11 @@
         window.exportAllCSV = function () {
             const students = appState.classes[currentFullKey]?.students || [];
             if (students.length === 0) return showToast("Aucun élève dans la classe", "error");
-            students.forEach((s, i) => setTimeout(() => exportCSV(s.id), i * 250));
+            students.forEach((s, i) => {
+                setTimeout(() => exportCSV(s.id), i * 250);
+            });
             showToast("Téléchargement des fichiers CSV démarré.");
         };
     </script>
 </body>
-
 </html>
