@@ -298,8 +298,9 @@
                     <td></td>
                 </tr>
                 <tr class="summary-row">
-                    <td colspan="5">MOYENNE GÉNÉRALE : <span id="lbl-moy-gen">-</span> /20</td>
-                    <td colspan="2">RANG : <span id="lbl-rank">-</span></td>
+                    <td colspan="4">MOYENNE GÉNÉRALE : <span id="lbl-moy-gen">-</span> /20</td>
+                    <td colspan="2">MOY. DE LA CLASSE : <span id="lbl-moy-classe">-</span> /20</td>
+                    <td colspan="1">RANG : <span id="lbl-rank">-</span></td>
                     <td colspan="1">Retards : <span id="lbl-ret">0</span></td>
                     <td colspan="1">Absences : <span id="lbl-abs">0</span></td>
                 </tr>
@@ -331,7 +332,6 @@
     </div>
 
     <script>
-        // Détecter dynamiquement le nom du fichier parent exécuté pour éviter les erreurs 404 au retour
         const parentFile = document.referrer ? document.referrer.split('/').pop().split('?')[0] : '';
         const validParent = (parentFile && parentFile.endsWith('.html')) ? parentFile : 'gestnotes (12).html';
         document.getElementById('btn-error-return').href = validParent;
@@ -444,6 +444,7 @@
                 document.getElementById('lbl-abs').textContent = student.absences || '0';
                 document.getElementById('lbl-ret').textContent = student.retards || '0';
 
+                // Calcul des moyennes de TOUS les élèves pour le Rang et la Moyenne de Classe
                 const allAverages = classData.students.map(st => {
                     let totalP = 0, totalC = 0;
                     classData.subjects.forEach(sub => {
@@ -473,7 +474,17 @@
                     return { id: st.id, avg: totalC > 0 ? (totalP / totalC) : null };
                 });
 
-                const sortedAverages = [...allAverages].filter(x => x.avg !== null).sort((a, b) => b.avg - a.avg);
+                // Filtrage des moyennes valides
+                const validAverages = allAverages.filter(x => x.avg !== null);
+
+                // Calcul de la moyenne de l'effectif de la classe
+                let classAverageSum = 0;
+                validAverages.forEach(x => { classAverageSum += x.avg; });
+                let classGlobalAverage = validAverages.length > 0 ? (classAverageSum / validAverages.length) : null;
+                document.getElementById('lbl-moy-classe').textContent = classGlobalAverage !== null ? classGlobalAverage.toFixed(2).replace('.', ',') : '-';
+
+                // Calcul du rang
+                const sortedAverages = [...validAverages].sort((a, b) => b.avg - a.avg);
                 const targetIdx = sortedAverages.findIndex(x => x.id === studentId);
                 let genRank = '-';
                 if (targetIdx !== -1) {
