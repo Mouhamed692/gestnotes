@@ -546,7 +546,7 @@
             const data = appState.classes[currentFullKey] || { students: [], subjects: [], grades: {} };
             
             // 1. Liste Éleves
-            els.studentsList.innerHTML = '';
+          els.studentsList.innerHTML = '';
             document.getElementById('students-count').textContent = data.students.length;
             data.students.sort((a,b) => a.lastName.localeCompare(b.lastName)).forEach(s => {
                 const li = document.createElement('li');
@@ -554,6 +554,11 @@
                 li.innerHTML = `
                     <div class="font-medium truncate"><span class="uppercase font-bold text-slate-700">${s.lastName}</span> ${s.firstName}</div>
                     <div class="flex items-center gap-1 shrink-0">
+                        <a href="bulletin (5).html?class=${encodeURIComponent(currentFullKey)}&student=${encodeURIComponent(s.id)}" 
+                           target="_blank" title="Voir le bulletin" 
+                           class="p-1 text-slate-400 hover:text-indigo-600 transition-colors flex items-center justify-center w-7 h-7">
+                            <i class="fa-solid fa-id-card"></i>
+                        </a>
                         <button onclick="openStudentModal('${s.id}')" title="Modifier l'élève" class="p-1 text-slate-400 hover:text-indigo-600 transition-colors"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button onclick="deleteStudent('${s.id}')" title="Supprimer" class="p-1 text-slate-400 hover:text-red-600 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
