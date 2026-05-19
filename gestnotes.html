@@ -714,49 +714,63 @@
                 els.gradesTbody.appendChild(tr);
             });
 
-            // Capture et sauvegarde des modifications de notes à la saisie
-            document.querySelectorAll('.grade-input').forEach(input => {
-                input.addEventListener('change', e => {
-                    const key = e.target.getAttribute('data-key');
-                    let val = e.target.value.trim();
-                    
-                    if (val === '') {
-                        delete appState.classes[currentFullKey].grades[key];
-                    } else {
-                        let num = parseFloat(val);
-                        if (!isNaN(num) && num >= 0 && num <= 20) {
-                            appState.classes[currentFullKey].grades[key] = num;
-                        } else {
-                            showToast("La note doit être comprise entre 0 et 20", "error");
-                            e.target.value = appState.classes[currentFullKey].grades[key] !== undefined ? appState.classes[currentFullKey].grades[key] : '';
-                            return;
-                        }
-                    }
-                    saveState();
-                    
-                    // Recalcul instantané sans recharger tout l'arbre DOM
-                    const targetTr = e.target.closest('tr');
-                    const studentId = key.split('_')[0];
-                    const studentObj = students.find(s => s.id === studentId);
-                    
-                    const updatedRankings = students.map(st => {
-                        const res = calculateAverages(st, subjects, appState.classes[currentFullKey].grades);
-                        return { id: st.id, avg: res.genAvg };
-                    });
-                    updatedRankings.sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
+           // Capture et sauvegarde des modifications de notes à la saisie
+document.querySelectorAll('.grade-input').forEach(input => {
+    input.addEventListener('change', e => {
+        const key = e.target.getAttribute('data-key');
+        let val = e.target.value.trim();
+        const gradesObj = appState.classes[currentFullKey].grades;
 
-                    const currentComputed = calculateAverages(studentObj, subjects, appState.classes[currentFullKey].grades);
-                    const avgTd = targetTr.querySelector('td:nth-last-child(2)');
-                    
-                    if (currentComputed.genAvg !== null) {
-                        const rIndex = updatedRankings.findIndex(r => r.id === studentId) + 1;
-                        avgTd.innerHTML = `<span>${currentComputed.genAvg.toFixed(2).replace('.', ',')}</span>
-                            <span class="block text-[10px] text-slate-400 font-normal">${rIndex}<sup>${rIndex === 1 ? 'er' : 'e'}</sup> / ${students.length}</span>`;
-                    } else {
-                        avgTd.innerHTML = `<span>-</span>`;
-                    }
-                });
-            });
+        if (val === '') {
+            // suppression clé primaire et variantes composition
+            delete gradesObj[key];
+            if (key.endsWith('_c')) {
+                delete gradesObj[key.replace(/_c$/, '_compo')];
+            } else if (key.endsWith('_compo')) {
+                delete gradesObj[key.replace(/_compo$/, '_c')];
+            }
+        } else {
+            let num = parseFloat(val);
+            if (!isNaN(num) && num >= 0 && num <= 20) {
+                gradesObj[key] = num;
+                // si champ composition, écrire aussi l'alias utilisé par bulletin
+                if (key.endsWith('_c')) {
+                    gradesObj[key.replace(/_c$/, '_compo')] = num;
+                } else if (key.endsWith('_compo')) {
+                    gradesObj[key.replace(/_compo$/, '_c')] = num;
+                }
+            } else {
+                showToast("La note doit être comprise entre 0 et 20", "error");
+                e.target.value = gradesObj[key] !== undefined ? gradesObj[key] : '';
+                return;
+            }
+        }
+
+        saveState();
+
+        // Recalcul instantané sans recharger tout l'arbre DOM
+        const targetTr = e.target.closest('tr');
+        const studentId = key.split('_')[0];
+        const studentObj = students.find(s => s.id === studentId);
+
+        const updatedRankings = students.map(st => {
+            const res = calculateAverages(st, subjects, appState.classes[currentFullKey].grades);
+            return { id: st.id, avg: res.genAvg };
+        });
+        updatedRankings.sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
+
+        const currentComputed = calculateAverages(studentObj, subjects, appState.classes[currentFullKey].grades);
+        const avgTd = targetTr.querySelector('td:nth-last-child(2)');
+
+        if (currentComputed.genAvg !== null) {
+            const rIndex = updatedRankings.findIndex(r => r.id === studentId) + 1;
+            avgTd.innerHTML = `<span>${currentComputed.genAvg.toFixed(2).replace('.', ',')}</span>
+                <span class="block text-[10px] text-slate-400 font-normal">${rIndex}<sup>${rIndex === 1 ? 'er' : 'e'}</sup> / ${students.length}</span>`;
+        } else {
+            avgTd.innerHTML = `<span>-</span>`;
+        }
+     });
+    });
         }
 
         // --- GESTION DES ACTIONS ET FORMULAIRES ---
