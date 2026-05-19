@@ -9,7 +9,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-   
+   @media print {
+  .flag, .flag div, .flag .green, .flag .yellow, .flag .red {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
         body {
             font-family: 'Inter', sans-serif;
             color: #1e293b;
