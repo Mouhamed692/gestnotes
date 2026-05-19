@@ -613,10 +613,10 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/80 transition-colors";
 
-                let row = `<td class="px-4 py-2.5 font-semibold sticky left-0 bg-white z-10 text-slate-700 truncate max-w-[240px] sticky-left-shadow border-r flex items-center gap-2" title="${st.lastName} ${st.firstName}">
-                    <span class="uppercase">${st.lastName}</span> ${st.firstName}
-                    <button onclick=\"printReportCard('${st.id}')\" title=\"Imprimer le bulletin\" class=\"ml-2 text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-full p-1 transition-colors shadow-sm\"><i class=\"fa-solid fa-print\"></i></button>
-                </td>`;
+                let row = `<td class=\"px-4 py-2.5 font-semibold sticky left-0 bg-white z-10 text-slate-700 truncate max-w-[240px] sticky-left-shadow border-r flex items-center gap-2\" title=\"${st.lastName} ${st.firstName}\">\n` +
+                    `<span class=\"uppercase\">${st.lastName}</span> ${st.firstName}` +
+                    `<button onclick=\\\"printReportCard('${st.id}')\\\" title=\\\"Imprimer le bulletin\\\" class=\\\"ml-2 text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-full p-1 transition-colors shadow-sm\\\"><i class=\\\"fa-solid fa-print\\\"></i></button>\n` +
+                    `</td>`;
 
                 data.subjects.forEach(sub => {
                     const d1 = data.grades[`${st.id}_${sub.id}_d1`] ?? '';
@@ -624,21 +624,51 @@
                     const c = data.grades[`${st.id}_${sub.id}_c`] ?? '';
 
                     row += `
-                        <td class="p-1 border-l border-slate-100 text-center">
-                            <input type="text" value="${d1}" onchange="updateGrade('${st.id}','${sub.id}','d1',this.value)" class="w-14 h-9 text-center rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-amber-400 bg-white shadow-sm transition-all">
-                        </td>
-                        <td class="p-1 text-center">
-                            <input type="text" value="${d2}" onchange="updateGrade('${st.id}','${sub.id}','d2',this.value)" class="w-14 h-9 text-center rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-amber-400 bg-white shadow-sm transition-all">
-                        </td>
-                        <td class="p-1 text-center bg-amber-50/20">
-                            <input type="text" value="${c}" onchange="updateGrade('${st.id}','${sub.id}','c',this.value)" class="w-16 h-9 text-center rounded-lg border border-amber-300 text-sm font-bold bg-amber-50/70 text-amber-900 focus:ring-2 focus:ring-amber-400 shadow-sm transition-all">
-                        </td>
-                    `;
+                        <td class=\"p-1 border-l border-slate-100 text-center\">\n` +
+                        `<input type=\"text\" value=\"${d1}\" onchange=\"updateGrade('${st.id}','${sub.id}','d1',this.value)\" class=\"w-14 h-9 text-center rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-amber-400 bg-white shadow-sm transition-all\">\n` +
+                        `</td>\n` +
+                        `<td class=\"p-1 text-center\">\n` +
+                        `<input type=\"text\" value=\"${d2}\" onchange=\"updateGrade('${st.id}','${sub.id}','d2',this.value)\" class=\"w-14 h-9 text-center rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-amber-400 bg-white shadow-sm transition-all\">\n` +
+                        `</td>\n` +
+                        `<td class=\"p-1 text-center bg-amber-50/20\">\n` +
+                        `<input type=\"text\" value=\"${c}\" onchange=\"updateGrade('${st.id}','${sub.id}','c',this.value)\" class=\"w-16 h-9 text-center rounded-lg border border-amber-300 text-sm font-bold bg-amber-50/70 text-amber-900 focus:ring-2 focus:ring-amber-400 shadow-sm transition-all\">\n` +
+                        `</td>\n`;
                 });
 
                 tr.innerHTML = row;
                 els.gradesTbody.appendChild(tr);
             });
+
+            // --- Ligne Moyenne Classe ---
+            if (data.students.length > 0 && data.subjects.length > 0) {
+                const tr = document.createElement('tr');
+                tr.className = "bg-indigo-50 font-bold text-indigo-800";
+                let row = `<td class=\"px-4 py-2.5 sticky left-0 bg-indigo-50 z-10 sticky-left-shadow border-r\">Moyenne classe</td>`;
+                data.subjects.forEach(sub => {
+                    // D1
+                    let sumD1 = 0, countD1 = 0;
+                    let sumD2 = 0, countD2 = 0;
+                    let sumC = 0, countC = 0;
+                    data.students.forEach(st => {
+                        const d1 = parseFloat(data.grades[`${st.id}_${sub.id}_d1`]);
+                        if (!isNaN(d1)) { sumD1 += d1; countD1++; }
+                        const d2 = parseFloat(data.grades[`${st.id}_${sub.id}_d2`]);
+                        if (!isNaN(d2)) { sumD2 += d2; countD2++; }
+                        const c = parseFloat(data.grades[`${st.id}_${sub.id}_c`]);
+                        if (!isNaN(c)) { sumC += c; countC++; }
+                    });
+                    const avgD1 = countD1 ? (sumD1 / countD1).toFixed(2) : '-';
+                    const avgD2 = countD2 ? (sumD2 / countD2).toFixed(2) : '-';
+                    const avgC = countC ? (sumC / countC).toFixed(2) : '-';
+                    row += `
+                        <td class=\"p-1 border-l border-slate-200 text-center\">${avgD1}</td>
+                        <td class=\"p-1 text-center\">${avgD2}</td>
+                        <td class=\"p-1 text-center bg-amber-100/40 text-amber-900\">${avgC}</td>
+                    `;
+                });
+                tr.innerHTML = row;
+                els.gradesTbody.appendChild(tr);
+            }
         }
 
         // --- ACTIONS SUR LES FORMULAIRES ---
