@@ -717,7 +717,7 @@
             document.getElementById('edit-student-ret').value = s.retards || 0;
             document.getElementById('student-modal').classList.remove('hidden');
         };
-       window.renderGradesTable = function () {
+     window.renderGradesTable = function () {
             const isPrimary = ["CP", "CE1", "CE2", "CM1", "CM2"].includes(currentClass);
             const table = document.getElementById('grades-table');
             const thead = document.getElementById('grades-thead');
