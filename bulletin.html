@@ -284,7 +284,7 @@
                     <th colspan="2" id="th-note-group">Devoirs</th>
                     <th rowspan="2" id="th-final">Compo /20</th>
                     <th rowspan="2">Moy/20</th>
-                    <th rowspan="2">Coef</th>
+                    <th rowspan="2" id="th-coef">Coef</th>
                     <th rowspan="2">Moy × Coef</th>
                     <th rowspan="2">Rang</th>
                     <th rowspan="2">Appréciations & Mentions</th>
@@ -435,184 +435,208 @@ function readGrade(classData, studentId, subjectId, field) {
 
     return null;
 }
-        window.onload = function() {
-            try {
-                const params = new URLSearchParams(window.location.search);
-                const classId = params.get('class');
-                const studentId = params.get('student');
+function getSubjectWeight(sub, isPrimaryLevel) {
+    return isPrimaryLevel ? (sub.max ?? 20) : (sub.coef ?? 1);
+}
 
-                if (!classId || !studentId) throw "Identifiants manquants dans l'URL.";
+function normalizePrimaryScore(score, max) {
+    if (score === null || max <= 0) return null;
+    return (score / max) * 20;
+}
+       window.onload = function() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const classId = params.get('class');
+        const studentId = params.get('student');
 
-                const rawData = localStorage.getItem('gestnotes_data');
-                if (!rawData) throw "LocalStorage ('gestnotes_data') introuvable.";
+        if (!classId || !studentId) throw "Identifiants manquants dans l'URL.";
 
-                let appState = JSON.parse(rawData);
-                const classData = appState.classes ? appState.classes[classId] : null;
-                if (!classData) throw `La classe "${classId}" n'existe pas.`;
+        const rawData = localStorage.getItem('gestnotes_data');
+        if (!rawData) throw "LocalStorage ('gestnotes_data') introuvable.";
 
-                const student = classData.students ? classData.students.find(s => s.id === studentId) : null;
-                if (!student) throw "L'élève demandé n'existe pas.";
+        let appState = JSON.parse(rawData);
+        const classData = appState.classes ? appState.classes[classId] : null;
+        if (!classData) throw `La classe "${classId}" n'existe pas.`;
 
-                document.getElementById('bulletin-content').style.display = 'block';
-                
-                if (isPrimary(classId)) {
-                    document.getElementById('th-discipline').textContent = "DOMAINES D'APPRENTISSAGE";
-                    document.getElementById('th-note-group').textContent = "Notes";
-                    document.getElementById('th-n1').textContent = "N1";
-                    document.getElementById('th-n2').textContent = "N2";
-                    document.getElementById('th-final').textContent = "Év.";
-                    document.getElementById('lbl-obs-conseil').textContent = "Observations de l'Enseignant";
-                    document.getElementById('lbl-semester').textContent = appState.settings?.semester + (appState.settings?.semester == '1' ? 'er Trimestre' : 'ème Trimestre');
-                } else {
-                    document.getElementById('lbl-semester').textContent = (appState.settings?.semester == '1' ? '1er Semestre' : '2ème Semestre');
+        const student = classData.students ? classData.students.find(s => s.id === studentId) : null;
+        if (!student) throw "L'élève demandé n'existe pas.";
+
+        document.getElementById('bulletin-content').style.display = 'block';
+
+        const isPrimaryLevel = isPrimary(classId);
+
+        if (isPrimaryLevel) {
+            document.getElementById('th-discipline').textContent = "DOMAINES D'APPRENTISSAGE";
+            document.getElementById('th-note-group').textContent = "Notes";
+            document.getElementById('th-n1').textContent = "N1";
+            document.getElementById('th-n2').textContent = "N2";
+            document.getElementById('th-final').textContent = "Év.";
+            document.getElementById('lbl-obs-conseil').textContent = "Observations de l'Enseignant";
+            document.getElementById('th-coef').textContent = 'Max';
+            document.getElementById('lbl-semester').textContent = appState.settings?.semester + (appState.settings?.semester == '1' ? 'er Trimestre' : 'ème Trimestre');
+        } else {
+            document.getElementById('lbl-semester').textContent = (appState.settings?.semester == '1' ? '1er Semestre' : '2ème Semestre');
+        }
+
+        document.getElementById('lbl-year').textContent = appState.settings?.year || '-';
+        document.getElementById('lbl-firstname').textContent = student.firstName || '';
+        document.getElementById('lbl-lastname').textContent = student.lastName || '';
+        document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
+        document.getElementById('lbl-birth').textContent = student.birthDate || '-';
+        document.getElementById('lbl-matricule').textContent = student.matricule || '-';
+        document.getElementById('lbl-effectif').textContent = classData.students.length;
+        document.getElementById('lbl-abs').textContent = student.absences || '0';
+        document.getElementById('lbl-ret').textContent = student.retards || '0';
+
+        const allAverages = classData.students.map(st => {
+            let totalP = 0, totalC = 0;
+            classData.subjects.forEach(sub => {
+                const maxValue = getSubjectWeight(sub, isPrimaryLevel);
+
+                const d1Raw = readGrade(classData, st.id, sub.id, 'd1');
+                const d2Raw = readGrade(classData, st.id, sub.id, 'd2');
+                const compRaw = readGrade(classData, st.id, sub.id, 'compo');
+
+                let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
+                let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
+                let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
+
+                let rawScore = null;
+                if (compo !== null) {
+                    rawScore = compo;
+                } else if (d1 !== null || d2 !== null) {
+                    let sum = 0, count = 0;
+                    if (d1 !== null) { sum += d1; count++; }
+                    if (d2 !== null) { sum += d2; count++; }
+                    rawScore = sum / count;
                 }
 
-                document.getElementById('lbl-year').textContent = appState.settings?.year || '-';
-                document.getElementById('lbl-firstname').textContent = student.firstName || '';
-                document.getElementById('lbl-lastname').textContent = student.lastName || '';
-                document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
-                document.getElementById('lbl-birth').textContent = student.birthDate || '-';
-                document.getElementById('lbl-matricule').textContent = student.matricule || '-';
-                document.getElementById('lbl-effectif').textContent = classData.students.length;
-                document.getElementById('lbl-abs').textContent = student.absences || '0';
-                document.getElementById('lbl-ret').textContent = student.retards || '0';
-
-                // Calcul des moyennes de TOUS les élèves pour le Rang et la Moyenne de Classe
-                const allAverages = classData.students.map(st => {
-                    let totalP = 0, totalC = 0;
-                    classData.subjects.forEach(sub => {
-                        const d1Raw = readGrade(classData, st.id, sub.id, 'd1');
-                        const d2Raw = readGrade(classData, st.id, sub.id, 'd2');
-                        const compRaw = readGrade(classData, st.id, sub.id, 'compo');
-
-                        let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
-                        let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
-                        let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
-
-                        let subjectAvg = null;
-                        if (compo !== null) {
-                            subjectAvg = compo;
-                        } else if (d1 !== null || d2 !== null) {
-                            let sum = 0, count = 0;
-                            if(d1 !== null) { sum += d1; count++; }
-                            if(d2 !== null) { sum += d2; count++; }
-                            subjectAvg = sum / count;
-                        }
-
-                        if (subjectAvg !== null) {
-                            totalP += subjectAvg * sub.coef;
-                            totalC += sub.coef;
-                        }
-                    });
-                    return { id: st.id, avg: totalC > 0 ? (totalP / totalC) : null };
-                });
-
-                // Filtrage des moyennes valides
-                const validAverages = allAverages.filter(x => x.avg !== null);
-
-                // Calcul de la moyenne de l'effectif de la classe
-                let classAverageSum = 0;
-                validAverages.forEach(x => { classAverageSum += x.avg; });
-                let classGlobalAverage = validAverages.length > 0 ? (classAverageSum / validAverages.length) : null;
-                document.getElementById('lbl-moy-classe').textContent = classGlobalAverage !== null ? classGlobalAverage.toFixed(2).replace('.', ',') : '-';
-
-                // Calcul du rang
-                const sortedAverages = [...validAverages].sort((a, b) => b.avg - a.avg);
-                const targetIdx = sortedAverages.findIndex(x => x.id === studentId);
-                let genRank = '-';
-                if (targetIdx !== -1) {
-                    genRank = (targetIdx + 1) + (targetIdx === 0 ? "er" : "ème");
+                let subjectAvg = null;
+                if (rawScore !== null) {
+                    subjectAvg = isPrimaryLevel ? normalizePrimaryScore(rawScore, maxValue) : rawScore;
                 }
 
-                const tbody = document.getElementById('grades-body');
-                tbody.innerHTML = '';
-                let totalCoef = 0, totalPoints = 0, currentStudentGenAvg = null;
-
-                const targetStudentAvgObj = allAverages.find(x => x.id === studentId);
-                if(targetStudentAvgObj) currentStudentGenAvg = targetStudentAvgObj.avg;
-
-                classData.subjects.forEach(sub => {
-                   const d1Raw = readGrade(classData, student.id, sub.id, 'd1');
-                  const d2Raw = readGrade(classData, student.id, sub.id, 'd2');
-                 const compRaw = readGrade(classData, student.id, sub.id, 'compo');
-
-                    let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
-                    let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
-                    let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
-
-                    let subjectAvg = null;
-                    if (compo !== null) {
-                        subjectAvg = compo;
-                    } else if (d1 !== null || d2 !== null) {
-                        let sum = 0, count = 0;
-                        if(d1 !== null) { sum += d1; count++; }
-                        if(d2 !== null) { sum += d2; count++; }
-                        subjectAvg = sum / count;
-                    }
-
-                    let mxcStr = '', sAvgStr = '';
-                    if (subjectAvg !== null) {
-                        sAvgStr = subjectAvg.toFixed(2).replace('.', ',');
-                        let mxc = subjectAvg * sub.coef;
-                        mxcStr = mxc.toFixed(2).replace('.', ',');
-                        totalCoef += sub.coef;
-                        totalPoints += mxc;
-                    }
-
-                    let subRank = '-';
-                    let subStudentsAvgs = classData.students.map(s => {
-                       const sd1 = readGrade(classData, s.id, sub.id, 'd1');
-                        const sd2 = readGrade(classData, s.id, sub.id, 'd2');
-                        const scom = readGrade(classData, s.id, sub.id, 'compo');
-                        let v1 = (sd1 !== undefined && sd1 !== '') ? parseFloat(sd1) : null;
-                        let v2 = (sd2 !== undefined && sd2 !== '') ? parseFloat(sd2) : null;
-                        let vc = (scom !== undefined && scom !== '') ? parseFloat(scom) : null;
-                        if(vc !== null) return { id: s.id, v: vc };
-                        if(v1 !== null || v2 !== null) return { id: s.id, v: ((v1||0)+(v2||0))/((v1!==null?1:0)+(v2!==null?1:0)) };
-                        return { id: s.id, v: null };
-                    }).filter(x => x.v !== null).sort((a,b) => b.v - a.v);
-
-                    let subRankIdx = subStudentsAvgs.findIndex(x => x.id === studentId);
-                    if(subRankIdx !== -1) subRank = (subRankIdx + 1);
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="col-discipline">${sub.name}</td>
-                        <td>${d1 !== null ? d1 : '-'}</td>
-                        <td>${d2 !== null ? d2 : '-'}</td>
-                        <td><strong>${compo !== null ? compo : '-'}</strong></td>
-                        <td><strong>${sAvgStr || '-'}</strong></td>
-                        <td>${sub.coef}</td>
-                        <td><strong>${mxcStr || '-'}</strong></td>
-                        <td>${subRank}</td>
-                        <td>${getAppreciation(subjectAvg)}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-
-                document.getElementById('lbl-tot-coef').textContent = totalCoef || '0';
-                document.getElementById('lbl-tot-pts').textContent = totalPoints ? totalPoints.toFixed(2).replace('.', ',') : '0';
-                document.getElementById('lbl-moy-gen').textContent = currentStudentGenAvg !== null ? currentStudentGenAvg.toFixed(2).replace('.', ',') : '-';
-                document.getElementById('lbl-rank').textContent = genRank;
-
-                if (currentStudentGenAvg !== null) {
-                    if (currentStudentGenAvg >= 12) {
-                        document.getElementById('chk-satisfaisant').textContent = 'X';
-                        if (currentStudentGenAvg >= 14) document.getElementById('chk-felicitations').textContent = 'X';
-                        else if (currentStudentGenAvg >= 13) document.getElementById('chk-encouragement').textContent = 'X';
-                        else document.getElementById('chk-tableau-honneur').textContent = 'X';
-                    } else if (currentStudentGenAvg >= 10) { document.getElementById('chk-peut-mieux').textContent = 'X'; }
-                    else if (currentStudentGenAvg >= 8) { document.getElementById('chk-insuffisant').textContent = 'X'; }
-                    else if (currentStudentGenAvg >= 5) { document.getElementById('chk-risque-redoubler').textContent = 'X'; }
-                    else { document.getElementById('chk-risque-exclusion').textContent = 'X'; }
+                if (subjectAvg !== null) {
+                    totalP += subjectAvg * maxValue;
+                    totalC += maxValue;
                 }
-            } catch (err) {
-                document.getElementById('error-container').style.display = 'block';
-                document.getElementById('error-text').textContent = "Détail : " + err;
-                document.getElementById('setup-panel').style.display = 'none';
-                document.getElementById('bulletin-content').style.display = 'none';
+            });
+            return { id: st.id, avg: totalC > 0 ? (totalP / totalC) : null };
+        });
+
+        const validAverages = allAverages.filter(x => x.avg !== null);
+        let classAverageSum = 0;
+        validAverages.forEach(x => { classAverageSum += x.avg; });
+        let classGlobalAverage = validAverages.length > 0 ? (classAverageSum / validAverages.length) : null;
+        document.getElementById('lbl-moy-classe').textContent = classGlobalAverage !== null ? classGlobalAverage.toFixed(2).replace('.', ',') : '-';
+
+        const sortedAverages = [...validAverages].sort((a, b) => b.avg - a.avg);
+        const targetIdx = sortedAverages.findIndex(x => x.id === studentId);
+        let genRank = '-';
+        if (targetIdx !== -1) {
+            genRank = (targetIdx + 1) + (targetIdx === 0 ? "er" : "ème");
+        }
+
+        const tbody = document.getElementById('grades-body');
+        tbody.innerHTML = '';
+        let totalCoef = 0, totalPoints = 0, currentStudentGenAvg = null;
+        const targetStudentAvgObj = allAverages.find(x => x.id === studentId);
+        if (targetStudentAvgObj) currentStudentGenAvg = targetStudentAvgObj.avg;
+
+        classData.subjects.forEach(sub => {
+            const maxValue = getSubjectWeight(sub, isPrimaryLevel);
+
+            const d1Raw = readGrade(classData, student.id, sub.id, 'd1');
+            const d2Raw = readGrade(classData, student.id, sub.id, 'd2');
+            const compRaw = readGrade(classData, student.id, sub.id, 'compo');
+
+            let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
+            let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
+            let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
+
+            let rawScore = null;
+            if (compo !== null) {
+                rawScore = compo;
+            } else if (d1 !== null || d2 !== null) {
+                let sum = 0, count = 0;
+                if (d1 !== null) { sum += d1; count++; }
+                if (d2 !== null) { sum += d2; count++; }
+                rawScore = sum / count;
             }
-        };
+
+            let subjectAvg = null;
+            if (rawScore !== null) {
+                subjectAvg = isPrimaryLevel ? normalizePrimaryScore(rawScore, maxValue) : rawScore;
+            }
+
+            let mxcStr = '', sAvgStr = '';
+            if (subjectAvg !== null) {
+                sAvgStr = subjectAvg.toFixed(2).replace('.', ',');
+                let mxc = subjectAvg * maxValue;
+                mxcStr = mxc.toFixed(2).replace('.', ',');
+                totalCoef += maxValue;
+                totalPoints += mxc;
+            }
+
+            let subRank = '-';
+            let subStudentsAvgs = classData.students.map(s => {
+                const sd1 = readGrade(classData, s.id, sub.id, 'd1');
+                const sd2 = readGrade(classData, s.id, sub.id, 'd2');
+                const scom = readGrade(classData, s.id, sub.id, 'compo');
+                let v1 = (sd1 !== undefined && sd1 !== '') ? parseFloat(sd1) : null;
+                let v2 = (sd2 !== undefined && sd2 !== '') ? parseFloat(sd2) : null;
+                let vc = (scom !== undefined && scom !== '') ? parseFloat(scom) : null;
+
+                let rawValue = null;
+                if (vc !== null) rawValue = vc;
+                else if (v1 !== null || v2 !== null) rawValue = ((v1 || 0) + (v2 || 0)) / ((v1 !== null ? 1 : 0) + (v2 !== null ? 1 : 0));
+
+                if (rawValue === null) return { id: s.id, v: null };
+                const studentAvg = isPrimaryLevel ? normalizePrimaryScore(rawValue, maxValue) : rawValue;
+                return { id: s.id, v: studentAvg };
+            }).filter(x => x.v !== null).sort((a,b) => b.v - a.v);
+
+            let subRankIdx = subStudentsAvgs.findIndex(x => x.id === studentId);
+            if (subRankIdx !== -1) subRank = (subRankIdx + 1);
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="col-discipline">${sub.name}</td>
+                <td>${d1 !== null ? d1 : '-'}</td>
+                <td>${d2 !== null ? d2 : '-'}</td>
+                <td><strong>${compo !== null ? compo : '-'}</strong></td>
+                <td><strong>${sAvgStr || '-'}</strong></td>
+                <td>${maxValue}</td>
+                <td><strong>${mxcStr || '-'}</strong></td>
+                <td>${subRank}</td>
+                <td>${getAppreciation(subjectAvg)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('lbl-tot-coef').textContent = totalCoef || '0';
+        document.getElementById('lbl-tot-pts').textContent = totalPoints ? totalPoints.toFixed(2).replace('.', ',') : '0';
+        document.getElementById('lbl-moy-gen').textContent = currentStudentGenAvg !== null ? currentStudentGenAvg.toFixed(2).replace('.', ',') : '-';
+        document.getElementById('lbl-rank').textContent = genRank;
+
+        if (currentStudentGenAvg !== null) {
+            if (currentStudentGenAvg >= 12) {
+                document.getElementById('chk-satisfaisant').textContent = 'X';
+                if (currentStudentGenAvg >= 14) document.getElementById('chk-felicitations').textContent = 'X';
+                else if (currentStudentGenAvg >= 13) document.getElementById('chk-encouragement').textContent = 'X';
+                else document.getElementById('chk-tableau-honneur').textContent = 'X';
+            } else if (currentStudentGenAvg >= 10) { document.getElementById('chk-peut-mieux').textContent = 'X'; }
+            else if (currentStudentGenAvg >= 8) { document.getElementById('chk-insuffisant').textContent = 'X'; }
+            else if (currentStudentGenAvg >= 5) { document.getElementById('chk-risque-redoubler').textContent = 'X'; }
+            else { document.getElementById('chk-risque-exclusion').textContent = 'X'; }
+        }
+    } catch (err) {
+        document.getElementById('error-container').style.display = 'block';
+        document.getElementById('error-text').textContent = "Détail : " + err;
+        document.getElementById('setup-panel').style.display = 'none';
+        document.getElementById('bulletin-content').style.display = 'none';
+    }
+};
     </script>
 </body>
 </html>
