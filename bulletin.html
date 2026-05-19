@@ -401,7 +401,34 @@
         function isPrimary(className) {
             return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className.split('_')[0]);
         }
+// utilitaire tolerant aux formats de stockage des notes
+function readGrade(classData, studentId, subjectId, field) {
+    if (!classData || !classData.grades) return null;
 
+    // 1) structure imbriquée: grades[studentId][subjectId][field] or 'c'/'compo'
+    try {
+        const nested = classData.grades[studentId] && classData.grades[studentId][subjectId];
+        if (nested) {
+            if (nested[field] !== undefined) return nested[field];
+            if (field === 'compo' && nested['c'] !== undefined) return nested['c'];
+            if (field === 'compo' && nested['compo'] !== undefined) return nested['compo'];
+        }
+    } catch (e) {}
+
+    // 2) clés plates et variantes
+    const candidates = [
+        `${studentId}_${subjectId}_${field}`,
+        `${studentId}_${subjectId}_${field === 'compo' ? 'compo' : field}`,
+        `${studentId}_${subjectId}_${field === 'compo' ? 'c' : field}`,
+        `${studentId}_${subjectId}_compo`,
+        `${studentId}_${subjectId}_c`
+    ];
+    for (const k of candidates) {
+        if (classData.grades[k] !== undefined) return classData.grades[k];
+    }
+
+    return null;
+}
         window.onload = function() {
             try {
                 const params = new URLSearchParams(window.location.search);
@@ -448,9 +475,9 @@
                 const allAverages = classData.students.map(st => {
                     let totalP = 0, totalC = 0;
                     classData.subjects.forEach(sub => {
-                        const d1Raw = classData.grades[`${st.id}_${sub.id}_d1`];
-                        const d2Raw = classData.grades[`${st.id}_${sub.id}_d2`];
-                        const compRaw = classData.grades[`${st.id}_${sub.id}_compo`];
+                        const d1Raw = readGrade(classData, st.id, sub.id, 'd1');
+                        const d2Raw = readGrade(classData, st.id, sub.id, 'd2');
+                        const compRaw = readGrade(classData, st.id, sub.id, 'compo');
 
                         let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
                         let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
@@ -499,9 +526,9 @@
                 if(targetStudentAvgObj) currentStudentGenAvg = targetStudentAvgObj.avg;
 
                 classData.subjects.forEach(sub => {
-                    const d1Raw = classData.grades[`${student.id}_${sub.id}_d1`];
-                    const d2Raw = classData.grades[`${student.id}_${sub.id}_d2`];
-                    const compRaw = classData.grades[`${student.id}_${sub.id}_compo`];
+                   const d1Raw = readGrade(classData, student.id, sub.id, 'd1');
+                  const d2Raw = readGrade(classData, student.id, sub.id, 'd2');
+                 const compRaw = readGrade(classData, student.id, sub.id, 'compo');
 
                     let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
                     let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
@@ -528,9 +555,9 @@
 
                     let subRank = '-';
                     let subStudentsAvgs = classData.students.map(s => {
-                        const sd1 = classData.grades[`${s.id}_${sub.id}_d1`];
-                        const sd2 = classData.grades[`${s.id}_${sub.id}_d2`];
-                        const scom = classData.grades[`${s.id}_${sub.id}_compo`];
+                       const sd1 = readGrade(classData, s.id, sub.id, 'd1');
+                        const sd2 = readGrade(classData, s.id, sub.id, 'd2');
+                        const scom = readGrade(classData, s.id, sub.id, 'compo');
                         let v1 = (sd1 !== undefined && sd1 !== '') ? parseFloat(sd1) : null;
                         let v2 = (sd2 !== undefined && sd2 !== '') ? parseFloat(sd2) : null;
                         let vc = (scom !== undefined && scom !== '') ? parseFloat(scom) : null;
