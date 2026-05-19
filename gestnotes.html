@@ -613,8 +613,9 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/80 transition-colors";
 
-                let row = `<td class=\"px-4 py-2.5 font-semibold sticky left-0 bg-white z-10 text-slate-700 truncate max-w-[240px] sticky-left-shadow border-r\" title=\"${st.lastName} ${st.firstName}\">` +
-                    `<span class=\"uppercase\">${st.lastName}</span> ${st.firstName}</td>`;
+                let row = `<td class=\"px-4 py-2.5 font-semibold sticky left-0 bg-white z-10 text-slate-700 truncate max-w-[240px] sticky-left-shadow border-r flex items-center gap-2\" title=\"${st.lastName} ${st.firstName}\">` +
+                    `<span class=\"uppercase\">${st.lastName}</span> ${st.firstName}` +
+                    `<button onclick=\\\"printReportCard('${st.id}')\\\" title=\\\"Imprimer le bulletin\\\" class=\\\"ml-2 text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-full p-1 transition-colors shadow-sm\\\"><i class=\\\"fa-solid fa-print\\\"></i></button></td>`;
 
                 data.subjects.forEach(sub => {
                     const d1 = data.grades[`${st.id}_${sub.id}_d1`] ?? '';
