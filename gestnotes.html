@@ -602,13 +602,11 @@
                 if (!isNaN(d1)) { devSum += d1 * cD1; devCoefSum += cD1; }
                 if (!isNaN(d2)) { devSum += d2 * cD2; devCoefSum += cD2; }
 
-                if (devCoefSum > 0) {
-                    const devAvg = devSum / devCoefSum;
-                    subMoy = ((devAvg * (cD1 + cD2)) + (compo * cC)) / (cD1 + cD2 + cC);
-                } else {
-                    // Pas de devoir mais une compo
-                    subMoy = compo;
-                }
+             if (devCoefSum > 0) {
+                subMoy = (devSum + compo * cC) / (devCoefSum + cC);
+            } else {
+                subMoy = compo;
+            }
 
                 if (subMoy !== null) {
                     totalWeightedSum += subMoy * parseFloat(sub.coef);
@@ -654,6 +652,9 @@
                 return { id: st.id, avg: res.genAvg };
             });
             studentRankings.sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
+            const inputN1 = isPrimary(currentClass) ? 'N1' : 'D1';
+            const inputN2 = isPrimary(currentClass) ? 'N2' : 'D2';
+            const inputEV = isPrimary(currentClass) ? 'EV' : 'Compo';
 
             els.gradesTbody.innerHTML = '';
             students.forEach(st => {
@@ -955,11 +956,11 @@ csv += csvHeader;
                     if(d2 !== undefined && d2 !== '') { devSum += parseFloat(d2)*cD2; devCoef += cD2; }
 
                     if (devCoef > 0) {
-                        subMoy = ((devSum / devCoef) * (cD1 + cD2) + parseFloat(c) * cC) / (cD1 + cD2 + cC);
+                       subMoy = (devSum + parseFloat(c) * cC) / (devCoef + cC);
                     } else {
                         subMoy = parseFloat(c);
                     }
-                }
+                                    }
 
                 csv += `"${sub.name}";${sub.coef};${d1 !== undefined ? d1 : ''};${d2 !== undefined ? d2 : ''};${c !== undefined ? c : ''};${subMoy !== null ? subMoy.toFixed(2) : '-'}\n`;
             });
