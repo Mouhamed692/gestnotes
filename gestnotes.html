@@ -717,7 +717,7 @@
             document.getElementById('edit-student-ret').value = s.retards || 0;
             document.getElementById('student-modal').classList.remove('hidden');
         };
-     window.renderGradesTable = function () {
+window.renderGradesTable = function () {
             const isPrimary = ["CP", "CE1", "CE2", "CM1", "CM2"].includes(currentClass);
             const table = document.getElementById('grades-table');
             const thead = document.getElementById('grades-thead');
@@ -741,29 +741,30 @@
             emptyState.classList.add('hidden');
             document.getElementById('grades-table-subtitle').textContent = `${currentClass} ${currentSection} • ${data.students.length} élève(s) • ${data.subjects.length} matière(s)`;
 
-            // --- 1. EN-TÊTE DU TABLEAU ---
+            // --- 1. EN-TÊTE PROFESSIONNEL ---
             let headerRow = `<tr>
-                <th class="p-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider sticky left-0 bg-slate-100 z-30 border-r w-48 sticky-left-shadow">Élève</th>
+                <th class="p-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider sticky left-0 bg-slate-100 z-30 border-r w-44 sm:w-52 sticky-left-shadow">Élève</th>
             `;
 
             data.subjects.forEach(sub => {
                 if (isPrimary) {
                     headerRow += `
-                        <th class="p-3 text-center text-xs font-bold text-slate-600 uppercase tracking-wider border-r bg-slate-50 min-w-[100px]">
-                            <div class="truncate text-[11px]" title="${sub.name}">${sub.name}</div>
-                            <div class="text-[10px] text-slate-400 font-normal mt-0.5">Note (x${sub.coef})</div>
+                        <th class="p-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r bg-slate-50 min-w-[100px]">
+                            <div class="truncate text-[11px] font-bold" title="${sub.name}">${sub.name}</div>
+                            <div class="text-[10px] text-slate-400 font-normal mt-0.5">Coef. ${sub.coef}</div>
                         </th>
                     `;
                 } else {
                     headerRow += `
-                        <th class="p-2 text-center text-xs font-bold text-slate-600 uppercase tracking-wider border-r bg-slate-50 min-w-[220px]">
-                            <div class="truncate text-[11px] border-b border-slate-200 pb-1 mb-1 px-1" title="${sub.name}">${sub.name} (x${sub.coef})</div>
-                            <div class="grid grid-cols-4 gap-1 text-[10px] text-slate-400 font-medium px-1">
-                                <div class="bg-slate-100/80 rounded py-0.5">D1</div>
-                                <div class="bg-slate-100/80 rounded py-0.5">D2</div>
-                                <div class="bg-amber-50 text-amber-700 rounded py-0.5">Comp.</div>
-                                <div class="text-indigo-600 font-bold bg-indigo-50 rounded py-0.5">Moy.</div>
+                        <th class="p-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r bg-slate-50 min-w-[180px] sm:min-w-[240px]">
+                            <div class="truncate text-[11px] font-bold border-b border-slate-200 pb-1 mb-1 px-1" title="${sub.name}">${sub.name} <span class="text-slate-400 font-normal">(x${sub.coef})</span></div>
+                            <div class="hidden sm:grid grid-cols-4 gap-1 text-[10px] text-slate-400 font-semibold px-1">
+                                <div class="py-0.5">Dev. 1</div>
+                                <div class="py-0.5">Dev. 2</div>
+                                <div class="text-amber-700 bg-amber-50 rounded py-0.5">Comp.</div>
+                                <div class="text-indigo-600 bg-indigo-50 rounded py-0.5">Moy.</div>
                             </div>
+                            <div class="block sm:hidden text-[10px] text-slate-400 font-medium">Saisie des notes</div>
                         </th>
                     `;
                 }
@@ -776,11 +777,11 @@
             </tr>`;
             thead.innerHTML = headerRow;
 
-            // --- 2. RENDER DES LIGNES ÉLÈVES ---
+            // --- 2. LIGNES DU TABLEAU (STYLE PREMIUM) ---
             data.students.sort((a, b) => a.lastName.localeCompare(b.lastName)).forEach(st => {
                 let rowHtml = `
                     <td class="p-3 border-b border-slate-100 text-sm font-medium text-slate-900 sticky left-0 bg-white z-10 border-r shadow-sm truncate sticky-left-shadow" title="${st.lastName} ${st.firstName}">
-                        <span class="uppercase font-semibold text-slate-700">${st.lastName}</span> <span class="text-slate-600">${st.firstName}</span>
+                        <span class="uppercase font-bold text-slate-800 text-xs sm:text-sm">${st.lastName}</span> <span class="text-slate-500 font-normal text-xs sm:text-sm">${st.firstName}</span>
                     </td>
                 `;
 
@@ -789,7 +790,7 @@
 
                 data.subjects.forEach(sub => {
                     if (isPrimary) {
-                        // Mode Primaire
+                        // --- DESIGN PRIMAIRE ---
                         const noteStr = data.grades[`${st.id}_${sub.id}_note`] ?? '';
                         const note = parseFloat(noteStr.replace(',', '.'));
 
@@ -797,7 +798,7 @@
                             <td class="p-2 border-b border-slate-100 border-r text-center bg-white">
                                 <input type="text" value="${noteStr}" 
                                     onchange="updateGrade('${st.id}','${sub.id}','note',this.value)" 
-                                    class="w-16 h-8 text-center rounded-md border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                                    class="w-16 h-8 text-center rounded-lg border border-slate-200 bg-slate-50/50 text-sm font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-150">
                             </td>
                         `;
 
@@ -806,7 +807,7 @@
                             totalCoefficients += sub.coef;
                         }
                     } else {
-                        // Mode Secondaire (D1, D2, Composition)
+                        // --- DESIGN SECONDAIRE (DEVOIRS & COMPOSITIONS) ---
                         const d1Str = data.grades[`${st.id}_${sub.id}_d1`] ?? '';
                         const d2Str = data.grades[`${st.id}_${sub.id}_d2`] ?? '';
                         const compStr = data.grades[`${st.id}_${sub.id}_c`] ?? '';
@@ -815,7 +816,6 @@
                         const d2 = parseFloat(d2Str.replace(',', '.'));
                         const comp = parseFloat(compStr.replace(',', '.'));
 
-                        // Calcul de la moyenne de la matière (conforme à bulletin.html)
                         let subAvg = null;
                         let sumDevoir = 0;
                         let countDevoir = 0;
@@ -836,15 +836,32 @@
                         let subAvgDisplay = subAvg !== null ? subAvg.toFixed(2).replace('.', ',') : '-';
 
                         rowHtml += `
-                            <td class="p-1.5 border-b border-slate-100 border-r bg-white">
-                                <div class="grid grid-cols-4 gap-1 items-center text-center">
-                                    <input type="text" value="${d1Str}" onchange="updateGrade('${st.id}','${sub.id}','d1',this.value)" 
-                                        class="w-full h-8 text-center rounded-md border border-slate-200 text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-indigo-500 outline-none transition-all" placeholder="-">
-                                    <input type="text" value="${d2Str}" onchange="updateGrade('${st.id}','${sub.id}','d2',this.value)" 
-                                        class="w-full h-8 text-center rounded-md border border-slate-200 text-xs bg-slate-50/50 focus:bg-white focus:ring-1 focus:ring-indigo-500 outline-none transition-all" placeholder="-">
-                                    <input type="text" value="${compStr}" onchange="updateGrade('${st.id}','${sub.id}','c',this.value)" 
-                                        class="w-full h-8 text-center rounded-md border border-amber-200 bg-amber-50/20 text-slate-800 font-semibold focus:bg-white focus:ring-1 focus:ring-amber-500 outline-none transition-all" placeholder="-">
-                                    <div class="text-xs font-bold text-indigo-700 bg-indigo-50/60 h-8 flex items-center justify-center rounded-md border border-transparent select-none">${subAvgDisplay}</div>
+                            <td class="p-2 border-b border-slate-100 border-r bg-white min-w-[180px] sm:min-w-[240px]">
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-1 items-center text-center">
+                                    
+                                    <div class="flex flex-col sm:block">
+                                        <span class="text-[9px] text-slate-400 font-semibold uppercase tracking-tight block sm:hidden mb-0.5">D1</span>
+                                        <input type="text" value="${d1Str}" onchange="updateGrade('${st.id}','${sub.id}','d1',this.value)" 
+                                            class="w-full h-8 text-center rounded-md border border-slate-200 bg-slate-50/60 text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-150" placeholder="-">
+                                    </div>
+                                    
+                                    <div class="flex flex-col sm:block">
+                                        <span class="text-[9px] text-slate-400 font-semibold uppercase tracking-tight block sm:hidden mb-0.5">D2</span>
+                                        <input type="text" value="${d2Str}" onchange="updateGrade('${st.id}','${sub.id}','d2',this.value)" 
+                                            class="w-full h-8 text-center rounded-md border border-slate-200 bg-slate-50/60 text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-150" placeholder="-">
+                                    </div>
+                                    
+                                    <div class="flex flex-col sm:block">
+                                        <span class="text-[9px] text-amber-600 font-semibold uppercase tracking-tight block sm:hidden mb-0.5">Comp</span>
+                                        <input type="text" value="${compStr}" onchange="updateGrade('${st.id}','${sub.id}','c',this.value)" 
+                                            class="w-full h-8 text-center rounded-md border border-amber-200 bg-amber-50/40 text-slate-900 font-semibold focus:bg-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all duration-150" placeholder="-">
+                                    </div>
+                                    
+                                    <div class="flex flex-col sm:block">
+                                        <span class="text-[9px] text-indigo-600 font-semibold uppercase tracking-tight block sm:hidden mb-0.5">Moy</span>
+                                        <div class="w-full h-8 text-xs font-bold text-indigo-700 bg-indigo-50/80 border border-indigo-100 flex items-center justify-center rounded-md select-none">${subAvgDisplay}</div>
+                                    </div>
+
                                 </div>
                             </td>
                         `;
@@ -856,7 +873,7 @@
                     }
                 });
 
-                // Calcul de la Moyenne Générale
+                // --- 3. COLONNE MOYENNE GÉNÉRALE ---
                 let genAvgDisplay = '-';
                 let badgeColor = 'bg-slate-100 text-slate-600 font-medium';
 
@@ -864,21 +881,21 @@
                     const genAvg = totalWeightedPoints / totalCoefficients;
                     genAvgDisplay = genAvg.toFixed(2).replace('.', ',');
                     
-                    if (genAvg >= 14) badgeColor = 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-200';
-                    else if (genAvg >= 10) badgeColor = 'bg-blue-100 text-blue-800 font-bold border border-blue-200';
-                    else badgeColor = 'bg-rose-100 text-rose-800 font-bold border border-rose-200';
+                    if (genAvg >= 14) badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200/60 font-bold';
+                    else if (genAvg >= 10) badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200/60 font-bold';
+                    else badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200/60 font-bold';
                 }
 
                 rowHtml += `
                     <td class="p-3 border-b border-slate-100 text-center sticky right-0 bg-slate-50 z-10 border-l shadow-sm sticky-right-shadow">
-                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs min-w-[64px] ${badgeColor}">
+                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs min-w-[55px] sm:min-w-[64px] ${badgeColor}">
                             ${genAvgDisplay}
                         </span>
                     </td>
                 `;
 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-indigo-50/30 transition-colors";
+                tr.className = "hover:bg-indigo-50/20 transition-colors duration-150";
                 tr.innerHTML = rowHtml;
                 tbody.appendChild(tr);
             });
