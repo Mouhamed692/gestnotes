@@ -10,8 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
- 
-    
+      
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
@@ -333,12 +332,12 @@
         
         function getSectionsForClass(cls) {
             if (["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"].includes(cls)) {
-                return [" ", "A", "B", "C"];
+                return ["unique", "A", "B", "C"];
             }
             if (["Seconde", "Première", "Terminale"].includes(cls)) {
                 return ["L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S2", "S2A", "S2B"];
             }
-            return [" "];
+            return ["unique"];
         }
 
         let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
@@ -506,17 +505,16 @@
             const tableSubtitle = document.getElementById('grades-table-subtitle');
             
             if (isPrimary(currentClass)) {
-                subTitle.innerHTML = `<i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Domaines & Coef.`;
-                document.getElementById('new-subject-name').placeholder = "Nom du domaine d'apprentissage";
-                document.getElementById('modal-sub-label').textContent = "Nom du domaine";
-                document.getElementById('modal-coef-label').textContent = "Coefficients internes (D1/D2/Compo)";
-            } else {
-                subTitle.innerHTML = `<i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Matières & Coefficients`;
-                document.getElementById('new-subject-name').placeholder = "Nom de la matière";
-                document.getElementById('modal-sub-label').textContent = "Nom de la matière";
-                document.getElementById('modal-coef-label').textContent = "Coefficients de calcul";
-            }
-
+    subTitle.innerHTML = `<i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Domaines & Max.`;
+    document.getElementById('new-subject-name').placeholder = "Nom du domaine d'apprentissage";
+    document.getElementById('modal-sub-label').textContent = "Nom du domaine";
+    document.getElementById('modal-coef-label').textContent = "Coefficients internes (N1/N2/EV)";
+} else {
+    subTitle.innerHTML = `<i class="fa-solid fa-book-open text-emerald-500 w-5"></i> Matières & Coefficients`;
+    document.getElementById('new-subject-name').placeholder = "Nom de la matière";
+    document.getElementById('modal-sub-label').textContent = "Nom de la matière";
+    document.getElementById('modal-coef-label').textContent = "Coefficients de calcul";
+}
             const currentData = appState.classes[currentFullKey] || { students: [], subjects: [], grades: {} };
             document.getElementById('students-count').textContent = currentData.students.length;
             document.getElementById('subjects-count').textContent = currentData.subjects.length;
@@ -564,7 +562,9 @@
                 li.innerHTML = `
                     <div class="flex items-center gap-2 truncate">
                         <span class="font-medium text-slate-700 truncate">${s.name}</span>
-                        <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full" title="Coefficient Général">Coef ${s.coef}</span>
+                       <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full" title="Coefficient Général">
+                      ${isPrimary(currentClass) ? `Max ${s.coef}` : `Coef ${s.coef}`}
+                      </span>
                     </div>
                     <div class="flex items-center gap-1 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
                         <button onclick="openSubjectModal('${s.id}')" title="Paramétrer" class="p-1 text-emerald-600 hover:bg-white rounded border border-transparent hover:border-slate-200"><i class="fa-solid fa-sliders text-xs"></i></button>
@@ -633,11 +633,12 @@
                 <tr>
                     <th class="px-4 py-3 sticky left-0 bg-slate-100 z-30 sticky-left-shadow w-56 font-bold text-slate-700 border-b">Élèves</th>
             `;
+
             subjects.forEach(sub => {
                 thHtml += `
                     <th class="px-2 py-2 text-center border-l border-slate-200/80 border-b bg-emerald-50/60" colspan="3">
                         <div class="font-bold text-slate-800 text-xs truncate max-w-[140px]" title="${sub.name}">${sub.name}</div>
-                        <div class="text-[10px] text-emerald-700 lowercase font-semibold mt-0.5">Coef ${sub.coef} (d1:${sub.coefD1 || 1} d2:${sub.coefD2 || 1} c:${sub.coefC || 2})</div>
+                        <div class="text-[10px] text-emerald-700 lowercase font-semibold mt-0.5">${isPrimary(currentClass) ? `Max ${sub.coef} (n1:${sub.coefD1 || 1} n2:${sub.coefD2 || 1} ev:${sub.coefC || 2})` : `Coef ${sub.coef} (d1:${sub.coefD1 || 1} d2:${sub.coefD2 || 1} c:${sub.coefC || 2})`}</div>
                     </th>
                 `;
             });
@@ -677,15 +678,15 @@
 
                     tdHtml += `
                         <td class="p-1 border-l border-slate-100 text-center bg-slate-50/30">
-                            <input type="number" step="any" min="0" max="20" placeholder="D1" value="${d1Val}" data-key="${d1Key}"
+                            <input type="number" step="any" min="0" max="20" placeholder="${inputN1}" value="${d1Val}" data-key="${d1Key}"
                                 class="grade-input w-11 text-center bg-transparent focus:bg-white rounded border border-transparent focus:border-indigo-400 p-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-300">
                         </td>
                         <td class="p-1 text-center bg-slate-50/30">
-                            <input type="number" step="any" min="0" max="20" placeholder="D2" value="${d2Val}" data-key="${d2Key}"
+                            <input type="number" step="any" min="0" max="20" placeholder="${inputN2}"value="${d2Val}" data-key="${d2Key}"
                                 class="grade-input w-11 text-center bg-transparent focus:bg-white rounded border border-transparent focus:border-indigo-400 p-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-300">
                         </td>
                         <td class="p-1 text-center border-r border-slate-200/60 bg-emerald-50/10 font-medium">
-                            <input type="number" step="any" min="0" max="20" placeholder="Compo" value="${cVal}" data-key="${cKey}"
+                            <input type="number" step="any" min="0" max="20" placeholder="${inputEV}" value="${cVal}" data-key="${cKey}"
                                 class="grade-input w-12 text-center bg-transparent focus:bg-white rounded border-l border-t border-b border-transparent focus:border-emerald-500 p-1 text-xs font-semibold text-emerald-900 focus:outline-none focus:ring-1 focus:ring-emerald-300">
                         </td>
                     `;
@@ -887,15 +888,16 @@ document.querySelectorAll('.grade-input').forEach(input => {
             document.getElementById('edit-sub-d1').value = s.coefD1 !== undefined ? s.coefD1 : 1;
             document.getElementById('edit-sub-d2').value = s.coefD2 !== undefined ? s.coefD2 : 1;
             document.getElementById('edit-sub-c').value = s.coefC !== undefined ? s.coefC : 2;
-
             if(isPrimary(currentClass)) {
-                document.getElementById('label-modal-d1').textContent = "D1";
-                document.getElementById('label-modal-d2').textContent = "D2";
+                document.getElementById('label-modal-d1').textContent = "N1";
+                document.getElementById('label-modal-d2').textContent = "N2";
+                document.getElementById('label-modal-c').textContent = "EV";
             } else {
                 document.getElementById('label-modal-d1').textContent = "Dev. 1";
                 document.getElementById('label-modal-d2').textContent = "Dev. 2";
+                document.getElementById('label-modal-c').textContent = "Compo";
             }
-            document.getElementById('subject-modal').classList.remove('hidden');
+                     document.getElementById('subject-modal').classList.remove('hidden');
         };
 
         window.saveSubjectModal = function () {
@@ -930,7 +932,10 @@ document.querySelectorAll('.grade-input').forEach(input => {
             csv += `Classe;${currentClass};Serie;${currentSection}\n`;
             csv += `Annee Scolaire;${appState.settings.year};Periode;${appState.settings.semester}\n`;
             csv += `Eleve;${student.lastName.toUpperCase()} ${student.firstName};Matricule;${student.matricule || '-'}\n\n`;
-            csv += `Matiere;Coef;Dev1;Dev2;Compo;Moyenne\n`;
+           const csvHeader = isPrimary(currentClass) 
+    ? `Matiere;Max;N1;N2;EV;Moyenne\n`
+    : `Matiere;Coef;Dev1;Dev2;Compo;Moyenne\n`;
+csv += csvHeader;
 
             currentData.subjects.forEach(sub => {
                 const d1 = currentData.grades[`${student.id}_${sub.id}_d1`];
