@@ -332,12 +332,12 @@
         
         function getSectionsForClass(cls) {
             if (["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"].includes(cls)) {
-                return ["", "A", "B", "C"];
+                return ["unique", "A", "B", "C"];
             }
             if (["Seconde", "Première", "Terminale"].includes(cls)) {
                 return ["L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S2", "S2A", "S2B"];
             }
-            return [""];
+            return ["unique"];
         }
 
         let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
@@ -382,7 +382,14 @@
         document.getElementById('setting-effectif').value = appState.classes[currentFullKey]?.effectif || '';
 
         document.getElementById('setting-year').addEventListener('change', e => { appState.settings.year = e.target.value; saveState(); });
-        document.getElementById('setting-semester').addEventListener('change', e => { appState.settings.semester = e.target.value; saveState(); });
+        document.getElementById('setting-semester').addEventListener('change', e => {
+            const oldSemester = appState.settings.semester;
+            const newSemester = e.target.value;
+            saveSemesterAverages(appState, currentFullKey, oldSemester);
+            appState.settings.semester = newSemester;
+            saveState();
+            render();
+        });
         document.getElementById('setting-effectif').addEventListener('input', e => {
             if(appState.classes[currentFullKey]) appState.classes[currentFullKey].effectif = e.target.value;
             saveState();
@@ -405,6 +412,55 @@
         });
 
         function saveState() { localStorage.setItem('gestnotes_data', JSON.stringify(appState)); }
+
+        function saveSemesterAverages(appState, fullKey, semester) {
+            if (!appState.classes[fullKey]) return;
+            const classData = appState.classes[fullKey];
+            if (!classData.semesterAverages) classData.semesterAverages = {};
+            if (!classData.semesterAverages[semester]) classData.semesterAverages[semester] = {};
+
+            const isPrimaryLvl = ["CP", "CE1", "CE2", "CM1", "CM2"].includes(fullKey.split('_')[0]);
+            
+            classData.students.forEach(student => {
+                let totalP = 0, totalC = 0;
+                classData.subjects.forEach(sub => {
+                    const maxValue = isPrimaryLvl ? (sub.max ?? 20) : (sub.coef ?? 1);
+                    
+                    const d1 = classData.grades[`${student.id}_${sub.id}_d1`];
+                    const d2 = classData.grades[`${student.id}_${sub.id}_d2`];
+                    const c = classData.grades[`${student.id}_${sub.id}_c`] || classData.grades[`${student.id}_${sub.id}_compo`];
+
+                    let d1Val = (d1 !== undefined && d1 !== '') ? parseFloat(d1) : null;
+                    let d2Val = (d2 !== undefined && d2 !== '') ? parseFloat(d2) : null;
+                    let cVal = (c !== undefined && c !== '') ? parseFloat(c) : null;
+
+                    let rawScore = null;
+                    if (cVal !== null) {
+                        rawScore = cVal;
+                    } else if (d1Val !== null || d2Val !== null) {
+                        let sum = 0, count = 0;
+                        if (d1Val !== null) { sum += d1Val; count++; }
+                        if (d2Val !== null) { sum += d2Val; count++; }
+                        rawScore = count > 0 ? (sum / count) : null;
+                    }
+
+                    let subjectAvg = null;
+                    if (rawScore !== null) {
+                        subjectAvg = isPrimaryLvl ? ((rawScore / maxValue) * 20) : rawScore;
+                    }
+
+                    if (subjectAvg !== null) {
+                        totalP += subjectAvg * maxValue;
+                        totalC += maxValue;
+                    }
+                });
+
+                classData.semesterAverages[semester][student.id] = totalC > 0 ? (totalP / totalC) : null;
+            });
+
+            saveState();
+        }
+
         function generateId() { return Math.random().toString(36).substr(2, 9); }
         function isPrimary(className) { return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className); }
 
