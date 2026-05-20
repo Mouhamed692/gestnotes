@@ -332,12 +332,12 @@
         
         function getSectionsForClass(cls) {
             if (["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"].includes(cls)) {
-                return ["unique", "A", "B", "C"];
+                return ["", "A", "B", "C"];
             }
             if (["Seconde", "Première", "Terminale"].includes(cls)) {
                 return ["L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S2", "S2A", "S2B"];
             }
-            return ["unique"];
+            return [""];
         }
 
         let appState = JSON.parse(localStorage.getItem('gestnotes_data')) || defaultState;
