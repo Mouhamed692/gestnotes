@@ -9,12 +9,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-   @media print {
-  .flag, .flag div, .flag .green, .flag .yellow, .flag .red {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-}
+        @media print {
+            .flag, .flag div, .flag .green, .flag .yellow, .flag .red {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
         body {
             font-family: 'Inter', sans-serif;
             color: #1e293b;
@@ -219,7 +219,7 @@
         <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; margin-bottom: 15px;"></i>
         <h2 style="margin: 0 0 10px 0; font-size: 18px;">Données introuvables ou corrompues</h2>
         <p id="error-text" style="margin-bottom: 20px; font-size: 14px;">Veuillez générer ce bulletin depuis l'interface GestNotes.</p>
-        <a href="bulletin.html" id="btn-error-return" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Retourner à GestNotes</a>
+        <a href="gestnotes-v10-updated.html" id="btn-error-return" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Retourner à GestNotes</a>
     </div>
 
     <div class="bulletin-wrapper no-print" id="setup-panel">
@@ -239,7 +239,7 @@
             </div>
             
             <div class="actions-row">
-                <a id="btn-panel-return" href="bulletin.html" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Quitter le bulletin</a>
+                <a id="btn-panel-return" href="gestnotes-v10-updated.html" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Quitter le bulletin</a>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-amber" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> Sauvegarder en PDF</button>
                     <button class="btn btn-emerald" onclick="window.print()"><i class="fa-solid fa-print"></i> Lancer l'impression</button>
@@ -287,8 +287,8 @@
             <table class="summary-table">
                 <thead>
                     <tr>
-                        <th>1er Semestre</th>
-                        <th>2ème Semestre</th>
+                        <th id="th-semester1">1er Semestre</th>
+                        <th id="th-semester2">2ème Semestre</th>
                         <th>Moyenne Générale</th>
                         <th>Rang</th>
                         <th>Moyenne de la classe</th>
@@ -368,7 +368,7 @@
 
     <script>
         const parentFile = document.referrer ? document.referrer.split('/').pop().split('?')[0] : '';
-        const validParent = (parentFile && parentFile.endsWith('.html')) ? parentFile : 'gestnotes (12).html';
+        const validParent = (parentFile && parentFile.endsWith('.html')) ? parentFile : 'gestnotes-v10-updated.html';
         document.getElementById('btn-error-return').href = validParent;
         document.getElementById('btn-panel-return').href = validParent;
 
@@ -436,295 +436,310 @@
         function isPrimary(className) {
             return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className.split('_')[0]);
         }
-// utilitaire tolerant aux formats de stockage des notes
-function readGrade(classData, studentId, subjectId, field) {
-    if (!classData || !classData.grades) return null;
 
-    // 1) structure imbriquée: grades[studentId][subjectId][field] or 'c'/'compo'
-    try {
-        const nested = classData.grades[studentId] && classData.grades[studentId][subjectId];
-        if (nested) {
-            if (nested[field] !== undefined) return nested[field];
-            if (field === 'compo' && nested['c'] !== undefined) return nested['c'];
-            if (field === 'compo' && nested['compo'] !== undefined) return nested['compo'];
-        }
-    } catch (e) {}
+        // Lecture des notes synchronisée avec GestNotes (intégration du semestre)
+        function readGrade(classData, studentId, subjectId, field, semester) {
+            if (!classData || !classData.grades) return null;
+            
+            const candidates = [
+                `${studentId}_${subjectId}_${field}_sem${semester}`,
+                `${studentId}_${subjectId}_${field === 'compo' ? 'compo' : field}_sem${semester}`,
+                `${studentId}_${subjectId}_${field === 'compo' ? 'c' : field}_sem${semester}`,
+                `${studentId}_${subjectId}_${field}`, // rétrocompatibilité
+                `${studentId}_${subjectId}_c`
+            ];
 
-    // 2) clés plates et variantes
-    const candidates = [
-        `${studentId}_${subjectId}_${field}`,
-        `${studentId}_${subjectId}_${field === 'compo' ? 'compo' : field}`,
-        `${studentId}_${subjectId}_${field === 'compo' ? 'c' : field}`,
-        `${studentId}_${subjectId}_compo`,
-        `${studentId}_${subjectId}_c`
-    ];
-    for (const k of candidates) {
-        if (classData.grades[k] !== undefined) return classData.grades[k];
-    }
-
-    return null;
-}
-function getSubjectWeight(sub, isPrimaryLevel) {
-    return isPrimaryLevel ? (sub.max ?? 20) : (sub.coef ?? 1);
-}
-
-function normalizePrimaryScore(score, max) {
-    if (score === null || max <= 0) return null;
-    return (score / max) * 20;
-}
-
-function parseMaybeNumber(value) {
-    if (value === null || value === undefined || value === '') return null;
-    const num = parseFloat(value);
-    return Number.isFinite(num) ? num : null;
-}
-
-function getStoredSemesterAverage(classData, student, semester) {
-    const keys = [
-        `semester${semester}Avg`,
-        `sem${semester}`,
-        `semestre${semester}`,
-        `moyenneS${semester}`,
-        `moyenne_sem${semester}`,
-        `moyenne_${semester}`,
-        `moyenneSem${semester}`,
-        `previousSemesterAvg`,
-        `avgSemester${semester}`
-    ];
-
-    for (const key of keys) {
-        if (student && student[key] !== undefined) {
-            const value = parseMaybeNumber(student[key]);
-            if (value !== null) return value;
-        }
-    }
-
-    if (classData?.semesterAverages?.[semester]?.[student.id] !== undefined) {
-        return parseMaybeNumber(classData.semesterAverages[semester][student.id]);
-    }
-    if (classData?.semester_averages?.[semester]?.[student.id] !== undefined) {
-        return parseMaybeNumber(classData.semester_averages[semester][student.id]);
-    }
-    if (classData?.semesters?.[semester]?.[student.id] !== undefined) {
-        return parseMaybeNumber(classData.semesters[semester][student.id]);
-    }
-
-    return null;
-}
-       window.onload = function() {
-    try {
-        const params = new URLSearchParams(window.location.search);
-        const classId = params.get('class');
-        const studentId = params.get('student');
-
-        if (!classId || !studentId) throw "Identifiants manquants dans l'URL.";
-
-        const rawData = localStorage.getItem('gestnotes_data');
-        if (!rawData) throw "LocalStorage ('gestnotes_data') introuvable.";
-
-        let appState = JSON.parse(rawData);
-        const classData = appState.classes ? appState.classes[classId] : null;
-        if (!classData) throw `La classe "${classId}" n'existe pas.`;
-
-        const student = classData.students ? classData.students.find(s => s.id === studentId) : null;
-        if (!student) throw "L'élève demandé n'existe pas.";
-
-        document.getElementById('bulletin-content').style.display = 'block';
-
-        const isPrimaryLevel = isPrimary(classId);
-
-        if (isPrimaryLevel) {
-            document.getElementById('th-discipline').textContent = "DOMAINES D'APPRENTISSAGE";
-            document.getElementById('th-note-group').textContent = "Notes";
-            document.getElementById('th-n1').textContent = "N1";
-            document.getElementById('th-n2').textContent = "N2";
-            document.getElementById('th-final').textContent = "Év.";
-            document.getElementById('lbl-obs-conseil').textContent = "Observations de l'Enseignant";
-            document.getElementById('th-coef').textContent = 'Max';
-            document.getElementById('lbl-semester').textContent = appState.settings?.semester + (appState.settings?.semester == '1' ? 'er Trimestre' : 'ème Trimestre');
-        } else {
-            document.getElementById('lbl-semester').textContent = (appState.settings?.semester == '1' ? '1er Semestre' : '2ème Semestre');
+            for (const k of candidates) {
+                if (classData.grades[k] !== undefined) return classData.grades[k];
+            }
+            return null;
         }
 
-        document.getElementById('lbl-year').textContent = appState.settings?.year || '-';
-        document.getElementById('lbl-firstname').textContent = student.firstName || '';
-        document.getElementById('lbl-lastname').textContent = student.lastName || '';
-        document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
-        document.getElementById('lbl-birth').textContent = student.birthDate || '-';
-        document.getElementById('lbl-matricule').textContent = student.matricule || '-';
-        document.getElementById('lbl-effectif').textContent = classData.students.length;
-        document.getElementById('lbl-abs').textContent = student.absences || '0';
-        document.getElementById('lbl-ret').textContent = student.retards || '0';
+        function getSubjectWeight(sub, isPrimaryLevel) {
+            return isPrimaryLevel ? (sub.max ?? 20) : (sub.coef ?? 1);
+        }
 
-        const allAverages = classData.students.map(st => {
-            let totalP = 0, totalC = 0;
-            classData.subjects.forEach(sub => {
-                const maxValue = getSubjectWeight(sub, isPrimaryLevel);
+        function normalizePrimaryScore(score, max) {
+            if (score === null || max <= 0) return null;
+            return (score / max) * 20;
+        }
 
-                const d1Raw = readGrade(classData, st.id, sub.id, 'd1');
-                const d2Raw = readGrade(classData, st.id, sub.id, 'd2');
-                const compRaw = readGrade(classData, st.id, sub.id, 'compo');
+        function parseMaybeNumber(value) {
+            if (value === null || value === undefined || value === '') return null;
+            const num = parseFloat(value);
+            return Number.isFinite(num) ? num : null;
+        }
 
-                let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
-                let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
-                let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
+        function getStoredSemesterAverage(classData, student, semester) {
+            if (classData?.semesterAverages?.[semester]?.[student.id] !== undefined) {
+                return parseMaybeNumber(classData.semesterAverages[semester][student.id]);
+            }
+            return null;
+        }
 
-                let rawScore = null;
-                if (compo !== null) {
-                    rawScore = compo;
-                } else if (d1 !== null || d2 !== null) {
-                    let sum = 0, count = 0;
-                    if (d1 !== null) { sum += d1; count++; }
-                    if (d2 !== null) { sum += d2; count++; }
-                    rawScore = sum / count;
+        window.onload = function() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const classId = params.get('class');
+                const studentId = params.get('student');
+
+                if (!classId || !studentId) throw "Identifiants manquants dans l'URL.";
+
+                const rawData = localStorage.getItem('gestnotes_data');
+                if (!rawData) throw "LocalStorage ('gestnotes_data') introuvable.";
+
+                let appState = JSON.parse(rawData);
+                const classData = appState.classes ? appState.classes[classId] : null;
+                if (!classData) throw `La classe "${classId}" n'existe pas.`;
+
+                const student = classData.students ? classData.students.find(s => s.id === studentId) : null;
+                if (!student) throw "L'élève demandé n'existe pas.";
+
+                document.getElementById('bulletin-content').style.display = 'block';
+
+                const isPrimaryLevel = isPrimary(classId);
+                const currentSemesterNum = appState.settings?.semester || '1';
+
+                if (isPrimaryLevel) {
+                    document.getElementById('th-discipline').textContent = "DOMAINES D'APPRENTISSAGE";
+                    document.getElementById('th-note-group').textContent = "Notes";
+                    document.getElementById('th-n1').textContent = "N1";
+                    document.getElementById('th-n2').textContent = "N2";
+                    document.getElementById('th-final').textContent = "Év.";
+                    document.getElementById('lbl-obs-conseil').textContent = "Observations de l'Enseignant";
+                    document.getElementById('th-coef').textContent = 'Max';
+                    document.getElementById('lbl-semester').textContent = currentSemesterNum + (currentSemesterNum == '1' ? 'er Trimestre' : 'ème Trimestre');
+                } else {
+                    document.getElementById('lbl-semester').textContent = (currentSemesterNum == '1' ? '1er Semestre' : '2ème Semestre');
                 }
 
-                let subjectAvg = null;
-                if (rawScore !== null) {
-                    subjectAvg = isPrimaryLevel ? normalizePrimaryScore(rawScore, maxValue) : rawScore;
+                const isCurrentSem2 = parseInt(currentSemesterNum) === 2;
+                if (isCurrentSem2) {
+                    document.getElementById('th-semester1').textContent = '1er Semestre';
+                    document.getElementById('th-semester2').textContent = '2ème Semestre (Actuel)';
+                } else {
+                    document.getElementById('th-semester1').textContent = '1er Semestre (Actuel)';
+                    document.getElementById('th-semester2').textContent = '2ème Semestre';
                 }
 
-                if (subjectAvg !== null) {
-                    totalP += subjectAvg * maxValue;
-                    totalC += maxValue;
+                document.getElementById('lbl-year').textContent = appState.settings?.year || '-';
+                document.getElementById('lbl-firstname').textContent = student.firstName || '';
+                document.getElementById('lbl-lastname').textContent = student.lastName || '';
+                document.getElementById('lbl-class').textContent = classId.replace('_', ' ');
+                document.getElementById('lbl-birth').textContent = student.birthDate || '-';
+                document.getElementById('lbl-matricule').textContent = student.matricule || '-';
+                document.getElementById('lbl-effectif').textContent = classData.students.length;
+                document.getElementById('lbl-abs').textContent = student.absences || '0';
+                document.getElementById('lbl-ret').textContent = student.retards || '0';
+
+                // Calcul centralisé des moyennes calqué exactement sur GestNotes
+                const allAverages = classData.students.map(st => {
+                    let totalP = 0, totalC = 0;
+                    classData.subjects.forEach(sub => {
+                        const maxValue = getSubjectWeight(sub, isPrimaryLevel);
+
+                        const d1Raw = readGrade(classData, st.id, sub.id, 'd1', currentSemesterNum);
+                        const d2Raw = readGrade(classData, st.id, sub.id, 'd2', currentSemesterNum);
+                        const compRaw = readGrade(classData, st.id, sub.id, 'compo', currentSemesterNum);
+
+                        let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
+                        let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
+                        let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
+
+                        // BLOQUANT : Pas de compo = Pas de moyenne
+                        if (compo === null) return;
+
+                        const cD1 = sub.coefD1 !== undefined ? parseFloat(sub.coefD1) : 1;
+                        const cD2 = sub.coefD2 !== undefined ? parseFloat(sub.coefD2) : 1;
+                        const cC = sub.coefC !== undefined ? parseFloat(sub.coefC) : 2;
+
+                        let devSum = 0;
+                        let devCoefSum = 0;
+                        if (d1 !== null) { devSum += d1 * cD1; devCoefSum += cD1; }
+                        if (d2 !== null) { devSum += d2 * cD2; devCoefSum += cD2; }
+
+                        let rawScore = null;
+                        if (devCoefSum > 0) {
+                            rawScore = (devSum + compo * cC) / (devCoefSum + cC);
+                        } else {
+                            rawScore = compo;
+                        }
+
+                        let subjectAvg = null;
+                        if (rawScore !== null) {
+                            subjectAvg = isPrimaryLevel ? normalizePrimaryScore(rawScore, maxValue) : rawScore;
+                        }
+
+                        if (subjectAvg !== null) {
+                            totalP += subjectAvg * maxValue;
+                            totalC += maxValue;
+                        }
+                    });
+                    return { id: st.id, avg: totalC > 0 ? (totalP / totalC) : null };
+                });
+
+                const validAverages = allAverages.filter(x => x.avg !== null);
+                let classAverageSum = 0;
+                validAverages.forEach(x => { classAverageSum += x.avg; });
+                let classGlobalAverage = validAverages.length > 0 ? (classAverageSum / validAverages.length) : null;
+                document.getElementById('lbl-moy-classe').textContent = classGlobalAverage !== null ? classGlobalAverage.toFixed(2).replace('.', ',') : '-';
+
+                const sortedAverages = [...validAverages].sort((a, b) => b.avg - a.avg);
+                const targetIdx = sortedAverages.findIndex(x => x.id === studentId);
+                let genRank = '-';
+                if (targetIdx !== -1) {
+                    genRank = (targetIdx + 1) + (targetIdx === 0 ? "er" : "ème");
                 }
-            });
-            return { id: st.id, avg: totalC > 0 ? (totalP / totalC) : null };
-        });
 
-        const validAverages = allAverages.filter(x => x.avg !== null);
-        let classAverageSum = 0;
-        validAverages.forEach(x => { classAverageSum += x.avg; });
-        let classGlobalAverage = validAverages.length > 0 ? (classAverageSum / validAverages.length) : null;
-        document.getElementById('lbl-moy-classe').textContent = classGlobalAverage !== null ? classGlobalAverage.toFixed(2).replace('.', ',') : '-';
+                const previousSemesterAvg = (currentSemesterNum == '2')
+                    ? getStoredSemesterAverage(classData, student, 1)
+                    : null;
+                const currentStudentGenAvgObj = allAverages.find(x => x.id === studentId);
+                const currentStudentGenAvgValue = currentStudentGenAvgObj ? currentStudentGenAvgObj.avg : null;
 
-        const sortedAverages = [...validAverages].sort((a, b) => b.avg - a.avg);
-        const targetIdx = sortedAverages.findIndex(x => x.id === studentId);
-        let genRank = '-';
-        if (targetIdx !== -1) {
-            genRank = (targetIdx + 1) + (targetIdx === 0 ? "er" : "ème");
-        }
+                let sem1Display = '-', sem2Display = '-';
+                let overallAverage = null;
 
-        const previousSemesterAvg = (appState.settings?.semester == '2')
-            ? getStoredSemesterAverage(classData, student, 1)
-            : null;
-        const currentStudentGenAvgObj = allAverages.find(x => x.id === studentId);
-        const currentStudentGenAvgValue = currentStudentGenAvgObj ? currentStudentGenAvgObj.avg : null;
-        let overallAverage = null;
-        if (previousSemesterAvg !== null && currentStudentGenAvgValue !== null) {
-            overallAverage = (previousSemesterAvg + currentStudentGenAvgValue) / 2;
-        } else if (currentStudentGenAvgValue !== null) {
-            overallAverage = currentStudentGenAvgValue;
-        } else if (previousSemesterAvg !== null) {
-            overallAverage = previousSemesterAvg;
-        }
+                if (currentSemesterNum == '2') {
+                    sem1Display = previousSemesterAvg !== null ? previousSemesterAvg.toFixed(2).replace('.', ',') : '-';
+                    sem2Display = currentStudentGenAvgValue !== null ? currentStudentGenAvgValue.toFixed(2).replace('.', ',') : '-';
+                    if (previousSemesterAvg !== null && currentStudentGenAvgValue !== null) {
+                        overallAverage = (previousSemesterAvg + currentStudentGenAvgValue) / 2;
+                    } else if (currentStudentGenAvgValue !== null) {
+                        overallAverage = currentStudentGenAvgValue;
+                    }
+                } else {
+                    sem1Display = currentStudentGenAvgValue !== null ? currentStudentGenAvgValue.toFixed(2).replace('.', ',') : '-';
+                    overallAverage = currentStudentGenAvgValue;
+                }
 
-        document.getElementById('lbl-prev-semester').textContent = previousSemesterAvg !== null ? previousSemesterAvg.toFixed(2).replace('.', ',') : '-';
-        document.getElementById('lbl-current-semester').textContent = currentStudentGenAvgValue !== null ? currentStudentGenAvgValue.toFixed(2).replace('.', ',') : '-';
-        document.getElementById('lbl-moy-gen-overall').textContent = overallAverage !== null ? overallAverage.toFixed(2).replace('.', ',') : '-';
-        document.getElementById('lbl-rank-overall').textContent = genRank;
-        document.getElementById('lbl-moy-classe-overall').textContent = classGlobalAverage !== null ? classGlobalAverage.toFixed(2).replace('.', ',') : '-';
+                document.getElementById('lbl-prev-semester').textContent = sem1Display;
+                document.getElementById('lbl-current-semester').textContent = sem2Display;
+                document.getElementById('lbl-moy-gen-overall').textContent = overallAverage !== null ? overallAverage.toFixed(2).replace('.', ',') : '-';
+                document.getElementById('lbl-rank-overall').textContent = genRank;
+                document.getElementById('lbl-moy-classe-overall').textContent = classGlobalAverage !== null ? classGlobalAverage.toFixed(2).replace('.', ',') : '-';
 
-        const tbody = document.getElementById('grades-body');
-        tbody.innerHTML = '';
-        let totalCoef = 0, totalPoints = 0, currentStudentGenAvg = null;
-        const targetStudentAvgObj = allAverages.find(x => x.id === studentId);
-        if (targetStudentAvgObj) currentStudentGenAvg = targetStudentAvgObj.avg;
+                const tbody = document.getElementById('grades-body');
+                tbody.innerHTML = '';
+                let totalCoef = 0, totalPoints = 0, currentStudentGenAvg = null;
+                const targetStudentAvgObj = allAverages.find(x => x.id === studentId);
+                if (targetStudentAvgObj) currentStudentGenAvg = targetStudentAvgObj.avg;
 
-        classData.subjects.forEach(sub => {
-            const maxValue = getSubjectWeight(sub, isPrimaryLevel);
+                classData.subjects.forEach(sub => {
+                    const maxValue = getSubjectWeight(sub, isPrimaryLevel);
 
-            const d1Raw = readGrade(classData, student.id, sub.id, 'd1');
-            const d2Raw = readGrade(classData, student.id, sub.id, 'd2');
-            const compRaw = readGrade(classData, student.id, sub.id, 'compo');
+                    const d1Raw = readGrade(classData, student.id, sub.id, 'd1', currentSemesterNum);
+                    const d2Raw = readGrade(classData, student.id, sub.id, 'd2', currentSemesterNum);
+                    const compRaw = readGrade(classData, student.id, sub.id, 'compo', currentSemesterNum);
 
-            let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
-            let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
-            let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
+                    let d1 = (d1Raw !== undefined && d1Raw !== '') ? parseFloat(d1Raw) : null;
+                    let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
+                    let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
 
-            let rawScore = null;
-            if (compo !== null) {
-                rawScore = compo;
-            } else if (d1 !== null || d2 !== null) {
-                let sum = 0, count = 0;
-                if (d1 !== null) { sum += d1; count++; }
-                if (d2 !== null) { sum += d2; count++; }
-                rawScore = sum / count;
+                    let rawScore = null;
+                    
+                    if (compo !== null) {
+                        const cD1 = sub.coefD1 !== undefined ? parseFloat(sub.coefD1) : 1;
+                        const cD2 = sub.coefD2 !== undefined ? parseFloat(sub.coefD2) : 1;
+                        const cC = sub.coefC !== undefined ? parseFloat(sub.coefC) : 2;
+
+                        let devSum = 0;
+                        let devCoefSum = 0;
+                        if (d1 !== null) { devSum += d1 * cD1; devCoefSum += cD1; }
+                        if (d2 !== null) { devSum += d2 * cD2; devCoefSum += cD2; }
+
+                        if (devCoefSum > 0) {
+                            rawScore = (devSum + compo * cC) / (devCoefSum + cC);
+                        } else {
+                            rawScore = compo;
+                        }
+                    }
+
+                    let subjectAvg = null;
+                    if (rawScore !== null) {
+                        subjectAvg = isPrimaryLevel ? normalizePrimaryScore(rawScore, maxValue) : rawScore;
+                    }
+
+                    let mxcStr = '', sAvgStr = '';
+                    if (subjectAvg !== null) {
+                        sAvgStr = subjectAvg.toFixed(2).replace('.', ',');
+                        let mxc = subjectAvg * maxValue;
+                        mxcStr = mxc.toFixed(2).replace('.', ',');
+                        totalCoef += maxValue;
+                        totalPoints += mxc;
+                    }
+
+                    // Calcul du rang par matière
+                    let subRank = '-';
+                    let subStudentsAvgs = classData.students.map(s => {
+                        const sd1 = readGrade(classData, s.id, sub.id, 'd1', currentSemesterNum);
+                        const sd2 = readGrade(classData, s.id, sub.id, 'd2', currentSemesterNum);
+                        const scom = readGrade(classData, s.id, sub.id, 'compo', currentSemesterNum);
+                        
+                        let v1 = (sd1 !== undefined && sd1 !== '') ? parseFloat(sd1) : null;
+                        let v2 = (sd2 !== undefined && sd2 !== '') ? parseFloat(sd2) : null;
+                        let vc = (scom !== undefined && scom !== '') ? parseFloat(scom) : null;
+
+                        let rawValue = null;
+                        if (vc !== null) {
+                            const scD1 = sub.coefD1 !== undefined ? parseFloat(sub.coefD1) : 1;
+                            const scD2 = sub.coefD2 !== undefined ? parseFloat(sub.coefD2) : 1;
+                            const scC = sub.coefC !== undefined ? parseFloat(sub.coefC) : 2;
+                            let sDevSum = 0, sDevCoefSum = 0;
+                            
+                            if (v1 !== null) { sDevSum += v1 * scD1; sDevCoefSum += scD1; }
+                            if (v2 !== null) { sDevSum += v2 * scD2; sDevCoefSum += scD2; }
+                            
+                            if (sDevCoefSum > 0) rawValue = (sDevSum + vc * scC) / (sDevCoefSum + scC);
+                            else rawValue = vc;
+                        }
+
+                        if (rawValue === null) return { id: s.id, v: null };
+                        const studentAvg = isPrimaryLevel ? normalizePrimaryScore(rawValue, maxValue) : rawValue;
+                        return { id: s.id, v: studentAvg };
+                    }).filter(x => x.v !== null).sort((a,b) => b.v - a.v);
+
+                    let subRankIdx = subStudentsAvgs.findIndex(x => x.id === studentId);
+                    if (subRankIdx !== -1) subRank = (subRankIdx + 1);
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="col-discipline">${sub.name}</td>
+                        <td>${d1 !== null ? d1 : '-'}</td>
+                        <td>${d2 !== null ? d2 : '-'}</td>
+                        <td><strong>${compo !== null ? compo : '-'}</strong></td>
+                        <td><strong>${sAvgStr || '-'}</strong></td>
+                        <td>${maxValue}</td>
+                        <td><strong>${mxcStr || '-'}</strong></td>
+                        <td>${subRank}</td>
+                        <td>${getAppreciation(subjectAvg)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('lbl-tot-coef').textContent = totalCoef || '0';
+                document.getElementById('lbl-tot-pts').textContent = totalPoints ? totalPoints.toFixed(2).replace('.', ',') : '0';
+                document.getElementById('lbl-moy-gen').textContent = currentStudentGenAvg !== null ? currentStudentGenAvg.toFixed(2).replace('.', ',') : '-';
+                document.getElementById('lbl-rank').textContent = genRank;
+
+                if (currentStudentGenAvg !== null) {
+                    if (currentStudentGenAvg >= 12) {
+                        document.getElementById('chk-satisfaisant').textContent = 'X';
+                        if (currentStudentGenAvg >= 14) document.getElementById('chk-felicitations').textContent = 'X';
+                        else if (currentStudentGenAvg >= 13) document.getElementById('chk-encouragement').textContent = 'X';
+                        else document.getElementById('chk-tableau-honneur').textContent = 'X';
+                    } else if (currentStudentGenAvg >= 10) { document.getElementById('chk-peut-mieux').textContent = 'X'; }
+                    else if (currentStudentGenAvg >= 8) { document.getElementById('chk-insuffisant').textContent = 'X'; }
+                    else if (currentStudentGenAvg >= 5) { document.getElementById('chk-risque-redoubler').textContent = 'X'; }
+                    else { document.getElementById('chk-risque-exclusion').textContent = 'X'; }
+                }
+            } catch (err) {
+                document.getElementById('error-container').style.display = 'block';
+                document.getElementById('error-text').textContent = "Détail : " + err;
+                document.getElementById('setup-panel').style.display = 'none';
+                document.getElementById('bulletin-content').style.display = 'none';
             }
-
-            let subjectAvg = null;
-            if (rawScore !== null) {
-                subjectAvg = isPrimaryLevel ? normalizePrimaryScore(rawScore, maxValue) : rawScore;
-            }
-
-            let mxcStr = '', sAvgStr = '';
-            if (subjectAvg !== null) {
-                sAvgStr = subjectAvg.toFixed(2).replace('.', ',');
-                let mxc = subjectAvg * maxValue;
-                mxcStr = mxc.toFixed(2).replace('.', ',');
-                totalCoef += maxValue;
-                totalPoints += mxc;
-            }
-
-            let subRank = '-';
-            let subStudentsAvgs = classData.students.map(s => {
-                const sd1 = readGrade(classData, s.id, sub.id, 'd1');
-                const sd2 = readGrade(classData, s.id, sub.id, 'd2');
-                const scom = readGrade(classData, s.id, sub.id, 'compo');
-                let v1 = (sd1 !== undefined && sd1 !== '') ? parseFloat(sd1) : null;
-                let v2 = (sd2 !== undefined && sd2 !== '') ? parseFloat(sd2) : null;
-                let vc = (scom !== undefined && scom !== '') ? parseFloat(scom) : null;
-
-                let rawValue = null;
-                if (vc !== null) rawValue = vc;
-                else if (v1 !== null || v2 !== null) rawValue = ((v1 || 0) + (v2 || 0)) / ((v1 !== null ? 1 : 0) + (v2 !== null ? 1 : 0));
-
-                if (rawValue === null) return { id: s.id, v: null };
-                const studentAvg = isPrimaryLevel ? normalizePrimaryScore(rawValue, maxValue) : rawValue;
-                return { id: s.id, v: studentAvg };
-            }).filter(x => x.v !== null).sort((a,b) => b.v - a.v);
-
-            let subRankIdx = subStudentsAvgs.findIndex(x => x.id === studentId);
-            if (subRankIdx !== -1) subRank = (subRankIdx + 1);
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="col-discipline">${sub.name}</td>
-                <td>${d1 !== null ? d1 : '-'}</td>
-                <td>${d2 !== null ? d2 : '-'}</td>
-                <td><strong>${compo !== null ? compo : '-'}</strong></td>
-                <td><strong>${sAvgStr || '-'}</strong></td>
-                <td>${maxValue}</td>
-                <td><strong>${mxcStr || '-'}</strong></td>
-                <td>${subRank}</td>
-                <td>${getAppreciation(subjectAvg)}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        document.getElementById('lbl-tot-coef').textContent = totalCoef || '0';
-        document.getElementById('lbl-tot-pts').textContent = totalPoints ? totalPoints.toFixed(2).replace('.', ',') : '0';
-        document.getElementById('lbl-moy-gen').textContent = currentStudentGenAvg !== null ? currentStudentGenAvg.toFixed(2).replace('.', ',') : '-';
-        document.getElementById('lbl-rank').textContent = genRank;
-
-        if (currentStudentGenAvg !== null) {
-            if (currentStudentGenAvg >= 12) {
-                document.getElementById('chk-satisfaisant').textContent = 'X';
-                if (currentStudentGenAvg >= 14) document.getElementById('chk-felicitations').textContent = 'X';
-                else if (currentStudentGenAvg >= 13) document.getElementById('chk-encouragement').textContent = 'X';
-                else document.getElementById('chk-tableau-honneur').textContent = 'X';
-            } else if (currentStudentGenAvg >= 10) { document.getElementById('chk-peut-mieux').textContent = 'X'; }
-            else if (currentStudentGenAvg >= 8) { document.getElementById('chk-insuffisant').textContent = 'X'; }
-            else if (currentStudentGenAvg >= 5) { document.getElementById('chk-risque-redoubler').textContent = 'X'; }
-            else { document.getElementById('chk-risque-exclusion').textContent = 'X'; }
-        }
-    } catch (err) {
-        document.getElementById('error-container').style.display = 'block';
-        document.getElementById('error-text').textContent = "Détail : " + err;
-        document.getElementById('setup-panel').style.display = 'none';
-        document.getElementById('bulletin-content').style.display = 'none';
-    }
-};
+        };
     </script>
 </body>
 </html>
