@@ -185,6 +185,12 @@
         .total-row td { font-weight: bold; background-color: #f8fafc; }
         .summary-row td { font-weight: bold; font-size: 13px; background-color: #e2e8f0; color: #0f172a; }
 
+        .semester-summary { margin-bottom: 18px; }
+        table.summary-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px; }
+        table.summary-table th, table.summary-table td { border: 1px solid #0f172a; padding: 8px 10px; text-align: center; }
+        table.summary-table th { background-color: #eef2ff; font-weight: 700; }
+        table.summary-table td { background-color: #ffffff; }
+
         .footer-sections { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 15px; }
         .decision-table, .sanction-table { border-collapse: collapse; width: 320px; font-size: 12px; }
         .decision-table td, .sanction-table td { border: 1px solid #0f172a; padding: 4px 8px; }
@@ -275,6 +281,29 @@
                 <div><span class="field">Classe / Série :</span> <strong><span id="lbl-class"></span></strong></div>
                 <div><span class="field">Effectif Classe :</span> <strong id="lbl-effectif"></strong> &nbsp;&nbsp;&nbsp;&nbsp; Redoublant : <strong id="lbl-redouble">Non</strong></div>
             </div>
+        </div>
+
+        <div class="semester-summary">
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>1er Semestre</th>
+                        <th>2ème Semestre</th>
+                        <th>Moyenne Générale</th>
+                        <th>Rang</th>
+                        <th>Moyenne de la classe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="lbl-prev-semester">-</td>
+                        <td id="lbl-current-semester">-</td>
+                        <td id="lbl-moy-gen-overall">-</td>
+                        <td id="lbl-rank-overall">-</td>
+                        <td id="lbl-moy-classe-overall">-</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <table class="grades-table">
@@ -443,6 +472,45 @@ function normalizePrimaryScore(score, max) {
     if (score === null || max <= 0) return null;
     return (score / max) * 20;
 }
+
+function parseMaybeNumber(value) {
+    if (value === null || value === undefined || value === '') return null;
+    const num = parseFloat(value);
+    return Number.isFinite(num) ? num : null;
+}
+
+function getStoredSemesterAverage(classData, student, semester) {
+    const keys = [
+        `semester${semester}Avg`,
+        `sem${semester}`,
+        `semestre${semester}`,
+        `moyenneS${semester}`,
+        `moyenne_sem${semester}`,
+        `moyenne_${semester}`,
+        `moyenneSem${semester}`,
+        `previousSemesterAvg`,
+        `avgSemester${semester}`
+    ];
+
+    for (const key of keys) {
+        if (student && student[key] !== undefined) {
+            const value = parseMaybeNumber(student[key]);
+            if (value !== null) return value;
+        }
+    }
+
+    if (classData?.semesterAverages?.[semester]?.[student.id] !== undefined) {
+        return parseMaybeNumber(classData.semesterAverages[semester][student.id]);
+    }
+    if (classData?.semester_averages?.[semester]?.[student.id] !== undefined) {
+        return parseMaybeNumber(classData.semester_averages[semester][student.id]);
+    }
+    if (classData?.semesters?.[semester]?.[student.id] !== undefined) {
+        return parseMaybeNumber(classData.semesters[semester][student.id]);
+    }
+
+    return null;
+}
        window.onload = function() {
     try {
         const params = new URLSearchParams(window.location.search);
@@ -536,6 +604,26 @@ function normalizePrimaryScore(score, max) {
         if (targetIdx !== -1) {
             genRank = (targetIdx + 1) + (targetIdx === 0 ? "er" : "ème");
         }
+
+        const previousSemesterAvg = (appState.settings?.semester == '2')
+            ? getStoredSemesterAverage(classData, student, 1)
+            : null;
+        const currentStudentGenAvgObj = allAverages.find(x => x.id === studentId);
+        const currentStudentGenAvgValue = currentStudentGenAvgObj ? currentStudentGenAvgObj.avg : null;
+        let overallAverage = null;
+        if (previousSemesterAvg !== null && currentStudentGenAvgValue !== null) {
+            overallAverage = (previousSemesterAvg + currentStudentGenAvgValue) / 2;
+        } else if (currentStudentGenAvgValue !== null) {
+            overallAverage = currentStudentGenAvgValue;
+        } else if (previousSemesterAvg !== null) {
+            overallAverage = previousSemesterAvg;
+        }
+
+        document.getElementById('lbl-prev-semester').textContent = previousSemesterAvg !== null ? previousSemesterAvg.toFixed(2).replace('.', ',') : '-';
+        document.getElementById('lbl-current-semester').textContent = currentStudentGenAvgValue !== null ? currentStudentGenAvgValue.toFixed(2).replace('.', ',') : '-';
+        document.getElementById('lbl-moy-gen-overall').textContent = overallAverage !== null ? overallAverage.toFixed(2).replace('.', ',') : '-';
+        document.getElementById('lbl-rank-overall').textContent = genRank;
+        document.getElementById('lbl-moy-classe-overall').textContent = classGlobalAverage !== null ? classGlobalAverage.toFixed(2).replace('.', ',') : '-';
 
         const tbody = document.getElementById('grades-body');
         tbody.innerHTML = '';
