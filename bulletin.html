@@ -186,8 +186,8 @@
         .summary-row td { font-weight: bold; font-size: 13px; background-color: #e2e8f0; color: #0f172a; }
 
         .semester-summary { margin-bottom: 18px; }
-        table.summary-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px; }
-        table.summary-table th, table.summary-table td { border: 1px solid #0f172a; padding: 8px 10px; text-align: center; }
+        table.summary-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 12px; }
+        table.summary-table th, table.summary-table td { border: 1px solid #0f172a; padding: 6px 8px; text-align: center; }
         table.summary-table th { background-color: #eef2ff; font-weight: 700; }
         table.summary-table td { background-color: #ffffff; }
 
@@ -283,24 +283,32 @@
             </div>
         </div>
 
-        <div class="semester-summary">
+        <div class="semester-summary" id="semester-summary-box" style="display: none;">
             <table class="summary-table">
                 <thead>
                     <tr>
-                        <th id="th-semester1">1er Semestre</th>
-                        <th id="th-semester2">2ème Semestre</th>
-                        <th>Moyenne Générale</th>
+                        <th colspan="2">1er Semestre</th>
+                        <th colspan="2">2ème Semestre</th>
+                        <th rowspan="2">Moyenne</th>
+                        <th rowspan="2">Rang Annuel</th>
+                        <th rowspan="2">Moy. Classe</th>
+                    </tr>
+                    <tr>
+                        <th>Moy.</th>
                         <th>Rang</th>
-                        <th>Moyenne de la classe</th>
+                        <th>Moy.</th>
+                        <th>Rang</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td id="lbl-prev-semester">-</td>
-                        <td id="lbl-current-semester">-</td>
-                        <td id="lbl-moy-gen-overall">-</td>
-                        <td id="lbl-rank-overall">-</td>
-                        <td id="lbl-moy-classe-overall">-</td>
+                        <td id="lbl-prev-sem-moy">-</td>
+                        <td id="lbl-prev-sem-rank">-</td>
+                        <td id="lbl-cur-sem-moy">-</td>
+                        <td id="lbl-cur-sem-rank">-</td>
+                        <td id="lbl-moy-annuelle"><strong>-</strong></td>
+                        <td id="lbl-rank-annuel"><strong>-</strong></td>
+                        <td id="lbl-moy-classe-annuelle">-</td>
                     </tr>
                 </tbody>
             </table>
@@ -437,7 +445,6 @@
             return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className.split('_')[0]);
         }
 
-        // Lecture des notes synchronisée avec GestNotes (intégration du semestre)
         function readGrade(classData, studentId, subjectId, field, semester) {
             if (!classData || !classData.grades) return null;
             
@@ -445,7 +452,7 @@
                 `${studentId}_${subjectId}_${field}_sem${semester}`,
                 `${studentId}_${subjectId}_${field === 'compo' ? 'compo' : field}_sem${semester}`,
                 `${studentId}_${subjectId}_${field === 'compo' ? 'c' : field}_sem${semester}`,
-                `${studentId}_${subjectId}_${field}`, // rétrocompatibilité
+                `${studentId}_${subjectId}_${field}`, 
                 `${studentId}_${subjectId}_c`
             ];
 
@@ -498,7 +505,7 @@
                 document.getElementById('bulletin-content').style.display = 'block';
 
                 const isPrimaryLevel = isPrimary(classId);
-                const currentSemesterNum = appState.settings?.semester || '1';
+                const currentSemesterNum = parseInt(appState.settings?.semester) || 1;
 
                 if (isPrimaryLevel) {
                     document.getElementById('th-discipline').textContent = "DOMAINES D'APPRENTISSAGE";
@@ -508,18 +515,9 @@
                     document.getElementById('th-final').textContent = "Év.";
                     document.getElementById('lbl-obs-conseil').textContent = "Observations de l'Enseignant";
                     document.getElementById('th-coef').textContent = 'Max';
-                    document.getElementById('lbl-semester').textContent = currentSemesterNum + (currentSemesterNum == '1' ? 'er Trimestre' : 'ème Trimestre');
+                    document.getElementById('lbl-semester').textContent = currentSemesterNum + (currentSemesterNum == 1 ? 'er Trimestre' : 'ème Trimestre');
                 } else {
-                    document.getElementById('lbl-semester').textContent = (currentSemesterNum == '1' ? '1er Semestre' : '2ème Semestre');
-                }
-
-                const isCurrentSem2 = parseInt(currentSemesterNum) === 2;
-                if (isCurrentSem2) {
-                    document.getElementById('th-semester1').textContent = '1er Semestre';
-                    document.getElementById('th-semester2').textContent = '2ème Semestre (Actuel)';
-                } else {
-                    document.getElementById('th-semester1').textContent = '1er Semestre (Actuel)';
-                    document.getElementById('th-semester2').textContent = '2ème Semestre';
+                    document.getElementById('lbl-semester').textContent = (currentSemesterNum == 1 ? '1er Semestre' : '2ème Semestre');
                 }
 
                 document.getElementById('lbl-year').textContent = appState.settings?.year || '-';
@@ -532,7 +530,7 @@
                 document.getElementById('lbl-abs').textContent = student.absences || '0';
                 document.getElementById('lbl-ret').textContent = student.retards || '0';
 
-                // Calcul centralisé des moyennes calqué exactement sur GestNotes
+                // --- 1. Calcul des moyennes du semestre courant (Semestre sélectionné dans GestNotes) ---
                 const allAverages = classData.students.map(st => {
                     let totalP = 0, totalC = 0;
                     classData.subjects.forEach(sub => {
@@ -546,8 +544,7 @@
                         let d2 = (d2Raw !== undefined && d2Raw !== '') ? parseFloat(d2Raw) : null;
                         let compo = (compRaw !== undefined && compRaw !== '') ? parseFloat(compRaw) : null;
 
-                        // BLOQUANT : Pas de compo = Pas de moyenne
-                        if (compo === null) return;
+                        if (compo === null) return; // BLOQUANT: Pas de compo = pas de moyenne pour la matière
 
                         const cD1 = sub.coefD1 !== undefined ? parseFloat(sub.coefD1) : 1;
                         const cD2 = sub.coefD2 !== undefined ? parseFloat(sub.coefD2) : 1;
@@ -590,40 +587,74 @@
                 if (targetIdx !== -1) {
                     genRank = (targetIdx + 1) + (targetIdx === 0 ? "er" : "ème");
                 }
-
-                const previousSemesterAvg = (currentSemesterNum == '2')
-                    ? getStoredSemesterAverage(classData, student, 1)
-                    : null;
+                
                 const currentStudentGenAvgObj = allAverages.find(x => x.id === studentId);
                 const currentStudentGenAvgValue = currentStudentGenAvgObj ? currentStudentGenAvgObj.avg : null;
 
-                let sem1Display = '-', sem2Display = '-';
-                let overallAverage = null;
+                // --- 2. Gestion du Tableau Récapitulatif Uniquement si on est au Semestre 2 ---
+                if (currentSemesterNum === 2) {
+                    document.getElementById('semester-summary-box').style.display = 'block';
 
-                if (currentSemesterNum == '2') {
-                    sem1Display = previousSemesterAvg !== null ? previousSemesterAvg.toFixed(2).replace('.', ',') : '-';
-                    sem2Display = currentStudentGenAvgValue !== null ? currentStudentGenAvgValue.toFixed(2).replace('.', ',') : '-';
-                    if (previousSemesterAvg !== null && currentStudentGenAvgValue !== null) {
-                        overallAverage = (previousSemesterAvg + currentStudentGenAvgValue) / 2;
-                    } else if (currentStudentGenAvgValue !== null) {
-                        overallAverage = currentStudentGenAvgValue;
-                    }
+                    // Récupération des données du Semestre 1 pour calculer le rang
+                    let sem1Avgs = [];
+                    classData.students.forEach(s => {
+                        let s1Moy = getStoredSemesterAverage(classData, s, 1);
+                        if (s1Moy !== null) sem1Avgs.push({ id: s.id, avg: s1Moy });
+                    });
+                    sem1Avgs.sort((a, b) => b.avg - a.avg);
+                    let mySem1Obj = sem1Avgs.find(x => x.id === studentId);
+                    let sem1Moy = mySem1Obj ? mySem1Obj.avg : null;
+                    let sem1RankIdx = sem1Avgs.findIndex(x => x.id === studentId);
+                    let sem1Rank = sem1RankIdx !== -1 ? (sem1RankIdx + 1) + (sem1RankIdx === 0 ? "er" : "ème") : '-';
+
+                    // Le Semestre 2 correspond aux données courantes que l'on vient de calculer
+                    let sem2Moy = currentStudentGenAvgValue;
+                    let sem2Rank = genRank;
+
+                    // Calcul de la Moyenne Annuelle et Rang Annuel
+                    let annualAvgs = [];
+                    classData.students.forEach(s => {
+                        let s1 = getStoredSemesterAverage(classData, s, 1);
+                        let s2Obj = allAverages.find(x => x.id === s.id);
+                        let s2 = s2Obj ? s2Obj.avg : null;
+                        
+                        let ann = null;
+                        if (s1 !== null && s2 !== null) ann = (s1 + s2) / 2;
+                        else if (s2 !== null) ann = s2;
+                        else if (s1 !== null) ann = s1;
+                        
+                        if (ann !== null) annualAvgs.push({ id: s.id, avg: ann });
+                    });
+                    annualAvgs.sort((a, b) => b.avg - a.avg);
+                    let annRankIdx = annualAvgs.findIndex(x => x.id === studentId);
+                    let annRank = annRankIdx !== -1 ? (annRankIdx + 1) + (annRankIdx === 0 ? "er" : "ème") : '-';
+                    
+                    let classAnnSum = 0;
+                    annualAvgs.forEach(x => { classAnnSum += x.avg; });
+                    let classAnnAvg = annualAvgs.length > 0 ? (classAnnSum / annualAvgs.length) : null;
+                    
+                    let myAnnObj = annualAvgs.find(x => x.id === studentId);
+                    let myAnnMoy = myAnnObj ? myAnnObj.avg : null;
+
+                    // Affichage dans le tableau récapitulatif
+                    document.getElementById('lbl-prev-sem-moy').textContent = sem1Moy !== null ? sem1Moy.toFixed(2).replace('.', ',') : '-';
+                    document.getElementById('lbl-prev-sem-rank').textContent = sem1Rank;
+                    
+                    document.getElementById('lbl-cur-sem-moy').textContent = sem2Moy !== null ? sem2Moy.toFixed(2).replace('.', ',') : '-';
+                    document.getElementById('lbl-cur-sem-rank').textContent = sem2Rank;
+                    
+                    document.getElementById('lbl-moy-annuelle').innerHTML = myAnnMoy !== null ? `<strong>${myAnnMoy.toFixed(2).replace('.', ',')}</strong>` : '-';
+                    document.getElementById('lbl-rank-annuel').innerHTML = annRank !== '-' ? `<strong>${annRank}</strong>` : '-';
+                    document.getElementById('lbl-moy-classe-annuelle').textContent = classAnnAvg !== null ? classAnnAvg.toFixed(2).replace('.', ',') : '-';
                 } else {
-                    sem1Display = currentStudentGenAvgValue !== null ? currentStudentGenAvgValue.toFixed(2).replace('.', ',') : '-';
-                    overallAverage = currentStudentGenAvgValue;
+                    // Si on est au Semestre 1, on cache complètement le tableau récapitulatif
+                    document.getElementById('semester-summary-box').style.display = 'none';
                 }
 
-                document.getElementById('lbl-prev-semester').textContent = sem1Display;
-                document.getElementById('lbl-current-semester').textContent = sem2Display;
-                document.getElementById('lbl-moy-gen-overall').textContent = overallAverage !== null ? overallAverage.toFixed(2).replace('.', ',') : '-';
-                document.getElementById('lbl-rank-overall').textContent = genRank;
-                document.getElementById('lbl-moy-classe-overall').textContent = classGlobalAverage !== null ? classGlobalAverage.toFixed(2).replace('.', ',') : '-';
-
+                // --- 3. Construction du tableau des notes détaillées par matière ---
                 const tbody = document.getElementById('grades-body');
                 tbody.innerHTML = '';
-                let totalCoef = 0, totalPoints = 0, currentStudentGenAvg = null;
-                const targetStudentAvgObj = allAverages.find(x => x.id === studentId);
-                if (targetStudentAvgObj) currentStudentGenAvg = targetStudentAvgObj.avg;
+                let totalCoef = 0, totalPoints = 0;
 
                 classData.subjects.forEach(sub => {
                     const maxValue = getSubjectWeight(sub, isPrimaryLevel);
@@ -719,18 +750,18 @@
 
                 document.getElementById('lbl-tot-coef').textContent = totalCoef || '0';
                 document.getElementById('lbl-tot-pts').textContent = totalPoints ? totalPoints.toFixed(2).replace('.', ',') : '0';
-                document.getElementById('lbl-moy-gen').textContent = currentStudentGenAvg !== null ? currentStudentGenAvg.toFixed(2).replace('.', ',') : '-';
+                document.getElementById('lbl-moy-gen').textContent = currentStudentGenAvgValue !== null ? currentStudentGenAvgValue.toFixed(2).replace('.', ',') : '-';
                 document.getElementById('lbl-rank').textContent = genRank;
 
-                if (currentStudentGenAvg !== null) {
-                    if (currentStudentGenAvg >= 12) {
+                if (currentStudentGenAvgValue !== null) {
+                    if (currentStudentGenAvgValue >= 12) {
                         document.getElementById('chk-satisfaisant').textContent = 'X';
-                        if (currentStudentGenAvg >= 14) document.getElementById('chk-felicitations').textContent = 'X';
-                        else if (currentStudentGenAvg >= 13) document.getElementById('chk-encouragement').textContent = 'X';
+                        if (currentStudentGenAvgValue >= 14) document.getElementById('chk-felicitations').textContent = 'X';
+                        else if (currentStudentGenAvgValue >= 13) document.getElementById('chk-encouragement').textContent = 'X';
                         else document.getElementById('chk-tableau-honneur').textContent = 'X';
-                    } else if (currentStudentGenAvg >= 10) { document.getElementById('chk-peut-mieux').textContent = 'X'; }
-                    else if (currentStudentGenAvg >= 8) { document.getElementById('chk-insuffisant').textContent = 'X'; }
-                    else if (currentStudentGenAvg >= 5) { document.getElementById('chk-risque-redoubler').textContent = 'X'; }
+                    } else if (currentStudentGenAvgValue >= 10) { document.getElementById('chk-peut-mieux').textContent = 'X'; }
+                    else if (currentStudentGenAvgValue >= 8) { document.getElementById('chk-insuffisant').textContent = 'X'; }
+                    else if (currentStudentGenAvgValue >= 5) { document.getElementById('chk-risque-redoubler').textContent = 'X'; }
                     else { document.getElementById('chk-risque-exclusion').textContent = 'X'; }
                 }
             } catch (err) {
