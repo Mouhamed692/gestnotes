@@ -426,9 +426,9 @@
                 classData.subjects.forEach(sub => {
                     const maxValue = isPrimaryLvl ? (sub.max ?? 20) : (sub.coef ?? 1);
                     
-                    const d1 = classData.grades[`${student.id}_${sub.id}_d1`];
-                    const d2 = classData.grades[`${student.id}_${sub.id}_d2`];
-                    const c = classData.grades[`${student.id}_${sub.id}_c`] || classData.grades[`${student.id}_${sub.id}_compo`];
+                    const d1 = classData.grades[`${student.id}_${sub.id}_d1_sem${semester}`];
+                    const d2 = classData.grades[`${student.id}_${sub.id}_d2_sem${semester}`];
+                    const c = classData.grades[`${student.id}_${sub.id}_c_sem${semester}`] || classData.grades[`${student.id}_${sub.id}_compo_sem${semester}`];
 
                     let d1Val = (d1 !== undefined && d1 !== '') ? parseFloat(d1) : null;
                     let d2Val = (d2 !== undefined && d2 !== '') ? parseFloat(d2) : null;
@@ -631,15 +631,15 @@
             });
         }
 
-        function calculateAverages(student, subjects, grades) {
+        function calculateAverages(student, subjects, grades, semester) {
             let totalWeightedSum = 0;
             let totalCoefSum = 0;
             let completeData = true;
 
             subjects.forEach(sub => {
-                const d1 = parseFloat(grades[`${student.id}_${sub.id}_d1`]);
-                const d2 = parseFloat(grades[`${student.id}_${sub.id}_d2`]);
-                const compo = parseFloat(grades[`${student.id}_${sub.id}_c`]);
+                const d1 = parseFloat(grades[`${student.id}_${sub.id}_d1_sem${semester}`]);
+                const d2 = parseFloat(grades[`${student.id}_${sub.id}_d2_sem${semester}`]);
+                const compo = parseFloat(grades[`${student.id}_${sub.id}_c_sem${semester}`]);
 
                 let subMoy = null;
 
@@ -704,7 +704,7 @@
             els.gradesThead.innerHTML = thHtml;
 
             const studentRankings = students.map(st => {
-                const res = calculateAverages(st, subjects, grades);
+                const res = calculateAverages(st, subjects, grades, appState.settings.semester);
                 return { id: st.id, avg: res.genAvg };
             });
             studentRankings.sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
@@ -725,9 +725,9 @@
                 `;
 
                 subjects.forEach(sub => {
-                    const d1Key = `${st.id}_${sub.id}_d1`;
-                    const d2Key = `${st.id}_${sub.id}_d2`;
-                    const cKey = `${st.id}_${sub.id}_c`;
+                    const d1Key = `${st.id}_${sub.id}_d1_sem${appState.settings.semester}`;
+                    const d2Key = `${st.id}_${sub.id}_d2_sem${appState.settings.semester}`;
+                    const cKey = `${st.id}_${sub.id}_c_sem${appState.settings.semester}`;
 
                     const d1Val = grades[d1Key] !== undefined ? grades[d1Key] : '';
                     const d2Val = grades[d2Key] !== undefined ? grades[d2Key] : '';
@@ -786,20 +786,20 @@ document.querySelectorAll('.grade-input').forEach(input => {
         if (val === '') {
             // suppression clé primaire et variantes composition
             delete gradesObj[key];
-            if (key.endsWith('_c')) {
-                delete gradesObj[key.replace(/_c$/, '_compo')];
-            } else if (key.endsWith('_compo')) {
-                delete gradesObj[key.replace(/_compo$/, '_c')];
+            if (key.endsWith('_c_sem' + appState.settings.semester)) {
+                delete gradesObj[key.replace(/_c_sem/, '_compo_sem')];
+            } else if (key.endsWith('_compo_sem' + appState.settings.semester)) {
+                delete gradesObj[key.replace(/_compo_sem/, '_c_sem')];
             }
         } else {
             let num = parseFloat(val);
             if (!isNaN(num) && num >= 0 && num <= 20) {
                 gradesObj[key] = num;
                 // si champ composition, écrire aussi l'alias utilisé par bulletin
-                if (key.endsWith('_c')) {
-                    gradesObj[key.replace(/_c$/, '_compo')] = num;
-                } else if (key.endsWith('_compo')) {
-                    gradesObj[key.replace(/_compo$/, '_c')] = num;
+                if (key.endsWith('_c_sem' + appState.settings.semester)) {
+                    gradesObj[key.replace(/_c_sem/, '_compo_sem')] = num;
+                } else if (key.endsWith('_compo_sem' + appState.settings.semester)) {
+                    gradesObj[key.replace(/_compo_sem/, '_c_sem')] = num;
                 }
             } else {
                 showToast("La note doit être comprise entre 0 et 20", "error");
@@ -816,12 +816,12 @@ document.querySelectorAll('.grade-input').forEach(input => {
         const studentObj = students.find(s => s.id === studentId);
 
         const updatedRankings = students.map(st => {
-            const res = calculateAverages(st, subjects, appState.classes[currentFullKey].grades);
+            const res = calculateAverages(st, subjects, appState.classes[currentFullKey].grades, appState.settings.semester);
             return { id: st.id, avg: res.genAvg };
         });
         updatedRankings.sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
 
-        const currentComputed = calculateAverages(studentObj, subjects, appState.classes[currentFullKey].grades);
+        const currentComputed = calculateAverages(studentObj, subjects, appState.classes[currentFullKey].grades, appState.settings.semester);
         const avgTd = targetTr.querySelector('td:nth-last-child(2)');
 
         if (currentComputed.genAvg !== null) {
@@ -879,11 +879,11 @@ document.querySelectorAll('.grade-input').forEach(input => {
     showToast("Matière ajoutée au programme.");
 });
         window.deleteStudent = function (id) {
-            if (!confirm("Supprimer définitivement cet élève et l'ensemble de ses notes ?")) return;
+            if (!confirm("Supprimer définitivement cet élève et ses notes du semestre actuel ?")) return;
             appState.classes[currentFullKey].students = appState.classes[currentFullKey].students.filter(s => s.id !== id);
             
             Object.keys(appState.classes[currentFullKey].grades).forEach(k => {
-                if (k.startsWith(id + "_")) delete appState.classes[currentFullKey].grades[k];
+                if (k.startsWith(id + "_") && k.endsWith(`_sem${appState.settings.semester}`)) delete appState.classes[currentFullKey].grades[k];
             });
             saveState();
             render();
@@ -891,11 +891,11 @@ document.querySelectorAll('.grade-input').forEach(input => {
         };
 
         window.deleteSubject = function (id) {
-            if (!confirm("Retirer cette matière de la classe ? Ses notes associées disparaitront des calculs.")) return;
+            if (!confirm("Retirer cette matière de la classe ? Ses notes du semestre actuel disparaitront des calculs.")) return;
             appState.classes[currentFullKey].subjects = appState.classes[currentFullKey].subjects.filter(s => s.id !== id);
             
             Object.keys(appState.classes[currentFullKey].grades).forEach(k => {
-                if (k.includes("_" + id + "_")) delete appState.classes[currentFullKey].grades[k];
+                if (k.includes("_" + id + "_") && k.endsWith(`_sem${appState.settings.semester}`)) delete appState.classes[currentFullKey].grades[k];
             });
             saveState();
             render();
@@ -995,9 +995,9 @@ document.querySelectorAll('.grade-input').forEach(input => {
 csv += csvHeader;
 
             currentData.subjects.forEach(sub => {
-                const d1 = currentData.grades[`${student.id}_${sub.id}_d1`];
-                const d2 = currentData.grades[`${student.id}_${sub.id}_d2`];
-                const c = currentData.grades[`${student.id}_${sub.id}_c`];
+                const d1 = currentData.grades[`${student.id}_${sub.id}_d1_sem${appState.settings.semester}`];
+                const d2 = currentData.grades[`${student.id}_${sub.id}_d2_sem${appState.settings.semester}`];
+                const c = currentData.grades[`${student.id}_${sub.id}_c_sem${appState.settings.semester}`];
                 
                 let subMoy = null;
 
