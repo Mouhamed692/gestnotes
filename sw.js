@@ -3,7 +3,7 @@ const CACHE_NAME = 'gestnotes-pro-v1';
 // Liste des fichiers indispensables pour le fonctionnement 100% hors-ligne
 const ASSETS = [
   './',
-  './gestnotes.html',
+  './index.html',
   './bulletin.html',
   './tailwind.min.css', // CSS local indispensable en mode déconnecté
   './manifest.json'
