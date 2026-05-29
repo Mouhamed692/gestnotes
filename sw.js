@@ -6,12 +6,12 @@ const ASSETS = [
   '/index.html',
   '/bulletin.html',
   '/accueil.html', // Ajout de l'accueil au cache
-  '/lib/tailwind.min.js',
-  '/lib/fontawesome.min.css',
-  '/lib/html2pdf.bundle.min.js',
+  './tailwind.min.js',
+  './fontawesome.min.css',
+  './html2pdf.bundle.min.js',
   '/manifest.json',
-  '/icons/icon-192.png', // Vos icônes locales
-  '/icons/icon-512.png'
+  './icon-192.png', // Vos icônes locales
+  './icon-512.png'
 ];
 
 // 1. Installation : Création du cache et mise en mémoire des ressources
