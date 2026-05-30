@@ -33,20 +33,27 @@
             background-color: #f8fafc;
         }
 
-      .bulletin-wrapper {
+   .bulletin-wrapper {
     max-width: 1050px;
     margin: 0 auto 20px auto;
     background: white;
-    padding: 25px;
+    padding: 25px; /* Votre padding original */
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
     border: 1px solid #e2e8f0;
     
-    /* AJOUTS POUR ÉVITER LES LIGNES PARASITES */
-    outline: 1px solid transparent; 
+    /* CORRECTIONS POUR LE PDF */
     box-sizing: border-box;
-     padding: 0.5px;
+    outline: 1px solid transparent; 
+    
+    /* On ajoute une marge interne très fine pour "pousser" le contenu loin du bord de l'image générée */
+    padding-top: 25.5px; 
+    padding-bottom: 25.5px;
+    
+    /* Empêche le rendu de lignes parasites sur les bords */
+    backface-visibility: hidden;
 }
+
 
         .input-panel {
             background: #ffffff;
