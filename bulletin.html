@@ -5,24 +5,24 @@
     <meta charset="UTF-8">
     <title>Bulletin de Notes - GestNotes</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght::300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/idb-keyval@6.2.1/dist/umd.js"></script>
     <link rel="icon" href="icon-192.png">
     
     <style>
-        /* --- OPTIMISATIONS POUR L'IMPRESSION (FORCE LE SEUL ET UNIQUE COLLAGE A4) --- */
-        @media print {
+        /* --- OPTIMISATIONS POUR L'IMPRESSION & LE SAUVEGARDE PDF --- */
+        @media print, .html2pdf-mode {
             @page { 
                 size: A4 landscape; 
-                margin: 5mm 8mm; /* Marges réduites pour maximiser l'espace vertical */
+                margin: 5mm 8mm; 
             }
             
             body { 
-                background-color: white; 
+                background-color: white !important; 
                 padding: 0 !important; 
                 margin: 0 !important; 
-                font-size: 11px !important; /* Police légèrement réduite pour l'impression */
+                font-size: 11px !important; 
             }
 
             .no-print { 
@@ -43,7 +43,7 @@
                 page-break-after: auto !important; 
             }
 
-            /* Ajustements de compression des espaces en mode impression */
+            /* Compression verticale stricte pour éviter le débordement sur la page 2 */
             .header-container { 
                 margin-bottom: 8px !important; 
                 padding-bottom: 4px !important; 
@@ -54,7 +54,7 @@
             }
 
             .logo-container { 
-                height: 50px !important; 
+                height: 45px !important; 
             }
 
             .student-info { 
@@ -78,7 +78,7 @@
 
             .attendance-box { 
                 padding: 6px 10px !important; 
-                line-height: 1.5 !important; 
+                line-height: 1.4 !important; 
             }
 
             table.summary-table th, table.summary-table td { 
@@ -86,7 +86,7 @@
             }
 
             .footer-sections { 
-                margin-bottom: 8px !important; 
+                margin-bottom: 6px !important; 
                 gap: 15px !important; 
             }
 
@@ -113,7 +113,7 @@
             }
         }
 
-        /* --- STYLES GENERAUX POUR L'ECRAN --- */
+        /* --- STYLES EN MODE ÉCRAN NAVIGATEUR --- */
         body {
             font-family: 'Hanken Grotesk', sans-serif;
             color: #1e293b;
@@ -518,7 +518,6 @@
     // --- GESTION DE L'EN-TÊTE ---
     const headerInput = document.getElementById('header-input');
     
-    // Mise à jour en direct lors de la frappe
     headerInput.addEventListener('input', function() {
         localStorage.setItem("custom_header_content", this.value);
         const newHtmlText = this.value.replace(/\n/g, '<br>');
@@ -553,12 +552,16 @@
         updateLogoDisplay(e.target.value);
     });
 
+    // --- SAUVEGARDE PDF OPTIMISÉE POUR PAGE UNIQUE ---
     window.exportToPDF = function () {
         const setupPanel = document.getElementById('setup-panel');
         setupPanel.style.setProperty('display', 'none', 'important');
         
+        // On force la classe d'optimisation sur le body pour html2pdf
+        document.body.classList.add('html2pdf-mode');
+        
         const opt = {
-            margin: 0, /* Géré nativement par la configuration CSS @page */
+            margin: [4, 6, 4, 6], // Marges haut, gauche, bas, droite en mm pour html2pdf
             filename: `Bulletins_GestNotes.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, logging: false },
@@ -567,6 +570,8 @@
         };
         
         html2pdf().from(document.body).set(opt).save().then(() => {
+            // Restauration de l'affichage initial à l'écran
+            document.body.classList.remove('html2pdf-mode');
             setupPanel.style.setProperty('display', 'block');
         });
     };
