@@ -12,12 +12,12 @@
     
     <style>
         /* --- OPTIMISATIONS POUR L'IMPRESSION & LE SAUVEGARDE PDF --- */
-        @media print, .html2pdf-mode {
-            @page { 
-                size: A4 landscape; 
-                margin: 0; /* Mise à 0 pour éviter les doubles marges */
-            }
-            
+      
+          @media print, .html2pdf-mode {
+    @page { 
+        size: A4 landscape; 
+        margin: 0 !important; /* Force zéro marge externe pour le PDF */
+    }  
             body { 
                 background-color: white !important; 
                 padding: 0 !important; 
@@ -29,27 +29,25 @@
                 display: none !important; 
             }
 
-            .bulletin-wrapper { 
-                box-shadow: none !important; 
-                border: none !important; 
-                margin: 0 auto !important; 
-                
-                /* VERROUILLAGE STRICT DES DIMENSIONS A4 PAYSAGE */
-                width: 297mm !important;
-                height: 209mm !important; /* 210mm - 1mm de marge de sécurité */
-                max-height: 209mm !important;
-                padding: 8mm 12mm !important; /* Les marges sont maintenant gérées ici */
-                box-sizing: border-box !important;
-                overflow: hidden !important; /* Coupe tout pixel qui dépasserait */
-                
-                page-break-inside: avoid !important;
-                page-break-after: always !important;
-            }
-
-            .bulletin-wrapper:last-of-type { 
-                page-break-after: auto !important; 
-            }
-
+           
+.bulletin-wrapper { 
+        width: 297mm !important;
+        height: 210mm !important; /* Taille exacte d'une page A4 paysage */
+        padding: 5mm 8mm !important; /* Réduit le padding interne pour gagner de la place */
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        page-break-after: always !important;
+        /* Empêche le zoom automatique qui crée une 2ème page */
+        transform-origin: top left;
+    }
+    
+    /* Compression supplémentaire si nécessaire */
+    table.grades-table th, table.grades-table td { 
+        padding: 2px 4px !important; 
+        font-size: 10px !important; 
+    }
+}
             /* Compression verticale stricte pour éviter le débordement sur la page 2 */
             .header-container { 
                 margin-bottom: 8px !important; 
@@ -566,23 +564,20 @@
         
         // On force la classe d'optimisation sur le body pour html2pdf
         document.body.classList.add('html2pdf-mode');
-        
-        const opt = {
-            margin: 0, // IMPORTANT: Marge à 0. Les marges sont fixées via CSS.
-            filename: `Bulletins_GestNotes.pdf`,
-            image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-            pagebreak: { mode: ['css', 'avoid-all'] }
+         const opt = {
+                margin: 0,
+                filename: 'Bulletins_GestNotes.pdf',
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                pagebreak: { mode: 'css' }
+            };
+            
+            html2pdf().from(container).set(opt).save().then(() => {
+                document.body.classList.remove('html2pdf-mode');
+            });
         };
-        
-        html2pdf().from(document.body).set(opt).save().then(() => {
-            // Restauration de l'affichage initial à l'écran
-            document.body.classList.remove('html2pdf-mode');
-            setupPanel.style.setProperty('display', 'block');
-        });
-    };
-
+       
     function isPrimary(className) {
         const lower = (className || "").toLowerCase();
         return lower.includes("primaire") || ["ci", "cp", "ce1", "ce2", "cm1", "cm2"].includes(lower);
