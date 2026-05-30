@@ -8,22 +8,112 @@
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/idb-keyval@6.2.1/dist/umd.js"></script>
-    <link rel="icon" href="icons/icon-192.png">
+    <link rel="icon" href="icon-192.png">
     
     <style>
+        /* --- OPTIMISATIONS POUR L'IMPRESSION (FORCE LE SEUL ET UNIQUE COLLAGE A4) --- */
         @media print {
-            .flag, .flag div, .flag .green, .flag .yellow, .flag .red {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            @page { 
+                size: A4 landscape; 
+                margin: 5mm 8mm; /* Marges réduites pour maximiser l'espace vertical */
             }
-            .no-print { display: none !important; }
-            body { background-color: white; padding: 0; }
-            .bulletin-wrapper { box-shadow: none; border: none; margin: 0; padding: 0; max-width: 100%; }
-            @page { margin: 8mm; size: A4 landscape; }
-            .page-break { page-break-after: always; }
-            .page-break:last-of-type { page-break-after: auto; }
+            
+            body { 
+                background-color: white; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                font-size: 11px !important; /* Police légèrement réduite pour l'impression */
+            }
+
+            .no-print { 
+                display: none !important; 
+            }
+
+            .bulletin-wrapper { 
+                box-shadow: none !important; 
+                border: none !important; 
+                margin: 0 auto !important; 
+                padding: 0 !important; 
+                max-width: 100% !important;
+                page-break-inside: avoid !important;
+                page-break-after: always !important;
+            }
+
+            .bulletin-wrapper:last-of-type { 
+                page-break-after: auto !important; 
+            }
+
+            /* Ajustements de compression des espaces en mode impression */
+            .header-container { 
+                margin-bottom: 8px !important; 
+                padding-bottom: 4px !important; 
+            }
+            
+            .header-center h1 {
+                font-size: 16px !important;
+            }
+
+            .logo-container { 
+                height: 50px !important; 
+            }
+
+            .student-info { 
+                margin-bottom: 8px !important; 
+                padding: 6px !important; 
+            }
+
+            table.grades-table { 
+                margin-bottom: 8px !important; 
+                font-size: 11px !important; 
+            }
+
+            table.grades-table th, table.grades-table td { 
+                padding: 4px 5px !important; 
+            }
+
+            .summary-and-attendance-container { 
+                margin-bottom: 8px !important; 
+                gap: 12px !important; 
+            }
+
+            .attendance-box { 
+                padding: 6px 10px !important; 
+                line-height: 1.5 !important; 
+            }
+
+            table.summary-table th, table.summary-table td { 
+                padding: 4px !important; 
+            }
+
+            .footer-sections { 
+                margin-bottom: 8px !important; 
+                gap: 15px !important; 
+            }
+
+            .decision-table, .sanction-table { 
+                width: 310px !important; 
+                font-size: 11px !important; 
+            }
+
+            .decision-table td, .sanction-table td { 
+                padding: 3px 6px !important; 
+            }
+
+            .bottom-signatures-container { 
+                margin-top: 5px !important; 
+            }
+
+            .observation-box { 
+                min-height: 32px !important; 
+            }
+            
+            .flag, .flag div, .flag .green, .flag .yellow, .flag .red {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
 
+        /* --- STYLES GENERAUX POUR L'ECRAN --- */
         body {
             font-family: 'Hanken Grotesk', sans-serif;
             color: #1e293b;
@@ -42,15 +132,6 @@
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
             border: 1px solid #e2e8f0;
             box-sizing: border-box;
-            outline: 1px solid transparent; 
-            padding-top: 25.5px; 
-            padding-bottom: 25.5px;
-            backface-visibility: hidden;
-            position: relative;
-            border-bottom: 2px solid white !important;
-            border-top: 2px solid white !important;
-            page-break-inside: avoid;
-            break-inside: avoid;
         }
 
         .input-panel {
@@ -212,7 +293,9 @@
             box-sizing: border-box;
         }
 
-        .semester-summary { width: 75%; }
+        .semester-summary {
+            width: 75%;
+        }
 
         table.summary-table { width: 100%; border-collapse: collapse; font-size: 12px; }
         table.summary-table th, table.summary-table td { border: 1px solid #4c1d95; padding: 6px 8px; text-align: center; }
@@ -256,10 +339,8 @@
         .observation-box {
             border: 1px solid #4c1d95;
             border-radius: 6px;
-            min-height: 55px;
+            min-height: 45px;
             background-color: #f8fafc;
-            padding: 6px;
-            box-sizing: border-box;
         }
 
         .director-signature-title {
@@ -279,7 +360,6 @@
             border-radius: 8px;
             color: #991b1b;
         }
-        table { border-collapse: separate !important; border-spacing: 0 !important; }
     </style>
 </head>
 
@@ -289,7 +369,7 @@
         <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; margin-bottom: 15px;"></i>
         <h2 style="margin: 0 0 10px 0; font-size: 18px;">Données introuvables ou corrompues</h2>
         <p id="error-text" style="margin-bottom: 20px; font-size: 14px;">Veuillez générer ce bulletin depuis l'interface GestNotes.</p>
-        <a href="index.html" id="btn-error-return" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Retourner à GestNotes</a>
+        <a href="accueil.html" id="btn-error-return" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Retourner à GestNotes</a>
    </div>
 
    <div class="bulletin-wrapper no-print" id="setup-panel">
@@ -309,7 +389,7 @@
             </div>
             
             <div class="actions-row">
-                <a id="btn-panel-return" href="index.html" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Quitter le bulletin</a>
+                <a id="btn-panel-return" href="accueil.html" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Quitter le bulletin</a>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-amber" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> Sauvegarder en PDF</button>
                     <button class="btn btn-emerald" onclick="window.print()"><i class="fa-solid fa-print"></i> Lancer l'impression</button>
@@ -380,7 +460,7 @@
 
         <div class="summary-and-attendance-container">
             <div class="attendance-box">
-                <div><strong>Absences :</strong> <span id="lbl-absences">0</span></div>
+                <div><strong>Absences :</strong> <span id="lbl-absences">0</span> j / h</div>
                 <div><strong>Retards :</strong> <span id="lbl-retards">0</span></div>
             </div>
             
@@ -415,7 +495,7 @@
                     <tr><td>Félicitations</td><td class="check-box" id="chk-felicitations"></td></tr>
                     <tr><td>Encouragements</td><td class="check-box" id="chk-encouragement"></td></tr>
                     <tr><td>Tableau d'Honneur</td><td class="check-box" id="chk-tableau-honneur"></td></tr>
-                    <tr><td>Peut mieux faire</td><td class="check-box" id="chk-conseil-assezbien"></td></tr>
+                    <tr><td>peu mieux faire</td><td class="check-box" id="chk-conseil-assezbien"></td></tr>
                     <tr><td>Avertissement</td><td class="check-box" id="chk-avertissement"></td></tr>
                     <tr><td>Blâme</td><td class="check-box" id="chk-blame"></td></tr>
                 </table>
@@ -424,7 +504,7 @@
 
         <div class="bottom-signatures-container">
             <div class="observation-column">
-                <span class="observation-title">OBSERVATIONS DU CONSEIL :</span>
+                <span class="observation-title">OBSERVATIONS DU CONSEIL DES PROFESSEURS :</span>
                 <div class="observation-box"></div>
             </div>
             
@@ -438,6 +518,7 @@
     // --- GESTION DE L'EN-TÊTE ---
     const headerInput = document.getElementById('header-input');
     
+    // Mise à jour en direct lors de la frappe
     headerInput.addEventListener('input', function() {
         localStorage.setItem("custom_header_content", this.value);
         const newHtmlText = this.value.replace(/\n/g, '<br>');
@@ -475,22 +556,18 @@
     window.exportToPDF = function () {
         const setupPanel = document.getElementById('setup-panel');
         setupPanel.style.setProperty('display', 'none', 'important');
-
+        
         const opt = {
-            margin: 0, 
-            filename: 'Bulletins_GestNotes.pdf',
-            image: { type: 'jpeg', quality: 1 }, 
-            html2canvas: { 
-                scale: 2, 
-                useCORS: true,
-                backgroundColor: '#ffffff', 
-                logging: false 
-            },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            margin: 0, /* Géré nativement par la configuration CSS @page */
+            filename: `Bulletins_GestNotes.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+            pagebreak: { mode: ['avoid-all', 'css'] }
         };
-
-        html2pdf().set(opt).from(document.body).save().then(() => {
-            setupPanel.style.display = 'block';
+        
+        html2pdf().from(document.body).set(opt).save().then(() => {
+            setupPanel.style.setProperty('display', 'block');
         });
     };
 
@@ -550,7 +627,7 @@
         return statsMap;
     }
 
-    window.onload = async function () {
+   window.onload = async function () {
         try {
             const savedHeader = localStorage.getItem("custom_header_content");
             if (savedHeader !== null) {
@@ -582,8 +659,8 @@
                 div.className = "bulletin-wrapper page-break";
                 div.innerHTML = templateHTML;
 
-                // --- INJECTION DE L'EN-TÊTE ET LOGO ---
                 div.querySelector('.header-text-display').innerHTML = finalHeaderText.replace(/\n/g, '<br>');
+                
                 if (savedLogo) {
                     div.querySelector('.id-logo-box').innerHTML = `<img src="${savedLogo}" alt="Logo Établissement">`;
                 }
@@ -594,15 +671,10 @@
                 div.querySelector('#lbl-class').textContent = bridge.classKey.replace('_', ' ');
                 div.querySelector('#lbl-count').textContent = clsData.students.length;
                 div.querySelector('#lbl-year').textContent = bridge.year || "-";
-                
-                // Correction sémantique Trimestre / Semestre
                 div.querySelector('#lbl-semester').textContent = isPrim ? `Trimestre ${bridge.semester}` : `Semestre ${bridge.semester}`;
                 div.querySelector('#lbl-th-coef').textContent = isPrim ? "Max" : "Coef";
+                
                 div.querySelector('#lbl-th-dev-single').textContent = isPrim ? "Moy. Notes" : "Moy. Devoirs";
-
-                // Récupération des absences/retards
-                div.querySelector('#lbl-absences').textContent = student.absences || "0";
-                div.querySelector('#lbl-retards').textContent = student.retards || "0";
 
                 const tbody = div.querySelector('#table-grades-rows');
                 const currentPeriodGrades = student.grades ? student.grades[semKey] : null;
@@ -677,7 +749,6 @@
                     let avgNum = parseFloat(stats.avg.replace(',', '.'));
                     let refAvg = isPrim ? (avgNum * 2) : avgNum;
 
-                    // --- AUTOMATISATION DES MENTIONS ---
                     const decisions = [
                         { id: 'chk-excellent', cond: refAvg >= 19 },
                         { id: 'chk-tresbien', cond: refAvg >= 16 && refAvg < 19 },
@@ -691,31 +762,6 @@
                         let el = div.querySelector(`#${item.id}`);
                         if (el) el.textContent = item.cond ? "X" : "";
                     });
-
-                    // --- AUTOMATISATION DES DÉCISIONS DU CONSEIL ---
-                    const conseilDecisions = [
-                        { id: 'chk-felicitations', cond: refAvg >= 14 },
-                        { id: 'chk-encouragement', cond: refAvg >= 12 && refAvg < 14 },
-                        { id: 'chk-tableau-honneur', cond: refAvg >= 13 },
-                        { id: 'chk-conseil-assezbien', cond: refAvg >= 10 && refAvg < 12 }, // Peut mieux faire
-                        { id: 'chk-avertissement', cond: refAvg < 9 && refAvg >= 7 },
-                        { id: 'chk-blame', cond: refAvg < 7 }
-                    ];
-
-                    conseilDecisions.forEach(item => {
-                        let el = div.querySelector(`#${item.id}`);
-                        if (el) el.textContent = item.cond ? "X" : "";
-                    });
-
-                    // Remplissage automatique d'une appréciation globale indicative
-                    let obsBox = div.querySelector('.observation-box');
-                    if (obsBox) {
-                        if (refAvg >= 16) obsBox.innerHTML = `<span style="font-style:italic; color:#1e293b;">Excellent trimestre/semestre. Félicitations chaleureuses du conseil des professeurs.</span>`;
-                        else if (refAvg >= 14) obsBox.innerHTML = `<span style="font-style:italic; color:#1e293b;">Très bon ensemble. Des bases solides et un travail régulier. Continuez ainsi.</span>`;
-                        else if (refAvg >= 12) obsBox.innerHTML = `<span style="font-style:italic; color:#1e293b;">Résultats satisfaisants. Le travail est encourageant, poursuivez vos efforts.</span>`;
-                        else if (refAvg >= 10) obsBox.innerHTML = `<span style="font-style:italic; color:#1e293b;">Ensemble juste passable. Doit redoubler d'efforts et se concentrer davantage au prochain terme.</span>`;
-                        else obsBox.innerHTML = `<span style="font-style:italic; color:#b91c1c; font-weight:500;">Résultats insuffisants. Un sursaut immédiat et rigoureux est attendu au prochain terme.</span>`;
-                    }
                 }
 
                 document.body.appendChild(div);
