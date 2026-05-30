@@ -641,7 +641,21 @@
             document.getElementById('error-container').style.display = 'block';
             document.getElementById('error-text').textContent = err;
         }
+       // Récupérer et appliquer l'en-tête sauvegardé
+const savedHeader = localStorage.getItem("bulletin_header_text") || "IA PIKINE / GUEDIAWAYE\nIEF PIKINE\nRENOVATION";
+headerInput.value = savedHeader;
+headerDisplay.innerHTML = savedHeader.replace(/\n/g, '<br>');
     };
+    // Synchroniser l'en-tête saisi avec l'affichage sur le bulletin
+const headerInput = document.getElementById('header-input');
+const headerDisplay = document.getElementById('header-text-display');
+
+headerInput.addEventListener('input', function() {
+    // Remplace les retours à la ligne par des balises <br> pour le rendu HTML
+    headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
+    // Sauvegarde la préférence dans le stockage local
+    localStorage.setItem("bulletin_header_text", this.value);
+});
 </script>
 </body>
 </html>
