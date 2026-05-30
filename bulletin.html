@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/idb-keyval@6.2.1/dist/umd.js"></script>
-    <link rel="icon" href="icon-192.png">
+    <link rel="icon" href="icons/icon-192.png">
     
     <style>
         @media print {
@@ -315,7 +315,7 @@
                     <div class="yellow"><span class="star">★</span></div>
                     <div class="red"></div>
                 </div>
-                <div id="header-text-display"></div>
+                <div class="header-text-display"></div>
             </div>
             <div class="header-center">
                 <div class="logo-container id-logo-box" id="logo-preview-box"></div>
@@ -424,9 +424,23 @@
    </div>
 
 <script>
+    // --- GESTION DE L'EN-TÊTE ---
+    const headerInput = document.getElementById('header-input');
+    
+    // Mise à jour en direct lors de la frappe
+    headerInput.addEventListener('input', function() {
+        localStorage.setItem("custom_header_content", this.value);
+        const newHtmlText = this.value.replace(/\n/g, '<br>');
+        document.querySelectorAll('.header-text-display').forEach(displayArea => {
+            displayArea.innerHTML = newHtmlText;
+        });
+    });
+
+    // --- GESTION DU LOGO ---
     function updateLogoDisplay(srcBase64OrUrl) {
         if(!srcBase64OrUrl) {
             document.querySelectorAll('.id-logo-box').forEach(box => box.innerHTML = '');
+            localStorage.removeItem("bulletin_logo_data");
             return;
         }
         localStorage.setItem("bulletin_logo_data", srcBase64OrUrl);
@@ -434,6 +448,19 @@
             box.innerHTML = `<img src="${srcBase64OrUrl}" alt="Logo Établissement">`;
         });
     }
+
+    document.getElementById('logo-file').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => updateLogoDisplay(event.target.result);
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('logo-url').addEventListener('input', function(e) {
+        updateLogoDisplay(e.target.value);
+    });
 
     window.exportToPDF = function () {
         const setupPanel = document.getElementById('setup-panel');
@@ -508,6 +535,12 @@
 
    window.onload = async function () {
         try {
+            // -- FIX ACTUALISATION : On force le champ texte à récupérer la mémoire avant tout calcul
+            const savedHeader = localStorage.getItem("custom_header_content");
+            if (savedHeader !== null) {
+                document.getElementById('header-input').value = savedHeader;
+            }
+
             const bridgeData = localStorage.getItem("gestnotes_bulletin_bridge");
             const idbState = await idbKeyval.get("gestnotes_state");
             const appState = idbState || JSON.parse(localStorage.getItem("gestnotes_state"));
@@ -524,11 +557,22 @@
             document.getElementById('bulletin-content').remove();
 
             const studentsToPrint = bridge.studentId === "ALL_STUDENTS" ? clsData.students : [clsData.students.find(s => s.id === bridge.studentId)];
+            
+            // On récupère le texte final et le logo à utiliser pour tous les bulletins
+            const finalHeaderText = document.getElementById('header-input').value;
+            const savedLogo = localStorage.getItem("bulletin_logo_data");
 
             studentsToPrint.forEach(student => {
                 const div = document.createElement('div');
                 div.className = "bulletin-wrapper page-break";
                 div.innerHTML = templateHTML;
+
+                // --- INJECTION DE L'EN-TÊTE ET LOGO ---
+                div.querySelector('.header-text-display').innerHTML = finalHeaderText.replace(/\n/g, '<br>');
+                
+                if (savedLogo) {
+                    div.querySelector('.id-logo-box').innerHTML = `<img src="${savedLogo}" alt="Logo Établissement">`;
+                }
                 
                 div.querySelector('#lbl-firstname').textContent = student.firstName || "-";
                 div.querySelector('#lbl-lastname').textContent = student.lastName || "-";
@@ -539,7 +583,6 @@
                 div.querySelector('#lbl-semester').textContent = isPrim ? `Trimestre ${bridge.semester}` : `Semestre ${bridge.semester}`;
                 div.querySelector('#lbl-th-coef').textContent = isPrim ? "Max" : "Coef";
                 
-                // Adapte le titre de la colonne unique selon le système (Primaire = Notes, Secondaire = Devoirs)
                 div.querySelector('#lbl-th-dev-single').textContent = isPrim ? "Moy. Notes" : "Moy. Devoirs";
 
                 const tbody = div.querySelector('#table-grades-rows');
@@ -555,7 +598,6 @@
                     if (currentPeriodGrades && currentPeriodGrades[sub.id]) {
                         const score = currentPeriodGrades[sub.id];
                         
-                        // Calcul spécifique de la moyenne des devoirs (ou notes) pour affichage
                         let sDev = 0, cDev = 0;
                         if (score.dev1 !== undefined && score.dev1 !== "") { sDev += parseFloat(score.dev1); cDev++; }
                         if (score.dev2 !== undefined && score.dev2 !== "") { sDev += parseFloat(score.dev2); cDev++; }
@@ -592,7 +634,6 @@
                     }
 
                     let row = document.createElement('tr');
-                    // Plus qu'une seule cellule pour les devoirs : moyDevoirsText
                     row.innerHTML = `
                         <td class="col-discipline">${sub.name}</td>
                         <td>${moyDevoirsText}</td>
@@ -641,21 +682,7 @@
             document.getElementById('error-container').style.display = 'block';
             document.getElementById('error-text').textContent = err;
         }
-       // Récupérer et appliquer l'en-tête sauvegardé
-const savedHeader = localStorage.getItem("bulletin_header_text") || "IA PIKINE / GUEDIAWAYE\nIEF PIKINE\nRENOVATION";
-headerInput.value = savedHeader;
-headerDisplay.innerHTML = savedHeader.replace(/\n/g, '<br>');
     };
-    // Synchroniser l'en-tête saisi avec l'affichage sur le bulletin
-const headerInput = document.getElementById('header-input');
-const headerDisplay = document.getElementById('header-text-display');
-
-headerInput.addEventListener('input', function() {
-    // Remplace les retours à la ligne par des balises <br> pour le rendu HTML
-    headerDisplay.innerHTML = this.value.replace(/\n/g, '<br>');
-    // Sauvegarde la préférence dans le stockage local
-    localStorage.setItem("bulletin_header_text", this.value);
-});
 </script>
 </body>
 </html>
