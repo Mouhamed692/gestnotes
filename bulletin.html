@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Bulletin de Notes - GestNotes</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght::300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/idb-keyval@6.2.1/dist/umd.js"></script>
     <link rel="icon" href="icon-192.png">
@@ -15,7 +15,7 @@
         @media print, .html2pdf-mode {
             @page { 
                 size: A4 landscape; 
-                margin: 5mm 8mm; 
+                margin: 0; /* Mise à 0 pour éviter les doubles marges */
             }
             
             body { 
@@ -33,8 +33,15 @@
                 box-shadow: none !important; 
                 border: none !important; 
                 margin: 0 auto !important; 
-                padding: 0 !important; 
-                max-width: 100% !important;
+                
+                /* VERROUILLAGE STRICT DES DIMENSIONS A4 PAYSAGE */
+                width: 297mm !important;
+                height: 209mm !important; /* 210mm - 1mm de marge de sécurité */
+                max-height: 209mm !important;
+                padding: 8mm 12mm !important; /* Les marges sont maintenant gérées ici */
+                box-sizing: border-box !important;
+                overflow: hidden !important; /* Coupe tout pixel qui dépasserait */
+                
                 page-break-inside: avoid !important;
                 page-break-after: always !important;
             }
@@ -520,7 +527,7 @@
     
     headerInput.addEventListener('input', function() {
         localStorage.setItem("custom_header_content", this.value);
-        const newHtmlText = this.value.replace(/\n/g, '<br>');
+        const newHtmlText = this.value.replace(/\\n/g, '<br>');
         document.querySelectorAll('.header-text-display').forEach(displayArea => {
             displayArea.innerHTML = newHtmlText;
         });
@@ -561,12 +568,12 @@
         document.body.classList.add('html2pdf-mode');
         
         const opt = {
-            margin: [4, 6, 4, 6], // Marges haut, gauche, bas, droite en mm pour html2pdf
+            margin: 0, // IMPORTANT: Marge à 0. Les marges sont fixées via CSS.
             filename: `Bulletins_GestNotes.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
+            image: { type: 'jpeg', quality: 1 },
             html2canvas: { scale: 2, useCORS: true, logging: false },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-            pagebreak: { mode: ['avoid-all', 'css'] }
+            pagebreak: { mode: ['css', 'avoid-all'] }
         };
         
         html2pdf().from(document.body).set(opt).save().then(() => {
@@ -664,7 +671,7 @@
                 div.className = "bulletin-wrapper page-break";
                 div.innerHTML = templateHTML;
 
-                div.querySelector('.header-text-display').innerHTML = finalHeaderText.replace(/\n/g, '<br>');
+                div.querySelector('.header-text-display').innerHTML = finalHeaderText.replace(/\\n/g, '<br>');
                 
                 if (savedLogo) {
                     div.querySelector('.id-logo-box').innerHTML = `<img src="${savedLogo}" alt="Logo Établissement">`;
@@ -782,3 +789,8 @@
 </script>
 </body>
 </html>
+"""
+
+with open("bulletin-v3.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+print("File successfully updated.")
