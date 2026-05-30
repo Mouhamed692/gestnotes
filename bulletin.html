@@ -52,6 +52,9 @@
     
     /* Empêche le rendu de lignes parasites sur les bords */
     backface-visibility: hidden;
+     position: relative;
+    border-bottom: 2px solid white !important; /* Masque le trait bas */
+    border-top: 2px solid white !important;
 }
 
 
@@ -281,6 +284,10 @@
             border-radius: 8px;
             color: #991b1b;
         }
+        table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
     </style>
 </head>
 
@@ -478,27 +485,24 @@ window.exportToPDF = function () {
     setupPanel.style.setProperty('display', 'none', 'important');
 
     const opt = {
-        margin: 5,
-        filename: `Bulletins_GestNotes.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        margin: 0, // IMPORTANT : mettez 0 ici pour éviter les erreurs de calcul
+        filename: 'Bulletin.pdf',
+        image: { type: 'jpeg', quality: 1 }, 
         html2canvas: { 
             scale: 2, 
             useCORS: true,
-            // AJOUTS POUR CORRIGER LE TRAIT :
-            letterRendering: true, 
-            backgroundColor: '#ffffff',
-            // Évite le rendu partiel des bords
+            // C'EST ICI LA CLÉ :
+            backgroundColor: '#ffffff', 
+            // On force le rendu des éléments transparents en blanc
             logging: false 
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
 
-    // On utilise document.body comme source, mais on s'assure qu'il n'a pas de bordure parasite
-    html2pdf().from(document.body).set(opt).save().then(() => {
+    html2pdf().set(opt).from(document.body).save().then(() => {
         setupPanel.style.display = 'block';
     });
 };
-  
     function isPrimary(className) {
         const lower = (className || "").toLowerCase();
         return lower.includes("primaire") || ["ci", "cp", "ce1", "ce2", "cm1", "cm2"].includes(lower);
