@@ -33,15 +33,20 @@
             background-color: #f8fafc;
         }
 
-        .bulletin-wrapper {
-            max-width: 1050px;
-            margin: 0 auto 20px auto;
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-            border: 1px solid #e2e8f0;
-        }
+      .bulletin-wrapper {
+    max-width: 1050px;
+    margin: 0 auto 20px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    border: 1px solid #e2e8f0;
+    
+    /* AJOUTS POUR ÉVITER LES LIGNES PARASITES */
+    outline: 1px solid transparent; 
+    box-sizing: border-box;
+     padding: 0.5px;
+}
 
         .input-panel {
             background: #ffffff;
@@ -461,22 +466,32 @@
     document.getElementById('logo-url').addEventListener('input', function(e) {
         updateLogoDisplay(e.target.value);
     });
+window.exportToPDF = function () {
+    const setupPanel = document.getElementById('setup-panel');
+    setupPanel.style.setProperty('display', 'none', 'important');
 
-    window.exportToPDF = function () {
-        const setupPanel = document.getElementById('setup-panel');
-        setupPanel.style.setProperty('display', 'none', 'important');
-        const opt = {
-            margin: 5,
-            filename: `Bulletins_GestNotes.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
-        html2pdf().from(document.body).set(opt).save().then(() => {
-            setupPanel.style.display = 'block';
-        });
+    const opt = {
+        margin: 5,
+        filename: `Bulletins_GestNotes.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            // AJOUTS POUR CORRIGER LE TRAIT :
+            letterRendering: true, 
+            backgroundColor: '#ffffff',
+            // Évite le rendu partiel des bords
+            logging: false 
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
 
+    // On utilise document.body comme source, mais on s'assure qu'il n'a pas de bordure parasite
+    html2pdf().from(document.body).set(opt).save().then(() => {
+        setupPanel.style.display = 'block';
+    });
+};
+  
     function isPrimary(className) {
         const lower = (className || "").toLowerCase();
         return lower.includes("primaire") || ["ci", "cp", "ce1", "ce2", "cm1", "cm2"].includes(lower);
