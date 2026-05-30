@@ -215,21 +215,25 @@
         </section>
 
        <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 hidden flex flex-col gap-4">
-            <div class="flex items-center justify-between border-b pb-3">
-                <h3 class="text-md font-bold text-slate-700 flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Saisie des Notes par Discipline
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
+                <h3 class="text-md font-bold text-slate-700 flex items-center gap-2 w-full lg:w-auto">
+                    <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Saisie des Notes
                 </h3>
-                <div class="px-3">
-                    <input type="text" id="grade-search" oninput="filterStudentsGlobal()" placeholder="Rechercher un élève par son nom..." 
-                           class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20">
-                </div>
-              
-                <div class="flex items-center gap-2">
-                    <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 font-medium text-sm text-slate-700 outline-none">
-                    </select>
-                    <button onclick="goToNextSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5" title="Passer à la discipline suivante">
-                        Suivant <i class="fa-solid fa-arrow-right"></i>
-                    </button>
+                
+                <div class="flex flex-col sm:flex-row w-full lg:w-auto items-center gap-3">
+                    <div class="w-full sm:w-auto flex-1">
+                        <input type="text" id="grade-search" oninput="filterStudentsGlobal()" placeholder="Rechercher un élève par son nom..." 
+                               class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20">
+                    </div>
+                  
+                    <div class="flex w-full sm:w-auto items-center gap-2">
+                        <select id="grade-subject-select" onchange="renderGradesGrid()" class="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none">
+                        </select>
+                        <button onclick="goToNextSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap" title="Passer à la discipline suivante">
+                            Suivant <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -248,8 +252,7 @@
                             <th class="p-3 font-semibold text-center" id="lbl-th-dev3" style="display: none;">Devoir 3</th>
                             
                             <th class="p-3 font-semibold text-center" id="lbl-th-compo">Composition</th>
-                            <th class="p-3 font-semibold text-center w-24">Action</th>
-                        </tr>
+                            </tr>
                     </thead>
                   <tbody id="grades-table-body" class="divide-y divide-slate-200"></tbody>
                 </table>
@@ -842,7 +845,8 @@
         const subjectId = subSelect.value;
 
         if (!cls || !cls.students || cls.students.length === 0 || !subjectId) {
-            tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 italic">Aucun élève ou aucune matière disponible pour la saisie.</td></tr>`;
+            // Ajustement du colspan suite à la suppression de la colonne action (de 6 à 5)
+            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 italic">Aucun élève ou aucune matière disponible pour la saisie.</td></tr>`;
             return;
         }
 
@@ -881,6 +885,7 @@
 
             let inputsHtml = "";
             if (isPrimaryClass) {
+                // Suppression de la colonne d'action (td vide) à la fin
                 inputsHtml = `
                     <td class="py-3 px-4">
                         <input type="number" step="0.01" min="0" max="10" placeholder="/10" 
@@ -901,9 +906,9 @@
                             onchange="updateGrade('${st.id}', '${subjectId}', 'compo', this.value)" 
                             class="w-20 border border-slate-200 rounded-lg p-1.5 text-center focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none font-bold bg-slate-50">
                     </td>
-                    <td class="py-3 px-4"></td>
                 `;
             } else {
+                // Suppression de la colonne d'action (td vide) à la fin
                 inputsHtml = `
                     <td class="py-3 px-4">
                         <input type="number" step="0.01" min="0" max="20" placeholder="/20" 
@@ -924,7 +929,6 @@
                             onchange="updateGrade('${st.id}', '${subjectId}', 'compo', this.value)" 
                             class="w-20 border border-slate-200 rounded-lg p-1.5 text-center focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none font-bold bg-indigo-50/30 text-indigo-900">
                     </td>
-                    <td class="py-3 px-4"></td>
                 `;
             }
 
