@@ -223,10 +223,10 @@
                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20">
                     </div>
                   
-                    <div class="flex w-full sm:w-auto items-center gap-2">
+                    <div class="flex w-full sm:w-auto items-center gap-2 flex-wrap sm:flex-nowrap">
                         <select id="grade-subject-select" onchange="renderGradesGrid()" class="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none">
                         </select>
-                        <button onclick="goToNextSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap" title="Passer à la discipline suivante">
+                        <button onclick="goToNextSubject()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap" title="Passer à la discipline suivante">
                             Suivant <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
@@ -782,7 +782,6 @@
         renderSubjectsRows();
     }
 
-    // --- CORRECTION: RENDER SUBJECT ROWS (MODAL RESPONSIVE) ---
     function renderSubjectsRows() {
         const container = document.getElementById('subjects-container');
         const key = getCurrentClassKey();
@@ -807,7 +806,6 @@
         `).join('');
     }
 
-    // --- CORRECTION: AJOUT DE LA FONCTION MANQUANTE ---
     function addNewSubjectRow() {
         const container = document.getElementById('subjects-container');
         const idx = container.children.length;
@@ -1155,14 +1153,21 @@
         const cls = appState.classes[classKey];
         if (!cls) return;
 
+        // Déterminer dynamiquement les colonnes en fonction de l'affichage de Devoir 3
+        const colspan = isDev3Visible ? 4 : 3;
+        const headerText = isDev3Visible ? "(D1, D2, D3, C)" : "(D1, D2, C)";
+        const emptyCells = isDev3Visible 
+            ? `<td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td>`
+            : `<td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td>`;
+
         let html = `
             <div style="font-family: Arial; padding: 20px;">
-                <h2 style="text-align: center;">Grille de Saisie - ${appState.selectedClass}</h2>
+                <h2 style="text-align: center;">Grille de Saisie - ${appState.selectedClass} ${appState.selectedSection}</h2>
                 <table border="1" style="width: 100%; border-collapse: collapse; font-size: 12px;">
                     <thead>
                         <tr style="background-color: #f1f5f9;">
                             <th>ID (Ne pas toucher)</th><th>Nom</th><th>Prénom</th>
-                            ${cls.subjects.map(s => `<th colspan="4">${s.name} (D1, D2, D3, C)</th>`).join('')}
+                            ${cls.subjects.map(s => `<th colspan="${colspan}">${s.name} <br><span style="font-size:10px; font-weight:normal;">${headerText}</span></th>`).join('')}
                         </tr>
                     </thead>
                     <tbody>
@@ -1170,7 +1175,7 @@
                             <tr>
                                 <td style="font-size: 10px; background-color: #eee;">${st.id}</td>
                                 <td>${st.lastName}</td><td>${st.firstName}</td>
-                                ${cls.subjects.map(() => `<td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td>`).join('')}
+                                ${cls.subjects.map(() => emptyCells).join('')}
                             </tr>
                         `).join('')}
                     </tbody>
