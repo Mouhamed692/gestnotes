@@ -150,39 +150,36 @@
     <main class="flex-1 overflow-auto p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
         
        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        
-        <button onclick="exportData()" 
-                class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md">
-            <i class="fas fa-file-download"></i> <span>Exporter</span>
-        </button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <button onclick="exportData()" 
+                        class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md">
+                    <i class="fas fa-file-download"></i> <span>Exporter</span>
+                </button>
 
-        <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
-        <button onclick="document.getElementById('importFile').click()" 
-                class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md">
-            <i class="fas fa-file-upload"></i> <span>Importer</span>
-        </button>
-        
-        <button onclick="openRegistrationModal()" 
-                class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white py-3 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all">
-            <i class="fa-solid fa-user-plus"></i> Inscription
-        </button>
-        
-        <button onclick="exporterFeuilleSaisie()" 
-                class="bg-slate-600 hover:bg-slate-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
-            <i class="fa-solid fa-print"></i> Imprimer Grille
-        </button>
-        
-        <button onclick="document.getElementById('importInput').click()" 
-                class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
-            <i class="fa-solid fa-file-import"></i> Importer Notes
-        </button>
-        <input type="file" id="importInput" class="hidden" accept=".csv,.txt" onchange="importerNotesAuto(this)">
-    </div>
-    
-    <section id="recensement-section" style="position: absolute; left: -9999px; top: -9999px;">
-        </section>
-</div>
+                <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+                <button onclick="document.getElementById('importFile').click()" 
+                        class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md">
+                    <i class="fas fa-file-upload"></i> <span>Importer</span>
+                </button>
+                
+                <button onclick="openRegistrationModal()" 
+                        class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white py-3 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all">
+                    <i class="fa-solid fa-user-plus"></i> Inscription
+                </button>
+                
+                <button onclick="exporterFeuilleSaisie()" 
+                        class="bg-slate-600 hover:bg-slate-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
+                    <i class="fa-solid fa-print"></i> Imprimer Grille
+                </button>
+                
+                <button onclick="document.getElementById('importInput').click()" 
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
+                    <i class="fa-solid fa-file-import"></i> Importer Notes
+                </button>
+                <input type="file" id="importInput" class="hidden" accept=".csv,.txt" onchange="importerNotesAuto(this)">
+            </div>
+            <section id="recensement-section" style="position: absolute; left: -9999px; top: -9999px;"></section>
+        </div>
 
         <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-wrap gap-4 items-center justify-between">
             <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
@@ -208,14 +205,13 @@
                 <button onclick="openModal('add-student-modal')" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-sm">
                     <i class="fa-solid fa-plus text-xs"></i> Ajouter un élève
                 </button>
-                <button onclick="openModal('subjects-modal')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-indigo-100">
+                <button onclick="openSubjectsModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-indigo-100">
                     <i class="fa-solid fa-book text-xs"></i> Gérer les matières
                 </button>
             </div>
         </section>
 
        <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 hidden flex flex-col gap-4">
-            
             <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
                 <h3 class="text-md font-bold text-slate-700 flex items-center gap-2 w-full lg:w-auto">
                     <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Saisie des Notes
@@ -250,7 +246,6 @@
                             </th>
                             
                             <th class="p-3 font-semibold text-center" id="lbl-th-dev3" style="display: none;">Devoir 3</th>
-                            
                             <th class="p-3 font-semibold text-center" id="lbl-th-compo">Composition</th>
                             </tr>
                     </thead>
@@ -413,7 +408,7 @@
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-book text-indigo-600 mr-1"></i> <span id="lbl-subjects-title">Gestion des matières</span></h3>
                 <button onclick="loadStandardSubjects()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Charger matières standard
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Charger standards
                 </button>
             </div>
             
@@ -425,7 +420,7 @@
 
             <div class="mt-5 flex justify-end gap-2 border-t pt-3">
                 <button onclick="closeModal('subjects-modal')" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-sm font-semibold">Fermer</button>
-                <button onclick="saveSubjects()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm">Enregistrer modifications</button>
+                <button onclick="saveSubjects()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm">Enregistrer</button>
             </div>
         </div>
     </div>
@@ -435,7 +430,6 @@
    <script>
     const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
     
-    // NOUVEAU : Variable globale pour la visibilité du Devoir 3
     let isDev3Visible = false;
 
     function toggleDev3() {
@@ -788,6 +782,7 @@
         renderSubjectsRows();
     }
 
+    // --- CORRECTION: RENDER SUBJECT ROWS (MODAL RESPONSIVE) ---
     function renderSubjectsRows() {
         const container = document.getElementById('subjects-container');
         const key = getCurrentClassKey();
@@ -795,17 +790,49 @@
         const coefLabel = getCoefLabel(appState.selectedClass);
 
         container.innerHTML = subjects.map((sub, idx) => `
-            <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200" data-index="${idx}">
-                <input type="text" value="${sub.name}" class="text-slate-900 flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm outline-none focus:border-indigo-500 font-medium input-sub-name">
-                <div class="w-24 flex items-center gap-1">
-                    <span class="text-xs text-slate-400 font-bold uppercase">${coefLabel}</span>
-                    <input type="number" step="any" value="${sub.coef}" class="text-slate-900 w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-center font-bold input-sub-coef">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200" data-index="${idx}">
+                <div class="w-full sm:flex-1">
+                    <input type="text" value="${sub.name}" placeholder="Nom de la matière" class="text-slate-900 w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-medium input-sub-name">
                 </div>
-                <button onclick="this.parentElement.remove()" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-all" title="Supprimer">
-                    <i class="fa-solid fa-trash-can text-sm"></i>
-                </button>
+                <div class="flex items-center justify-between w-full sm:w-auto gap-3 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-bold uppercase min-w-[35px]">${coefLabel}</span>
+                        <input type="number" step="any" min="0" value="${sub.coef}" class="text-slate-900 w-20 bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm text-center font-bold input-sub-coef outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <button onclick="this.closest('[data-index]').remove()" class="p-2 text-rose-500 hover:bg-rose-100 rounded-lg transition-all" title="Supprimer">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
             </div>
         `).join('');
+    }
+
+    // --- CORRECTION: AJOUT DE LA FONCTION MANQUANTE ---
+    function addNewSubjectRow() {
+        const container = document.getElementById('subjects-container');
+        const idx = container.children.length;
+        const coefLabel = getCoefLabel(appState.selectedClass);
+        
+        const div = document.createElement('div');
+        div.className = "flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200";
+        div.setAttribute("data-index", idx);
+        div.innerHTML = `
+            <div class="w-full sm:flex-1">
+                <input type="text" value="" placeholder="Nouvelle matière" class="text-slate-900 w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-medium input-sub-name">
+            </div>
+            <div class="flex items-center justify-between w-full sm:w-auto gap-3 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-500 font-bold uppercase min-w-[35px]">${coefLabel}</span>
+                    <input type="number" step="any" min="0" value="1" class="text-slate-900 w-20 bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm text-center font-bold input-sub-coef outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                </div>
+                <button onclick="this.closest('[data-index]').remove()" class="p-2 text-rose-500 hover:bg-rose-100 rounded-lg transition-all" title="Supprimer">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+        
+        container.scrollTop = container.scrollHeight;
     }
 
     function saveSubjects() {
@@ -845,7 +872,6 @@
         const subjectId = subSelect.value;
 
         if (!cls || !cls.students || cls.students.length === 0 || !subjectId) {
-            // Ajustement du colspan suite à la suppression de la colonne action (de 6 à 5)
             tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 italic">Aucun élève ou aucune matière disponible pour la saisie.</td></tr>`;
             return;
         }
@@ -853,7 +879,6 @@
         const semKey = "p_" + appState.currentSemester;
         const isPrimaryClass = isPrimary(appState.selectedClass);
         
-        // Auto-détecter si le Devoir 3 contient déjà des notes pour cette matière, on l'affiche d'office
         let subjectHasDev3 = cls.students.some(st => st.grades?.[semKey]?.[subjectId]?.dev3);
         if (subjectHasDev3) isDev3Visible = true;
 
@@ -885,7 +910,6 @@
 
             let inputsHtml = "";
             if (isPrimaryClass) {
-                // Suppression de la colonne d'action (td vide) à la fin
                 inputsHtml = `
                     <td class="py-3 px-4">
                         <input type="number" step="0.01" min="0" max="10" placeholder="/10" 
@@ -908,7 +932,6 @@
                     </td>
                 `;
             } else {
-                // Suppression de la colonne d'action (td vide) à la fin
                 inputsHtml = `
                     <td class="py-3 px-4">
                         <input type="number" step="0.01" min="0" max="20" placeholder="/20" 
@@ -952,7 +975,6 @@
         renderGradesGrid();
     }
 
-    // Le calcul de la moyenne compte dynamiquement le nombre de devoirs (1, 2 ou 3) saisis !
     function calculateGeneralAverageForStudent(student, subjects, periodNum, isPrim) {
         const semKey = "p_" + periodNum;
         if (!student.grades || !student.grades[semKey]) return { hasGrades: false, avg: 0 };
@@ -967,7 +989,6 @@
                 let sumDev = 0;
                 let countDev = 0;
 
-                // Cette boucle gère automatiquement dev1, dev2 et dev3 selon leur présence
                 Object.keys(g).forEach(key => {
                     if (key.startsWith('dev') && g[key] !== undefined && g[key] !== null && g[key] !== "") {
                         sumDev += parseFloat(g[key]);
