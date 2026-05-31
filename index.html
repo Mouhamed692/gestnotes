@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4c1d95">
 
     <meta name="mobile-web-app-capable" content="yes">
@@ -223,10 +223,10 @@
                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20">
                     </div>
                   
-                    <div class="flex w-full sm:w-auto items-center gap-2 flex-wrap sm:flex-nowrap">
+                    <div class="flex w-full sm:w-auto items-center gap-2">
                         <select id="grade-subject-select" onchange="renderGradesGrid()" class="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none">
                         </select>
-                        <button onclick="goToNextSubject()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap" title="Passer à la discipline suivante">
+                        <button onclick="goToNextSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap" title="Passer à la discipline suivante">
                             Suivant <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
@@ -430,11 +430,17 @@
    <script>
     const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
     
-    let isDev3Visible = false;
+    // NOUVEAU : Visibilité du devoir 3 gérée indépendamment par matière
+    let subjectDev3Visible = {};
 
     function toggleDev3() {
-        isDev3Visible = !isDev3Visible;
+        const subSelect = document.getElementById('grade-subject-select');
+        const subjectId = subSelect.value;
+        if (!subjectId) return;
+        
+        subjectDev3Visible[subjectId] = !subjectDev3Visible[subjectId];
         renderGradesGrid();
+        renderRecensement();
     }
 
     function getSectionsForClass(cls) {
@@ -877,15 +883,17 @@
         const semKey = "p_" + appState.currentSemester;
         const isPrimaryClass = isPrimary(appState.selectedClass);
         
-        let subjectHasDev3 = cls.students.some(st => st.grades?.[semKey]?.[subjectId]?.dev3);
-        if (subjectHasDev3) isDev3Visible = true;
+        // Calcul visibilité D3 uniquement pour cette matière spécifique
+        let hasDev3Data = cls.students.some(st => st.grades?.[semKey]?.[subjectId]?.dev3);
+        let showDev3 = subjectDev3Visible[subjectId] || hasDev3Data;
+        subjectDev3Visible[subjectId] = showDev3; // On maintient l'état à jour
 
         document.getElementById('lbl-th-dev1').textContent = isPrimaryClass ? "Note 1" : "Devoir 1";
         document.getElementById('lbl-th-dev2').textContent = isPrimaryClass ? "Note 2" : "Devoir 2";
         
         const thDev3 = document.getElementById('lbl-th-dev3');
         thDev3.textContent = isPrimaryClass ? "Note 3" : "Devoir 3";
-        thDev3.style.display = isDev3Visible ? 'table-cell' : 'none';
+        thDev3.style.display = showDev3 ? 'table-cell' : 'none';
         
         tbody.innerHTML = cls.students.map(st => {
             const fullName = `${st.firstName || ""} ${st.lastName || ""}`.trim() || "Élève sans nom";
@@ -899,7 +907,7 @@
             const g = st.grades[semKey][subjectId];
             const maxVal = isPrimaryClass ? 10 : 20;
 
-            const dev3Cell = `<td class="py-3 px-4" style="display: ${isDev3Visible ? 'table-cell' : 'none'};">
+            const dev3Cell = `<td class="py-3 px-4" style="display: ${showDev3 ? 'table-cell' : 'none'};">
                 <input type="number" step="0.01" min="0" max="${maxVal}" placeholder="/${maxVal}" 
                     value="${g.dev3 || ''}" 
                     onchange="updateGrade('${st.id}', '${subjectId}', 'dev3', this.value)" 
@@ -1099,11 +1107,11 @@
         const clsData = appState.classes[key];
         const semKey = "p_" + appState.currentSemester;
         
-        let hasAnyDev3 = false;
-        clsData.students.forEach(st => {
-            if(st.grades && st.grades[semKey]) {
-                Object.values(st.grades[semKey]).forEach(g => { if(g.dev3) hasAnyDev3 = true; });
-            }
+        // Calcul visibilité par matière pour le tableau croisé
+        let subjectDev3Map = {};
+        clsData.subjects.forEach(sub => {
+            let hasData = clsData.students.some(st => st.grades?.[semKey]?.[sub.id]?.dev3);
+            subjectDev3Map[sub.id] = subjectDev3Visible[sub.id] || hasData;
         });
         
         const thead = document.getElementById("rec-head");
@@ -1113,14 +1121,15 @@
         
         let headHTML = `<tr><th class="w-56 p-2 border bg-slate-100 text-left text-slate-700 font-bold" rowspan="2">Nom & Prénom</th>`;
         clsData.subjects.forEach(sub => {
-            headHTML += `<th colspan="${hasAnyDev3 ? 4 : 3}" class="border text-indigo-700 bg-slate-100 p-1 text-center font-bold">${sub.name}</th>`;
+            let cols = subjectDev3Map[sub.id] ? 4 : 3;
+            headHTML += `<th colspan="${cols}" class="border text-indigo-700 bg-slate-100 p-1 text-center font-bold">${sub.name}</th>`;
         });
         headHTML += `</tr><tr>`;
-        clsData.subjects.forEach(() => {
+        clsData.subjects.forEach(sub => {
             headHTML += `
                 <th class="p-1 border text-[10px] bg-slate-50 text-slate-500 text-center font-semibold">D1</th>
                 <th class="p-1 border text-[10px] bg-slate-50 text-slate-500 text-center font-semibold">D2</th>
-                ${hasAnyDev3 ? `<th class="p-1 border text-[10px] bg-slate-50 text-slate-500 text-center font-semibold">D3</th>` : ''}
+                ${subjectDev3Map[sub.id] ? `<th class="p-1 border text-[10px] bg-slate-50 text-slate-500 text-center font-semibold">D3</th>` : ''}
                 <th class="p-1 border text-[10px] bg-indigo-50 text-indigo-600 text-center font-bold">C</th>
             `;
         });
@@ -1139,7 +1148,7 @@
                 rowHTML += `
                     <td class="p-0 border"><input type="number" step="0.01" min="0" max="20" class="w-full text-center bg-transparent p-1.5 outline-none focus:bg-white transition-all" value="${g.dev1 || ''}" onchange="updateGrade('${student.id}', '${sub.id}', 'dev1', this.value)"></td>
                     <td class="p-0 border"><input type="number" step="0.01" min="0" max="20" class="w-full text-center bg-transparent p-1.5 outline-none focus:bg-white transition-all" value="${g.dev2 || ''}" onchange="updateGrade('${student.id}', '${sub.id}', 'dev2', this.value)"></td>
-                    ${hasAnyDev3 ? `<td class="p-0 border"><input type="number" step="0.01" min="0" max="20" class="w-full text-center bg-transparent p-1.5 outline-none focus:bg-white transition-all" value="${g.dev3 || ''}" onchange="updateGrade('${student.id}', '${sub.id}', 'dev3', this.value)"></td>` : ''}
+                    ${subjectDev3Map[sub.id] ? `<td class="p-0 border"><input type="number" step="0.01" min="0" max="20" class="w-full text-center bg-transparent p-1.5 outline-none focus:bg-white transition-all" value="${g.dev3 || ''}" onchange="updateGrade('${student.id}', '${sub.id}', 'dev3', this.value)"></td>` : ''}
                     <td class="p-0 border"><input type="number" step="0.01" min="0" max="20" class="w-full text-center bg-transparent p-1.5 text-indigo-600 font-bold outline-none focus:bg-white transition-all" value="${g.compo || ''}" onchange="updateGrade('${student.id}', '${sub.id}', 'compo', this.value)"></td>
                 `;
             });
@@ -1151,23 +1160,27 @@
     function exporterFeuilleSaisie() {
         const classKey = getCurrentClassKey();
         const cls = appState.classes[classKey];
+        const semKey = "p_" + appState.currentSemester;
         if (!cls) return;
 
-        // Déterminer dynamiquement les colonnes en fonction de l'affichage de Devoir 3
-        const colspan = isDev3Visible ? 4 : 3;
-        const headerText = isDev3Visible ? "(D1, D2, D3, C)" : "(D1, D2, C)";
-        const emptyCells = isDev3Visible 
-            ? `<td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td>`
-            : `<td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td>`;
+        let subjectDev3Map = {};
+        cls.subjects.forEach(sub => {
+            let hasData = cls.students.some(st => st.grades?.[semKey]?.[sub.id]?.dev3);
+            subjectDev3Map[sub.id] = subjectDev3Visible[sub.id] || hasData;
+        });
 
         let html = `
             <div style="font-family: Arial; padding: 20px;">
-                <h2 style="text-align: center;">Grille de Saisie - ${appState.selectedClass} ${appState.selectedSection}</h2>
+                <h2 style="text-align: center;">Grille de Saisie - ${appState.selectedClass}</h2>
                 <table border="1" style="width: 100%; border-collapse: collapse; font-size: 12px;">
                     <thead>
                         <tr style="background-color: #f1f5f9;">
                             <th>ID (Ne pas toucher)</th><th>Nom</th><th>Prénom</th>
-                            ${cls.subjects.map(s => `<th colspan="${colspan}">${s.name} <br><span style="font-size:10px; font-weight:normal;">${headerText}</span></th>`).join('')}
+                            ${cls.subjects.map(s => {
+                                let cols = subjectDev3Map[s.id] ? 4 : 3;
+                                let title = subjectDev3Map[s.id] ? "(D1, D2, D3, C)" : "(D1, D2, C)";
+                                return `<th colspan="${cols}">${s.name} ${title}</th>`;
+                            }).join('')}
                         </tr>
                     </thead>
                     <tbody>
@@ -1175,7 +1188,11 @@
                             <tr>
                                 <td style="font-size: 10px; background-color: #eee;">${st.id}</td>
                                 <td>${st.lastName}</td><td>${st.firstName}</td>
-                                ${cls.subjects.map(() => emptyCells).join('')}
+                                ${cls.subjects.map(s => {
+                                    return subjectDev3Map[s.id] ? 
+                                        `<td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td>` :
+                                        `<td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td>`;
+                                }).join('')}
                             </tr>
                         `).join('')}
                     </tbody>
@@ -1381,7 +1398,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js').catch(error => {
+          navigator.serviceWorker.register('sw.js').catch(error => {
             console.error('Erreur Service Worker :', error);
           });
         });
