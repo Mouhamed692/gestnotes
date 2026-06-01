@@ -548,14 +548,23 @@
                     let avgNum = parseFloat(stats.avg.replace(',', '.'));
                     let refAvg = isPrim ? (avgNum * 2) : avgNum;
 
-                    const decisions = [
-                        { id: 'chk-excellent', cond: refAvg >= 19 },
-                        { id: 'chk-tresbien', cond: refAvg >= 16 && refAvg < 19 },
-                        { id: 'chk-bien', cond: refAvg >= 14 && refAvg < 16 },
-                        { id: 'chk-assezbien', cond: refAvg >= 12 && refAvg < 14 },
-                        { id: 'chk-passable', cond: refAvg >= 10 && refAvg < 12 },
-                        { id: 'chk-insuffisant', cond: refAvg < 10 }
-                    ];
+                  const decisions = [
+    // --- Tableau des Mentions ---
+    { id: 'chk-excellent', cond: refAvg >= 19 },
+    { id: 'chk-tresbien', cond: refAvg >= 16 && refAvg < 19 },
+    { id: 'chk-bien', cond: refAvg >= 14 && refAvg < 16 },
+    { id: 'chk-assezbien', cond: refAvg >= 12 && refAvg < 14 },
+    { id: 'chk-passable', cond: refAvg >= 10 && refAvg < 12 },
+    { id: 'chk-insuffisant', cond: refAvg < 10 },
+
+    // --- Décisions du Conseil ---
+    { id: 'chk-felicitations', cond: refAvg >= 16 },
+    { id: 'chk-encouragement', cond: refAvg >= 14 && refAvg < 16 },
+    { id: 'chk-tableau-honneur', cond: refAvg >= 12 && refAvg < 14 },
+    { id: 'chk-conseil-assezbien', cond: refAvg >= 10 && refAvg < 12 },
+    { id: 'chk-avertissement', cond: refAvg >= 8 && refAvg < 10 },
+    { id: 'chk-blame', cond: refAvg < 8 }
+];
 
                     decisions.forEach(item => {
                         let el = div.querySelector(`#${item.id}`);
