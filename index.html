@@ -556,6 +556,15 @@
         if (!appState) appState = { classes: {} };
         if (!appState.classes) appState.classes = {};
 
+        // 1. Rétrocompatibilité absolue : Scanne TOUTES les classes existantes (même non standards)
+        // pour s'assurer que l'objet "fees" existe et évite les erreurs d'affichage ou "undefined".
+        for (let classKey in appState.classes) {
+            if (!appState.classes[classKey].fees) {
+                appState.classes[classKey].fees = { inscription: 0, mensualite: 0 };
+            }
+        }
+
+        // 2. Initialisation des classes par défaut
         classNames.forEach(c => {
             const sections = getSectionsForClass(c);
             sections.forEach(s => {
@@ -564,12 +573,8 @@
                     appState.classes[key] = {
                         subjects: getDefaultSubjects(c),
                         students: [],
-                        fees: { inscription: 0, mensualite: 0 } // Nouveau : Tarifs de classe
+                        fees: { inscription: 0, mensualite: 0 } 
                     };
-                }
-                // Rétrocompatibilité pour s'assurer que "fees" existe
-                if (!appState.classes[key].fees) {
-                    appState.classes[key].fees = { inscription: 0, mensualite: 0 };
                 }
             });
         });
@@ -630,6 +635,10 @@
     // --- GESTION DES TARIFS DE CLASSE ---
     function openClassFeesModal() {
         const key = getCurrentClassKey();
+        if (!appState.classes[key]) return;
+        
+        // Sécurité supplémentaire au cas où
+        if (!appState.classes[key].fees) appState.classes[key].fees = { inscription: 0, mensualite: 0 };
         const clsData = appState.classes[key];
         
         document.getElementById('fees-class-name').textContent = `${appState.selectedClass} ${appState.selectedSection}`;
@@ -738,8 +747,10 @@
         const targetClass = document.getElementById('reg-class').value;
         const targetSection = document.getElementById('reg-section').value;
         const key = `${targetClass}_${targetSection}`;
+        
+        // Sécurité renforcée pour forcer l'affichage de 0 si non défini plutôt que de planter
         if(appState.classes[key] && appState.classes[key].fees) {
-            document.getElementById('reg-amount').value = appState.classes[key].fees.inscription;
+            document.getElementById('reg-amount').value = appState.classes[key].fees.inscription || 0;
         } else {
             document.getElementById('reg-amount').value = 0;
         }
@@ -790,8 +801,6 @@
         if (!appState.classes[newClassKey]) {
             appState.classes[newClassKey] = { subjects: getDefaultSubjects(targetClass), students: [], fees: { inscription: 0, mensualite: 0 } };
         }
-
-        const currentFees = appState.classes[newClassKey].fees;
 
         if (form.dataset.mode === "edit") {
             const oldClassKey = form.dataset.oldClassKey;
@@ -1509,6 +1518,12 @@
 
     async function ouvrirModalMensualites(studentId) {
         const classKey = getCurrentClassKey();
+        
+        // Sécurité en cas de chargement anormal de vieilles données
+        if (!appState.classes[classKey].fees) {
+            appState.classes[classKey].fees = { inscription: 0, mensualite: 0 };
+        }
+
         const clsData = appState.classes[classKey];
         const student = clsData.students.find(s => s.id === studentId);
         if (!student) return;
@@ -1523,13 +1538,13 @@
             student.mensualites[anneeCourante] = {};
         }
 
-        // Récupération de la mensualité définie pour la classe entière
-        const montantMensuelFixe = clsData.fees ? parseInt(clsData.fees.mensualite || 0) : 0;
-        const montantInscriptionFixe = clsData.fees ? parseInt(clsData.fees.inscription || 0) : 0;
+        // Récupération sécurisée avec "parseInt" en gérant le null/undefined
+        const montantMensuelFixe = parseInt(clsData.fees.mensualite) || 0;
+        const montantInscriptionFixe = parseInt(clsData.fees.inscription) || 0;
 
         document.getElementById('mens-student-name').innerText = `Élève : ${student.firstName} ${student.lastName} (Classe : ${appState.selectedClass})`;
         
-        // Mise à jour de l'affichage en haut du modal
+        // Affichage formatté
         document.getElementById('mens-default-amount').innerText = `${montantMensuelFixe.toLocaleString('fr-FR')} F CFA / mois`;
         document.getElementById('mens-inscription-amount').innerText = `${montantInscriptionFixe.toLocaleString('fr-FR')} F CFA`;
 
@@ -1552,7 +1567,6 @@
                 : `<button type="button" onclick="encaisserPaiementMois('${studentId}', '${anneeCourante}', '${mois.toLowerCase()}', ${montantMensuelFixe})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-semibold border border-indigo-200 transition-all w-full sm:w-auto">Encaisser</button>`;
 
             const tr = document.createElement('tr');
-            // Classes Tailwind pour transformer le tableau en cartes sur mobile
             tr.className = "flex flex-col sm:table-row hover:bg-slate-50/70 transition-colors border-b border-slate-100 py-3 sm:py-0";
             tr.innerHTML = `
                 <td class="px-4 py-2 sm:py-3.5 flex justify-between items-center sm:table-cell">
