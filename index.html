@@ -207,11 +207,14 @@
             </div>
 
             <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0">
+                <button onclick="openClassFeesModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-amber-100">
+                    <i class="fa-solid fa-coins text-xs"></i> Tarifs classe
+                </button>
                 <button onclick="openModal('add-student-modal')" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-sm">
-                    <i class="fa-solid fa-plus text-xs"></i> Ajouter un élève
+                    <i class="fa-solid fa-plus text-xs"></i> Ajouter élève
                 </button>
                 <button onclick="openSubjectsModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-indigo-100">
-                    <i class="fa-solid fa-book text-xs"></i> Gérer les matières
+                    <i class="fa-solid fa-book text-xs"></i> Gérer matières
                 </button>
             </div>
         </section>
@@ -331,40 +334,64 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Niveau d'étude</label>
-                        <select id="reg-class" onchange="updateRegSections()" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium">
+                        <select id="reg-class" onchange="updateRegSections(); updateRegAmountDisplay();" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium">
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Série / Classe</label>
-                        <select id="reg-section" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium">
+                        <select id="reg-section" onchange="updateRegAmountDisplay()" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium">
                         </select>
                     </div>
                 </div>
                 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Montant Inscrit (FCFA)</label>
-                    <input type="number" id="reg-amount" required value="0" class="text-indigo-600 font-bold text-lg border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Frais d'inscription de la classe (FCFA)</label>
+                    <input type="number" id="reg-amount" readonly class="text-indigo-600 font-bold text-lg border border-slate-200 rounded-xl p-3 w-full bg-slate-50 outline-none transition-all cursor-not-allowed">
+                    <p class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-circle-info"></i> Ce montant est défini globalement pour la classe via "Tarifs classe".</p>
                 </div>
 
-             <div class="mt-8 flex flex-wrap justify-end gap-3 pt-4 border-t border-slate-100">
-    <button type="button" 
-            onclick="closeModal('registration-modal')" 
-            class="px-5 py-2.5 rounded-xl text-slate-600 font-medium hover:bg-slate-100 transition-all">
-        Annuler
-    </button>
+                <div class="mt-8 flex flex-wrap justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" 
+                            onclick="closeModal('registration-modal')" 
+                            class="px-5 py-2.5 rounded-xl text-slate-600 font-medium hover:bg-slate-100 transition-all">
+                        Annuler
+                    </button>
 
-   <button type="button" 
-        id="reg-mensualites-btn"
-        onclick="redirigerVersMensualites()" 
-        class="hidden bg-amber-500 hover:bg-amber-600 text-white px-4 py-3 sm:px-5 sm:py-2.5 rounded-xl font-semibold shadow-md transition-all flex items-center justify-center gap-2 w-full sm:w-auto text-sm sm:text-base">
-    <i class="fa-solid fa-wallet"></i> <span>Gérer les mensualités</span>
-</button>
+                    <button type="button" 
+                            id="reg-mensualites-btn"
+                            onclick="redirigerVersMensualites()" 
+                            class="hidden bg-amber-500 hover:bg-amber-600 text-white px-4 py-3 sm:px-5 sm:py-2.5 rounded-xl font-semibold shadow-md transition-all flex items-center justify-center gap-2 w-full sm:w-auto text-sm sm:text-base">
+                        <i class="fa-solid fa-wallet"></i> <span>Gérer les mensualités</span>
+                    </button>
 
-    <button type="submit" 
-            class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-md transition-all">
-        Enregistrer l'inscription
-    </button>
-</div>
+                    <button type="submit" 
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-md transition-all">
+                        Enregistrer l'inscription
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="class-fees-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
+            <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2 border-b pb-3">
+                <i class="fa-solid fa-coins text-amber-500"></i> Tarifs de la classe
+            </h3>
+            <p class="text-xs text-slate-500 mb-4">Ces montants s'appliqueront à <b>tous les élèves</b> de cette classe (<span id="fees-class-name" class="font-bold text-indigo-600"></span>).</p>
+            <form id="class-fees-form" onsubmit="saveClassFees(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Montant Inscription (FCFA)</label>
+                    <input type="number" id="class-fee-inscription" min="0" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Mensualité (FCFA / mois)</label>
+                    <input type="number" id="class-fee-mensualite" min="0" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium">
+                </div>
+                <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="closeModal('class-fees-modal')" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-sm font-semibold">Annuler</button>
+                    <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm">Enregistrer Tarifs</button>
+                </div>
             </form>
         </div>
     </div>
@@ -536,8 +563,13 @@
                 if (!appState.classes[key]) {
                     appState.classes[key] = {
                         subjects: getDefaultSubjects(c),
-                        students: []
+                        students: [],
+                        fees: { inscription: 0, mensualite: 0 } // Nouveau : Tarifs de classe
                     };
+                }
+                // Rétrocompatibilité pour s'assurer que "fees" existe
+                if (!appState.classes[key].fees) {
+                    appState.classes[key].fees = { inscription: 0, mensualite: 0 };
                 }
             });
         });
@@ -594,6 +626,31 @@
     function closeModal(id) {
         document.getElementById(id).classList.add('hidden');
     }
+
+    // --- GESTION DES TARIFS DE CLASSE ---
+    function openClassFeesModal() {
+        const key = getCurrentClassKey();
+        const clsData = appState.classes[key];
+        
+        document.getElementById('fees-class-name').textContent = `${appState.selectedClass} ${appState.selectedSection}`;
+        document.getElementById('class-fee-inscription').value = clsData.fees.inscription;
+        document.getElementById('class-fee-mensualite').value = clsData.fees.mensualite;
+        
+        openModal('class-fees-modal');
+    }
+
+    function saveClassFees(e) {
+        e.preventDefault();
+        const key = getCurrentClassKey();
+        const inscription = parseInt(document.getElementById('class-fee-inscription').value) || 0;
+        const mensualite = parseInt(document.getElementById('class-fee-mensualite').value) || 0;
+        
+        appState.classes[key].fees = { inscription, mensualite };
+        saveToStorage();
+        closeModal('class-fees-modal');
+        showToast("Tarifs de la classe mis à jour !", "success");
+    }
+    // ------------------------------------
 
     function updateSettingsPeriodSelect() {
         const sel = document.getElementById('settings-semester');
@@ -660,8 +717,9 @@
     function openRegistrationModal() {
         const modal = document.getElementById('registration-modal');
         const fClass = document.getElementById('reg-class');
-        fClass.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
+        fClass.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass === c ? 'selected' : ''}>${c}</option>`).join('');
         updateRegSections();
+        updateRegAmountDisplay();
         
         // Masquer le bouton mensualités pour une nouvelle inscription
         document.getElementById('reg-mensualites-btn').classList.add('hidden');
@@ -673,7 +731,18 @@
         const cls = document.getElementById('reg-class').value;
         const fSec = document.getElementById('reg-section');
         const sections = getSectionsForClass(cls);
-        fSec.innerHTML = sections.map(s => `<option value="${s}">${s === "" ? "Aucune" : s}</option>`).join('');
+        fSec.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection === s ? 'selected' : ''}>${s === "" ? "Aucune" : s}</option>`).join('');
+    }
+
+    function updateRegAmountDisplay() {
+        const targetClass = document.getElementById('reg-class').value;
+        const targetSection = document.getElementById('reg-section').value;
+        const key = `${targetClass}_${targetSection}`;
+        if(appState.classes[key] && appState.classes[key].fees) {
+            document.getElementById('reg-amount').value = appState.classes[key].fees.inscription;
+        } else {
+            document.getElementById('reg-amount').value = 0;
+        }
     }
 
     function openEditInscription(studentId) {
@@ -690,7 +759,7 @@
         document.getElementById('reg-class').value = appState.selectedClass;
         updateRegSections();
         document.getElementById('reg-section').value = appState.selectedSection;
-        document.getElementById('reg-amount').value = student.inscriptionHistory ? student.inscriptionHistory.amount : 0;
+        updateRegAmountDisplay();
 
         const form = document.getElementById('registration-form');
         form.dataset.mode = "edit";
@@ -711,17 +780,18 @@
         const pob = document.getElementById('reg-pob').value.trim();
         const targetClass = document.getElementById('reg-class').value;
         const targetSection = document.getElementById('reg-section').value;
-        const amount = parseFloat(document.getElementById('reg-amount').value) || 0;
-        console.log("État actuel de appState :", appState); // Ajout pour débogage
-    if (!appState || !appState.classes) {
-        console.error("Erreur : appState n'est pas initialisé correctement.");
-        return;
-    }
+        
+        if (!appState || !appState.classes) {
+            console.error("Erreur : appState n'est pas initialisé correctement.");
+            return;
+        }
 
         const newClassKey = `${targetClass}_${targetSection}`;
         if (!appState.classes[newClassKey]) {
-            appState.classes[newClassKey] = { subjects: getDefaultSubjects(targetClass), students: [] };
+            appState.classes[newClassKey] = { subjects: getDefaultSubjects(targetClass), students: [], fees: { inscription: 0, mensualite: 0 } };
         }
+
+        const currentFees = appState.classes[newClassKey].fees;
 
         if (form.dataset.mode === "edit") {
             const oldClassKey = form.dataset.oldClassKey;
@@ -740,10 +810,6 @@
                     appState.classes[newClassKey].students.push(studentData);
                 }
                 
-                studentData.inscriptionHistory = {
-                    amount: amount,
-                    dateInscription: studentData.inscriptionHistory?.dateInscription || new Date().toLocaleDateString('fr-FR')
-                };
                 showToast("Fiche mise à jour avec succès !", "success");
             }
         } else {
@@ -756,7 +822,6 @@
                 grades: {},
                 mensualites: {},
                 inscriptionHistory: {
-                    amount: amount,
                     dateInscription: new Date().toLocaleDateString('fr-FR')
                 }
             };
@@ -786,7 +851,8 @@
         if (!appState.classes[key]) {
             appState.classes[key] = {
                 subjects: getDefaultSubjects(appState.selectedClass),
-                students: []
+                students: [],
+                fees: { inscription: 0, mensualite: 0 }
             };
         }
         
@@ -1068,7 +1134,7 @@
     function render() {
         const key = getCurrentClassKey();
         if (!appState.classes[key]) {
-            appState.classes[key] = { subjects: getDefaultSubjects(appState.selectedClass), students: [] };
+            appState.classes[key] = { subjects: getDefaultSubjects(appState.selectedClass), students: [], fees: { inscription: 0, mensualite: 0 } };
         }
 
         const clsData = appState.classes[key];
@@ -1443,24 +1509,29 @@
 
     async function ouvrirModalMensualites(studentId) {
         const classKey = getCurrentClassKey();
-        const student = appState.classes[classKey].students.find(s => s.id === studentId);
+        const clsData = appState.classes[classKey];
+        const student = clsData.students.find(s => s.id === studentId);
         if (!student) return;
 
         if (!student.mensualites) {
             student.mensualites = {};
         }
 
-        // Utilisation de l'année dynamique configurée dans l'application
         const anneeCourante = appState.currentYear || "2025-2026"; 
         
         if (!student.mensualites[anneeCourante]) {
             student.mensualites[anneeCourante] = {};
         }
 
-        const montantMensuelFixe = student.inscriptionHistory ? parseInt(student.inscriptionHistory.amount || 0) : 0;
+        // Récupération de la mensualité définie pour la classe entière
+        const montantMensuelFixe = clsData.fees ? parseInt(clsData.fees.mensualite || 0) : 0;
+        const montantInscriptionFixe = clsData.fees ? parseInt(clsData.fees.inscription || 0) : 0;
 
         document.getElementById('mens-student-name').innerText = `Élève : ${student.firstName} ${student.lastName} (Classe : ${appState.selectedClass})`;
+        
+        // Mise à jour de l'affichage en haut du modal
         document.getElementById('mens-default-amount').innerText = `${montantMensuelFixe.toLocaleString('fr-FR')} F CFA / mois`;
+        document.getElementById('mens-inscription-amount').innerText = `${montantInscriptionFixe.toLocaleString('fr-FR')} F CFA`;
 
         const tbody = document.getElementById('mensualites-list-tbody');
         tbody.innerHTML = "";
@@ -1477,17 +1548,32 @@
             const dateAffichee = estPaye ? paiementInfo.date : "-";
 
             const boutonAction = estPaye
-                ? `<button type="button" onclick="annulerPaiementMois('${studentId}', '${anneeCourante}', '${mois.toLowerCase()}')" class="text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-lg text-xs font-medium border border-rose-200 transition-all">Annuler</button>`
-                : `<button type="button" onclick="encaisserPaiementMois('${studentId}', '${anneeCourante}', '${mois.toLowerCase()}', ${montantMensuelFixe})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-semibold border border-indigo-200 transition-all">Encaisser</button>`;
+                ? `<button type="button" onclick="annulerPaiementMois('${studentId}', '${anneeCourante}', '${mois.toLowerCase()}')" class="text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-lg text-xs font-medium border border-rose-200 transition-all w-full sm:w-auto">Annuler</button>`
+                : `<button type="button" onclick="encaisserPaiementMois('${studentId}', '${anneeCourante}', '${mois.toLowerCase()}', ${montantMensuelFixe})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-semibold border border-indigo-200 transition-all w-full sm:w-auto">Encaisser</button>`;
 
             const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-50/70 transition-colors";
+            // Classes Tailwind pour transformer le tableau en cartes sur mobile
+            tr.className = "flex flex-col sm:table-row hover:bg-slate-50/70 transition-colors border-b border-slate-100 py-3 sm:py-0";
             tr.innerHTML = `
-                <td class="px-4 py-3.5 font-medium text-slate-900">${mois}</td>
-                <td class="px-4 py-3.5">${badgeStatut}</td>
-                <td class="px-4 py-3.5 text-right font-semibold text-slate-700">${montantAffiche}</td>
-                <td class="px-4 py-3.5 text-center text-xs text-slate-500">${dateAffichee}</td>
-                <td class="px-4 py-3.5 text-center">${boutonAction}</td>
+                <td class="px-4 py-2 sm:py-3.5 flex justify-between items-center sm:table-cell">
+                    <span class="sm:hidden font-semibold text-slate-500 text-xs uppercase">Mois</span>
+                    <span class="font-medium text-slate-900">${mois}</span>
+                </td>
+                <td class="px-4 py-2 sm:py-3.5 flex justify-between items-center sm:table-cell">
+                    <span class="sm:hidden font-semibold text-slate-500 text-xs uppercase">Statut</span>
+                    ${badgeStatut}
+                </td>
+                <td class="px-4 py-2 sm:py-3.5 flex justify-between items-center sm:table-cell sm:text-right">
+                    <span class="sm:hidden font-semibold text-slate-500 text-xs uppercase">Montant</span>
+                    <span class="font-semibold text-slate-700">${montantAffiche}</span>
+                </td>
+                <td class="px-4 py-2 sm:py-3.5 flex justify-between items-center sm:table-cell sm:text-center">
+                    <span class="sm:hidden font-semibold text-slate-500 text-xs uppercase">Date</span>
+                    <span class="text-xs text-slate-500">${dateAffichee}</span>
+                </td>
+                <td class="px-4 py-3 sm:py-3.5 flex justify-center sm:table-cell sm:text-center mt-2 sm:mt-0">
+                    ${boutonAction}
+                </td>
             `;
             tbody.appendChild(tr);
         });
@@ -1538,30 +1624,36 @@
       }
     </script>
     
-    <div id="mensualites-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center z-50 hidden animate-fade-in">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-2xl w-full mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+    <div id="mensualites-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center z-50 hidden animate-fade-in p-2 sm:p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-2xl w-full mx-auto overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
             
-            <div class="bg-gradient-to-r from-indigo-900 to-violet-800 text-white px-6 py-4 flex justify-between items-center shadow-md">
+            <div class="bg-gradient-to-r from-indigo-900 to-violet-800 text-white px-4 py-4 sm:px-6 flex flex-wrap gap-3 justify-between items-center shadow-md">
                 <div>
                     <h3 class="text-lg font-bold flex items-center gap-2">
                         <i class="fa-solid fa-wallet text-amber-400"></i> Suivi des Mensualités
                     </h3>
                     <p id="mens-student-name" class="text-indigo-200 text-xs font-medium mt-0.5">Élève : Loading...</p>
                 </div>
-                <button type="button" onclick="closeModal('mensualites-modal')" class="text-indigo-100 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-xl transition-all">
+                <button type="button" onclick="closeModal('mensualites-modal')" class="text-indigo-100 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-xl transition-all ml-auto">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <div class="p-6 overflow-y-auto bg-slate-50/50 flex-1">
-                <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm mb-5 flex justify-between items-center">
-                    <span class="text-sm font-semibold text-slate-600">Montant de la mensualité fixé :</span>
-                    <span id="mens-default-amount" class="text-base font-bold text-indigo-600">0 F CFA / mois</span>
+            <div class="p-4 sm:p-6 overflow-y-auto bg-slate-50/50 flex-1">
+                <div class="bg-white p-4 rounded-xl border border-indigo-100 shadow-sm mb-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="flex flex-col border-b sm:border-b-0 sm:border-r border-slate-100 pb-3 sm:pb-0 sm:pr-4">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Tarif Inscription (Classe)</span>
+                        <span id="mens-inscription-amount" class="text-lg font-bold text-slate-700">0 F CFA</span>
+                    </div>
+                    <div class="flex flex-col sm:pl-2">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Mensualité Fixée (Classe)</span>
+                        <span id="mens-default-amount" class="text-lg font-bold text-indigo-600">0 F CFA / mois</span>
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-                    <table class="w-full border-collapse text-left text-sm">
-                        <thead>
+                    <table class="w-full border-collapse text-left text-sm block sm:table">
+                        <thead class="hidden sm:table-header-group">
                             <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold uppercase text-[11px] tracking-wider">
                                 <th class="px-4 py-3">Mois</th>
                                 <th class="px-4 py-3">Statut</th>
@@ -1570,14 +1662,14 @@
                                 <th class="px-4 py-3 text-center">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="mensualites-list-tbody" class="divide-y divide-slate-100 text-slate-700">
+                        <tbody id="mensualites-list-tbody" class="flex flex-col sm:table-row-group divide-y sm:divide-y-0 divide-slate-100 text-slate-700">
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
-                <button type="button" onclick="closeModal('mensualites-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-sm">
+            <div class="px-4 py-4 sm:px-6 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <button type="button" onclick="closeModal('mensualites-modal')" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-sm">
                     Fermer la fenêtre
                 </button>
             </div>
