@@ -2,13 +2,14 @@
 <html lang="fr">
 
 <head>
-    <meta charset="UTF-8">
+     <meta charset="UTF-8">
     <title>Bulletin de Notes - GestNotes</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-   <script src="idb-keyval.js"></script>
+    <script src="https://unpkg.com/idb-keyval@6.2.1/dist/umd.js"></script>
      <link rel="apple-touch-icon" href="icon-192.png">
+
     
     <style>
         /* =======================================================
@@ -147,7 +148,8 @@
    <div class="bulletin-wrapper no-print" id="setup-panel">
         <div class="input-panel">
             <label for="header-input">Modifier l'en-tête de l'établissement :</label>
-            <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE &#10;IEF PIKINE &#10;RENOVATION</textarea>
+            <textarea id="header-input" rows="3">IA PIKINE / GUEDIAWAYE
+            6+;IEF PIKINE&#10;RENOVATION</textarea>
             
             <div class="logo-inputs">
                 <div class="logo-file-wrapper">
@@ -548,23 +550,14 @@
                     let avgNum = parseFloat(stats.avg.replace(',', '.'));
                     let refAvg = isPrim ? (avgNum * 2) : avgNum;
 
-                  const decisions = [
-    // --- Tableau des Mentions ---
-    { id: 'chk-excellent', cond: refAvg >= 19 },
-    { id: 'chk-tresbien', cond: refAvg >= 16 && refAvg < 19 },
-    { id: 'chk-bien', cond: refAvg >= 14 && refAvg < 16 },
-    { id: 'chk-assezbien', cond: refAvg >= 12 && refAvg < 14 },
-    { id: 'chk-passable', cond: refAvg >= 10 && refAvg < 12 },
-    { id: 'chk-insuffisant', cond: refAvg < 10 },
-
-    // --- Décisions du Conseil ---
-    { id: 'chk-felicitations', cond: refAvg >= 16 },
-    { id: 'chk-encouragement', cond: refAvg >= 14 && refAvg < 16 },
-    { id: 'chk-tableau-honneur', cond: refAvg >= 12 && refAvg < 14 },
-    { id: 'chk-conseil-assezbien', cond: refAvg >= 10 && refAvg < 12 },
-    { id: 'chk-avertissement', cond: refAvg >= 8 && refAvg < 10 },
-    { id: 'chk-blame', cond: refAvg < 8 }
-];
+                    const decisions = [
+                        { id: 'chk-excellent', cond: refAvg >= 19 },
+                        { id: 'chk-tresbien', cond: refAvg >= 16 && refAvg < 19 },
+                        { id: 'chk-bien', cond: refAvg >= 14 && refAvg < 16 },
+                        { id: 'chk-assezbien', cond: refAvg >= 12 && refAvg < 14 },
+                        { id: 'chk-passable', cond: refAvg >= 10 && refAvg < 12 },
+                        { id: 'chk-insuffisant', cond: refAvg < 10 }
+                    ];
 
                     decisions.forEach(item => {
                         let el = div.querySelector(`#${item.id}`);
@@ -585,3 +578,4 @@
 </script>
 </body>
 </html>
+"""
