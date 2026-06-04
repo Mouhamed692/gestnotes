@@ -19,8 +19,9 @@
     <script src="tailwind.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="html2pdf.bundle.min.js"></script>
-   <script src="idb-keyval.js"></script>
-     <style>
+    <script src="idb-keyval.js"></script>
+    
+    <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
@@ -57,28 +58,17 @@
         .toast-animate {
             animation: slideIn 0.3s ease forwards, fadeOut 0.3s ease 2.7s forwards;
         }
+        
         table {
             border-collapse: collapse;
         }
 
         td, th {
-            padding: 4px 2px;
+            padding: 8px 6px;
             text-align: center;
             border: 1px solid #e2e8f0;
         }
 
-        td:first-child {
-            text-align: left;
-            padding-left: 10px;
-            font-weight: 500;
-        }
-        #rec-body tr:nth-child(even) {
-            background-color: #f8fafc;
-        }
-
-        #rec-body tr:hover {
-            background-color: #eef2ff;
-        }
         .recensement-table {
             width: 100%;
             border-collapse: collapse;
@@ -100,18 +90,6 @@
             text-align: left;
             padding-left: 10px;
         }
-
-        .recensement-table input {
-            width: 100%;
-            border: none;
-            background: transparent;
-            text-align: center;
-            outline: none;
-        }
-
-        .recensement-table input:focus {
-            background: #eef2ff;
-        }
     </style>
 </head>
 
@@ -132,7 +110,7 @@
             <div class="bg-indigo-950/50 rounded-xl p-1 flex border border-indigo-800/50 text-sm">
                 <div class="px-3 py-1.5 font-medium text-indigo-200 flex items-center gap-1.5">
                     <i class="fa-solid fa-calendar-days text-xs text-indigo-400"></i>
-                    <span id="display-year">2024-2025</span>
+                    <span id="display-year">2025-2026</span>
                 </div>
                 <div class="bg-indigo-600 px-3 py-1.5 rounded-lg font-semibold shadow-sm flex items-center gap-1.5">
                     <i class="fa-solid fa-clock text-xs"></i>
@@ -150,40 +128,28 @@
         
        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                <button onclick="exportData()" 
-                        class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md">
+                <button onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md">
                     <i class="fas fa-file-download"></i> <span>Exporter</span>
                 </button>
 
                 <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
-                <button onclick="document.getElementById('importFile').click()" 
-                        class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md">
+                <button onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md">
                     <i class="fas fa-file-upload"></i> <span>Importer</span>
                 </button>
                 
-                <button onclick="openRegistrationModal()" 
-                        class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white py-3 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all">
+                <button onclick="openRegistrationModal()" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white py-3 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all">
                     <i class="fa-solid fa-user-plus"></i> Inscription
                 </button>
                 
-                <button onclick="exporterFeuilleSaisie()" 
-                        class="bg-slate-600 hover:bg-slate-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
+                <button onclick="exporterFeuilleSaisie()" class="bg-slate-600 hover:bg-slate-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
                     <i class="fa-solid fa-print"></i> Imprimer Grille
                 </button>
                 
-                <button onclick="document.getElementById('importInput').click()" 
-                        class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
+                <button onclick="document.getElementById('importInput').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
                     <i class="fa-solid fa-file-import"></i> Importer Notes
                 </button>
                 <input type="file" id="importInput" class="hidden" accept=".csv,.txt" onchange="importerNotesAuto(this)">
             </div>
-            
-            <section id="recensement-section" style="position: absolute; left: -9999px; top: -9999px;">
-                <table class="recensement-table">
-                    <thead id="rec-head"></thead>
-                    <tbody id="rec-body"></tbody>
-                </table>
-            </section>
         </div>
 
         <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-wrap gap-4 items-center justify-between">
@@ -219,7 +185,7 @@
             </div>
         </section>
 
-       <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 hidden flex flex-col gap-4">
+        <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 hidden flex flex-col gap-4">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
                 <h3 class="text-md font-bold text-slate-700 flex items-center gap-2 w-full lg:w-auto">
                     <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Saisie des Notes
@@ -227,37 +193,35 @@
                 
                 <div class="flex flex-col sm:flex-row w-full lg:w-auto items-center gap-3">
                     <div class="w-full sm:w-auto flex-1">
-                        <input type="text" id="grade-search" oninput="filterStudentsGlobal()" placeholder="Rechercher un élève par son nom..." 
+                        <input type="text" id="grade-search" oninput="filterStudentsGlobal()" placeholder="Rechercher un élève..." 
                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20">
                     </div>
                   
                     <div class="flex w-full sm:w-auto items-center gap-2">
-                        <select id="grade-subject-select" onchange="renderGradesGrid()" class="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none">
+                        <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none">
                         </select>
-                        <button onclick="goToNextSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap" title="Passer à la discipline suivante">
+                        <button onclick="goToNextSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap">
                             Suivant <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
-           <div class="overflow-x-auto w-full border border-slate-300 rounded-lg shadow-sm">
+            <div class="overflow-x-auto w-full border border-slate-300 rounded-lg shadow-sm">
                 <table class="w-full text-xs border-collapse table-fixed min-w-[800px]">
                     <thead class="bg-slate-100">
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider sticky top-0 z-10">
-                            <th class="p-3 font-semibold text-left">Élève</th>
-                            <th class="p-3 font-semibold text-center" id="lbl-th-dev1">Devoir 1</th>
-                            
-                            <th class="p-3 font-semibold text-center group cursor-pointer hover:bg-slate-200 transition-colors" onclick="toggleDev3()" title="Afficher/Masquer le Devoir 3">
+                            <th class="p-3 text-left">Élève</th>
+                            <th class="p-3 text-center" id="lbl-th-dev1">Devoir 1</th>
+                            <th class="p-3 text-center group cursor-pointer hover:bg-slate-200" onclick="toggleDev3()">
                                 <span id="lbl-th-dev2">Devoir 2</span>
-                                <i class="fa-solid fa-circle-plus ml-1 text-indigo-400 opacity-70 group-hover:opacity-100 group-hover:text-indigo-600"></i>
+                                <i class="fa-solid fa-circle-plus ml-1 text-indigo-400"></i>
                             </th>
-                            
-                            <th class="p-3 font-semibold text-center" id="lbl-th-dev3" style="display: none;">Devoir 3</th>
-                            <th class="p-3 font-semibold text-center" id="lbl-th-compo">Composition</th>
-                            </tr>
+                            <th class="p-3 text-center" id="lbl-th-dev3" style="display: none;">Devoir 3</th>
+                            <th class="p-3 text-center" id="lbl-th-compo">Composition</th>
+                        </tr>
                     </thead>
-                  <tbody id="grades-table-body" class="divide-y divide-slate-200"></tbody>
+                    <tbody id="grades-table-body" class="divide-y divide-slate-200"></tbody>
                 </table>
             </div>
         </section>
@@ -273,10 +237,10 @@
                 </div>
                 
                 <div class="flex items-center gap-2">
-                    <button onclick="window.printAllReportCards()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all" title="Tout imprimer">
+                    <button onclick="window.printAllReportCards()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
                         <i class="fa-solid fa-print"></i> Bulletins
                     </button>
-                    <button onclick="window.exportAllCSV()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all" title="Exporter CSV">
+                    <button onclick="window.exportAllCSV()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
                         <i class="fa-solid fa-file-csv"></i> Exporter tout
                     </button>
                 </div>
@@ -287,12 +251,11 @@
                     <thead>
                         <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/70">
                             <th class="py-3.5 px-5">Élève</th>
-                            <th class="py-3.5 px-5">Moyenne Générale</th>
+                            <th class="py-3.5 px-5 text-center">Moyenne Générale</th>
                             <th class="py-3.5 px-5 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm">
-                    </tbody>
+                    <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
                 </table>
                 <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-slate-400">
                     <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-50"></i>
@@ -303,7 +266,7 @@
     </main>
 
     <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100 transform transition-all scale-100">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100">
             <h3 class="text-2xl font-bold mb-6 text-slate-800 border-b pb-4 flex items-center gap-2">
                 <i class="fa-solid fa-file-signature text-indigo-600"></i> Fiche d'Inscription Scolaire
             </h3>
@@ -312,64 +275,142 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Prénom</label>
-                        <input type="text" id="reg-firstname" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <input type="text" id="reg-firstname" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Nom</label>
-                        <input type="text" id="reg-lastname" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <input type="text" id="reg-lastname" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Date de naissance</label>
-                        <input type="date" id="reg-dob" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <input type="date" id="reg-dob" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Lieu de naissance</label>
-                        <input type="text" id="reg-pob" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <input type="text" id="reg-pob" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Téléphone Parent</label>
+                    <input type="tel" id="reg-phone" placeholder="77XXXXXXX ou 76XXXXXXX" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Niveau d'étude</label>
-                        <select id="reg-class" onchange="updateRegSections(); updateRegAmountDisplay();" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium">
+                        <select id="reg-class" onchange="updateRegSections(); updateRegAmountDisplay();" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none font-medium">
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Série / Classe</label>
-                        <select id="reg-section" onchange="updateRegAmountDisplay()" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium">
+                        <select id="reg-section" onchange="updateRegAmountDisplay()" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none font-medium">
                         </select>
                     </div>
                 </div>
                 
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Frais d'inscription de la classe (FCFA)</label>
-                    <input type="number" id="reg-amount" readonly class="text-indigo-600 font-bold text-lg border border-slate-200 rounded-xl p-3 w-full bg-slate-50 outline-none transition-all cursor-not-allowed">
-                    <p class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-circle-info"></i> Ce montant est défini globalement pour la classe via "Tarifs classe".</p>
+                    <input type="number" id="reg-amount" readonly class="text-indigo-600 font-bold text-lg border border-slate-200 rounded-xl p-3 w-full bg-slate-50 outline-none cursor-not-allowed">
                 </div>
 
                 <div class="mt-8 flex flex-wrap justify-end gap-3 pt-4 border-t border-slate-100">
-                    <button type="button" 
-                            onclick="closeModal('registration-modal')" 
-                            class="px-5 py-2.5 rounded-xl text-slate-600 font-medium hover:bg-slate-100 transition-all">
+                    <button type="button" onclick="closeModal('registration-modal')" class="px-5 py-2.5 rounded-xl text-slate-600 font-medium hover:bg-slate-100">
                         Annuler
                     </button>
-
-                    <button type="button" 
-                            id="reg-mensualites-btn"
-                            onclick="redirigerVersMensualites()" 
-                            class="hidden bg-amber-500 hover:bg-amber-600 text-white px-4 py-3 sm:px-5 sm:py-2.5 rounded-xl font-semibold shadow-md transition-all flex items-center justify-center gap-2 w-full sm:w-auto text-sm sm:text-base">
-                        <i class="fa-solid fa-wallet"></i> <span>Gérer les mensualités</span>
+                    <button type="button" id="reg-mensualites-btn" onclick="redirigerVersMensualites()" class="hidden bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md flex items-center gap-2">
+                        <i class="fa-solid fa-wallet"></i> <span>Mensualités</span>
                     </button>
-
-                    <button type="submit" 
-                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-md transition-all">
-                        Enregistrer l'inscription
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-md">
+                        Enregistrer
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="mensualites-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="border-b pb-4 mb-4">
+                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-wallet text-indigo-600"></i> Suivi des Paiements : <span id="mens-student-name" class="text-indigo-600 font-extrabold"></span>
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">Classe : <span id="mens-student-class" class="font-bold"></span></p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Frais Inscription</p>
+                    <p class="text-lg font-bold text-slate-800 mt-1" id="bilan-inscription">0 F</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Scolarité Annuelle</p>
+                    <p class="text-lg font-bold text-indigo-700 mt-1" id="bilan-scolarite-fixee">0 F</p>
+                </div>
+                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                    <p class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Total Encaissé</p>
+                    <p class="text-lg font-bold text-emerald-700 mt-1" id="bilan-total-paye">0 F</p>
+                </div>
+                <div class="bg-rose-50 p-3 rounded-xl border border-rose-100">
+                    <p class="text-[10px] uppercase font-bold text-rose-600 tracking-wider">Reste à Payer</p>
+                    <p class="text-lg font-bold text-rose-700 mt-1" id="bilan-reste-payer">0 F</p>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto border border-slate-100 rounded-xl">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[11px] tracking-wider sticky top-0">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Frais / Période</th>
+                            <th class="px-4 py-3 text-center">Statut</th>
+                            <th class="px-4 py-3 text-right">Montant Payé</th>
+                            <th class="px-4 py-3 text-center">Mode</th>
+                            <th class="px-4 py-3 text-center">Date encaissement</th>
+                            <th class="px-4 py-3 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mensualites-list-tbody" class="divide-y divide-slate-100 text-slate-700">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-100 flex justify-end">
+                <button type="button" onclick="closeModal('mensualites-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="encaissement-modal" class="hidden fixed inset-0 bg-slate-900/50 z-55 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
+            <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2 border-b pb-2">
+                <i class="fa-solid fa-cash-register text-emerald-600"></i> Encaisser Paiement
+            </h4>
+            <p class="text-xs text-slate-500 mb-4">Période : <span id="encaissement-mois-titre" class="font-bold text-slate-700"></span></p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Montant versé (FCFA)</label>
+                    <input type="number" id="encaissement-montant-input" min="0" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-lg text-emerald-600 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Méthode de paiement</label>
+                    <select id="encaissement-methode-select" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold outline-none">
+                        <option value="Espèces">Espèces</option>
+                        <option value="Wave">Wave</option>
+                        <option value="Orange Money">Orange Money</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-2 border-t pt-3">
+                <button type="button" onclick="closeModal('encaissement-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold hover:bg-slate-50">Annuler</button>
+                <button onclick="validerEncaissement()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm">Valider le paiement</button>
+            </div>
         </div>
     </div>
 
@@ -378,19 +419,19 @@
             <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2 border-b pb-3">
                 <i class="fa-solid fa-coins text-amber-500"></i> Tarifs de la classe
             </h3>
-            <p class="text-xs text-slate-500 mb-4">Ces montants s'appliqueront à <b>tous les élèves</b> de cette classe (<span id="fees-class-name" class="font-bold text-indigo-600"></span>).</p>
+            <p class="text-xs text-slate-500 mb-4">Ces montants s'appliqueront à tous les élèves de cette classe (<span id="fees-class-name" class="font-bold text-indigo-600"></span>).</p>
             <form id="class-fees-form" onsubmit="saveClassFees(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Montant Inscription (FCFA)</label>
-                    <input type="number" id="class-fee-inscription" min="0" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium">
+                    <input type="number" id="class-fee-inscription" min="0" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Mensualité (FCFA / mois)</label>
-                    <input type="number" id="class-fee-mensualite" min="0" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium">
+                    <input type="number" id="class-fee-mensualite" min="0" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium">
                 </div>
                 <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
-                    <button type="button" onclick="closeModal('class-fees-modal')" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-sm font-semibold">Annuler</button>
-                    <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm">Enregistrer Tarifs</button>
+                    <button type="button" onclick="closeModal('class-fees-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
+                    <button type="submit" class="bg-amber-50 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -398,1481 +439,1057 @@
 
     <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 border border-slate-200">
-            <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-gear text-indigo-600"></i> Configuration
-            </h3>
+            <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2"><i class="fa-solid fa-gear text-indigo-600"></i> Configuration</h3>
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Année académique</label>
-                    <input type="text" id="settings-year" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium">
+                    <input type="text" id="settings-year" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5">
                 </div>
                 <div>
-                    <label id="lbl-settings-period" class="block text-xs font-semibold text-slate-500 mb-1">Période courante</label>
-                    <select id="settings-semester" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium"></select>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Période courante</label>
+                    <select id="settings-semester" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5"></select>
                 </div>
             </div>
             <div class="mt-6 flex justify-end gap-2">
-                <button onclick="closeModal('settings-modal')" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-sm font-semibold">Annuler</button>
-                <button onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm">Appliquer</button>
+                <button onclick="closeModal('settings-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
+                <button onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold">Appliquer</button>
             </div>
-        </div>
-    </div>
-
-    <div id="add-student-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 border border-slate-200">
-            <h3 class="text-lg font-bold mb-4 text-slate-800"><i class="fa-solid fa-user-plus text-indigo-600 mr-1"></i> Nouvel élève</h3>
-            <form id="add-student-form" onsubmit="handleAddStudent(event)" class="space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Prénom</label>
-                        <input type="text" id="student-firstname" required class="text-slate-900 w-full border border-slate-200 rounded-xl px-3 py-2.5 bg-slate-50 outline-none focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Nom</label>
-                        <input type="text" id="student-lastname" required class="text-slate-900 w-full border border-slate-200 rounded-xl px-3 py-2.5 bg-slate-50 outline-none focus:border-indigo-500">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Date de naiss.</label>
-                        <input type="date" id="student-dob" class="text-slate-900 w-full border border-slate-200 rounded-xl px-3 py-2.5 bg-slate-50 outline-none focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Lieu de naiss.</label>
-                        <input type="text" id="student-pob" placeholder="Dakar" class="text-slate-900 w-full border border-slate-200 rounded-xl px-3 py-2.5 bg-slate-50 outline-none focus:border-indigo-500">
-                    </div>
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('add-student-modal')" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-sm font-semibold">Annuler</button>
-                    <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm">Ajouter</button>
-                </div>
-            </form>
         </div>
     </div>
 
     <div id="subjects-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 border border-slate-200 max-h-[85vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-book text-indigo-600 mr-1"></i> <span id="lbl-subjects-title">Gestion des matières</span></h3>
-                <button onclick="loadStandardSubjects()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Charger standards
-                </button>
+                <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-book text-indigo-600 mr-1"></i> Gestion des matières</h3>
+                <button onclick="loadStandardSubjects()" class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold">Charger standards</button>
             </div>
-            
-            <div class="flex-1 overflow-y-auto pr-1 space-y-3" id="subjects-container"></div>
-
-            <button onclick="addNewSubjectRow()" class="mt-4 border-2 border-dashed border-slate-200 text-slate-500 hover:border-indigo-500 hover:text-indigo-600 w-full py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2">
-                <i class="fa-solid fa-plus text-xs"></i> Nouvelle ligne discipline
+            <div class="flex-1 overflow-y-auto space-y-3" id="subjects-container"></div>
+            <button onclick="addNewSubjectRow()" class="mt-4 border-2 border-dashed border-slate-200 text-slate-500 w-full py-2.5 rounded-xl text-sm font-semibold hover:text-indigo-600">
+                + Nouvelle ligne discipline
             </button>
-
             <div class="mt-5 flex justify-end gap-2 border-t pt-3">
-                <button onclick="closeModal('subjects-modal')" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-sm font-semibold">Fermer</button>
-                <button onclick="saveSubjects()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm">Enregistrer</button>
+                <button onclick="closeModal('subjects-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Fermer</button>
+                <button onclick="saveSubjects()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
             </div>
         </div>
     </div>
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-   <script>
-    const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-    
-    // Visibilité du devoir 3 gérée indépendamment par matière
-    let subjectDev3Visible = {};
-
-    function toggleDev3() {
-        const subSelect = document.getElementById('grade-subject-select');
-        const subjectId = subSelect.value;
-        if (!subjectId) return;
-        
-        subjectDev3Visible[subjectId] = !subjectDev3Visible[subjectId];
-        renderGradesGrid();
-        renderRecensement();
-    }
-
-    function getSectionsForClass(cls) {
-        if (["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"].includes(cls)) {
-            return ["", "A", "B", "C"];
-        }
-        if (["Seconde", "Première", "Terminale"].includes(cls)) {
-            return ["L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S2", "S2A", "S2B"];
-        }
-        return [""];
-    }
-
-    let appState = null;
-
-    const DEFAULT_STATE = {
-        currentYear: "2024-2025",
-        currentSemester: 1,
-        selectedClass: "6ème",
-        selectedSection: "",
-        classes: {}
-    };
-
-    async function migrateFromLocalStorage() {
-        const oldData = localStorage.getItem("gestnotes_state");
-        if (oldData) {
-            console.log("Migration détectée. Transfert vers IndexedDB...");
-            try {
-                const parsedData = JSON.parse(oldData);
-                await idbKeyval.set("gestnotes_state", parsedData);
-                localStorage.removeItem("gestnotes_state");
-                console.log("Migration terminée avec succès !");
-                return true;
-            } catch (e) {
-                console.error("Erreur lors de la migration :", e);
-                return false;
-            }
-        }
-        return false;
-    }
-
-    async function initApp() {
-        await migrateFromLocalStorage();
-        const savedState = await idbKeyval.get("gestnotes_state");
-        appState = savedState || DEFAULT_STATE;
-        buildEmptyState();
-        populateFilters();
-        updateHeaderDisplays();
-        render(); 
-    }
-
-    window.addEventListener('DOMContentLoaded', initApp);
-
-    function isPrimary(className) {
-        return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
-    }
-
-    function getPeriodLabel(className, periodNum) {
-        return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
-    }
-
-    function getCoefLabel(className) {
-        return isPrimary(className) ? "Max" : "Coef";
-    }
-
-    function buildEmptyState() {
-        if (!appState) appState = { classes: {} };
-        if (!appState.classes) appState.classes = {};
-
-        // 1. Rétrocompatibilité absolue : Scanne TOUTES les classes existantes (même non standards)
-        // pour s'assurer que l'objet "fees" existe et évite les erreurs d'affichage ou "undefined".
-        for (let classKey in appState.classes) {
-            if (!appState.classes[classKey].fees) {
-                appState.classes[classKey].fees = { inscription: 0, mensualite: 0 };
-            }
-        }
-
-        // 2. Initialisation des classes par défaut
-        classNames.forEach(c => {
-            const sections = getSectionsForClass(c);
-            sections.forEach(s => {
-                const key = `${c}_${s}`;
-                if (!appState.classes[key]) {
-                    appState.classes[key] = {
-                        subjects: getDefaultSubjects(c),
-                        students: [],
-                        fees: { inscription: 0, mensualite: 0 } 
-                    };
-                }
-            });
-        });
-    }
-
-    function getDefaultSubjects(className) {
-        if (isPrimary(className)) {
-            return [
-                { id: "sub_lang", name: "Langue & Communication", coef: 10 },
-                { id: "sub_math", name: "Mathématiques", coef: 10 },
-                { id: "sub_es", name: "Éducation Science & Sociale", coef: 10 },
-                { id: "sub_ed", name: "Éducation Développement", coef: 10 }
-            ];
-        }
-        return [
-            { id: "sub_math", name: "Mathématiques", coef: 4 },
-            { id: "sub_pc", name: "Physique-Chimie", coef: 3 },
-            { id: "sub_svt", name: "SVT", coef: 2 },
-            { id: "sub_fr", name: "Français", coef: 4 },
-            { id: "sub_hg", name: "Histoire-Géographie", coef: 2 },
-            { id: "sub_ang", name: "Anglais", coef: 2 }
-        ];
-    }
-
-    async function saveToStorage() {
-        try {
-            await idbKeyval.set("gestnotes_state", appState);
-        } catch (err) {
-            console.error("Erreur critique lors de la sauvegarde :", err);
-            alert("Attention : impossible d'enregistrer les données.");
-        }
-    }
-
-    function showToast(message, type = "info") {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast-animate flex items-center gap-3 bg-white border p-4 rounded-xl shadow-lg pointer-events-auto min-w-[300px] ${
-            type === 'success' ? 'border-emerald-500 text-emerald-800' : 'border-indigo-500 text-indigo-800'
-        }`;
-        const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-circle-info text-indigo-500';
-        toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    function openModal(id) {
-        document.getElementById(id).classList.remove('hidden');
-        if (id === 'settings-modal') {
-            document.getElementById('settings-year').value = appState.currentYear;
-            updateSettingsPeriodSelect();
-        }
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).classList.add('hidden');
-    }
-
-    // --- GESTION DES TARIFS DE CLASSE ---
-    function openClassFeesModal() {
-        const key = getCurrentClassKey();
-        if (!appState.classes[key]) return;
-        
-        // Sécurité supplémentaire au cas où
-        if (!appState.classes[key].fees) appState.classes[key].fees = { inscription: 0, mensualite: 0 };
-        const clsData = appState.classes[key];
-        
-        document.getElementById('fees-class-name').textContent = `${appState.selectedClass} ${appState.selectedSection}`;
-        document.getElementById('class-fee-inscription').value = clsData.fees.inscription;
-        document.getElementById('class-fee-mensualite').value = clsData.fees.mensualite;
-        
-        openModal('class-fees-modal');
-    }
-
-    function saveClassFees(e) {
-        e.preventDefault();
-        const key = getCurrentClassKey();
-        const inscription = parseInt(document.getElementById('class-fee-inscription').value) || 0;
-        const mensualite = parseInt(document.getElementById('class-fee-mensualite').value) || 0;
-        
-        appState.classes[key].fees = { inscription, mensualite };
-        saveToStorage();
-        closeModal('class-fees-modal');
-        showToast("Tarifs de la classe mis à jour !", "success");
-    }
-    // ------------------------------------
-
-    function updateSettingsPeriodSelect() {
-        const sel = document.getElementById('settings-semester');
-        const isPrimClass = isPrimary(appState.selectedClass);
-        sel.innerHTML = "";
-        const max = isPrimClass ? 3 : 2;
-        const prefix = isPrimClass ? "Trimestre" : "Semestre";
-        for (let i = 1; i <= max; i++) {
-            const opt = document.createElement('option');
-            opt.value = i;
-            opt.textContent = `${prefix} ${i}`;
-            if (appState.currentSemester == i) opt.selected = true;
-            sel.appendChild(opt);
-        }
-        document.getElementById('lbl-settings-period').textContent = isPrimClass ? "Trimestre courant" : "Semestre courant";
-    }
-
-    function saveSettings() {
-        appState.currentYear = document.getElementById('settings-year').value;
-        appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
-        saveToStorage();
-        closeModal('settings-modal');
-        updateHeaderDisplays();
-        render();
-    }
-
-    function updateHeaderDisplays() {
-        document.getElementById('display-year').textContent = appState.currentYear;
-        document.getElementById('display-semester').textContent = getPeriodLabel(appState.selectedClass, appState.currentSemester);
-    }
-
-    function populateFilters() {
-        const fClass = document.getElementById('filter-class');
-        fClass.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass === c ? 'selected' : ''}>${c}</option>`).join('');
-        updateSectionFilterOptions();
-    }
-
-    function updateSectionFilterOptions() {
-        const fSec = document.getElementById('filter-section');
-        const sections = getSectionsForClass(appState.selectedClass);
-        fSec.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection === s ? 'selected' : ''}>${s === "" ? "Aucune série" : s}</option>`).join('');
-        if (!sections.includes(appState.selectedSection)) {
-            appState.selectedSection = sections[0];
-        }
-    }
-
-    function onClassChange() {
-        appState.selectedClass = document.getElementById('filter-class').value;
-        updateSectionFilterOptions();
-        appState.selectedSection = document.getElementById('filter-section').value;
-        updateHeaderDisplays();
-        render();
-    }
-
-    function onSectionChange() {
-        appState.selectedSection = document.getElementById('filter-section').value;
-        render();
-    }
-
-    function getCurrentClassKey() {
-        return `${appState.selectedClass}_${appState.selectedSection}`;
-    }
-
-    function openRegistrationModal() {
-        const modal = document.getElementById('registration-modal');
-        const fClass = document.getElementById('reg-class');
-        fClass.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass === c ? 'selected' : ''}>${c}</option>`).join('');
-        updateRegSections();
-        updateRegAmountDisplay();
-        
-        // Masquer le bouton mensualités pour une nouvelle inscription
-        document.getElementById('reg-mensualites-btn').classList.add('hidden');
-        
-        modal.classList.remove('hidden');
-    }
-
-    function updateRegSections() {
-        const cls = document.getElementById('reg-class').value;
-        const fSec = document.getElementById('reg-section');
-        const sections = getSectionsForClass(cls);
-        fSec.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection === s ? 'selected' : ''}>${s === "" ? "Aucune" : s}</option>`).join('');
-    }
-
-    function updateRegAmountDisplay() {
-        const targetClass = document.getElementById('reg-class').value;
-        const targetSection = document.getElementById('reg-section').value;
-        const key = `${targetClass}_${targetSection}`;
-        
-        // Sécurité renforcée pour forcer l'affichage de 0 si non défini plutôt que de planter
-        if(appState.classes[key] && appState.classes[key].fees) {
-            document.getElementById('reg-amount').value = appState.classes[key].fees.inscription || 0;
-        } else {
-            document.getElementById('reg-amount').value = 0;
-        }
-    }
-
-    function openEditInscription(studentId) {
-        const classKey = getCurrentClassKey();
-        const student = appState.classes[classKey].students.find(s => s.id === studentId);
-        if (!student) return;
-
-        openRegistrationModal();
-
-        document.getElementById('reg-firstname').value = student.firstName;
-        document.getElementById('reg-lastname').value = student.lastName;
-        document.getElementById('reg-dob').value = student.dob || "";
-        document.getElementById('reg-pob').value = student.pob || "";
-        document.getElementById('reg-class').value = appState.selectedClass;
-        updateRegSections();
-        document.getElementById('reg-section').value = appState.selectedSection;
-        updateRegAmountDisplay();
-
-        const form = document.getElementById('registration-form');
-        form.dataset.mode = "edit";
-        form.dataset.studentId = studentId;
-        form.dataset.oldClassKey = classKey;
-
-        // Afficher le bouton mensualités puisqu'il s'agit d'un élève connu
-        const btnMensualites = document.getElementById('reg-mensualites-btn');
-        btnMensualites.classList.remove('hidden');
-    }
-   
-    function validerInscriptionOuChangement(e) {
-        e.preventDefault();
-        const form = document.getElementById('registration-form');
-        const firstName = document.getElementById('reg-firstname').value.trim();
-        const lastName = document.getElementById('reg-lastname').value.trim();
-        const dob = document.getElementById('reg-dob').value;
-        const pob = document.getElementById('reg-pob').value.trim();
-        const targetClass = document.getElementById('reg-class').value;
-        const targetSection = document.getElementById('reg-section').value;
-        
-        if (!appState || !appState.classes) {
-            console.error("Erreur : appState n'est pas initialisé correctement.");
-            return;
-        }
-
-        const newClassKey = `${targetClass}_${targetSection}`;
-        if (!appState.classes[newClassKey]) {
-            appState.classes[newClassKey] = { subjects: getDefaultSubjects(targetClass), students: [], fees: { inscription: 0, mensualite: 0 } };
-        }
-
-        if (form.dataset.mode === "edit") {
-            const oldClassKey = form.dataset.oldClassKey;
-            const studentId = form.dataset.studentId;
-            const oldIndex = appState.classes[oldClassKey].students.findIndex(s => s.id === studentId);
-            
-            if (oldIndex !== -1) {
-                let studentData = appState.classes[oldClassKey].students[oldIndex];
-                studentData.firstName = firstName;
-                studentData.lastName = lastName;
-                studentData.dob = dob;
-                studentData.pob = pob;
-
-                if (oldClassKey !== newClassKey) {
-                    appState.classes[oldClassKey].students.splice(oldIndex, 1);
-                    appState.classes[newClassKey].students.push(studentData);
-                }
-                
-                showToast("Fiche mise à jour avec succès !", "success");
-            }
-        } else {
-            const newStudent = {
-                id: "st_" + Date.now(),
-                firstName: firstName,
-                lastName: lastName,
-                dob: dob,
-                pob: pob,
-                grades: {},
-                mensualites: {},
-                inscriptionHistory: {
-                    dateInscription: new Date().toLocaleDateString('fr-FR')
-                }
-            };
-            appState.classes[newClassKey].students.push(newStudent);
-            showToast("Nouvel élève inscrit !", "success");
-        }
-
-        saveToStorage();
-        closeModal('registration-modal');
-        form.reset();
-        delete form.dataset.mode;
-        delete form.dataset.studentId;
-        delete form.dataset.oldClassKey;
-        render();
-    }
-    
-    function handleAddStudent(e) {
-        e.preventDefault();
-        
-        const fn = document.getElementById('student-firstname').value.trim();
-        const ln = document.getElementById('student-lastname').value.trim();
-        const dob = document.getElementById('student-dob').value;
-        const pob = document.getElementById('student-pob').value.trim();
-        
-        const key = getCurrentClassKey();
-        
-        if (!appState.classes[key]) {
-            appState.classes[key] = {
-                subjects: getDefaultSubjects(appState.selectedClass),
-                students: [],
-                fees: { inscription: 0, mensualite: 0 }
-            };
-        }
-        
-        appState.classes[key].students.push({ 
-            id: "st_" + Date.now(), 
-            firstName: fn,
-            lastName: ln,
-            dob: dob, 
-            pob: pob, 
-            grades: {} ,
-            mensualites: {}
-        });
-        
-        saveToStorage();
-        closeModal('add-student-modal');
-        document.getElementById('add-student-form').reset();
-        
-        showToast("Élève ajouté avec succès !", "success");
-        render(); 
-    }
-   
-    function removeStudent(id) {
-        if (!confirm("Voulez-vous vraiment supprimer cet élève définitivement ?")) return;
-        const key = getCurrentClassKey();
-        appState.classes[key].students = appState.classes[key].students.filter(s => s.id !== id);
-        saveToStorage();
-        showToast("Élève retiré", "info");
-        render();
-    }
-
-    function openSubjectsModal() {
-        openModal('subjects-modal');
-        document.getElementById('lbl-subjects-title').textContent = `Matières - ${appState.selectedClass} ${appState.selectedSection}`;
-        renderSubjectsRows();
-    }
-
-    function renderSubjectsRows() {
-        const container = document.getElementById('subjects-container');
-        const key = getCurrentClassKey();
-        const subjects = appState.classes[key].subjects || [];
-        const coefLabel = getCoefLabel(appState.selectedClass);
-
-        container.innerHTML = subjects.map((sub, idx) => `
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200" data-index="${idx}">
-                <div class="w-full sm:flex-1">
-                    <input type="text" value="${sub.name}" placeholder="Nom de la matière" class="text-slate-900 w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-medium input-sub-name">
+    <div style="display: none;">
+        <div id="recu-template-container" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; background-color: #fff; max-width: 700px; margin: 0 auto; box-sizing: border-box;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #4c1d95; padding-bottom: 20px;">
+                <div>
+                    <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #4c1d95; text-transform: uppercase; letter-spacing: 1px;">GestNotes Academy</h1>
+                    <p style="margin: 5px 0 0; font-size: 13px; color: #64748b; font-weight: 500;">Système Numérique d'Administration Scolaire</p>
+                    <p style="margin: 3px 0 0; font-size: 11px; color: #94a3b8;">Dakar, Sénégal &bull; support@gestnotes.sn</p>
                 </div>
-                <div class="flex items-center justify-between w-full sm:w-auto gap-3 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-slate-500 font-bold uppercase min-w-[35px]">${coefLabel}</span>
-                        <input type="number" step="any" min="0" value="${sub.coef}" class="text-slate-900 w-20 bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm text-center font-bold input-sub-coef outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                    </div>
-                    <button onclick="this.closest('[data-index]').remove()" class="p-2 text-rose-500 hover:bg-rose-100 rounded-lg transition-all" title="Supprimer">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                <div style="text-align: right;">
+                    <div style="background-color: #f3e8ff; color: #4c1d95; font-weight: 700; font-size: 12px; padding: 6px 14px; border-radius: 5px; display: inline-block; text-transform: uppercase;">REÇU DE PAIEMENT</div>
+                    <p style="margin: 8px 0 0; font-size: 12px; color: #475569; font-weight: 600;">N&deg; : <span id="recu-id" style="color: #0f172a;"></span></p>
+                    <p style="margin: 3px 0 0; font-size: 12px; color: #64748b;">Date : <span id="recu-date" style="font-weight: 500;"></span></p>
                 </div>
             </div>
-        `).join('');
-    }
 
-    function addNewSubjectRow() {
-        const container = document.getElementById('subjects-container');
-        const idx = container.children.length;
-        const coefLabel = getCoefLabel(appState.selectedClass);
-        
-        const div = document.createElement('div');
-        div.className = "flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200";
-        div.setAttribute("data-index", idx);
-        div.innerHTML = `
-            <div class="w-full sm:flex-1">
-                <input type="text" value="" placeholder="Nouvelle matière" class="text-slate-900 w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-medium input-sub-name">
-            </div>
-            <div class="flex items-center justify-between w-full sm:w-auto gap-3 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-slate-500 font-bold uppercase min-w-[35px]">${coefLabel}</span>
-                    <input type="number" step="any" min="0" value="1" class="text-slate-900 w-20 bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm text-center font-bold input-sub-coef outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+            <div style="margin: 25px 0; background-color: #f8fafc; border-radius: 8px; padding: 15px 20px; border: 1px solid #f1f5f9; display: grid; grid-template-cols: 1fr 1fr; gap: 15px;">
+                <div>
+                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Élève concerné</p>
+                    <p style="margin: 5px 0 0; font-size: 16px; font-weight: 700; color: #0f172a;" id="recu-eleve-nom"></p>
+                    <p style="margin: 3px 0 0; font-size: 13px; color: #475569;" id="recu-eleve-classe"></p>
                 </div>
-                <button onclick="this.closest('[data-index]').remove()" class="p-2 text-rose-500 hover:bg-rose-100 rounded-lg transition-all" title="Supprimer">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
+                <div style="text-align: right;">
+                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Année Académique</p>
+                    <p style="margin: 5px 0 0; font-size: 15px; font-weight: 700; color: #0f172a;" id="recu-annee-scolaire"></p>
+                </div>
             </div>
-        `;
-        container.appendChild(div);
-        
-        container.scrollTop = container.scrollHeight;
-    }
 
-    function saveSubjects() {
-        const key = getCurrentClassKey();
-        const container = document.getElementById('subjects-container');
-        const blocks = container.children;
-        const newSubs = [];
-        
-        for (let i = 0; i < blocks.length; i++) {
-            const name = blocks[i].querySelector('.input-sub-name').value.trim();
-            const coef = parseFloat(blocks[i].querySelector('.input-sub-coef').value) || 1;
-            if (name) {
-                newSubs.push({ id: "sub_" + Date.now() + "_" + i, name, coef });
-            }
-        }
-        
-        appState.classes[key].subjects = newSubs;
-        saveToStorage();
-        closeModal('subjects-modal');
-        showToast("Disciplines mises à jour !", "success");
-        render();
-    }
-
-    function loadStandardSubjects() {
-        if(confirm("Remplacer par la liste par défaut associée à ce niveau ?")) {
-            const key = getCurrentClassKey();
-            appState.classes[key].subjects = getDefaultSubjects(appState.selectedClass);
-            renderSubjectsRows();
-        }
-    }
-    
-    function renderGradesGrid() {
-        const key = getCurrentClassKey();
-        const cls = appState.classes[key];
-        const tbody = document.getElementById('grades-table-body');
-        const subSelect = document.getElementById('grade-subject-select');
-        const subjectId = subSelect.value;
-
-        if (!cls || !cls.students || cls.students.length === 0 || !subjectId) {
-            tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 italic">Aucun élève ou aucune matière disponible pour la saisie.</td></tr>`;
-            return;
-        }
-
-        const semKey = "p_" + appState.currentSemester;
-        const isPrimaryClass = isPrimary(appState.selectedClass);
-        
-        let hasDev3Data = cls.students.some(st => st.grades?.[semKey]?.[subjectId]?.dev3);
-        let showDev3 = subjectDev3Visible[subjectId] || hasDev3Data;
-        subjectDev3Visible[subjectId] = showDev3; 
-
-        document.getElementById('lbl-th-dev1').textContent = isPrimaryClass ? "Note 1" : "Devoir 1";
-        document.getElementById('lbl-th-dev2').textContent = isPrimaryClass ? "Note 2" : "Devoir 2";
-        
-        const thDev3 = document.getElementById('lbl-th-dev3');
-        thDev3.textContent = isPrimaryClass ? "Note 3" : "Devoir 3";
-        thDev3.style.display = showDev3 ? 'table-cell' : 'none';
-        
-        tbody.innerHTML = cls.students.map(st => {
-            const fullName = `${st.firstName || ""} ${st.lastName || ""}`.trim() || "Élève sans nom";
-
-            if (!st.grades) st.grades = {};
-            if (!st.grades[semKey]) st.grades[semKey] = {};
-            if (!st.grades[semKey][subjectId]) {
-                st.grades[semKey][subjectId] = { dev1: '', dev2: '', dev3: '', compo: '' };
-            }
-
-            const g = st.grades[semKey][subjectId];
-            const maxVal = isPrimaryClass ? 10 : 20;
-
-            const dev3Cell = `<td class="py-3 px-4" style="display: ${showDev3 ? 'table-cell' : 'none'};">
-                <input type="number" step="0.01" min="0" max="${maxVal}" placeholder="/${maxVal}" 
-                    value="${g.dev3 || ''}" 
-                    onchange="updateGrade('${st.id}', '${subjectId}', 'dev3', this.value)" 
-                    class="w-20 border border-slate-200 rounded-lg p-1.5 text-center focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
-            </td>`;
-
-            let inputsHtml = "";
-            if (isPrimaryClass) {
-                inputsHtml = `
-                    <td class="py-3 px-4">
-                        <input type="number" step="0.01" min="0" max="10" placeholder="/10" 
-                            value="${g.dev1 || ''}" 
-                            onchange="updateGrade('${st.id}', '${subjectId}', 'dev1', this.value)" 
-                            class="w-20 border border-slate-200 rounded-lg p-1.5 text-center focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
-                    </td>
-                    <td class="py-3 px-4">
-                        <input type="number" step="0.01" min="0" max="10" placeholder="/10" 
-                            value="${g.dev2 || ''}" 
-                            onchange="updateGrade('${st.id}', '${subjectId}', 'dev2', this.value)" 
-                            class="w-20 border border-slate-200 rounded-lg p-1.5 text-center focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
-                    </td>
-                    ${dev3Cell}
-                    <td class="py-3 px-4">
-                        <input type="number" step="0.01" min="0" max="10" placeholder="/10" 
-                            value="${g.compo || ''}" 
-                            onchange="updateGrade('${st.id}', '${subjectId}', 'compo', this.value)" 
-                            class="w-20 border border-slate-200 rounded-lg p-1.5 text-center focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none font-bold bg-slate-50">
-                    </td>
-                `;
-            } else {
-                inputsHtml = `
-                    <td class="py-3 px-4">
-                        <input type="number" step="0.01" min="0" max="20" placeholder="/20" 
-                            value="${g.dev1 || ''}" 
-                            onchange="updateGrade('${st.id}', '${subjectId}', 'dev1', this.value)" 
-                            class="w-20 border border-slate-200 rounded-lg p-1.5 text-center focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
-                    </td>
-                    <td class="py-3 px-4">
-                        <input type="number" step="0.01" min="0" max="20" placeholder="/20" 
-                            value="${g.dev2 || ''}" 
-                            onchange="updateGrade('${st.id}', '${subjectId}', 'dev2', this.value)" 
-                            class="w-20 border border-slate-200 rounded-lg p-1.5 text-center focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
-                    </td>
-                    ${dev3Cell}
-                    <td class="py-3 px-4">
-                        <input type="number" step="0.01" min="0" max="20" placeholder="/20" 
-                            value="${g.compo || ''}" 
-                            onchange="updateGrade('${st.id}', '${subjectId}', 'compo', this.value)" 
-                            class="w-20 border border-slate-200 rounded-lg p-1.5 text-center focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none font-bold bg-indigo-50/30 text-indigo-900">
-                    </td>
-                `;
-            }
-
-            return `
-                <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition-all">
-                    <td class="py-3 px-4 font-semibold text-slate-700">${fullName}</td>
-                    ${inputsHtml}
-                </tr>
-            `;
-        }).join('');
-        filterStudentsGlobal();
-    }
-
-    function goToNextSubject() {
-        const select = document.getElementById('grade-subject-select');
-        if(select.selectedIndex < select.options.length - 1) {
-            select.selectedIndex += 1;
-        } else {
-            select.selectedIndex = 0;
-        }
-        renderGradesGrid();
-    }
-
-    function calculateGeneralAverageForStudent(student, subjects, periodNum, isPrim) {
-        const semKey = "p_" + periodNum;
-        if (!student.grades || !student.grades[semKey]) return { hasGrades: false, avg: 0 };
-
-        let totalPoints = 0;
-        let totalCoefs = 0;
-        let countedSubjects = 0;
-
-        subjects.forEach(sub => {
-            const g = student.grades[semKey][sub.id];
-            if (g) {
-                let sumDev = 0;
-                let countDev = 0;
-
-                Object.keys(g).forEach(key => {
-                    if (key.startsWith('dev') && g[key] !== undefined && g[key] !== null && g[key] !== "") {
-                        sumDev += parseFloat(g[key]);
-                        countDev++;
-                    }
-                });
-
-                let moyClass = countDev > 0 ? (sumDev / countDev) : -1;
-                let compo = (g.compo !== undefined && g.compo !== null && g.compo !== "") ? parseFloat(g.compo) : -1;
-
-                let moyDiscipline = -1;
-                if (isPrim) {
-                    if (moyClass !== -1 && compo !== -1) moyDiscipline = (moyClass + compo) / 2;
-                    else if (compo !== -1) moyDiscipline = compo;
-                    else if (moyClass !== -1) moyDiscipline = moyClass;
-                } else {
-                    if (moyClass !== -1 && compo !== -1) moyDiscipline = (moyClass + compo * 2) / 3;
-                    else if (compo !== -1) moyDiscipline = compo;
-                    else if (moyClass !== -1) moyDiscipline = moyClass;
-                }
-
-                if (moyDiscipline !== -1) {
-                    const coef = parseFloat(sub.coef) || 1;
-                    totalPoints += moyDiscipline * coef;
-                    totalCoefs += coef;
-                    countedSubjects++;
-                }
-            }
-        });
-
-        if (countedSubjects === 0 || totalCoefs === 0) return { hasGrades: false, avg: 0 };
-        
-        let finalAvg = totalPoints / totalCoefs;
-        return { hasGrades: true, avg: finalAvg };
-    }
-
-    function render() {
-        const key = getCurrentClassKey();
-        if (!appState.classes[key]) {
-            appState.classes[key] = { subjects: getDefaultSubjects(appState.selectedClass), students: [], fees: { inscription: 0, mensualite: 0 } };
-        }
-
-        const clsData = appState.classes[key];
-        const gradesSection = document.getElementById('grades-section');
-
-        if (clsData && clsData.subjects && clsData.subjects.length > 0) {
-            gradesSection.classList.remove('hidden');
-        } else {
-            gradesSection.classList.add('hidden');
-        }
-
-        document.getElementById('class-badge').textContent = `${appState.selectedClass} ${appState.selectedSection === "" ? "" : appState.selectedSection}`;
-        document.getElementById('student-count').textContent = `${clsData.students.length} élève(s) enregistré(s)`;
-        document.getElementById('filter-effectif').value = clsData.students.length;
-
-        const subSelect = document.getElementById('grade-subject-select');
-        const previousValue = subSelect.value;
-        subSelect.innerHTML = (clsData.subjects || []).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-        if (previousValue && clsData.subjects.some(s => s.id === previousValue)) {
-            subSelect.value = previousValue;
-        }
-
-        renderGradesGrid();
-
-        const tableBody = document.getElementById('students-table-body');
-        const emptyState = document.getElementById('empty-state');
-
-        if (clsData.students.length === 0) {
-            tableBody.innerHTML = "";
-            emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
-
-            tableBody.innerHTML = clsData.students.map(st => {
-                const res = calculateGeneralAverageForStudent(st, clsData.subjects, appState.currentSemester, isPrimary(appState.selectedClass));
-                const maxBase = isPrimary(appState.selectedClass) ? 10 : 20;
-                const avgStr = res.hasGrades ? 
-                    `<span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg font-bold">${res.avg.toFixed(2).replace('.', ',')} / ${maxBase}</span>` : 
-                    `<span class="text-slate-400 italic">Pas de note</span>`;
-
-                return `
-                    <tr class="hover:bg-slate-50/50 transition-all border-b border-slate-100">
-                        <td class="py-4 px-5">
-                            <div class="font-bold text-slate-800">${st.firstName} ${st.lastName}</div>
-                            <div class="text-xs text-slate-400 mt-0.5">Né(e) le ${st.dob || '-'} à ${st.pob || '-'}</div>
-                        </td>
-                        <td class="py-4 px-5" id="avg-display-${st.id}">${avgStr}</td>
-                        <td class="py-4 px-5 text-right flex items-center justify-end gap-1.5 h-full">
-                            <button onclick="ouvrirOutilBulletin('${st.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-xl font-bold shadow-sm transition-all flex items-center gap-1">
-                                <i class="fa-solid fa-file-invoice"></i> Bulletin
-                            </button>
-                            <button onclick="openEditInscription('${st.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-2.5 py-1.5 rounded-xl font-semibold transition-all" title="Modifier la fiche">
-                                <i class="fa-solid fa-user-pen"></i>
-                            </button>
-                            <button onclick="removeStudent('${st.id}')" class="text-slate-400 hover:text-rose-600 p-2 rounded-xl transition-all" title="Supprimer">
-                                <i class="fa-solid fa-trash-can text-sm"></i>
-                            </button>
-                        </td>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 25px; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #e2e8f0;">
+                        <th style="padding: 12px 0; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; text-align: left;">Désignation / Période</th>
+                        <th style="padding: 12px 0; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; text-align: center;">Mode de règlement</th>
+                        <th style="padding: 12px 0; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; text-align: right;">Montant Versé</th>
                     </tr>
-                `;
-            }).join('');
-        }
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 16px 0; font-size: 14px; font-weight: 600; color: #334155; text-align: left;" id="recu-designation"></td>
+                        <td style="padding: 16px 0; font-size: 14px; color: #475569; text-align: center; font-weight: 500;" id="recu-methode"></td>
+                        <td style="padding: 16px 0; font-size: 16px; text-align: right; font-weight: 700; color: #0f172a;" id="recu-montant"></td>
+                    </tr>
+                </tbody>
+            </table>
 
-        filterStudentsGlobal();
-        renderRecensement();
-    }
+            <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
+                <div style="background-color: #f8fafc; padding: 15px 25px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: right; min-width: 220px;">
+                    <p style="margin: 0; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Total Payé</p>
+                    <p style="margin: 5px 0 0; font-size: 24px; font-weight: 700; color: #4c1d95;" id="recu-total"></p>
+                </div>
+            </div>
 
-    function renderRecensement() {
-        const key = getCurrentClassKey();
-        const clsData = appState.classes[key];
-        const semKey = "p_" + appState.currentSemester;
-        
-        let subjectDev3Map = {};
-        clsData.subjects.forEach(sub => {
-            let hasData = clsData.students.some(st => st.grades?.[semKey]?.[sub.id]?.dev3);
-            subjectDev3Map[sub.id] = subjectDev3Visible[sub.id] || hasData;
-        });
-        
-        const thead = document.getElementById("rec-head");
-        const tbody = document.getElementById("rec-body");
-        
-        if (!thead || !tbody) return;
-        
-        let headHTML = `<tr><th class="w-56 p-2 border bg-slate-100 text-left text-slate-700 font-bold" rowspan="2">Nom & Prénom</th>`;
-        clsData.subjects.forEach(sub => {
-            let cols = subjectDev3Map[sub.id] ? 4 : 3;
-            headHTML += `<th colspan="${cols}" class="border text-indigo-700 bg-slate-100 p-1 text-center font-bold">${sub.name}</th>`;
-        });
-        headHTML += `</tr><tr>`;
-        clsData.subjects.forEach(sub => {
-            headHTML += `
-                <th class="p-1 border text-[10px] bg-slate-50 text-slate-500 text-center font-semibold">D1</th>
-                <th class="p-1 border text-[10px] bg-slate-50 text-slate-500 text-center font-semibold">D2</th>
-                ${subjectDev3Map[sub.id] ? `<th class="p-1 border text-[10px] bg-slate-50 text-slate-500 text-center font-semibold">D3</th>` : ''}
-                <th class="p-1 border text-[10px] bg-indigo-50 text-indigo-600 text-center font-bold">C</th>
-            `;
-        });
-        headHTML += `</tr>`;
-        thead.innerHTML = headHTML;
-
-        tbody.innerHTML = "";
-        clsData.students.forEach(student => {
-            const tr = document.createElement("tr");
-            tr.className = "hover:bg-indigo-50/50 even:bg-slate-50/50 transition-colors";
-            
-            let rowHTML = `<td class="p-2 border font-medium text-slate-700 truncate">${student.lastName} ${student.firstName}</td>`;
-            
-            clsData.subjects.forEach(sub => {
-                const g = (student.grades && student.grades[semKey] && student.grades[semKey][sub.id]) || {dev1:'', dev2:'', compo:''};
-                rowHTML += `
-                    <td class="p-0 border"><input type="number" step="0.01" min="0" max="20" class="w-full text-center bg-transparent p-1.5 outline-none focus:bg-white transition-all" value="${g.dev1 || ''}" onchange="updateGrade('${student.id}', '${sub.id}', 'dev1', this.value)"></td>
-                    <td class="p-0 border"><input type="number" step="0.01" min="0" max="20" class="w-full text-center bg-transparent p-1.5 outline-none focus:bg-white transition-all" value="${g.dev2 || ''}" onchange="updateGrade('${student.id}', '${sub.id}', 'dev2', this.value)"></td>
-                    ${subjectDev3Map[sub.id] ? `<td class="p-0 border"><input type="number" step="0.01" min="0" max="20" class="w-full text-center bg-transparent p-1.5 outline-none focus:bg-white transition-all" value="${g.dev3 || ''}" onchange="updateGrade('${student.id}', '${sub.id}', 'dev3', this.value)"></td>` : ''}
-                    <td class="p-0 border"><input type="number" step="0.01" min="0" max="20" class="w-full text-center bg-transparent p-1.5 text-indigo-600 font-bold outline-none focus:bg-white transition-all" value="${g.compo || ''}" onchange="updateGrade('${student.id}', '${sub.id}', 'compo', this.value)"></td>
-                `;
-            });
-            tr.innerHTML = rowHTML;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function exporterFeuilleSaisie() {
-        const classKey = getCurrentClassKey();
-        const cls = appState.classes[classKey];
-        const semKey = "p_" + appState.currentSemester;
-        if (!cls) return;
-
-        let subjectDev3Map = {};
-        cls.subjects.forEach(sub => {
-            let hasData = cls.students.some(st => st.grades?.[semKey]?.[sub.id]?.dev3);
-            subjectDev3Map[sub.id] = subjectDev3Visible[sub.id] || hasData;
-        });
-
-        let html = `
-            <div style="font-family: Arial; padding: 20px;">
-                <h2 style="text-align: center;">Grille de Saisie - ${appState.selectedClass}</h2>
-                <table border="1" style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                    <thead>
-                        <tr style="background-color: #f1f5f9;">
-                            <th>ID (Ne pas toucher)</th><th>Nom</th><th>Prénom</th>
-                            ${cls.subjects.map(s => {
-                                let cols = subjectDev3Map[s.id] ? 4 : 3;
-                                let title = subjectDev3Map[s.id] ? "(D1, D2, D3, C)" : "(D1, D2, C)";
-                                return `<th colspan="${cols}">${s.name} ${title}</th>`;
-                            }).join('')}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${cls.students.map(st => `
-                            <tr>
-                                <td style="font-size: 10px; background-color: #eee;">${st.id}</td>
-                                <td>${st.lastName}</td><td>${st.firstName}</td>
-                                ${cls.subjects.map(s => {
-                                    return subjectDev3Map[s.id] ? 
-                                        `<td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td>` :
-                                        `<td style="width: 25px;"></td><td style="width: 25px;"></td><td style="width: 25px;"></td>`;
-                                }).join('')}
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>`;
-        
-        const win = window.open('', '_blank');
-        win.document.write(html);
-        win.document.close();
-        win.print();
-    }
-
-    function importerNotesAuto(input) {
-        const file = input.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            const rows = e.target.result.split(/\r?\n/);
-            const key = getCurrentClassKey();
-            const cls = appState.classes[key];
-            
-            if (!cls) return;
-
-            const normalize = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-            const subMap = {};
-            
-            cls.subjects.forEach(sub => {
-                subMap[normalize(sub.name)] = sub.id; 
-                subMap[normalize(sub.id)] = sub.id;   
-            });
-            
-            subMap["math"] = "sub_math";
-            subMap["pc"] = "sub_pc";
-            subMap["hg"] = "sub_hg";
-            subMap["francais"] = "sub_fr";
-            subMap["anglais"] = "sub_ang";
-            subMap["svt"] = "sub_svt";
-
-            let count = 0;
-            
-            rows.forEach(row => {
-                if (!row.trim()) return;
-                const parts = row.split(';');
-                if (parts.length < 5) return;
-                
-                const stId = parts[0].trim();
-                const rawSubName = parts[1];
-                const subId = subMap[normalize(rawSubName)];
-
-                if (stId && subId) {
-                    const d1 = parts[2] ? parts[2].replace('\r', '').replace(',', '.').trim() : '';
-                    const d2 = parts[3] ? parts[3].replace('\r', '').replace(',', '.').trim() : '';
-                    const compo = parts[4] ? parts[4].replace('\r', '').replace(',', '.').trim() : '';
-                    
-                    updateGrade(stId, subId, 'dev1', d1);
-                    updateGrade(stId, subId, 'dev2', d2);
-                    updateGrade(stId, subId, 'compo', compo);
-                    count++;
-                }
-            });
-            
-            input.value = ""; 
-            render(); 
-            alert("Importation réussie ! " + count + " lignes de notes ont été affichées.");
-        };
-        reader.readAsText(file);
-    }
-
-    function ouvrirOutilBulletin(studentId) {
-        const transport = {
-            studentId: studentId,
-            classKey: getCurrentClassKey(),
-            semester: appState.currentSemester,
-            year: appState.currentYear
-        };
-        localStorage.setItem("gestnotes_bulletin_bridge", JSON.stringify(transport));
-        window.location.href = "bulletin.html";
-    }
-
-    window.printAllReportCards = function() {
-        const key = getCurrentClassKey();
-        if(!appState.classes[key] || appState.classes[key].students.length === 0) {
-            alert("Aucun élève dans la classe courante.");
-            return;
-        }
-        ouvrirOutilBulletin("ALL_STUDENTS");
-    };
-
-    window.exportAllCSV = function() {
-        const key = getCurrentClassKey();
-        const clsData = appState.classes[key];
-        if(!clsData || clsData.students.length === 0) {
-            alert("Aucune donnée à exporter.");
-            return;
-        }
-        let csv = "Prénom,Nom,Date Naissance,Lieu Naissance,Moyenne Générale\n";
-        clsData.students.forEach(s => {
-            const res = calculateGeneralAverageForStudent(s, clsData.subjects, appState.currentSemester, isPrimary(appState.selectedClass));
-            const avg = res.hasGrades ? res.avg.toFixed(2) : "";
-            csv += `"${s.firstName}","${s.lastName}","${s.dob||''}","${s.pob||''}","${avg}"\n`;
-        });
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", `Export_${key}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    function filterStudentsGlobal() {
-        const searchElement = document.getElementById("grade-search");
-        if (!searchElement) return;
-
-        const input = searchElement.value.toLowerCase().trim();
-        
-        const tbodyGrades = document.getElementById("grades-grid-body") || document.getElementById("grades-table-body");
-        if (tbodyGrades) {
-            const rowsGrades = tbodyGrades.getElementsByTagName("tr");
-            for (let row of rowsGrades) {
-                const firstCell = row.getElementsByTagName("td")[0];
-                if (firstCell) {
-                    const nameText = firstCell.textContent.toLowerCase();
-                    if (nameText.includes(input)) {
-                        row.style.setProperty("display", "", "important"); 
-                        if (input !== "") tbodyGrades.prepend(row);
-                    } else {
-                        row.style.setProperty("display", "none", "important"); 
-                    }
-                }
-            }
-        }
-
-        const tbodyStudents = document.getElementById("students-table-body");
-        if (tbodyStudents) {
-            const rowsStudents = tbodyStudents.getElementsByTagName("tr");
-            for (let row of rowsStudents) {
-                const firstCell = row.getElementsByTagName("td")[0];
-                if (firstCell) {
-                    const nameDiv = firstCell.querySelector(".font-bold");
-                    const nameText = nameDiv ? nameDiv.textContent.toLowerCase() : firstCell.textContent.toLowerCase();
-                    
-                    if (nameText.includes(input)) {
-                        row.style.setProperty("display", "", "important");
-                        if (input !== "") tbodyStudents.prepend(row);
-                    } else {
-                        row.style.setProperty("display", "none", "important");
-                    }
-                }
-            }
-        }
-    }
-
-    async function updateGrade(studentId, subjectId, type, value) {
-        const key = getCurrentClassKey(); 
-        const cls = appState.classes[key];
-        const student = cls.students.find(s => s.id === studentId);
-        const semKey = "p_" + appState.currentSemester;
-        
-        if (!student.grades) student.grades = {};
-        if (!student.grades[semKey]) student.grades[semKey] = {};
-        if (!student.grades[semKey][subjectId]) {
-            student.grades[semKey][subjectId] = { dev1: '', dev2: '', dev3: '', compo: '' };
-        }
-        
-        student.grades[semKey][subjectId][type] = value;
-        await saveToStorage();
-    }
-
-    function exportData() {
-        const dataStr = JSON.stringify(appState, null, 2);
-        const blob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        
-        a.href = url;
-        a.download = `sauvegarde_gestnotes_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.json`;
-        
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    async function importData(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                appState = importedData;
-                await saveToStorage(); 
-                location.reload(); 
-            } catch (err) {
-                alert("Erreur : le fichier sélectionné est invalide.");
-            }
-        };
-        reader.readAsText(file);
-    }
-
-    function redirigerVersMensualites() {
-        const form = document.getElementById('registration-form');
-        const studentId = form.dataset.studentId;
-        
-        if (studentId) {
-            closeModal('registration-modal'); 
-            ouvrirModalMensualites(studentId); 
-        }
-    }
-
-    const MOIS_SCOLAIRES = [
-        "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"
-    ];
-
-   // --- NOUVELLE LOGIQUE D'ENCAISSEMENT ET DE BILAN ---
-    let contexteEncaissement = null;
-
-    async function ouvrirModalMensualites(studentId) {
-        const classKey = getCurrentClassKey();
-        if (!appState.classes[classKey].fees) {
-            appState.classes[classKey].fees = { inscription: 0, mensualite: 0 };
-        }
-
-        const clsData = appState.classes[classKey];
-        const student = clsData.students.find(s => s.id === studentId);
-        if (!student) return;
-
-        if (!student.mensualites) student.mensualites = {};
-        const anneeCourante = appState.currentYear || "2025-2026"; 
-        if (!student.mensualites[anneeCourante]) student.mensualites[anneeCourante] = {};
-
-        const montantMensuelFixe = parseInt(clsData.fees.mensualite) || 0;
-        const montantInscriptionFixe = parseInt(clsData.fees.inscription) || 0;
-
-        document.getElementById('mens-student-name').innerText = `Élève : ${student.firstName} ${student.lastName} (Classe : ${appState.selectedClass})`;
-        document.getElementById('mens-default-amount').innerText = `${montantMensuelFixe.toLocaleString('fr-FR')} F CFA / mois`;
-        document.getElementById('mens-inscription-amount').innerText = `${montantInscriptionFixe.toLocaleString('fr-FR')} F CFA`;
-
-        const tbody = document.getElementById('mensualites-list-tbody');
-        tbody.innerHTML = "";
-
-        // Variables pour le calcul du bilan
-        let totalPaye = 0;
-        const totalAttendu = montantMensuelFixe * MOIS_SCOLAIRES.length;
-
-        MOIS_SCOLAIRES.forEach(mois => {
-            const paiementInfo = student.mensualites[anneeCourante][mois.toLowerCase()];
-            const estPaye = !!paiementInfo;
-            
-            if (estPaye) {
-                totalPaye += parseInt(paiementInfo.montant) || 0;
-            }
-            
-            const badgeStatut = estPaye 
-                ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-circle-check text-[10px]"></i> Payé</span>`
-                : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200"><i class="fa-solid fa-clock text-[10px]"></i> En attente</span>`;
-
-            // Affichage du montant ET de la méthode de transfert
-            const montantTexte = estPaye ? `${parseInt(paiementInfo.montant).toLocaleString('fr-FR')} F` : "-";
-            const methodeTexte = estPaye && paiementInfo.methode ? `<br><span class="text-[10px] text-slate-400 font-normal">Via ${paiementInfo.methode}</span>` : "";
-            const affichageMontantFinal = estPaye ? `${montantTexte} ${methodeTexte}` : "-";
-
-            const dateAffichee = estPaye ? paiementInfo.date : "-";
-
-          // Remplacez la déclaration de 'boutonAction' existante par celle-ci :
-            const boutonAction = estPaye
-                ? `<div class="flex items-center gap-1.5 justify-center sm:justify-end">
-                    <button type="button" onclick="imprimerRecu('${studentId}', '${anneeCourante}', '${mois.toLowerCase()}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 transition-all shadow-sm" title="Télécharger le reçu PDF">
-                        <i class="fa-solid fa-file-pdf text-rose-500"></i> PDF
-                    </button>
-                    <button type="button" onclick="partagerWhatsApp('${studentId}', '${anneeCourante}', '${mois.toLowerCase()}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2 py-1.5 rounded-lg text-xs font-semibold border border-emerald-200 transition-all shadow-sm" title="Notifier par WhatsApp">
-                        <i class="fa-brands fa-whatsapp text-sm"></i> Envoyer
-                    </button>
-                    <button type="button" onclick="annulerPaiementMois('${studentId}', '${anneeCourante}', '${mois.toLowerCase()}')" class="text-rose-400 hover:text-rose-600 hover:bg-rose-50 p-1.5 rounded-lg transition-all ml-1" title="Annuler ce paiement">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                   </div>`
-                : `<button type="button" onclick="preparerEncaissement('${studentId}', '${anneeCourante}', '${mois.toLowerCase()}', ${montantMensuelFixe})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-semibold border border-indigo-200 transition-all w-full sm:w-auto shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Encaisser</button>`;
-            const tr = document.createElement('tr');
-            tr.className = "flex flex-col sm:table-row hover:bg-slate-50/70 transition-colors border-b border-slate-100 py-3 sm:py-0";
-            tr.innerHTML = `
-                <td class="px-4 py-2 sm:py-3.5 flex justify-between items-center sm:table-cell">
-                    <span class="sm:hidden font-semibold text-slate-500 text-xs uppercase">Mois</span>
-                    <span class="font-medium text-slate-900">${mois}</span>
-                </td>
-                <td class="px-4 py-2 sm:py-3.5 flex justify-between items-center sm:table-cell">
-                    <span class="sm:hidden font-semibold text-slate-500 text-xs uppercase">Statut</span>
-                    ${badgeStatut}
-                </td>
-                <td class="px-4 py-2 sm:py-3.5 flex justify-between items-center sm:table-cell sm:text-right">
-                    <span class="sm:hidden font-semibold text-slate-500 text-xs uppercase">Montant</span>
-                    <span class="font-semibold text-slate-700 leading-tight">${affichageMontantFinal}</span>
-                </td>
-                <td class="px-4 py-2 sm:py-3.5 flex justify-between items-center sm:table-cell sm:text-center">
-                    <span class="sm:hidden font-semibold text-slate-500 text-xs uppercase">Date</span>
-                    <span class="text-xs text-slate-500">${dateAffichee}</span>
-                </td>
-                <td class="px-4 py-3 sm:py-3.5 flex justify-center sm:table-cell sm:text-center mt-2 sm:mt-0">
-                    ${boutonAction}
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        // Mise à jour du bilan
-        const resteAPayer = totalAttendu - totalPaye;
-        document.getElementById('mens-total-paye').innerText = `${totalPaye.toLocaleString('fr-FR')} F CFA`;
-        document.getElementById('mens-reste-payer').innerText = `${resteAPayer > 0 ? resteAPayer.toLocaleString('fr-FR') : 0} F CFA`;
-
-        document.getElementById('mensualites-modal').classList.remove('hidden');
-    }
-
-    function preparerEncaissement(studentId, annee, moisKey, montantDefaut) {
-        contexteEncaissement = { studentId, annee, moisKey };
-        document.getElementById('encaissement-montant').value = montantDefaut;
-        document.getElementById('encaissement-methode').value = "Espèces"; // Valeur par défaut
-        openModal('encaissement-modal');
-    }
-
-    async function validerEncaissement(e) {
-        e.preventDefault();
-        const { studentId, annee, moisKey } = contexteEncaissement;
-        
-        const montantSaisi = parseInt(document.getElementById('encaissement-montant').value);
-        const methodeSaisie = document.getElementById('encaissement-methode').value;
-
-        const classKey = getCurrentClassKey();
-        const student = appState.classes[classKey].students.find(s => s.id === studentId);
-        
-        if (!student) return;
-
-        student.mensualites[annee][moisKey] = {
-            montant: montantSaisi,
-            date: new Date().toLocaleDateString('fr-FR'),
-            methode: methodeSaisie
-        };
-
-        await saveToStorage();
-        closeModal('encaissement-modal');
-        showToast(`Mensualité encaissée via ${methodeSaisie}`, "success");
-        ouvrirModalMensualites(studentId); // Rafraîchit la vue
-    }
-    async function encaisserPaiementMois(studentId, annee, moisKey, montantDefaut) {
-        const classKey = getCurrentClassKey();
-        const student = appState.classes[classKey].students.find(s => s.id === studentId);
-        if (!student) return;
-
-        const saisie = prompt(`Saisir le montant perçu pour le mois de ${moisKey} :`, montantDefaut);
-        if (saisie === null) return;
-
-        const montantEncaisse = parseInt(saisie) || montantDefaut;
-
-        student.mensualites[annee][moisKey] = {
-            montant: montantEncaisse,
-            date: new Date().toLocaleDateString('fr-FR')
-        };
-
-        await saveToStorage();
-        ouvrirModalMensualites(studentId);
-    }
-
-    async function annulerPaiementMois(studentId, annee, moisKey) {
-        if (!confirm(`Voulez-vous vraiment annuler le paiement du mois de ${moisKey} ?`)) return;
-
-        const classKey = getCurrentClassKey();
-        const student = appState.classes[classKey].students.find(s => s.id === studentId);
-        if (!student) return;
-
-        delete student.mensualites[annee][moisKey];
-
-        await saveToStorage();
-        ouvrirModalMensualites(studentId);
-    }
-
-    // --- GESTION DES REÇUS (PDF & WHATSAPP) ---
-
-    function imprimerRecu(studentId, annee, moisKey) {
-        const classKey = getCurrentClassKey();
-        const student = appState.classes[classKey].students.find(s => s.id === studentId);
-        const paiement = student.mensualites[annee][moisKey];
-
-        // Remplissage dynamique des données dans le template HTML
-        const numRef = `REC-${Date.now().toString().slice(-6)}`;
-        document.getElementById('recu-date').textContent = paiement.date;
-        document.getElementById('recu-numero').textContent = numRef;
-        document.getElementById('recu-eleve-nom').textContent = `${student.firstName} ${student.lastName}`;
-        document.getElementById('recu-eleve-classe').textContent = `${appState.selectedClass} ${appState.selectedSection}`;
-        document.getElementById('recu-annee').textContent = annee;
-        document.getElementById('recu-mois').textContent = moisKey;
-        document.getElementById('recu-methode').textContent = paiement.methode || 'Espèces';
-        
-        const montantFmt = `${parseInt(paiement.montant).toLocaleString('fr-FR')} FCFA`;
-        document.getElementById('recu-montant').textContent = montantFmt;
-        document.getElementById('recu-total').textContent = montantFmt;
-        document.getElementById('recu-generation-date').textContent = new Date().toLocaleDateString('fr-FR') + ' à ' + new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
-
-        // Rendre le conteneur visible le temps de la génération
-        const container = document.getElementById('recu-template-container');
-        container.classList.remove('hidden');
-        
-        const element = document.getElementById('recu-pdf-content');
-        const opt = {
-            margin:       [0, 0, 0, 0],
-            filename:     `Recu_${student.lastName}_${student.firstName}_${moisKey}.pdf`,
-            image:        { type: 'jpeg', quality: 1 },
-            html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-            jsPDF:        { unit: 'px', format: [800, 600], orientation: 'landscape' }
-        };
-
-        // Génération avec html2pdf
-        html2pdf().set(opt).from(element).save().then(() => {
-            // Cacher le template une fois terminé
-            container.classList.add('hidden');
-            showToast("Reçu PDF téléchargé avec succès", "success");
-        }).catch(err => {
-            console.error("Erreur lors de la génération du PDF", err);
-            container.classList.add('hidden');
-            showToast("Erreur lors de la création du PDF", "error");
-        });
-    }
-
-    function partagerWhatsApp(studentId, annee, moisKey) {
-        const classKey = getCurrentClassKey();
-        const student = appState.classes[classKey].students.find(s => s.id === studentId);
-        const paiement = student.mensualites[annee][moisKey];
-
-        const montantFmt = parseInt(paiement.montant).toLocaleString('fr-FR');
-        const moisCap = moisKey.charAt(0).toUpperCase() + moisKey.slice(1);
-        
-        // Construction du message pré-formaté pour WhatsApp
-        const message = `🎓 *REÇU DE PAIEMENT - GESTNOTES*\n\n`
-                      + `Bonjour,\nL'administration confirme la bonne réception d'un paiement pour l'élève *${student.firstName} ${student.lastName}*.\n\n`
-                      + `📝 *Détails du paiement :*\n`
-                      + `▪️ Mois réglé : *${moisCap}*\n`
-                      + `▪️ Montant : *${montantFmt} FCFA*\n`
-                      + `▪️ Méthode : *${paiement.methode || 'Espèces'}*\n`
-                      + `▪️ Date : ${paiement.date}\n\n`
-                      + `Merci de votre confiance.`;
-        
-        // Ouverture de l'application ou web WhatsApp
-        const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-        window.open(url, '_blank');
-        
-        showToast("Ouverture de WhatsApp...", "info");
-    }
-   </script>
+            <div style="margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div style="color: #94a3b8; font-size: 11px; max-width: 60%;">
+                    <p style="margin: 0; font-weight: 500;">Ce document officiel fait office de preuve de versement électronique.</p>
+                    <p style="margin: 2px 0 0;">GestNotes &bull; Solution de dématérialisation scolaire.</p>
+                </div>
+                <div style="text-align: center; border-top: 1px dashed #cbd5e1; padding-top: 10px; width: 180px;">
+                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600; tracking-wide: 0.5px;">Le Comptable</p>
+                    <div style="margin-top: 15px; color: #cbd5e1; font-style: italic; font-size: 12px;">Signature électronique</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('sw.js').catch(error => {
-            console.error('Erreur Service Worker :', error);
-          });
-        });
-      }
+        const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+        const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin"];
+        
+        let subjectDev3Visible = {};
+        let appState = null;
+        
+        // Indexation de l'élève et du mois sélectionné pour l'encaissement
+        let currentStudentIdForFinance = null;
+        let currentMonthIdxForFinance = null;
+        let editingStudentId = null;
+
+        const DEFAULT_STATE = {
+            currentYear: "2025-2026",
+            currentSemester: 1,
+            selectedClass: "6ème",
+            selectedSection: "",
+            classes: {}
+        };
+
+        function isPrimary(className) {
+            return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
+        }
+
+        function getPeriodLabel(className, periodNum) {
+            return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
+        }
+
+        function getCoefLabel(className) {
+            return isPrimary(className) ? "Max" : "Coef";
+        }
+
+        function getSectionsForClass(cls) {
+            if (["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"].includes(cls)) {
+                return ["", "A", "B", "C"];
+            }
+            if (["Seconde", "Première", "Terminale"].includes(cls)) {
+                return ["L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S2", "S2A", "S2B"];
+            }
+            return [""];
+        }
+
+        function getDefaultSubjects(className) {
+            if (isPrimary(className)) {
+                return [
+                    { id: "sub_lang", name: "Langue & Communication", coef: 10 },
+                    { id: "sub_math", name: "Mathématiques", coef: 10 },
+                    { id: "sub_es", name: "Éducation Science & Sociale", coef: 10 },
+                    { id: "sub_ed", name: "Éducation Développement", coef: 10 }
+                ];
+            }
+            return [
+                { id: "sub_math", name: "Mathématiques", coef: 4 },
+                { id: "sub_pc", name: "Physique-Chimie", coef: 3 },
+                { id: "sub_svt", name: "SVT", coef: 2 },
+                { id: "sub_fr", name: "Français", coef: 4 },
+                { id: "sub_hg", name: "Histoire-Géographie", coef: 2 },
+                { id: "sub_ang", name: "Anglais", coef: 2 }
+            ];
+        }
+
+        function buildEmptyState() {
+            if (!appState) appState = { classes: {} };
+            if (!appState.classes) appState.classes = {};
+
+            for (let classKey in appState.classes) {
+                if (!appState.classes[classKey].fees) {
+                    appState.classes[classKey].fees = { inscription: 0, mensualite: 0 };
+                }
+            }
+
+            classNames.forEach(c => {
+                const sections = getSectionsForClass(c);
+                sections.forEach(s => {
+                    const key = `${c}_${s}`;
+                    if (!appState.classes[key]) {
+                        appState.classes[key] = {
+                            subjects: getDefaultSubjects(c),
+                            students: [],
+                            fees: { inscription: 0, mensualite: 0 }
+                        };
+                    }
+                });
+            });
+        }
+
+        async function migrateFromLocalStorage() {
+            const oldData = localStorage.getItem("gestnotes_state");
+            if (oldData) {
+                try {
+                    const parsedData = JSON.parse(oldData);
+                    await idbKeyval.set("gestnotes_state", parsedData);
+                    localStorage.removeItem("gestnotes_state");
+                    return true;
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            return false;
+        }
+
+        async function initApp() {
+            await migrateFromLocalStorage();
+            const savedState = await idbKeyval.get("gestnotes_state");
+            appState = savedState || DEFAULT_STATE;
+            buildEmptyState();
+            populateFilters();
+            updateHeaderDisplays();
+            render();
+        }
+
+        window.addEventListener('DOMContentLoaded', initApp);
+
+        async function saveToStorage() {
+            try {
+                await idbKeyval.set("gestnotes_state", appState);
+            } catch (err) {
+                alert("Erreur lors de la sauvegarde sur le terminal.");
+            }
+        }
+
+        function getCurrentClassKey() {
+            return `${appState.selectedClass}_${appState.selectedSection}`;
+        }
+
+        function populateFilters() {
+            const classSelect = document.getElementById('filter-class');
+            classSelect.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass===c?'selected':''}>${c}</option>`).join('');
+            updateSectionFilterOptions();
+        }
+
+        function updateSectionFilterOptions() {
+            const sectSelect = document.getElementById('filter-section');
+            const sections = getSectionsForClass(appState.selectedClass);
+            sectSelect.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>${s||'Général'}</option>`).join('');
+        }
+
+        function updateHeaderDisplays() {
+            document.getElementById('display-year').innerText = appState.currentYear;
+            document.getElementById('display-semester').innerText = getPeriodLabel(appState.selectedClass, appState.currentSemester);
+            document.getElementById('lbl-settings-period').innerText = `Période active (${isPrimary(appState.selectedClass)?'Trimestres':'Semestres'})`;
+        }
+
+        function onClassChange() {
+            appState.selectedClass = document.getElementById('filter-class').value;
+            appState.selectedSection = "";
+            updateSectionFilterOptions();
+            updateHeaderDisplays();
+            render();
+        }
+
+        function onSectionChange() {
+            appState.selectedSection = document.getElementById('filter-section').value;
+            render();
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'settings-modal') {
+                document.getElementById('settings-year').value = appState.currentYear;
+                updateSettingsPeriodSelect();
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function updateSettingsPeriodSelect() {
+            const select = document.getElementById('settings-semester');
+            const primary = isPrimary(appState.selectedClass);
+            if (primary) {
+                select.innerHTML = `
+                    <option value="1" ${appState.currentSemester==1?'selected':''}>Trimestre 1</option>
+                    <option value="2" ${appState.currentSemester==2?'selected':''}>Trimestre 2</option>
+                    <option value="3" ${appState.currentSemester==3?'selected':''}>Trimestre 3</option>
+                `;
+            } else {
+                select.innerHTML = `
+                    <option value="1" ${appState.currentSemester==1?'selected':''}>Semestre 1</option>
+                    <option value="2" ${appState.currentSemester==2?'selected':''}>Semestre 2</option>
+                `;
+            }
+        }
+
+        function saveSettings() {
+            appState.currentYear = document.getElementById('settings-year').value;
+            appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
+            saveToStorage();
+            updateHeaderDisplays();
+            closeModal('settings-modal');
+            render();
+            showToast("Configurations mises à jour !", "success");
+        }
+
+        // MANAGEMENT DES FRAIS DE SCOLARITÉ PAR CLASSE
+        function openClassFeesModal() {
+            const key = getCurrentClassKey();
+            const currentFees = appState.classes[key].fees || { inscription: 0, mensualite: 0 };
+            document.getElementById('fees-class-name').innerText = appState.selectedClass + " " + (appState.selectedSection || "");
+            document.getElementById('class-fee-inscription').value = currentFees.inscription || 0;
+            document.getElementById('class-fee-mensualite').value = currentFees.mensualite || 0;
+            openModal('class-fees-modal');
+        }
+
+        function saveClassFees(e) {
+            e.preventDefault();
+            const key = getCurrentClassKey();
+            appState.classes[key].fees = {
+                inscription: parseInt(document.getElementById('class-fee-inscription').value) || 0,
+                mensualite: parseInt(document.getElementById('class-fee-mensualite').value) || 0
+            };
+            saveToStorage();
+            closeModal('class-fees-modal');
+            showToast("Tarifs de la classe enregistrés !", "success");
+            render();
+        }
+
+        // OUVERTURE DE L'INSCRIPTION
+        function openRegistrationModal() {
+            editingStudentId = null;
+            document.getElementById('registration-form').reset();
+            document.getElementById('reg-mensualites-btn').classList.add('hidden');
+            
+            const classSel = document.getElementById('reg-class');
+            classSel.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
+            classSel.value = appState.selectedClass;
+            
+            updateRegSections();
+            updateRegAmountDisplay();
+            openModal('registration-modal');
+        }
+
+        function updateRegSections() {
+            const cls = document.getElementById('reg-class').value;
+            const sectSel = document.getElementById('reg-section');
+            const sections = getSectionsForClass(cls);
+            sectSel.innerHTML = sections.map(s => `<option value="${s}">${s||'Général'}</option>`).join('');
+            if (cls === appState.selectedClass) {
+                sectSel.value = appState.selectedSection;
+            }
+        }
+
+        function updateRegAmountDisplay() {
+            const cls = document.getElementById('reg-class').value;
+            const sect = document.getElementById('reg-section').value;
+            const key = `${cls}_${sect}`;
+            const targetClass = appState.classes[key];
+            const insFee = (targetClass && targetClass.fees) ? (targetClass.fees.inscription || 0) : 0;
+            document.getElementById('reg-amount').value = insFee;
+        }
+
+        function validerInscriptionOuChangement(e) {
+            e.preventDefault();
+            const firstName = document.getElementById('reg-firstname').value.trim();
+            const lastName = document.getElementById('reg-lastname').value.trim();
+            const dob = document.getElementById('reg-dob').value;
+            const pob = document.getElementById('reg-pob').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const targetClass = document.getElementById('reg-class').value;
+            const targetSection = document.getElementById('reg-section').value;
+            
+            const newKey = `${targetClass}_${targetSection}`;
+            
+            if (editingStudentId) {
+                // Modification de la fiche
+                let found = false;
+                for (let k in appState.classes) {
+                    let idx = appState.classes[k].students.findIndex(s => s.id === editingStudentId);
+                    if (idx !== -1) {
+                        let stObj = appState.classes[k].students[idx];
+                        stObj.firstname = firstName;
+                        stObj.lastname = lastName;
+                        stObj.dob = dob;
+                        stObj.pob = pob;
+                        stObj.phone = phone;
+                        
+                        if (k !== newKey) {
+                            // Changement de classe physique
+                            appState.classes[k].students.splice(idx, 1);
+                            if (!appState.classes[newKey].students) appState.classes[newKey].students = [];
+                            appState.classes[newKey].students.push(stObj);
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+            } else {
+                // Nouvelle inscription
+                const targetFees = appState.classes[newKey].fees || { inscription: 0, mensualite: 0 };
+                // Tableau des mensualités par défaut (10 éléments : Index 0 = Inscription, Index 1-9 = Mois d'étude)
+                const paymentsStructure = moisAnnee.map((m, idx) => ({
+                    designation: m,
+                    statut: "Non payé",
+                    montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
+                    montantPaye: 0,
+                    methode: "",
+                    dateEncaissement: ""
+                }));
+
+                const newStudent = {
+                    id: "student_" + Date.now(),
+                    firstname: firstName,
+                    lastname: lastName,
+                    dob: dob,
+                    pob: pob,
+                    phone: phone,
+                    grades: {},
+                    payments: paymentsStructure
+                };
+                appState.classes[newKey].students.push(newStudent);
+            }
+            
+            saveToStorage();
+            closeModal('registration-modal');
+            showToast("Fiche d'inscription enregistrée !", "success");
+            render();
+        }
+
+        function openEditStudent(studentId) {
+            editingStudentId = studentId;
+            let student = null;
+            let currentKey = "";
+            
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === studentId);
+                if (student) {
+                    currentKey = k;
+                    break;
+                }
+            }
+            if (!student) return;
+
+            document.getElementById('reg-firstname').value = student.firstname;
+            document.getElementById('reg-lastname').value = student.lastname;
+            document.getElementById('reg-dob').value = student.dob || "";
+            document.getElementById('reg-pob').value = student.pob || "";
+            document.getElementById('reg-phone').value = student.phone || "";
+            
+            const parts = currentKey.split('_');
+            const classSel = document.getElementById('reg-class');
+            classSel.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
+            classSel.value = parts[0];
+            
+            updateRegSections();
+            document.getElementById('reg-section').value = parts[1] || "";
+            updateRegAmountDisplay();
+            
+            document.getElementById('reg-mensualites-btn').classList.remove('hidden');
+            openModal('registration-modal');
+        }
+
+        function redirigerVersMensualites() {
+            if (!editingStudentId) return;
+            closeModal('registration-modal');
+            openMensualitesModal(editingStudentId);
+        }
+
+        // --- MOTEUR DE GESTION FINANCIÈRE ET SUIVI DES MENSUALITÉS ---
+        function openMensualitesModal(studentId) {
+            currentStudentIdForFinance = studentId;
+            let student = null;
+            let classKey = "";
+            
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === studentId);
+                if (student) { classKey = k; break; }
+            }
+            if (!student) return;
+
+            const parts = classKey.split('_');
+            document.getElementById('mens-student-name').innerText = `${student.firstname} ${student.lastname}`;
+            document.getElementById('mens-student-class').innerText = parts[0] + " " + (parts[1] || "");
+
+            // Robustesse de la structure des paiements
+            const targetFees = appState.classes[classKey].fees || { inscription: 0, mensualite: 0 };
+            if (!student.payments || student.payments.length === 0) {
+                student.payments = moisAnnee.map((m, idx) => ({
+                    designation: m,
+                    statut: "Non payé",
+                    montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
+                    montantPaye: 0,
+                    methode: "",
+                    dateEncaissement: ""
+                }));
+            } else {
+                // Actualisation des montants dus si les tarifs généraux ont changé entre-temps pour les mois non encore payés
+                student.payments.forEach((p, idx) => {
+                    if (p.statut === "Non payé") {
+                        p.montantDu = idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0);
+                    }
+                });
+            }
+
+            renderMensualitesList(student);
+            openModal('mensualites-modal');
+        }
+
+        function renderMensualitesList(student) {
+            let totalDueScolarite = 0;
+            let totalPaye = 0;
+            let insFee = student.payments[0].montantDu || 0;
+
+            const tbody = document.getElementById('mensualites-list-tbody');
+            tbody.innerHTML = "";
+
+            student.payments.forEach((p, idx) => {
+                if (idx > 0) totalDueScolarite += p.montantDu;
+                totalPaye += p.montantPaye;
+
+                let badgeColor = "bg-rose-100 text-rose-800 border-rose-200";
+                if (p.statut === "Payé") badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-200";
+                
+                let actionsHTML = "";
+                if (p.statut === "Non payé") {
+                    actionsHTML = `
+                        <button onclick="openEncaissementModal(${idx})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm">
+                            <i class="fa-solid fa-cash-register mr-1"></i> Encaisser
+                        </button>
+                    `;
+                } else {
+                    actionsHTML = `
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="imprimerRecu('${student.id}', ${idx})" class="text-indigo-600 hover:bg-indigo-50 border border-slate-200 p-1.5 rounded-lg transition-all" title="Imprimer le Reçu PDF">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
+                            <button onclick="partagerWhatsApp('${student.id}', ${idx})" class="text-emerald-600 hover:bg-emerald-50 border border-slate-200 p-1.5 rounded-lg transition-all" title="Notifier par WhatsApp">
+                                <i class="fa-brands fa-whatsapp font-bold"></i>
+                            </button>
+                            <button onclick="annulerPaiementMois('${student.id}', ${idx})" class="text-rose-600 hover:bg-rose-50 border border-slate-200 p-1.5 rounded-lg transition-all" title="Annuler le règlement">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-left font-bold text-slate-700">${p.designation === 'Inscription' ? 'Frais d\'inscription' : 'Mensualité ' + p.designation}</td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="px-2.5 py-1 border text-xs rounded-full font-bold uppercase tracking-wider ${badgeColor}">${p.statut}</span>
+                    </td>
+                    <td class="px-4 py-3 text-right font-extrabold ${p.montantPaye > 0 ? 'text-slate-900' : 'text-slate-400'}">${p.montantPaye.toLocaleString()} F</td>
+                    <td class="px-4 py-3 text-center text-xs font-semibold text-slate-600">${p.methode || '-'}</td>
+                    <td class="px-4 py-3 text-center text-xs text-slate-500">${p.dateEncaissement || '-'}</td>
+                    <td class="px-4 py-3 text-center">${actionsHTML}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Affichage du Bilan financier en temps réel
+            document.getElementById('bilan-inscription').innerText = insFee.toLocaleString() + " F";
+            document.getElementById('bilan-scolarite-fixee').innerText = totalDueScolarite.toLocaleString() + " F";
+            document.getElementById('bilan-total-paye').innerText = totalPaye.toLocaleString() + " F";
+            
+            let totalGlobalDu = insFee + totalDueScolarite;
+            let resteAPayer = totalGlobalDu - totalPaye;
+            document.getElementById('bilan-reste-payer').innerText = resteAPayer.toLocaleString() + " F";
+        }
+
+        function openEncaissementModal(monthIdx) {
+            currentMonthIdxForFinance = monthIdx;
+            let student = null;
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === currentStudentIdForFinance);
+                if (student) break;
+            }
+            if (!student) return;
+
+            const p = student.payments[monthIdx];
+            document.getElementById('encaissement-mois-titre').innerText = p.designation === 'Inscription' ? 'Frais d\'Inscription' : 'Mensualité de ' + p.designation;
+            document.getElementById('encaissement-montant-input').value = p.montantDu;
+            openModal('encaissement-modal');
+        }
+
+        function validerEncaissement() {
+            let student = null;
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === currentStudentIdForFinance);
+                if (student) break;
+            }
+            if (!student) return;
+
+            const amt = parseInt(document.getElementById('encaissement-montant-input').value) || 0;
+            const method = document.getElementById('encaissement-methode-select').value;
+            
+            if (amt <= 0) {
+                alert("Le montant collecté doit être supérieur à 0 F.");
+                return;
+            }
+
+            const p = student.payments[currentMonthIdxForFinance];
+            p.montantPaye = amt;
+            p.statut = "Payé";
+            p.methode = method;
+            
+            const today = new Date();
+            p.dateEncaissement = today.toLocaleDateString('fr-FR') + " " + today.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+
+            saveToStorage();
+            closeModal('encaissement-modal');
+            showToast(`Encaissement validé (${method}) !`, "success");
+            renderMensualitesList(student);
+        }
+
+        function annulerPaiementMois(studentId, monthIdx) {
+            if(!confirm("Êtes-vous sûr de vouloir annuler ce paiement ? Les données de encaissement seront effacées.")) return;
+            let student = null;
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === studentId);
+                if (student) break;
+            }
+            if (!student) return;
+
+            const p = student.payments[monthIdx];
+            p.montantPaye = 0;
+            p.statut = "Non payé";
+            p.methode = "";
+            p.dateEncaissement = "";
+
+            saveToStorage();
+            showToast("Règlement annulé avec succès.", "info");
+            renderMensualitesList(student);
+        }
+
+        // --- LOGIQUE D'IMPRESSION CLEAN DU REÇU PDF ---
+        function imprimerRecu(studentId, monthIdx) {
+            let student = null;
+            let classKey = "";
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === studentId);
+                if (student) { classKey = k; break; }
+            }
+            if (!student) return;
+
+            const p = student.payments[monthIdx];
+            const parts = classKey.split('_');
+
+            // Assignation des variables au conteneur HTML du reçu
+            document.getElementById('recu-id').innerText = `GN-${Date.now().toString().slice(-6)}`;
+            document.getElementById('recu-date').innerText = p.dateEncaissement.split(' ')[0];
+            document.getElementById('recu-eleve-nom').innerText = `${student.firstname} ${student.lastname}`;
+            document.getElementById('recu-eleve-classe').innerText = `Classe : ${parts[0]} ${parts[1] || ''}`;
+            document.getElementById('recu-annee-scolaire').innerText = appState.currentYear;
+            document.getElementById('recu-designation').innerText = p.designation === 'Inscription' ? 'Frais d\'inscription scolaire' : `Frais de scolarité - Mois de ${p.designation}`;
+            document.getElementById('recu-methode').innerText = p.methode;
+            document.getElementById('recu-montant').innerText = `${p.montantPaye.toLocaleString()} FCFA`;
+            document.getElementById('recu-total').innerText = `${p.montantPaye.toLocaleString()} FCFA`;
+
+            const element = document.getElementById('recu-template-container');
+            const options = {
+                margin: 10,
+                filename: `Recu_${p.designation}_${student.lastname}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(options).from(element).save();
+        }
+
+        // --- ENVOI DE LA NOTIFICATION WhatsApp ---
+        function partagerWhatsApp(studentId, monthIdx) {
+            let student = null;
+            let classKey = "";
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === studentId);
+                if (student) { classKey = k; break; }
+            }
+            if (!student || !student.phone) {
+                alert("Aucun numéro de téléphone enregistré pour le parent de cet élève.");
+                return;
+            }
+
+            const p = student.payments[monthIdx];
+            const classNameDisplay = classKey.replace('_', ' ');
+            const typeLibelle = p.designation === 'Inscription' ? "les frais d'inscription" : `la mensualité de *${p.designation}*`;
+            
+            // Formatage du message
+            const message = `Chers parents, nous confirmons la bonne réception du règlement de ${typeLibelle} pour l'élève *${student.firstname} ${student.lastname}* (${classNameDisplay}) d'un montant de *${p.montantPaye.toLocaleString()} FCFA* via ${p.methode} le ${p.dateEncaissement}. Merci pour votre confiance. -- Direction GestNotes.`;
+            
+            // Nettoyage de l'indicatif téléphonique du Sénégal si nécessaire
+            let purePhone = student.phone.replace(/[\s\+\-]/g, '');
+            if (purePhone.length === 9) {
+                purePhone = "221" + purePhone;
+            }
+
+            const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        // --- ENGINE DE GESTION ADMINISTRATIVE STANDARD ---
+        function openSubjectsModal() {
+            const key = getCurrentClassKey();
+            document.getElementById('lbl-subjects-title').innerText = `Disciplines : ${appState.selectedClass} ${appState.selectedSection||''}`;
+            const container = document.getElementById('subjects-container');
+            container.innerHTML = "";
+            
+            const subjects = appState.classes[key].subjects || [];
+            subjects.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef));
+            if(subjects.length === 0) addNewSubjectRow();
+            openModal('subjects-modal');
+        }
+
+        function createSubjectRow(id, name, coef) {
+            const container = document.getElementById('subjects-container');
+            const row = document.createElement('div');
+            row.className = "flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200 subject-row-item";
+            row.dataset.id = id || "sub_" + Date.now() + Math.random().toString(36).substr(2, 5);
+            row.innerHTML = `
+                <input type="text" value="${name||''}" placeholder="Ex: Mathématiques" class="text-slate-900 flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none font-medium">
+                <div class="w-20 flex items-center gap-1">
+                    <span class="text-xs text-slate-400 font-bold">${getCoefLabel(appState.selectedClass)}</span>
+                    <input type="number" step="any" value="${coef||1}" class="text-slate-900 w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm text-center font-bold outline-none">
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-all"><i class="fa-solid fa-trash-can"></i></button>
+            `;
+            container.appendChild(row);
+        }
+
+        function addNewSubjectRow() {
+            createSubjectRow("", "", 1);
+        }
+
+        function loadStandardSubjects() {
+            if (confirm("Remplacer les disciplines actuelles par la grille standard ?")) {
+                const container = document.getElementById('subjects-container');
+                container.innerHTML = "";
+                const standards = getDefaultSubjects(appState.selectedClass);
+                standards.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef));
+            }
+        }
+
+        function saveSubjects() {
+            const key = getCurrentClassKey();
+            const rows = document.querySelectorAll('.subject-row-item');
+            const arr = [];
+            rows.forEach(r => {
+                const inputs = r.querySelectorAll('input');
+                const name = inputs[0].value.trim();
+                const coef = parseFloat(inputs[1].value) || 1;
+                if (name) {
+                    arr.push({ id: r.dataset.id, name, coef });
+                }
+            });
+            appState.classes[key].subjects = arr;
+            saveToStorage();
+            closeModal('subjects-modal');
+            showToast("Grille de matières actualisée.", "success");
+            render();
+        }
+
+        function handleAddStudent(e) {
+            e.preventDefault();
+            const key = getCurrentClassKey();
+            const f = document.getElementById('student-firstname').value.trim();
+            const l = document.getElementById('student-lastname').value.trim();
+            const dob = document.getElementById('student-dob').value;
+            const pob = document.getElementById('student-pob').value.trim();
+            
+            const targetFees = appState.classes[key].fees || { inscription: 0, mensualite: 0 };
+            const paymentsStructure = moisAnnee.map((m, idx) => ({
+                designation: m,
+                statut: "Non payé",
+                montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
+                montantPaye: 0,
+                methode: "",
+                dateEncaissement: ""
+            }));
+
+            const ns = {
+                id: "student_" + Date.now(),
+                firstname: f,
+                lastname: l,
+                dob,
+                pob,
+                phone: "",
+                grades: {},
+                payments: paymentsStructure
+            };
+
+            appState.classes[key].students.push(ns);
+            saveToStorage();
+            document.getElementById('add-student-form').reset();
+            closeModal('add-student-modal');
+            showToast("Élève ajouté !", "success");
+            render();
+        }
+
+        function supprimerEleve(id) {
+            if (confirm("Supprimer définitivement cet élève ainsi que toutes ses notes et paiements ?")) {
+                const key = getCurrentClassKey();
+                const idx = appState.classes[key].students.findIndex(s => s.id === id);
+                if (idx !== -1) {
+                    appState.classes[key].students.splice(idx, 1);
+                    saveToStorage();
+                    showToast("Élève retiré.", "info");
+                    render();
+                }
+            }
+        }
+
+        // --- CALCUL DES MOYENNES (RÈGLE SCOLAIRE SÉNÉGALAISE PRÉCISE) ---
+        function calculerMoyenneEleveMatiere(student, subjectId) {
+            const g = student.grades[subjectId] || {};
+            const d1 = parseFloat(g.dev1);
+            const d2 = parseFloat(g.dev2);
+            const d3 = parseFloat(g.dev3);
+            const compo = parseFloat(g.compo);
+
+            let hasDev = false;
+            let sumDev = 0;
+            let countDev = 0;
+
+            if (!isNaN(d1)) { sumDev += d1; countDev++; hasDev = true; }
+            if (!isNaN(d2)) { sumDev += d2; countDev++; hasDev = true; }
+            if (subjectDev3Visible[subjectId] && !isNaN(d3)) { sumDev += d3; countDev++; hasDev = true; }
+
+            let moyDev = hasDev ? (sumDev / countDev) : 0;
+
+            if (isPrimary(appState.selectedClass)) {
+                // LOGIQUE PRIMAIRE : Note brute sur 10 (Devoirs et Compositions inclus harmonieusement)
+                if (hasDev && !isNaN(compo)) return (moyDev + compo) / 2;
+                if (!isNaN(compo)) return compo;
+                if (hasDev) return moyDev;
+                return null;
+            } else {
+                // LOGIQUE SECONDAIRE : (Moyenne Devoirs + 2 * Composition) / 3
+                if (hasDev && !isNaN(compo)) return (moyDev + (compo * 2)) / 3;
+                if (!isNaN(compo)) return compo;
+                if (hasDev) return moyDev;
+                return null;
+            }
+        }
+
+        function calculerMoyenneGeneraleGlobale(student, subjects) {
+            let totalPoints = 0;
+            let totalCoefs = 0;
+            let targetCount = 0;
+
+            subjects.forEach(sub => {
+                const m = calculerMoyenneEleveMatiere(student, sub.id);
+                if (m !== null) {
+                    totalPoints += m * (sub.coef || 1);
+                    totalCoefs += (sub.coef || 1);
+                    targetCount++;
+                }
+            });
+
+            if (totalCoefs === 0) return null;
+            return totalPoints / totalCoefs;
+        }
+
+        // --- MOTEUR DE RENDU DYNAMIQUE DE L'INTERFACE ---
+        function render() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key] || { subjects: [], students: [] };
+            if(!clsData.students) clsData.students = [];
+            if(!clsData.subjects) clsData.subjects = [];
+
+            document.getElementById('class-badge').innerText = appState.selectedClass + " " + (appState.selectedSection || "Général");
+            document.getElementById('student-count').innerText = `${clsData.students.length} élève(s) inscrit(s)`;
+            document.getElementById('filter-effectif').value = clsData.students.length;
+
+            renderStudentsTable(clsData.students, clsData.subjects);
+            renderSubjectsSelect(clsData.subjects);
+            renderGradesGrid();
+        }
+
+        function renderStudentsTable(students, subjects) {
+            const tbody = document.getElementById('students-table-body');
+            const empty = document.getElementById('empty-state');
+            tbody.innerHTML = "";
+
+            if (students.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            // Tri par ordre alphabétique
+            const sorted = [...students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
+
+            sorted.forEach(s => {
+                const mg = calculerMoyenneGeneraleGlobale(s, subjects);
+                const displayMg = (mg === null) ? 
+                    `<span class="text-slate-400 text-xs italic">Pas de note</span>` : 
+                    `<span class="font-extrabold text-indigo-700">${mg.toFixed(2)}</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3 px-5">
+                        <div class="font-bold text-slate-800 text-base">${s.lastname.toUpperCase()} ${s.firstname}</div>
+                        <div class="text-[11px] text-slate-400">${s.dob ? 'Né(e) le ' + new Date(s.dob).toLocaleDateString('fr-FR') : ''} ${s.pob ? 'à ' + s.pob : ''}</div>
+                    </td>
+                    <td class="py-3 px-5 text-center text-base">${displayMg}</td>
+                    <td class="py-3 px-5 text-right">
+                        <div class="flex items-center justify-end gap-1">
+                            <button onclick="openMensualitesModal('${s.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-3 py-1.5 rounded-lg text-xs border border-amber-200 transition-all shadow-sm" title="Gérer la comptabilité de l'élève">
+                                <i class="fa-solid fa-wallet mr-1"></i> Écolage
+                            </button>
+                            <button onclick="openEditStudent('${s.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded-lg border border-indigo-100" title="Modifier la fiche">
+                                <i class="fa-solid fa-user-pen text-xs"></i>
+                            </button>
+                            <button onclick="supprimerEleve('${s.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-lg border border-rose-100" title="Supprimer">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderSubjectsSelect(subjects) {
+            const select = document.getElementById('grade-subject-select');
+            const gSection = document.getElementById('grades-section');
+            
+            if (subjects.length === 0) {
+                gSection.classList.add('hidden');
+                select.innerHTML = "";
+                return;
+            }
+            gSection.classList.remove('hidden');
+
+            const oldVal = select.value;
+            select.innerHTML = subjects.map(sub => `<option value="${sub.id}">${sub.name} (${getCoefLabel(appState.selectedClass)}: ${sub.coef})</option>`).join('');
+            
+            if (oldVal && subjects.find(x => x.id === oldVal)) {
+                select.value = oldVal;
+            }
+        }
+
+        function renderGradesGrid() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            const subSelect = document.getElementById('grade-subject-select');
+            const tbody = document.getElementById('grades-table-body');
+            tbody.innerHTML = "";
+
+            if (!clsData || !subSelect.value || clsData.students.length === 0) return;
+
+            const subjectId = subSelect.value;
+            const isVisible3 = !!subjectDev3Visible[subjectId];
+
+            document.getElementById('lbl-th-dev3').style.display = isVisible3 ? '' : 'none';
+            document.getElementById('lbl-th-dev2').innerText = isVisible3 ? "Devoir 2" : "Devoir 2 (+)";
+
+            const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
+
+            sorted.forEach(s => {
+                const g = s.grades[subjectId] || { dev1: "", dev2: "", dev3: "", compo: "" };
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-2 font-semibold text-slate-700 text-sm text-left pl-4">${s.lastname.toUpperCase()} ${s.firstname}</td>
+                    <td class="p-1"><input type="number" step="any" min="0" max="20" value="${g.dev1??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev1',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
+                    <td class="p-1"><input type="number" step="any" min="0" max="20" value="${g.dev2??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev2',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
+                    <td class="p-1" id="td-dev3-${s.id}" style="display:${isVisible3?'':'none'}"><input type="number" step="any" min="0" max="20" value="${g.dev3??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev3',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
+                    <td class="p-1"><input type="number" step="any" min="0" max="20" value="${g.compo??''}" onchange="saveGradeLive('${s.id}','${subjectId}','compo',this.value)" class="w-full bg-indigo-50/40 focus:bg-white text-center font-extrabold text-sm p-2 rounded-lg border outline-none border-indigo-200 focus:border-indigo-500 text-indigo-900"></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function saveGradeLive(studentId, subjectId, field, val) {
+            const key = getCurrentClassKey();
+            const student = appState.classes[key].students.find(s => s.id === studentId);
+            if (!student) return;
+
+            if (!student.grades[subjectId]) student.grades[subjectId] = {};
+            
+            if (val.trim() === "") {
+                delete student.grades[subjectId][field];
+            } else {
+                student.grades[subjectId][field] = parseFloat(val);
+            }
+            saveToStorage();
+
+            // Refresh asynchrone léger de la colonne moyenne générale sans rompre le focus
+            const subjects = appState.classes[key].subjects || [];
+            renderStudentsTable(appState.classes[key].students, subjects);
+        }
+
+        function goToNextSubject() {
+            const select = document.getElementById('grade-subject-select');
+            if (select.options.length <= 1) return;
+            let nextIdx = select.selectedIndex + 1;
+            if (nextIdx >= select.options.length) nextIdx = 0;
+            select.selectedIndex = nextIdx;
+            renderGradesGrid();
+        }
+
+        function filterStudentsGlobal() {
+            const q = document.getElementById('grade-search').value.toLowerCase().trim();
+            const rows = document.getElementById('grades-table-body').querySelectorAll('tr');
+            rows.forEach(r => {
+                const name = r.querySelector('td').innerText.toLowerCase();
+                r.style.display = name.includes(q) ? '' : 'none';
+            });
+        }
+
+        // --- FONCTIONNALITÉS IMPORT / EXPORT JSON DATA ---
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `Backup_GestNotes_${appState.currentYear}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("Sauvegarde exportée avec succès !");
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const importedState = JSON.parse(e.target.result);
+                    if (importedState && importedState.classes) {
+                        appState = importedState;
+                        buildEmptyState();
+                        await saveToStorage();
+                        populateFilters();
+                        updateHeaderDisplays();
+                        render();
+                        showToast("Données importées avec succès !", "success");
+                    } else {
+                        alert("Fichier JSON invalide.");
+                    }
+                } catch (err) {
+                    alert("Erreur lors de la lecture du fichier.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-animate flex items-center gap-3 bg-white border p-4 rounded-xl shadow-lg pointer-events-auto min-w-[300px] ${ type === 'success' ? 'border-emerald-500 text-emerald-800' : 'border-indigo-500 text-indigo-800' }`;
+            const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-circle-info text-indigo-500';
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
     </script>
-    
-   <div class="bg-white p-4 rounded-xl border border-indigo-100 shadow-sm mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="flex flex-col border-b sm:border-b-0 sm:border-r border-slate-100 pb-3 sm:pb-0 sm:pr-4">
-        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Inscription</span>
-        <span id="mens-inscription-amount" class="text-lg font-bold text-slate-700">0 F CFA</span>
-    </div>
-    <div class="flex flex-col border-b lg:border-b-0 lg:border-r border-slate-100 pb-3 lg:pb-0 lg:pr-4 sm:pl-2 lg:pl-0">
-        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Mensualité Fixée</span>
-        <span id="mens-default-amount" class="text-lg font-bold text-indigo-600">0 F CFA / mois</span>
-    </div>
-    <div class="flex flex-col border-b sm:border-b-0 sm:border-r border-slate-100 pb-3 sm:pb-0 lg:pl-4">
-        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Total Payé</span>
-        <span id="mens-total-paye" class="text-lg font-bold text-emerald-600">0 F CFA</span>
-    </div>
-    <div class="flex flex-col sm:pl-2 lg:pl-4">
-        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Reste à payer</span>
-        <span id="mens-reste-payer" class="text-lg font-bold text-rose-600">0 F CFA</span>
-    </div>
-</div>
-<div id="encaissement-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
-        <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2 border-b pb-3">
-            <i class="fa-solid fa-hand-holding-dollar text-emerald-500"></i> Encaisser une mensualité
-        </h3>
-        <form id="encaissement-form" onsubmit="validerEncaissement(event)" class="space-y-4">
-            <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Montant perçu (FCFA)</label>
-                <input type="number" id="encaissement-montant" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-bold text-lg">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Moyen de paiement</label>
-                <select id="encaissement-methode" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium">
-                    <option value="Espèces">Espèces</option>
-                    <option value="Wave">Wave</option>
-                    <option value="Orange Money">Orange Money</option>
-                    <option value="Free Money">Free Money</option>
-                    <option value="Chèque">Chèque</option>
-                    <option value="Virement">Virement bancaire</option>
-                </select>
-            </div>
-            <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
-                <button type="button" onclick="closeModal('encaissement-modal')" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-sm font-semibold">Annuler</button>
-                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm flex items-center gap-2">
-                    <i class="fa-solid fa-check"></i> Valider
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-<div id="recu-template-container" class="hidden absolute top-[-9999px] left-[-9999px]">
-    <div id="recu-pdf-content" style="padding: 40px; font-family: 'Hanken Grotesk', sans-serif; color: #1e293b; background: white; width: 800px;">
-        <div style="border-bottom: 3px solid #4c1d95; padding-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="background-color: #4c1d95; color: white; padding: 12px; border-radius: 8px;">
-                    <i class="fa-solid fa-graduation-cap" style="font-size: 24px;"></i>
-                </div>
-                <div>
-                    <h1 style="color: #4c1d95; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">GestNotes</h1>
-                    <p style="margin: 4px 0 0; color: #64748b; font-size: 14px;">Administration Scolaire</p>
-                </div>
-            </div>
-            <div style="text-align: right;">
-                <h2 style="margin: 0; font-size: 22px; color: #0f172a; font-weight: 600;">REÇU DE PAIEMENT</h2>
-                <p style="margin: 8px 0 0; color: #64748b; font-size: 14px;">Date : <span id="recu-date" style="font-weight: 500; color: #1e293b;"></span></p>
-                <p style="margin: 4px 0 0; color: #64748b; font-size: 14px;">Réf : <span id="recu-numero" style="font-weight: 500; color: #1e293b;"></span></p>
-            </div>
-        </div>
-
-        <div style="margin-top: 40px; display: flex; justify-content: space-between; background-color: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
-            <div>
-                <h3 style="color: #64748b; font-size: 12px; text-transform: uppercase; margin: 0 0 8px 0; font-weight: 600; letter-spacing: 0.5px;">Élève</h3>
-                <p style="margin: 0; font-size: 20px; font-weight: 700; color: #0f172a;" id="recu-eleve-nom"></p>
-                <p style="margin: 6px 0 0; color: #475569; font-size: 15px;">Niveau : <span id="recu-eleve-classe" style="font-weight: 500;"></span></p>
-            </div>
-            <div style="text-align: right;">
-                <h3 style="color: #64748b; font-size: 12px; text-transform: uppercase; margin: 0 0 8px 0; font-weight: 600; letter-spacing: 0.5px;">Année Académique</h3>
-                <p style="margin: 0; font-size: 16px; font-weight: 500; color: #0f172a;" id="recu-annee"></p>
-            </div>
-        </div>
-
-        <table style="width: 100%; margin-top: 40px; border-collapse: collapse;">
-            <thead>
-                <tr style="border-bottom: 2px solid #cbd5e1;">
-                    <th style="padding: 12px 0; text-align: left; color: #475569; font-size: 14px; font-weight: 600;">Description</th>
-                    <th style="padding: 12px 0; text-align: center; color: #475569; font-size: 14px; font-weight: 600;">Mode de paiement</th>
-                    <th style="padding: 12px 0; text-align: right; color: #475569; font-size: 14px; font-weight: 600;">Montant</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr style="border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 20px 0; color: #0f172a; font-size: 16px;">Mensualité - <span id="recu-mois" style="text-transform: capitalize; font-weight: 600; color: #4c1d95;"></span></td>
-                    <td style="padding: 20px 0; text-align: center; color: #475569; font-size: 15px;" id="recu-methode"></td>
-                    <td style="padding: 20px 0; text-align: right; font-weight: 700; color: #0f172a; font-size: 16px;" id="recu-montant"></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
-            <div style="background-color: #f8fafc; padding: 20px 30px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: right; min-width: 250px;">
-                <p style="margin: 0; font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase;">Total Payé</p>
-                <p style="margin: 8px 0 0; font-size: 28px; font-weight: 700; color: #4c1d95;" id="recu-total"></p>
-            </div>
-        </div>
-
-        <div style="margin-top: 80px; display: flex; justify-content: space-between; align-items: flex-end;">
-            <div style="color: #94a3b8; font-size: 12px;">
-                <p style="margin: 0;">Ce document est une preuve de paiement électronique.</p>
-                <p style="margin: 4px 0 0;">Généré par GestNotes le <span id="recu-generation-date"></span></p>
-            </div>
-            <div style="text-align: center;">
-                <div style="border-top: 1px dashed #cbd5e1; width: 150px; margin-bottom: 8px;"></div>
-                <p style="margin: 0; color: #64748b; font-size: 14px; font-weight: 500;">Signature / Cachet</p>
-            </div>
-        </div>
-    </div>
-</div>
 </body>
 </html>
