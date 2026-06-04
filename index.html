@@ -1,6 +1,5 @@
-  <!DOCTYPE html>                                                                                                                                                                                                   AQq<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,15 +18,11 @@
     <script src="tailwind.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="html2pdf.bundle.min.js"></script>
-    <script src="idb-keyval.js"></script>
+   <script src="idb-keyval.js"></script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
+     <style>
         body {
-            font-family: 'Hanken Grotesk', 'Inter', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
         }
 
@@ -62,7 +57,6 @@
         .toast-animate {
             animation: slideIn 0.3s ease forwards, fadeOut 0.3s ease 2.7s forwards;
         }
-        
         table {
             border-collapse: collapse;
         }
@@ -72,29 +66,42 @@
             text-align: center;
             border: 1px solid #e2e8f0;
         }
+
+        td:first-child {
+            text-align: left;
+            padding-left: 10px;
+            font-weight: 500;
+        }
+        #rec-body tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        #rec-body tr:hover {
+            background-color: #eef2ff;
+        }
     </style>
 </head>
 
 <body class="min-h-screen bg-slate-50 flex flex-col text-slate-800">
 
-    <header class="bg-[#4c1d95] text-white shadow-md px-4 py-3 md:px-6 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
+    <header class="bg-indigo-900 text-white shadow-md px-4 py-3 md:px-6 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
         <div class="flex items-center gap-3">
             <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
-                <i class="fa-solid fa-graduation-cap text-2xl text-violet-200"></i>
+                <i class="fa-solid fa-graduation-cap text-2xl text-indigo-300"></i>
             </div>
             <div>
                 <h1 class="text-xl font-bold tracking-tight">GestNotes</h1>
-                <p class="text-xs text-violet-200">Administration & Gestion des Notes</p>
+                <p class="text-xs text-indigo-200">Administration & Gestion des Notes</p>
             </div>
         </div>
 
         <div class="flex items-center gap-4 ml-auto sm:ml-0">
-            <div class="bg-violet-950/50 rounded-xl p-1 flex border border-violet-800/50 text-sm">
-                <div class="px-3 py-1.5 font-medium text-violet-200 flex items-center gap-1.5">
-                    <i class="fa-solid fa-calendar-days text-xs text-violet-400"></i>
-                    <span id="display-year">2025-2026</span>
+            <div class="bg-indigo-950/50 rounded-xl p-1 flex border border-indigo-800/50 text-sm">
+                <div class="px-3 py-1.5 font-medium text-indigo-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-calendar-days text-xs text-indigo-400"></i>
+                    <span id="display-year">2024-2025</span>
                 </div>
-                <div class="bg-[#6d28d9] px-3 py-1.5 rounded-lg font-semibold shadow-sm flex items-center gap-1.5">
+                <div class="bg-indigo-600 px-3 py-1.5 rounded-lg font-semibold shadow-sm flex items-center gap-1.5">
                     <i class="fa-solid fa-clock text-xs"></i>
                     <span id="display-semester">Semestre 1</span>
                 </div>
@@ -110,97 +117,117 @@
         
        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                <button onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md">
-                    <i class="fas fa-file-download"></i> <span>Exporter Base</span>
+                <button onclick="exportData()" 
+                        class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md">
+                    <i class="fas fa-file-download"></i> <span>Exporter</span>
                 </button>
 
                 <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
-                <button onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md">
-                    <i class="fas fa-file-upload"></i> <span>Importer Base</span>
+                <button onclick="document.getElementById('importFile').click()" 
+                        class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md">
+                    <i class="fas fa-file-upload"></i> <span>Importer</span>
                 </button>
                 
-                <button onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-3 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all">
-                    <i class="fa-solid fa-user-plus"></i> Inscription / Élève
+                <button onclick="openRegistrationModal()" 
+                        class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white py-3 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all">
+                    <i class="fa-solid fa-user-plus"></i> Inscription
                 </button>
                 
-                <button onclick="exporterFeuilleSaisie()" class="bg-slate-600 hover:bg-slate-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
-                    <i class="fa-solid fa-file-csv"></i> Exporter Grille
+                <button onclick="exporterFeuilleSaisie()" 
+                        class="bg-slate-600 hover:bg-slate-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
+                    <i class="fa-solid fa-print"></i> Imprimer Grille
                 </button>
                 
-                <button onclick="document.getElementById('importInput').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
+                <button onclick="document.getElementById('importInput').click()" 
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
                     <i class="fa-solid fa-file-import"></i> Importer Notes
                 </button>
-                <input type="file" id="importInput" class="hidden" accept=".csv" onchange="importerNotesAuto(this)">
+                <input type="file" id="importInput" class="hidden" accept=".csv,.txt" onchange="importerNotesAuto(this)">
             </div>
         </div>
 
-        <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-wrap gap-4 items-center justify-between">
-            <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                <div class="w-full sm:w-48">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Niveau d'étude</label>
-                    <select id="filter-class" onchange="onClassChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all">
-                    </select>
+        <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-col gap-4">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                    <div class="w-full sm:w-48">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Niveau d'étude</label>
+                        <select id="filter-class" onchange="onClassChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                        </select>
+                    </div>
+
+                    <div class="w-full sm:w-48">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Série / Option</label>
+                        <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                        </select>
+                    </div>
+
+                    <div class="w-full sm:w-24">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Effectif</label>
+                        <input type="text" id="filter-effectif" readonly value="0" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-center text-indigo-700 focus:outline-none cursor-default">
+                    </div>
                 </div>
 
-                <div class="w-full sm:w-48">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Série / Option</label>
-                    <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all">
-                    </select>
-                </div>
-
-                <div class="w-full sm:w-24">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Effectif</label>
-                    <input type="text" id="filter-effectif" readonly value="0" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-center text-[#4c1d95] focus:outline-none cursor-default">
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0">
+                    <button onclick="openModal('add-student-modal')" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-sm">
+                        <i class="fa-solid fa-plus text-xs"></i> Ajouter un élève
+                    </button>
+                    <button onclick="openTarifModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-amber-100" title="Définir la mensualité globale de cette classe">
+                        <i class="fa-solid fa-money-bill-wave text-xs"></i> Tarif Classe
+                    </button>
+                    <button onclick="openSubjectsModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-indigo-100">
+                        <i class="fa-solid fa-book text-xs"></i> Gérer les matières
+                    </button>
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0">
-                <button onclick="openClassFeesModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-amber-100">
-                    <i class="fa-solid fa-coins text-xs"></i> Tarifs classe
-                </button>
-                <button onclick="openRegistrationModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-sm">
-                    <i class="fa-solid fa-plus text-xs"></i> Ajouter élève
-                </button>
-                <button onclick="openSubjectsModal()" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-violet-100">
-                    <i class="fa-solid fa-book text-xs"></i> Gérer matières
-                </button>
+            <div class="bg-indigo-950 p-4 rounded-xl shadow-inner border border-indigo-900 grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                <div class="text-center p-2">
+                    <p class="text-indigo-300 text-xs font-semibold uppercase tracking-wider">Total Inscriptions</p>
+                    <span id="bilan-ins" class="text-white text-xl font-bold">0 FCFA</span>
+                </div>
+                <div class="text-center p-2 border-y md:border-y-0 md:border-x border-indigo-800">
+                    <p class="text-indigo-300 text-xs font-semibold uppercase tracking-wider">Total Mensualités</p>
+                    <span id="bilan-mens" class="text-white text-xl font-bold">0 FCFA</span>
+                </div>
+                <div class="text-center p-2">
+                    <p class="text-indigo-300 text-xs font-semibold uppercase tracking-wider">Total Global</p>
+                    <span id="bilan-global" class="text-emerald-400 text-xl font-bold">0 FCFA</span>
+                </div>
             </div>
         </section>
 
-        <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 hidden flex flex-col gap-4">
+       <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 hidden flex flex-col gap-4">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
                 <h3 class="text-md font-bold text-slate-700 flex items-center gap-2 w-full lg:w-auto">
-                    <i class="fa-solid fa-pen-to-square text-[#4c1d95]"></i> Saisie des Notes
+                    <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Saisie des Notes
                 </h3>
                 
-                <div class="flex flex-col sm:flex-row w-full lg:w-auto items-center gap-3">
+             <div class="flex flex-col sm:flex-row w-full lg:w-auto items-center gap-3">
                     <div class="w-full sm:w-auto flex-1">
-                        <input type="text" id="grade-search" oninput="filterStudentsGlobal()" placeholder="Rechercher un élève..." 
-                               class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500/20">
+                        <input type="text" id="grade-search" oninput="filterStudentsGlobal()" placeholder="Rechercher par nom..." 
+                               class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20">
                     </div>
                   
                     <div class="flex w-full sm:w-auto items-center gap-2">
-                        <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none">
+                        <select id="grade-subject-select" onchange="renderGradesGrid()" class="flex-1 min-w-[120px] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 font-medium text-sm text-slate-700 outline-none truncate">
                         </select>
-                        <button onclick="goToNextSubject()" class="bg-[#4c1d95] hover:bg-violet-800 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap">
-                            Suivant <i class="fa-solid fa-arrow-right"></i>
+                        <button onclick="goToNextSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2.5 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-sm shrink-0">
+                            <span class="hidden sm:inline">Suivant</span> <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <div class="overflow-x-auto w-full border border-slate-300 rounded-lg shadow-sm">
+           <div class="overflow-x-auto w-full border border-slate-200 rounded-lg shadow-sm">
                 <table class="w-full text-xs border-collapse table-fixed min-w-[800px]">
                     <thead class="bg-slate-100">
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider sticky top-0 z-10">
-                            <th class="p-3 text-left">Élève</th>
-                            <th class="p-3 text-center" id="lbl-th-dev1">Devoir 1</th>
-                            <th class="p-3 text-center group cursor-pointer hover:bg-slate-200 select-none" onclick="toggleDev3()">
-                                <span id="lbl-th-dev2">Devoir 2 (+)</span>
-                                <i class="fa-solid fa-circle-plus ml-1 text-violet-500"></i>
+                            <th class="p-3 font-semibold text-left">Élève</th>
+                            <th class="p-3 font-semibold text-center" id="lbl-th-dev1">Devoir 1</th>
+                            <th class="p-3 font-semibold text-center cursor-pointer hover:bg-slate-200 transition-colors" onclick="toggleDev3()">
+                                <span id="lbl-th-dev2">Devoir 2</span> <i class="fa-solid fa-circle-plus text-indigo-500 text-[10px]"></i>
                             </th>
-                            <th class="p-3 text-center" id="lbl-th-dev3" style="display: none;">Devoir 3</th>
-                            <th class="p-3 text-center" id="lbl-th-compo">Composition</th>
+                            <th class="p-3 font-semibold text-center" id="lbl-th-dev3" style="display: none;">Devoir 3</th>
+                            <th class="p-3 font-semibold text-center" id="lbl-th-compo">Composition</th>
                         </tr>
                     </thead>
                     <tbody id="grades-table-body" class="divide-y divide-slate-200"></tbody>
@@ -213,17 +240,17 @@
                 <div>
                     <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                         Liste des élèves 
-                        <span id="class-badge" class="bg-violet-100 text-[#4c1d95] text-xs px-2.5 py-1 rounded-full font-bold">...</span>
+                        <span id="class-badge" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-bold">...</span>
                     </h2>
                     <p class="text-xs text-slate-500 mt-0.5" id="student-count">0 élève enregistré</p>
                 </div>
                 
                 <div class="flex items-center gap-2">
-                    <button onclick="window.printAllReportCards()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
-                        <i class="fa-solid fa-print text-[#4c1d95]"></i> Imprimer Bulletins
+                    <button onclick="printAllReportCards()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
+                        <i class="fa-solid fa-print"></i> Bulletins (Tous)
                     </button>
-                    <button onclick="window.exportAllCSV()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
-                        <i class="fa-solid fa-file-csv text-green-600"></i> Exporter Élèves
+                    <button onclick="exportAllCSV()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
+                        <i class="fa-solid fa-file-csv"></i> Exporter tout
                     </button>
                 </div>
             </div>
@@ -233,11 +260,12 @@
                     <thead>
                         <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/70">
                             <th class="py-3.5 px-5">Élève</th>
-                            <th class="py-3.5 px-5 text-center">Moyenne Générale</th>
+                            <th class="py-3.5 px-5">Moyenne Générale</th>
                             <th class="py-3.5 px-5 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                    <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm">
+                    </tbody>
                 </table>
                 <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-slate-400">
                     <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-50"></i>
@@ -248,178 +276,139 @@
     </main>
 
     <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100 transform transition-all scale-100">
             <h3 class="text-2xl font-bold mb-6 text-slate-800 border-b pb-4 flex items-center gap-2">
-                <i class="fa-solid fa-file-signature text-[#4c1d95]"></i> Fiche d'Inscription Scolaire
+                <i class="fa-solid fa-file-signature text-indigo-600"></i> Fiche d'Inscription Scolaire
             </h3>
             
             <form id="registration-form" class="space-y-4" onsubmit="validerInscriptionOuChangement(event)">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Prénom</label>
-                        <input type="text" id="reg-firstname" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
+                        <input type="text" id="reg-firstname" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Nom</label>
-                        <input type="text" id="reg-lastname" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
+                        <input type="text" id="reg-lastname" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Date de naissance</label>
-                        <input type="date" id="reg-dob" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
+                        <input type="date" id="reg-dob" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Lieu de naissance</label>
-                        <input type="text" id="reg-pob" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
+                        <input type="text" id="reg-pob" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
                     </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Téléphone Parent</label>
-                    <input type="tel" id="reg-phone" placeholder="77XXXXXXX" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Niveau d'étude</label>
-                        <select id="reg-class" onchange="updateRegSections(); updateRegAmountDisplay();" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none font-medium">
+                        <select id="reg-class" onchange="updateRegSections()" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium">
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Série / Classe</label>
-                        <select id="reg-section" onchange="updateRegAmountDisplay()" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none font-medium">
+                        <select id="reg-section" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium">
                         </select>
                     </div>
                 </div>
                 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Frais d'inscription de la classe (FCFA)</label>
-                    <input type="number" id="reg-amount" readonly class="text-[#4c1d95] font-bold text-lg border border-slate-200 rounded-xl p-3 w-full bg-slate-50 outline-none cursor-not-allowed">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Montant Inscrit (FCFA)</label>
+                        <input type="number" id="reg-amount" required value="0" class="text-indigo-600 font-bold text-lg border border-slate-200 rounded-xl p-3 w-full bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Téléphone Parent</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">+221</span>
+                            <input type="tel" id="reg-phone" placeholder="771234567" class="pl-12 w-full border border-slate-200 rounded-xl p-3 text-slate-900 bg-white focus:border-indigo-500 outline-none transition-all">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-8 flex flex-wrap justify-end gap-3 pt-4 border-t border-slate-100">
-                    <button type="button" onclick="closeModal('registration-modal')" class="px-5 py-2.5 rounded-xl text-slate-600 font-medium hover:bg-slate-100">
+                    <button type="button" onclick="closeModal('registration-modal')" class="px-5 py-2.5 rounded-xl text-slate-600 font-medium hover:bg-slate-100 transition-all">
                         Annuler
                     </button>
-                    <button type="button" id="reg-mensualites-btn" onclick="redirigerVersMensualites()" class="hidden bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md flex items-center gap-2">
-                        <i class="fa-solid fa-wallet"></i> <span>Mensualités</span>
+                    <button type="button" id="reg-mensualites-btn" onclick="redirigerVersMensualites()" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-sm hidden shadow-sm">
+                        Voir Mensualités
                     </button>
-                    <button type="submit" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl font-semibold shadow-md">
-                        Enregistrer
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-sm">
+                        Enregistrer l'élève
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="mensualites-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 border border-slate-100 flex flex-col max-h-[90vh]">
-            <div class="border-b pb-4 mb-4">
-                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-wallet text-[#4c1d95]"></i> Suivi des Paiements : <span id="mens-student-name" class="text-[#4c1d95] font-extrabold"></span>
-                </h3>
-                <p class="text-xs text-slate-500 mt-1">Classe : <span id="mens-student-class" class="font-bold"></span></p>
+    <div id="tarif-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 border border-slate-200">
+            <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-money-bill-wave text-amber-500"></i> Tarif Mensuel de la Classe
+            </h3>
+            <p class="text-xs text-slate-500 mb-4">Classe concernée : <strong id="lbl-tarif-classe" class="text-indigo-600"></strong></p>
+            
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Montant Mensualité (FCFA)</label>
+                <input type="number" id="tarif-class-amount" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-bold text-lg text-indigo-700">
             </div>
+            
+            <div class="mt-6 flex justify-end gap-2 border-t border-slate-100 pt-4">
+                <button onclick="closeModal('tarif-modal')" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-sm font-semibold transition-all">Annuler</button>
+                <button onclick="saveTarifClasse()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all">Enregistrer</button>
+            </div>
+        </div>
+    </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Frais Inscription</p>
-                    <p class="text-lg font-bold text-slate-800 mt-1" id="bilan-inscription">0 F</p>
+    <div id="add-student-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 border border-slate-200">
+            <h3 class="text-lg font-bold mb-4 text-slate-800"><i class="fa-solid fa-user-plus text-indigo-600"></i> Ajouter un élève (Classe courante)</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Prénom</label>
+                    <input type="text" id="add-fast-firstname" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500">
                 </div>
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Scolarité Annuelle</p>
-                    <p class="text-lg font-bold text-[#4c1d95] mt-1" id="bilan-scolarite-fixee">0 F</p>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nom</label>
+                    <input type="text" id="add-fast-lastname" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500">
                 </div>
-                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
-                    <p class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Total Encaissé</p>
-                    <p class="text-lg font-bold text-emerald-700 mt-1" id="bilan-total-paye">0 F</p>
-                </div>
-                <div class="bg-rose-50 p-3 rounded-xl border border-rose-100">
-                    <p class="text-[10px] uppercase font-bold text-rose-600 tracking-wider">Reste à Payer</p>
-                    <p class="text-lg font-bold text-rose-700 mt-1" id="bilan-reste-payer">0 F</p>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Téléphone Parent</label>
+                    <input type="tel" id="add-fast-phone" placeholder="771234567" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500">
                 </div>
             </div>
-
-            <div class="flex-1 overflow-y-auto border border-slate-100 rounded-xl">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[11px] tracking-wider sticky top-0">
-                        <tr>
-                            <th class="px-4 py-3 text-left">Frais / Période</th>
-                            <th class="px-4 py-3 text-center">Statut</th>
-                            <th class="px-4 py-3 text-right">Montant Payé</th>
-                            <th class="px-4 py-3 text-center">Mode</th>
-                            <th class="px-4 py-3 text-center">Date encaissement</th>
-                            <th class="px-4 py-3 text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="mensualites-list-tbody" class="divide-y divide-slate-100 text-slate-700">
-                    </tbody>
-                </table>
+            <div class="mt-5 flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeModal('add-student-modal')" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-sm font-semibold transition-all">Annuler</button>
+                <button onclick="validerAjoutRapideEleve()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all">Ajouter</button>
             </div>
+        </div>
+    </div>
 
-            <div class="mt-4 pt-4 border-t border-slate-100 flex justify-end">
-                <button type="button" onclick="closeModal('mensualites-modal')" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm">
-                    Fermer
+    <div id="subjects-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 border border-slate-200 flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-book text-indigo-600"></i> <span id="lbl-subjects-title">Gestion des matières</span></h3>
+                <button onclick="loadStandardSubjects()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Charger standards
                 </button>
             </div>
-        </div>
-    </div>
-
-    <div id="encaissement-modal" class="hidden fixed inset-0 bg-slate-900/50 z-55 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
-            <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2 border-b pb-2">
-                <i class="fa-solid fa-cash-register text-emerald-600"></i> Encaisser Paiement
-            </h4>
-            <p class="text-xs text-slate-500 mb-4">Période : <span id="encaissement-mois-titre" class="font-bold text-slate-700"></span></p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Montant versé (FCFA)</label>
-                    <input type="number" id="encaissement-montant-input" min="0" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-lg text-emerald-600 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Méthode de paiement</label>
-                    <select id="encaissement-methode-select" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold outline-none">
-                        <option value="Espèces">Espèces</option>
-                        <option value="Wave">Wave</option>
-                        <option value="Orange Money">Orange Money</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-2 border-t pt-3">
-                <button type="button" onclick="closeModal('encaissement-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold hover:bg-slate-50">Annuler</button>
-                <button onclick="validerEncaissement()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm">Valider le paiement</button>
+            <div class="flex-1 overflow-y-auto pr-1 space-y-3" id="subjects-container"></div>
+            <button onclick="addNewSubjectRow()" class="mt-4 border-2 border-dashed border-slate-200 text-slate-500 hover:border-indigo-500 hover:text-indigo-600 w-full py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-plus text-xs"></i> Nouvelle ligne discipline
+            </button>
+            <div class="mt-5 flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeModal('subjects-modal')" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-sm font-semibold transition-all">Fermer</button>
+                <button onclick="saveSubjectsList()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm">Enregistrer les disciplines</button>
             </div>
         </div>
     </div>
 
-    <div id="class-fees-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
-            <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2 border-b pb-3">
-                <i class="fa-solid fa-coins text-amber-500"></i> Tarifs de la classe
-            </h3>
-            <p class="text-xs text-slate-500 mb-4">Ces montants s'appliqueront à tous les élèves de cette classe (<span id="fees-class-name" class="font-bold text-[#4c1d95]"></span>).</p>
-            <form id="class-fees-form" onsubmit="saveClassFees(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Montant Inscription (FCFA)</label>
-                    <input type="number" id="class-fee-inscription" min="0" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Mensualité (FCFA / mois)</label>
-                    <input type="number" id="class-fee-mensualite" min="0" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium">
-                </div>
-                <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
-                    <button type="button" onclick="closeModal('class-fees-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
-                    <button type="submit" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+  <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 border border-slate-200">
             <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2"><i class="fa-solid fa-gear text-[#4c1d95]"></i> Configuration</h3>
             <div class="space-y-4">
@@ -439,216 +428,202 @@
         </div>
     </div>
 
-    <div id="subjects-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 border border-slate-200 max-h-[85vh] flex flex-col">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 id="lbl-subjects-title" class="text-lg font-bold text-slate-800">Gestion des matières</h3>
-                <button onclick="loadStandardSubjects()" class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold">Grille standard</button>
+           
+
+  <div id="mensualites-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-2 sm:p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-4 sm:p-6 border border-slate-200 flex flex-col max-h-[90vh]">
+        <div class="border-b pb-3 mb-4">
+            <h3 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-wallet text-indigo-600"></i> Suivi Financier
+            </h3>
+            <p id="mens-student-name" class="text-xs sm:text-sm font-semibold text-indigo-600 mt-1 truncate">Élève : ...</p>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto space-y-4">
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                    <p class="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Tarif mensuel de base</p>
+                    <p id="mens-default-amount" class="text-sm sm:text-lg font-bold text-slate-900">0 F CFA / mois</p>
+                </div>
+                <span class="text-[10px] text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded-md font-medium">Bilan individuel</span>
             </div>
-            <div class="flex-1 overflow-y-auto space-y-3" id="subjects-container"></div>
-            <button onclick="addNewSubjectRow()" class="mt-4 border-2 border-dashed border-slate-200 text-slate-500 w-full py-2.5 rounded-xl text-sm font-semibold hover:text-[#4c1d95]">
-                + Nouvelle ligne discipline
-            </button>
-            <div class="mt-5 flex justify-end gap-2 border-t pt-3">
-                <button onclick="closeModal('subjects-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Fermer</button>
-                <button onclick="saveSubjects()" class="bg-[#4c1d95] text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
+
+            <!-- Ajout de overflow-x-auto ici pour rendre le tableau scrollable sur mobile -->
+            <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-x-auto">
+                <table class="w-full border-collapse text-left text-xs sm:text-sm min-w-[500px]">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold uppercase text-[10px] tracking-wider">
+                            <th class="px-2 md:px-4 py-3">Mois</th>
+                            <th class="px-2 md:px-4 py-3">Statut</th>
+                            <th class="px-2 md:px-4 py-3 text-right">Montant</th>
+                            <th class="px-2 md:px-4 py-3 text-center">Date</th>
+                            <th class="px-2 md:px-4 py-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mensualites-list-tbody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                </table>
             </div>
         </div>
-    </div>
 
+        <div class="pt-4 mt-2 border-t border-slate-100 flex justify-end">
+            <button type="button" onclick="closeModal('mensualites-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-sm w-full sm:w-auto">
+                Fermer
+            </button>
+        </div>
+    </div>
+</div>
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <div style="display: none;">
-        <div id="recu-template-container" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; background-color: #fff; max-width: 700px; margin: 0 auto; box-sizing: border-box;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #4c1d95; padding-bottom: 20px;">
-                <div>
-                    <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #4c1d95; text-transform: uppercase; letter-spacing: 1px;">GestNotes Academy</h1>
-                    <p style="margin: 5px 0 0; font-size: 13px; color: #64748b; font-weight: 500;">Système Numérique d'Administration Scolaire</p>
-                    <p style="margin: 3px 0 0; font-size: 11px; color: #94a3b8;">Dakar, Sénégal &bull; support@gestnotes.sn</p>
-                </div>
-                <div style="text-align: right;">
-                    <div style="background-color: #f3e8ff; color: #4c1d95; font-weight: 700; font-size: 12px; padding: 6px 14px; border-radius: 5px; display: inline-block; text-transform: uppercase;">REÇU DE PAIEMENT</div>
-                    <p style="margin: 8px 0 0; font-size: 12px; color: #475569; font-weight: 600;">N&deg; : <span id="recu-id" style="color: #0f172a;"></span></p>
-                    <p style="margin: 3px 0 0; font-size: 12px; color: #64748b;">Date : <span id="recu-date" style="font-weight: 500;"></span></p>
-                </div>
-            </div>
-
-            <div style="margin: 25px 0; background-color: #f8fafc; border-radius: 8px; padding: 15px 20px; border: 1px solid #f1f5f9; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div>
-                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Élève concerné</p>
-                    <p style="margin: 5px 0 0; font-size: 16px; font-weight: 700; color: #0f172a;" id="recu-eleve-nom"></p>
-                    <p style="margin: 3px 0 0; font-size: 13px; color: #475569;" id="recu-eleve-classe"></p>
-                </div>
-                <div style="text-align: right;">
-                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Année Académique</p>
-                    <p style="margin: 5px 0 0; font-size: 15px; font-weight: 700; color: #0f172a;" id="recu-annee-scolaire"></p>
-                </div>
-            </div>
-
-            <table style="width: 100%; border-collapse: collapse; margin-top: 25px; text-align: left;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #e2e8f0;">
-                        <th style="padding: 12px 0; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; text-align: left;">Désignation / Période</th>
-                        <th style="padding: 12px 0; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; text-align: center;">Mode de règlement</th>
-                        <th style="padding: 12px 0; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; text-align: right;">Montant Versé</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td style="padding: 16px 0; font-size: 14px; font-weight: 600; color: #334155; text-align: left;" id="recu-designation"></td>
-                        <td style="padding: 16px 0; font-size: 14px; color: #475569; text-align: center; font-weight: 500;" id="recu-methode"></td>
-                        <td style="padding: 16px 0; font-size: 16px; text-align: right; font-weight: 700; color: #0f172a;" id="recu-montant"></td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
-                <div style="background-color: #f8fafc; padding: 15px 25px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: right; min-width: 220px;">
-                    <p style="margin: 0; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Total Payé</p>
-                    <p style="margin: 5px 0 0; font-size: 24px; font-weight: 700; color: #4c1d95;" id="recu-total"></p>
-                </div>
-            </div>
-
-            <div style="margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end;">
-                <div style="color: #94a3b8; font-size: 11px; max-width: 60%;">
-                    <p style="margin: 0; font-weight: 500;">Ce document officiel fait office de preuve de versement électronique.</p>
-                    <p style="margin: 2px 0 0;">GestNotes &bull; Solution de dématérialisation scolaire.</p>
-                </div>
-                <div style="text-align: center; border-top: 1px dashed #cbd5e1; padding-top: 10px; width: 180px;">
-                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Le Comptable</p>
-                    <div style="margin-top: 15px; color: #cbd5e1; font-style: italic; font-size: 12px;">Signature électronique</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-        const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin"];
+        const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
         
-        let subjectDev3Visible = {};
-        let appState = null;
-        
-        let currentStudentIdForFinance = null;
-        let currentMonthIdxForFinance = null;
-        let editingStudentId = null;
+        const sectionsByClass = {
+            "CI": ["", "A", "B", "C"],
+            "CP": ["", "A", "B", "C"],
+            "CE1": ["", "A", "B", "C"],
+            "CE2": ["", "A", "B", "C"],
+            "CM1": ["", "A", "B", "C"],
+            "CM2": ["", "A", "B", "C"],
+            "6ème": ["", "A", "B", "C"],
+            "5ème": ["", "A", "B", "C"],
+            "4ème": ["", "A", "B", "C"],
+            "3ème": ["", "A", "B", "C"],
+            "Seconde": ["", "L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S1A", "S2", "S2A", "S2B"],
+            "Première": ["", "L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S1A", "S2", "S2A", "S2B"],
+            "Terminale": ["", "L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S1A", "S2", "S2A", "S2B"]
+        };
+
+        const MOIS_SCOLAIRES = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
 
         const DEFAULT_STATE = {
-            currentYear: "2025-2026",
+            currentYear: "2024-2025",
             currentSemester: 1,
             selectedClass: "6ème",
             selectedSection: "",
             classes: {}
         };
 
+        let appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        let activeDev3Map = {}; 
+
+        async function saveToStorage() {
+            await idbKeyval.set("gestnotes_state", appState);
+            calculerEtAfficherBilansFinanciers();
+        }
+
+        async function migrateFromLocalStorage() {
+            const oldData = localStorage.getItem("gestnotes_state");
+            if (oldData) {
+                try {
+                    const parsedData = JSON.parse(oldData);
+                    await idbKeyval.set("gestnotes_state", parsedData);
+                    localStorage.removeItem("gestnotes_state");
+                    return true;
+                } catch (e) {
+                    console.error("Erreur migration :", e);
+                }
+            }
+            return false;
+        }
+
+        async function initApp() {
+            await migrateFromLocalStorage();
+            const savedState = await idbKeyval.get("gestnotes_state");
+            appState = savedState || JSON.parse(JSON.stringify(DEFAULT_STATE));
+            buildEmptyState();
+            populateFilters();
+            updateHeaderDisplays();
+            render();
+            calculerEtAfficherBilansFinanciers();
+        }
+        window.addEventListener('DOMContentLoaded', initApp);
+
         function isPrimary(className) {
-            return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
-        }
-
-        function getPeriodLabel(className, periodNum) {
-            return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
-        }
-
-        function getCoefLabel(className) {
-            return isPrimary(className) ? "Max" : "Coef";
-        }
-
-        function getSectionsForClass(cls) {
-            if (["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"].includes(cls)) {
-                return ["", "A", "B", "C"];
-            }
-            if (["Seconde", "Première", "Terminale"].includes(cls)) {
-                return ["L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S2", "S2A", "S2B"];
-            }
-            return [""];
-        }
-
-        function getDefaultSubjects(className) {
-            if (isPrimary(className)) {
-                return [
-                    { id: "sub_lang", name: "Langue & Communication", coef: 10 },
-                    { id: "sub_math", name: "Mathématiques", coef: 10 },
-                    { id: "sub_es", name: "Éducation Science & Sociale", coef: 10 },
-                    { id: "sub_ed", name: "Éducation Développement", coef: 10 }
-                ];
-            }
-            return [
-                { id: "sub_math", name: "Mathématiques", coef: 4 },
-                { id: "sub_pc", name: "Physique-Chimie", coef: 3 },
-                { id: "sub_svt", name: "SVT", coef: 2 },
-                { id: "sub_fr", name: "Français", coef: 4 },
-                { id: "sub_hg", name: "Histoire-Géographie", coef: 2 },
-                { id: "sub_ang", name: "Anglais", coef: 2 }
-            ];
+            return ["CI", "CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
         }
 
         function buildEmptyState() {
-            if (!appState) appState = { classes: {} };
             if (!appState.classes) appState.classes = {};
-
             classNames.forEach(c => {
-                const sections = getSectionsForClass(c);
+                const sections = sectionsByClass[c] || [""];
                 sections.forEach(s => {
-                    const key = `${c}_${s}`;
+                    const key = `${c}-${s}`;
                     if (!appState.classes[key]) {
-                        appState.classes[key] = {
-                            subjects: getDefaultSubjects(c),
-                            students: [],
-                            fees: { inscription: 0, mensualite: 0 }
-                        };
-                    }
-                    if (!appState.classes[key].fees) {
-                        appState.classes[key].fees = { inscription: 0, mensualite: 0 };
+                        appState.classes[key] = { students: [], subjects: [], tarifMensuel: 0 };
                     }
                 });
             });
         }
 
-        async function initApp() {
-            const savedState = await idbKeyval.get("gestnotes_state");
-            appState = savedState || DEFAULT_STATE;
-            buildEmptyState();
-            populateFilters();
-            updateHeaderDisplays();
-            render();
-        }
-
-        window.addEventListener('DOMContentLoaded', initApp);
-
-        async function saveToStorage() {
-            try {
-                await idbKeyval.set("gestnotes_state", appState);
-            } catch (err) {
-                console.error("Erreur de sauvegarde locale", err);
-            }
-        }
-
         function getCurrentClassKey() {
-            return `${appState.selectedClass}_${appState.selectedSection}`;
+            return `${appState.selectedClass}-${appState.selectedSection}`;
         }
 
         function populateFilters() {
-            const classSelect = document.getElementById('filter-class');
-            classSelect.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass===c?'selected':''}>${c}</option>`).join('');
+            const fClass = document.getElementById('filter-class');
+            fClass.innerHTML = "";
+            classNames.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                if (c === appState.selectedClass) opt.selected = true;
+                fClass.appendChild(opt);
+            });
             updateSectionFilterOptions();
         }
 
         function updateSectionFilterOptions() {
-            const sectSelect = document.getElementById('filter-section');
-            const sections = getSectionsForClass(appState.selectedClass);
-            sectSelect.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>${s||'Général'}</option>`).join('');
+            const fSec = document.getElementById('filter-section');
+            fSec.innerHTML = "";
+            const sections = sectionsByClass[appState.selectedClass] || [""];
+            if (sections.length === 1 && sections[0] === "") {
+                fSec.innerHTML = `<option value="">Générale</option>`;
+                appState.selectedSection = "";
+            } else {
+                sections.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s; 
+                    opt.textContent = s ? `Série ${s}` : "Base / Sans option";
+                    if (s === appState.selectedSection) opt.selected = true;
+                    fSec.appendChild(opt);
+                });
+                if (!sections.includes(appState.selectedSection)) {
+                    appState.selectedSection = sections[0];
+                }
+            }
         }
 
-        function updateHeaderDisplays() {
-            document.getElementById('display-year').innerText = appState.currentYear;
-            document.getElementById('display-semester').innerText = getPeriodLabel(appState.selectedClass, appState.currentSemester);
+      
+function updateHeaderDisplays() {
+        document.getElementById('display-year').textContent = appState.currentYear;
+        // On passe d'abord le semestre (numéro), puis la classe pour détecter si c'est primaire
+        document.getElementById('display-semester').textContent = getPeriodLabel(appState.currentSemester, appState.selectedClass);
+    }
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-animate pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold transition-all ${
+                type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 
+                type === 'info' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-rose-50 text-rose-800 border-rose-200'
+            }`;
+            const icon = type === 'success' ? 'fa-circle-check' : type === 'info' ? 'fa-circle-info' : 'fa-circle-exclamation';
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
         }
 
         function onClassChange() {
             appState.selectedClass = document.getElementById('filter-class').value;
-            appState.selectedSection = "";
             updateSectionFilterOptions();
             updateHeaderDisplays();
+            updatePeriodDropdown();
             render();
         }
 
@@ -657,976 +632,702 @@
             render();
         }
 
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-            if (id === 'settings-modal') {
-                document.getElementById('settings-year').value = appState.currentYear;
-                updateSettingsPeriodSelect();
-            }
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        function updateSettingsPeriodSelect() {
-            const select = document.getElementById('settings-semester');
-            const primary = isPrimary(appState.selectedClass);
-            if (primary) {
-                select.innerHTML = `
-                    <option value="1" ${appState.currentSemester==1?'selected':''}>Trimestre 1</option>
-                    <option value="2" ${appState.currentSemester==2?'selected':''}>Trimestre 2</option>
-                    <option value="3" ${appState.currentSemester==3?'selected':''}>Trimestre 3</option>
-                `;
-            } else {
-                select.innerHTML = `
-                    <option value="1" ${appState.currentSemester==1?'selected':''}>Semestre 1</option>
-                    <option value="2" ${appState.currentSemester==2?'selected':''}>Semestre 2</option>
-                `;
-            }
-        }
-
-        function saveSettings() {
-            appState.currentYear = document.getElementById('settings-year').value;
-            appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
-            saveToStorage();
-            updateHeaderDisplays();
-            closeModal('settings-modal');
-            render();
-            showToast("Configurations appliquées !", "success");
-        }
-
-        function openClassFeesModal() {
+        function openTarifModal() {
             const key = getCurrentClassKey();
-            const currentFees = appState.classes[key].fees || { inscription: 0, mensualite: 0 };
-            document.getElementById('fees-class-name').innerText = appState.selectedClass + " " + (appState.selectedSection || "");
-            document.getElementById('class-fee-inscription').value = currentFees.inscription || 0;
-            document.getElementById('class-fee-mensualite').value = currentFees.mensualite || 0;
-            openModal('class-fees-modal');
+            const cls = appState.classes[key];
+            document.getElementById('lbl-tarif-classe').textContent = `${appState.selectedClass} ${appState.selectedSection}`;
+            document.getElementById('tarif-class-amount').value = cls.tarifMensuel || 0;
+            openModal('tarif-modal');
         }
 
-        function saveClassFees(e) {
-            e.preventDefault();
+        function saveTarifClasse() {
             const key = getCurrentClassKey();
-            appState.classes[key].fees = {
-                inscription: parseInt(document.getElementById('class-fee-inscription').value) || 0,
-                mensualite: parseInt(document.getElementById('class-fee-mensualite').value) || 0
-            };
+            const amount = parseInt(document.getElementById('tarif-class-amount').value) || 0;
+            appState.classes[key].tarifMensuel = amount;
             saveToStorage();
-            closeModal('class-fees-modal');
-            showToast("Tarifs mis à jour !", "success");
+            closeModal('tarif-modal');
+            showToast("Tarif mensuel configuré pour cette classe !", "success");
             render();
         }
 
         function openRegistrationModal() {
-            editingStudentId = null;
-            document.getElementById('registration-form').reset();
+            const form = document.getElementById('registration-form');
+            form.reset();
+            delete form.dataset.studentId;
             document.getElementById('reg-mensualites-btn').classList.add('hidden');
             
-            const classSel = document.getElementById('reg-class');
-            classSel.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
-            classSel.value = appState.selectedClass;
-            
+            const rClass = document.getElementById('reg-class');
+            rClass.innerHTML = "";
+            classNames.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                if (c === appState.selectedClass) opt.selected = true;
+                rClass.appendChild(opt);
+            });
             updateRegSections();
-            updateRegAmountDisplay();
             openModal('registration-modal');
         }
 
         function updateRegSections() {
-            const cls = document.getElementById('reg-class').value;
-            const sectSel = document.getElementById('reg-section');
-            const sections = getSectionsForClass(cls);
-            sectSel.innerHTML = sections.map(s => `<option value="${s}">${s||'Général'}</option>`).join('');
-            if (cls === appState.selectedClass) {
-                sectSel.value = appState.selectedSection;
+            const rClass = document.getElementById('reg-class').value;
+            const rSec = document.getElementById('reg-section');
+            rSec.innerHTML = "";
+            const sections = sectionsByClass[rClass] || [""];
+            if (sections.length === 1 && sections[0] === "") {
+                rSec.innerHTML = `<option value="">Générale</option>`;
+            } else {
+                sections.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s; 
+                    opt.textContent = s ? `Série ${s}` : "Base / Sans option";
+                    rSec.appendChild(opt);
+                });
             }
-        }
-
-        function updateRegAmountDisplay() {
-            const cls = document.getElementById('reg-class').value;
-            const sect = document.getElementById('reg-section').value;
-            const key = `${cls}_${sect}`;
-            const targetClass = appState.classes[key];
-            const insFee = (targetClass && targetClass.fees) ? (targetClass.fees.inscription || 0) : 0;
-            document.getElementById('reg-amount').value = insFee;
         }
 
         function validerInscriptionOuChangement(e) {
             e.preventDefault();
-            const firstName = document.getElementById('reg-firstname').value.trim();
-            const lastName = document.getElementById('reg-lastname').value.trim();
+            const form = document.getElementById('registration-form');
+            const studentId = form.dataset.studentId;
+
+            const firstname = document.getElementById('reg-firstname').value.trim();
+            const lastname = document.getElementById('reg-lastname').value.trim();
             const dob = document.getElementById('reg-dob').value;
             const pob = document.getElementById('reg-pob').value.trim();
-            const phone = document.getElementById('reg-phone').value.trim();
             const targetClass = document.getElementById('reg-class').value;
             const targetSection = document.getElementById('reg-section').value;
-            
-            const newKey = `${targetClass}_${targetSection}`;
-            
-            if (editingStudentId) {
-                for (let k in appState.classes) {
-                    let idx = appState.classes[k].students.findIndex(s => s.id === editingStudentId);
-                    if (idx !== -1) {
-                        let stObj = appState.classes[k].students[idx];
-                        stObj.firstname = firstName;
-                        stObj.lastname = lastName;
-                        stObj.dob = dob;
-                        stObj.pob = pob;
-                        stObj.phone = phone;
-                        
-                        if (k !== newKey) {
-                            appState.classes[k].students.splice(idx, 1);
-                            if (!appState.classes[newKey].students) appState.classes[newKey].students = [];
-                            appState.classes[newKey].students.push(stObj);
-                        }
-                        break;
+            const amount = parseInt(document.getElementById('reg-amount').value) || 0;
+            const phone = document.getElementById('reg-phone').value.trim();
+
+            const targetKey = `${targetClass}-${targetSection}`;
+
+            if (studentId) {
+                const currentKey = getCurrentClassKey();
+                let studentObj = appState.classes[currentKey].students.find(s => s.id === studentId);
+                
+                if (studentObj) {
+                    studentObj.firstName = firstname;
+                    studentObj.lastName = lastname;
+                    studentObj.dob = dob;
+                    studentObj.pob = pob;
+                    studentObj.phone = phone;
+                    studentObj.registrationAmount = amount;
+
+                    if (currentKey !== targetKey) {
+                        appState.classes[currentKey].students = appState.classes[currentKey].students.filter(s => s.id !== studentId);
+                        appState.classes[targetKey].students.push(studentObj);
                     }
                 }
+                showToast("Fiche élève mise à jour");
             } else {
-                const targetFees = appState.classes[newKey].fees || { inscription: 0, mensualite: 0 };
-                const paymentsStructure = moisAnnee.map((m, idx) => ({
-                    designation: m,
-                    statut: "Non payé",
-                    montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
-                    montantPaye: 0,
-                    methode: "",
-                    dateEncaissement: ""
-                }));
-
                 const newStudent = {
-                    id: "student_" + Date.now(),
-                    firstname: firstName,
-                    lastname: lastName,
+                    id: 'st_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                    firstName: firstname,
+                    lastName: lastname,
                     dob: dob,
                     pob: pob,
                     phone: phone,
+                    registrationAmount: amount,
                     grades: {},
-                    payments: paymentsStructure
+                    mensualites: {}
                 };
-                appState.classes[newKey].students.push(newStudent);
+                appState.classes[targetKey].students.push(newStudent);
+                showToast("Nouvel élève inscrit !");
             }
-            
+
             saveToStorage();
             closeModal('registration-modal');
-            showToast("Fiche d'inscription synchronisée !", "success");
             render();
         }
 
         function openEditStudent(studentId) {
-            editingStudentId = studentId;
-            let student = null;
-            let currentKey = "";
-            
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === studentId);
-                if (student) { currentKey = k; break; }
-            }
-            if (!student) return;
-
-            document.getElementById('reg-firstname').value = student.firstname;
-            document.getElementById('reg-lastname').value = student.lastname;
-            document.getElementById('reg-dob').value = student.dob || "";
-            document.getElementById('reg-pob').value = student.pob || "";
-            document.getElementById('reg-phone').value = student.phone || "";
-            
-            const parts = currentKey.split('_');
-            const classSel = document.getElementById('reg-class');
-            classSel.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
-            classSel.value = parts[0];
-            
-            updateRegSections();
-            document.getElementById('reg-section').value = parts[1] || "";
-            updateRegAmountDisplay();
-            
-            document.getElementById('reg-mensualites-btn').classList.remove('hidden');
-            openModal('registration-modal');
-        }
-
-        function redirigerVersMensualites() {
-            if (!editingStudentId) return;
-            closeModal('registration-modal');
-            openMensualitesModal(editingStudentId);
-        }
-
-        function openMensualitesModal(studentId) {
-            currentStudentIdForFinance = studentId;
-            let student = null;
-            let classKey = "";
-            
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === studentId);
-                if (student) { classKey = k; break; }
-            }
-            if (!student) return;
-
-            const parts = classKey.split('_');
-            document.getElementById('mens-student-name').innerText = `${student.firstname} ${student.lastname}`;
-            document.getElementById('mens-student-class').innerText = parts[0] + " " + (parts[1] || "");
-
-            const targetFees = appState.classes[classKey].fees || { inscription: 0, mensualite: 0 };
-            if (!student.payments || student.payments.length === 0) {
-                student.payments = moisAnnee.map((m, idx) => ({
-                    designation: m,
-                    statut: "Non payé",
-                    montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
-                    montantPaye: 0,
-                    methode: "",
-                    dateEncaissement: ""
-                }));
-            } else {
-                student.payments.forEach((p, idx) => {
-                    if (p.statut === "Non payé") {
-                        p.montantDu = idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0);
-                    }
-                });
-            }
-
-            renderMensualitesList(student);
-            openModal('mensualites-modal');
-        }
-
-        function renderMensualitesList(student) {
-            let totalDueScolarite = 0;
-            let totalPaye = 0;
-            let insFee = student.payments[0].montantDu || 0;
-
-            const tbody = document.getElementById('mensualites-list-tbody');
-            tbody.innerHTML = "";
-
-            student.payments.forEach((p, idx) => {
-                if (idx > 0) totalDueScolarite += p.montantDu;
-                totalPaye += p.montantPaye;
-
-                let badgeColor = "bg-rose-100 text-rose-800 border-rose-200";
-                if (p.statut === "Payé") badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-200";
-                
-                let actionsHTML = "";
-                if (p.statut === "Non payé") {
-                    actionsHTML = `
-                        <button onclick="openEncaissementModal(${idx})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm">
-                            <i class="fa-solid fa-cash-register mr-1"></i> Encaisser
-                        </button>
-                    `;
-                } else {
-                    actionsHTML = `
-                        <div class="flex items-center justify-center gap-1">
-                            <button onclick="imprimerRecu('${student.id}', ${idx})" class="text-indigo-600 hover:bg-indigo-50 border border-slate-200 p-1.5 rounded-lg transition-all" title="Imprimer le Reçu PDF">
-                                <i class="fa-solid fa-print"></i>
-                            </button>
-                            <button onclick="partagerWhatsApp('${student.id}', ${idx})" class="text-emerald-600 hover:bg-emerald-50 border border-slate-200 p-1.5 rounded-lg transition-all" title="Notifier par WhatsApp">
-                                <i class="fa-brands fa-whatsapp font-bold"></i>
-                            </button>
-                            <button onclick="annulerPaiementMois('${student.id}', ${idx})" class="text-rose-600 hover:bg-rose-50 border border-slate-200 p-1.5 rounded-lg transition-all" title="Annuler le règlement">
-                                <i class="fa-solid fa-rotate-left"></i>
-                            </button>
-                        </div>
-                    `;
-                }
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/50 transition-colors";
-                tr.innerHTML = `
-                    <td class="px-4 py-3 text-left font-bold text-slate-700">${p.designation === 'Inscription' ? 'Frais d\'inscription' : 'Mensualité ' + p.designation}</td>
-                    <td class="px-4 py-3 text-center">
-                        <span class="px-2.5 py-1 border text-xs rounded-full font-bold uppercase tracking-wider ${badgeColor}">${p.statut}</span>
-                    </td>
-                    <td class="px-4 py-3 text-right font-extrabold ${p.montantPaye > 0 ? 'text-slate-900' : 'text-slate-400'}">${p.montantPaye.toLocaleString()} F</td>
-                    <td class="px-4 py-3 text-center text-xs font-semibold text-slate-600">${p.methode || '-'}</td>
-                    <td class="px-4 py-3 text-center text-xs text-slate-500">${p.dateEncaissement || '-'}</td>
-                    <td class="px-4 py-3 text-center">${actionsHTML}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById('bilan-inscription').innerText = insFee.toLocaleString() + " F";
-            document.getElementById('bilan-scolarite-fixee').innerText = totalDueScolarite.toLocaleString() + " F";
-            document.getElementById('bilan-total-paye').innerText = totalPaye.toLocaleString() + " F";
-            
-            let totalGlobalDu = insFee + totalDueScolarite;
-            let resteAPayer = totalGlobalDu - totalPaye;
-            document.getElementById('bilan-reste-payer').innerText = resteAPayer.toLocaleString() + " F";
-        }
-
-        function openEncaissementModal(monthIdx) {
-            currentMonthIdxForFinance = monthIdx;
-            let student = null;
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === currentStudentIdForFinance);
-                if (student) break;
-            }
-            if (!student) return;
-
-            const p = student.payments[monthIdx];
-            document.getElementById('encaissement-mois-titre').innerText = p.designation === 'Inscription' ? 'Frais d\'Inscription' : 'Mensualité de ' + p.designation;
-            document.getElementById('encaissement-montant-input').value = p.montantDu;
-            openModal('encaissement-modal');
-        }
-
-        function validerEncaissement() {
-            let student = null;
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === currentStudentIdForFinance);
-                if (student) break;
-            }
-            if (!student) return;
-
-            const amt = parseInt(document.getElementById('encaissement-montant-input').value) || 0;
-            const method = document.getElementById('encaissement-methode-select').value;
-            
-            if (amt <= 0) {
-                alert("Le montant doit être supérieur à 0 F.");
-                return;
-            }
-
-            const p = student.payments[currentMonthIdxForFinance];
-            p.montantPaye = amt;
-            p.statut = "Payé";
-            p.methode = method;
-            
-            const today = new Date();
-            p.dateEncaissement = today.toLocaleDateString('fr-FR') + " " + today.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
-
-            saveToStorage();
-            closeModal('encaissement-modal');
-            showToast(`Encaissement validé (${method}) !`, "success");
-            renderMensualitesList(student);
-        }
-
-        function annulerPaiementMois(studentId, monthIdx) {
-            if(!confirm("Annuler ce versement ? Les informations de règlement seront effacées.")) return;
-            let student = null;
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === studentId);
-                if (student) break;
-            }
-            if (!student) return;
-
-            const p = student.payments[monthIdx];
-            p.montantPaye = 0;
-            p.statut = "Non payé";
-            p.methode = "";
-            p.dateEncaissement = "";
-
-            saveToStorage();
-            showToast("Règlement réinitialisé.", "info");
-            renderMensualitesList(student);
-        }
-
-        function imprimerRecu(studentId, monthIdx) {
-            let student = null;
-            let classKey = "";
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === studentId);
-                if (student) { classKey = k; break; }
-            }
-            if (!student) return;
-
-            const p = student.payments[monthIdx];
-            const parts = classKey.split('_');
-
-            document.getElementById('recu-id').innerText = `GN-${Date.now().toString().slice(-6)}`;
-            document.getElementById('recu-date').innerText = p.dateEncaissement.split(' ')[0];
-            document.getElementById('recu-eleve-nom').innerText = `${student.firstname} ${student.lastname}`;
-            document.getElementById('recu-eleve-classe').innerText = `Classe : ${parts[0]} ${parts[1] || ''}`;
-            document.getElementById('recu-annee-scolaire').innerText = appState.currentYear;
-            document.getElementById('recu-designation').innerText = p.designation === 'Inscription' ? 'Frais d\'inscription scolaire' : `Frais de scolarité - Mois de ${p.designation}`;
-            document.getElementById('recu-methode').innerText = p.methode;
-            document.getElementById('recu-montant').innerText = `${p.montantPaye.toLocaleString()} FCFA`;
-            document.getElementById('recu-total').innerText = `${p.montantPaye.toLocaleString()} FCFA`;
-
-            const element = document.getElementById('recu-template-container');
-            const options = {
-                margin: 10,
-                filename: `Recu_${p.designation}_${student.lastname}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(options).from(element).save();
-        }
-
-        function partagerWhatsApp(studentId, monthIdx) {
-            let student = null;
-            let classKey = "";
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === studentId);
-                if (student) { classKey = k; break; }
-            }
-            if (!student || !student.phone) {
-                alert("Aucun numéro parent configuré sur la fiche de cet élève.");
-                return;
-            }
-
-            const p = student.payments[monthIdx];
-            const classNameDisplay = classKey.replace('_', ' ');
-            const typeLibelle = p.designation === 'Inscription' ? "les frais d'inscription" : `la mensualité de *${p.designation}*`;
-            
-            const message = `Chers parents, nous confirmons la bonne réception du règlement de ${typeLibelle} pour l'élève *${student.firstname} ${student.lastname}* (${classNameDisplay}) d'un montant de *${p.montantPaye.toLocaleString()} FCFA* via ${p.methode} le ${p.dateEncaissement}. Merci pour votre confiance. -- Direction GestNotes.`;
-            
-            let purePhone = student.phone.replace(/[\s\+\-]/g, '');
-            if (purePhone.length === 9) purePhone = "221" + purePhone;
-
-            const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(message)}`;
-            window.open(url, '_blank');
-        }
-
-        function openSubjectsModal() {
-            const key = getCurrentClassKey();
-            document.getElementById('lbl-subjects-title').innerText = `Disciplines : ${appState.selectedClass} ${appState.selectedSection||''}`;
-            const container = document.getElementById('subjects-container');
-            container.innerHTML = "";
-            
-            const subjects = appState.classes[key].subjects || [];
-            subjects.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef));
-            if(subjects.length === 0) addNewSubjectRow();
-            openModal('subjects-modal');
-        }
-
-        function createSubjectRow(id, name, coef) {
-            const container = document.getElementById('subjects-container');
-            const row = document.createElement('div');
-            row.className = "flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200 subject-row-item";
-            row.dataset.id = id || "sub_" + Date.now() + Math.random().toString(36).substr(2, 5);
-            row.innerHTML = `
-                <input type="text" value="${name||''}" placeholder="Ex: Mathématiques" class="text-slate-900 flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none font-medium">
-                <div class="w-24 flex items-center gap-1">
-                    <span class="text-xs text-slate-400 font-bold">${getCoefLabel(appState.selectedClass)}</span>
-                    <input type="number" step="any" value="${coef||1}" class="text-slate-900 w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm text-center font-bold outline-none">
-                </div>
-                <button onclick="this.parentElement.remove()" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-all"><i class="fa-solid fa-trash-can"></i></button>
-            `;
-            container.appendChild(row);
-        }
-
-        function addNewSubjectRow() {
-            createSubjectRow("", "", 1);
-        }
-
-        function loadStandardSubjects() {
-            if (confirm("Remplacer les disciplines par la liste standard ?")) {
-                const container = document.getElementById('subjects-container');
-                container.innerHTML = "";
-                const standards = getDefaultSubjects(appState.selectedClass);
-                standards.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef));
-            }
-        }
-
-        function saveSubjects() {
-            const key = getCurrentClassKey();
-            const rows = document.querySelectorAll('.subject-row-item');
-            const arr = [];
-            rows.forEach(r => {
-                const inputs = r.querySelectorAll('input');
-                const name = inputs[0].value.trim();
-                const coef = parseFloat(inputs[1].value) || 1;
-                if (name) {
-                    arr.push({ id: r.dataset.id, name, coef });
-                }
-            });
-            appState.classes[key].subjects = arr;
-            saveToStorage();
-            closeModal('subjects-modal');
-            showToast("Liste des disciplines enregistrée.", "success");
-            render();
-        }
-
-        function supprimerEleve(id) {
-            if (confirm("Supprimer cet élève, ses notes et son historique financier ?")) {
-                const key = getCurrentClassKey();
-                const idx = appState.classes[key].students.findIndex(s => s.id === id);
-                if (idx !== -1) {
-                    appState.classes[key].students.splice(idx, 1);
-                    saveToStorage();
-                    showToast("Élève retiré de la base.", "info");
-                    render();
-                }
-            }
-        }
-
-        function toggleDev3() {
-            const subSelect = document.getElementById('grade-subject-select');
-            if (!subSelect.value) return;
-            const subjectId = subSelect.value;
-            subjectDev3Visible[subjectId] = !subjectDev3Visible[subjectId];
-            renderGradesGrid();
-        }
-
-        function exporterFeuilleSaisie() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            const subSelect = document.getElementById('grade-subject-select');
-            if (!clsData || !subSelect.value || clsData.students.length === 0) {
-                showToast("Aucune donnée disponible à l'export.", "info");
-                return;
-            }
-            const subjectName = subSelect.options[subSelect.selectedIndex].text;
-            let csv = "ID,Nom,Prenom,Dev1,Dev2,Dev3,Compo\n";
-            clsData.students.forEach(s => {
-                const g = s.grades[subSelect.value] || {};
-                csv += `${s.id},${s.lastname},${s.firstname},${g.dev1||''},${g.dev2||''},${g.dev3||''},${g.compo||''}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Grille_${appState.selectedClass}_${subjectName.replace(/[^a-zA-Z0-9]/g, '_')}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function importerNotesAuto(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const subSelect = document.getElementById('grade-subject-select');
-            if (!subSelect.value) {
-                alert("Sélectionnez d'abord la discipline active.");
-                return;
-            }
-            const subjectId = subSelect.value;
-            const key = getCurrentClassKey();
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const lines = e.target.result.split('\n');
-                let count = 0;
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
-                    const parts = line.split(',');
-                    if (parts.length < 3) continue;
-                    const sId = parts[0];
-                    const student = appState.classes[key].students.find(s => s.id === sId);
-                    if (student) {
-                        if (!student.grades[subjectId]) student.grades[subjectId] = {};
-                        if (parts[3] !== undefined && parts[3] !== "") student.grades[subjectId].dev1 = parseFloat(parts[3]);
-                        if (parts[4] !== undefined && parts[4] !== "") student.grades[subjectId].dev2 = parseFloat(parts[4]);
-                        if (parts[5] !== undefined && parts[5] !== "") student.grades[subjectId].dev3 = parseFloat(parts[5]);
-                        if (parts[6] !== undefined && parts[6] !== "") student.grades[subjectId].compo = parseFloat(parts[6]);
-                        count++;
-                    }
-                }
-                saveToStorage();
-                render();
-                showToast(`${count} lignes de notes synchronisées !`, "success");
-            };
-            reader.readAsText(file);
-            input.value = "";
-        }
-
-        window.exportAllCSV = function() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            if (!clsData || clsData.students.length === 0) {
-                showToast("Aucun élève dans cette section.", "info");
-                return;
-            }
-            let csv = "Nom,Prenom,Date Naissance,Lieu Naissance,Telephone Parent,Moyenne Generale\n";
-            clsData.students.forEach(s => {
-                const mg = calculerMoyenneGeneraleGlobale(s, clsData.subjects || []);
-                const displayMg = mg !== null ? mg.toFixed(2) : "N/A";
-                csv += `"${s.lastname}","${s.firstname}","${s.dob||''}","${s.pob||''}","${s.phone||''}",${displayMg}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Liste_Eleves_${key}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        };
-
-        window.printAllReportCards = function() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            if (!clsData || clsData.students.length === 0) {
-                showToast("Aucun élève à éditer.", "info");
-                return;
-            }
-            let printWindow = window.open('', '_blank');
-            let html = `
-            <html>
-            <head>
-                <title>Bulletins de Notes - ${appState.selectedClass}</title>
-                <style>
-                    body { font-family: 'Hanken Grotesk', sans-serif; color: #334155; padding: 20px; background: #fff; }
-                    .bulletin { page-break-after: always; border: 2px solid #4c1d95; padding: 30px; margin-bottom: 40px; border-radius: 8px; }
-                    .header { display: flex; justify-content: space-between; border-bottom: 2px solid #4c1d95; padding-bottom: 15px; }
-                    .title { color: #4c1d95; font-size: 22px; font-weight: bold; text-transform: uppercase; }
-                    .info-table { width: 100%; margin: 20px 0; border-collapse: collapse; }
-                    .info-table td { padding: 5px; font-size: 14px; }
-                    .grades-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-                    .grades-table th, .grades-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-size: 13px; }
-                    .grades-table th { background-color: #f8fafc; color: #4c1d95; }
-                    .total-box { margin-top: 20px; text-align: right; font-size: 16px; font-weight: bold; color: #4c1d95; }
-                    .footer-signatures { margin-top: 50px; display: flex; justify-content: space-between; font-size: 12px; }
-                </style>
-            </head>
-            <body>
-            `;
-
-            clsData.students.forEach(s => {
-                const mg = calculerMoyenneGeneraleGlobale(s, clsData.subjects || []);
-                const displayMg = mg !== null ? mg.toFixed(2) : "N/A";
-                const labelCoefMax = isPrimary(appState.selectedClass) ? "Max" : "Coef";
-
-                html += `
-                <div class="bulletin">
-                    <div class="header">
-                        <div>
-                            <div class="title">GestNotes Academy</div>
-                            <div style="font-size: 12px; color: #64748b;">Dakar, Sénégal</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: bold; color: #4c1d95;">BULLETIN DE NOTES</div>
-                            <div style="font-size: 13px;">Année : ${appState.currentYear}</div>
-                            <div style="font-size: 13px;">${getPeriodLabel(appState.selectedClass, appState.currentSemester)}</div>
-                        </div>
-                    </div>
-                    
-                    <table class="info-table">
-                        <tr>
-                            <td><strong>Élève :</strong> ${s.lastname.toUpperCase()} ${s.firstname}</td>
-                            <td style="text-align: right;"><strong>Classe :</strong> ${appState.selectedClass} ${appState.selectedSection}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Né(e) le :</strong> ${s.dob ? new Date(s.dob).toLocaleDateString('fr-FR') : '-'} à ${s.pob || '-'}</td>
-                            <td style="text-align: right;"><strong>Effectif :</strong> ${clsData.students.length}</td>
-                        </tr>
-                    </table>
-
-                    <table class="grades-table">
-                        <thead>
-                            <tr>
-                                <th style="text-align: left; width: 40%;">Matière</th>
-                                <th>Devoirs</th>
-                                <th>Composition</th>
-                                <th>Moyenne</th>
-                                <th>${labelCoefMax}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                clsData.subjects.forEach(sub => {
-                    const g = s.grades[sub.id] || {};
-                    let devs = [];
-                    if(g.dev1 !== undefined && g.dev1 !== "") devs.push(g.dev1);
-                    if(g.dev2 !== undefined && g.dev2 !== "") devs.push(g.dev2);
-                    if(subjectDev3Visible[sub.id] && g.dev3 !== undefined && g.dev3 !== "") devs.push(g.dev3);
-                    
-                    const devsStr = devs.length > 0 ? devs.join(' | ') : '-';
-                    const compoStr = (g.compo !== undefined && g.compo !== "") ? g.compo : '-';
-                    const moyMat = calculerMoyenneEleveMatiere(s, sub.id);
-                    const moyMatStr = moyMat !== null ? moyMat.toFixed(2) : '-';
-
-                    html += `
-                    <tr>
-                        <td style="text-align: left;"><strong>${sub.name}</strong></td>
-                        <td>${devsStr}</td>
-                        <td>${compoStr}</td>
-                        <td><strong>${moyMatStr}</strong></td>
-                        <td>${sub.coef}</td>
-                    </tr>
-                    `;
-                });
-
-                html += `
-                        </tbody>
-                    </table>
-                    
-                    <div class="total-box">
-                        MOYENNE GÉNÉRALE : ${displayMg} / ${isPrimary(appState.selectedClass) ? '10' : '20'}
-                    </div>
-
-                    <div class="footer-signatures">
-                        <div>Le Parent d'Élève</div>
-                        <div>Le Titulaire de la Classe</div>
-                        <div>Le Directeur</div>
-                    </div>
-                </div>
-                `;
-            });
-
-            html += `</body></html>`;
-            printWindow.document.write(html);
-            printWindow.document.close();
-            printWindow.print();
-        };
-
-        function calculerMoyenneEleveMatiere(student, subjectId) {
-            const g = student.grades[subjectId] || {};
-            const d1 = parseFloat(g.dev1);
-            const d2 = parseFloat(g.dev2);
-            const d3 = parseFloat(g.dev3);
-            const compo = parseFloat(g.compo);
-
-            let hasDev = false;
-            let sumDev = 0;
-            let countDev = 0;
-
-            if (!isNaN(d1)) { sumDev += d1; countDev++; hasDev = true; }
-            if (!isNaN(d2)) { sumDev += d2; countDev++; hasDev = true; }
-            if (subjectDev3Visible[subjectId] && !isNaN(d3)) { sumDev += d3; countDev++; hasDev = true; }
-
-            let moyDev = hasDev ? (sumDev / countDev) : 0;
-
-            if (isPrimary(appState.selectedClass)) {
-                if (hasDev && !isNaN(compo)) return (moyDev + compo) / 2;
-                if (!isNaN(compo)) return compo;
-                if (hasDev) return moyDev;
-                return null;
-            } else {
-                if (hasDev && !isNaN(compo)) return (moyDev + (compo * 2)) / 3;
-                if (!isNaN(compo)) return compo;
-                if (hasDev) return moyDev;
-                return null;
-            }
-        }
-
-        function calculerMoyenneGeneraleGlobale(student, subjects) {
-            let totalPoints = 0;
-            let totalCoefs = 0;
-
-            subjects.forEach(sub => {
-                const m = calculerMoyenneEleveMatiere(student, sub.id);
-                if (m !== null) {
-                    totalPoints += m * (sub.coef || 1);
-                    totalCoefs += (sub.coef || 1);
-                }
-            });
-
-            if (totalCoefs === 0) return null;
-            return totalPoints / totalCoefs;
-        }
-
-        function render() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key] || { subjects: [], students: [] };
-            if(!clsData.students) clsData.students = [];
-            if(!clsData.subjects) clsData.subjects = [];
-
-            document.getElementById('class-badge').innerText = appState.selectedClass + " " + (appState.selectedSection || "Général");
-            document.getElementById('student-count').innerText = `${clsData.students.length} élève(s) inscrit(s)`;
-            document.getElementById('filter-effectif').value = clsData.students.length;
-
-            renderStudentsTable(clsData.students, clsData.subjects);
-            renderSubjectsSelect(clsData.subjects);
-            renderGradesGrid();
-        }
-function renderStudentsTable(students, subjects) {
-    const tbody = document.getElementById('students-table-body');
-    const empty = document.getElementById('empty-state');
-    tbody.innerHTML = "";
-
-    if (students.length === 0) {
-        empty.classList.remove('hidden');
-        return;
-    }
-    empty.classList.add('hidden');
-
-    const sorted = [...students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
-
-    sorted.forEach(s => {
-        const mg = calculerMoyenneGeneraleGlobale(s, subjects);
-        const displayMg = (mg === null) ? 
-            `<span class="text-slate-400 text-xs italic">Pas de note</span>` : 
-            `<span class="font-extrabold text-[#4c1d95]">${mg.toFixed(2)}</span>`;
-
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
-        tr.innerHTML = `
-            <td class="py-3 px-3 sm:px-5">
-                <div class="font-bold text-slate-800 text-sm sm:text-base">${s.lastname.toUpperCase()} ${s.firstname}</div>
-                <div class="text-[10px] sm:text-[11px] text-slate-400">${s.dob ? 'Né(e) le ' + new Date(s.dob).toLocaleDateString('fr-FR') : ''}</div>
-            </td>
-            <td class="py-3 px-2 text-center text-sm">${displayMg}</td>
-            <td class="py-3 px-2 text-right">
-                <div class="flex items-center justify-end gap-1 flex-wrap">
-                    <button onclick="imprimerBulletin('${s.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2 py-1.5 rounded-lg text-[10px] shadow-sm transition-all">
-                        <i class="fa-solid fa-file-pdf sm:mr-1"></i><span class="hidden sm:inline">Bulletin</span>
-                    </button>
-                    
-                    <button onclick="openMensualitesModal('${s.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-2 py-1.5 rounded-lg text-[10px] border border-amber-200">
-                        <i class="fa-solid fa-wallet sm:mr-1"></i><span class="hidden sm:inline">Écolage</span>
-                    </button>
-                    
-                    <button onclick="openEditStudent('${s.id}')" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] px-2 py-1.5 rounded-lg border border-violet-100">
-                        <i class="fa-solid fa-user-pen"></i>
-                    </button>
-                    
-                    <button onclick="supprimerEleve('${s.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-2 py-1.5 rounded-lg border border-rose-100">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-        function imprimerBulletin(studentId) {
-    // 1. Récupérer les données de l'élève
-    const key = getCurrentClassKey();
-    const student = appState.classes[key].students.find(s => s.id === studentId);
-    
-    if (!student) {
-        showToast("Élève introuvable", "error");
-        return;
-    }
-
-    // 2. Créer dynamiquement le contenu du bulletin
-    const element = document.createElement('div');
-    element.innerHTML = `
-        <div style="padding: 40px; font-family: sans-serif;">
-            <h1>Bulletin de ${student.firstname} ${student.lastname}</h1>
-            <p>Classe: ${appState.selectedClass}</p>
-            </div>
-    `;
-
-    // 3. Génération du PDF
-    const opt = {
-        margin: 10,
-        filename: `Bulletin_${student.lastname}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().set(opt).from(element).save();
-}
-       
-        function renderSubjectsSelect(subjects) {
-            const select = document.getElementById('grade-subject-select');
-            const gSection = document.getElementById('grades-section');
-            
-            if (subjects.length === 0) {
-                gSection.classList.add('hidden');
-                select.innerHTML = "";
-                return;
-            }
-            gSection.classList.remove('hidden');
-
-            const oldVal = select.value;
-            select.innerHTML = subjects.map(sub => `<option value="${sub.id}">${sub.name} (${getCoefLabel(appState.selectedClass)}: ${sub.coef})</option>`).join('');
-            
-            if (oldVal && subjects.find(x => x.id === oldVal)) {
-                select.value = oldVal;
-            }
-        }
-
-        function renderGradesGrid() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            const subSelect = document.getElementById('grade-subject-select');
-            const tbody = document.getElementById('grades-table-body');
-            tbody.innerHTML = "";
-
-            if (!clsData || !subSelect.value || clsData.students.length === 0) return;
-
-            const subjectId = subSelect.value;
-            const isVisible3 = !!subjectDev3Visible[subjectId];
-            const maxVal = isPrimary(appState.selectedClass) ? 10 : 20;
-
-            document.getElementById('lbl-th-dev3').style.display = isVisible3 ? '' : 'none';
-            document.getElementById('lbl-th-dev2').innerText = isVisible3 ? "Devoir 2" : "Devoir 2 (+)";
-
-            const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
-
-            sorted.forEach(s => {
-                const g = s.grades[subjectId] || { dev1: "", dev2: "", dev3: "", compo: "" };
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/70 transition-colors";
-                tr.innerHTML = `
-                    <td class="p-2 font-semibold text-slate-700 text-sm text-left pl-4">${s.lastname.toUpperCase()} ${s.firstname}</td>
-                    <td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev1??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev1',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
-                    <td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev2??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev2',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
-                    <td class="p-1" style="display:${isVisible3?'':'none'}"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev3??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev3',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
-                    <td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.compo??''}" onchange="saveGradeLive('${s.id}','${subjectId}','compo',this.value)" class="w-full bg-violet-50/40 focus:bg-white text-center font-extrabold text-sm p-2 rounded-lg border outline-none border-violet-200 focus:border-violet-500 text-violet-900"></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function saveGradeLive(studentId, subjectId, field, val) {
             const key = getCurrentClassKey();
             const student = appState.classes[key].students.find(s => s.id === studentId);
             if (!student) return;
 
-            if (!student.grades[subjectId]) student.grades[subjectId] = {};
-            
-            if (val.trim() === "") {
-                delete student.grades[subjectId][field];
-            } else {
-                student.grades[subjectId][field] = parseFloat(val);
-            }
-            saveToStorage();
+            openRegistrationModal();
+            const form = document.getElementById('registration-form');
+            form.dataset.studentId = studentId;
 
+            document.getElementById('reg-firstname').value = student.firstName;
+            document.getElementById('reg-lastname').value = student.lastName;
+            document.getElementById('reg-dob').value = student.dob || "";
+            document.getElementById('reg-pob').value = student.pob || "";
+            document.getElementById('reg-class').value = appState.selectedClass;
+            updateRegSections();
+            document.getElementById('reg-section').value = appState.selectedSection;
+            document.getElementById('reg-amount').value = student.registrationAmount || 0;
+            document.getElementById('reg-phone').value = student.phone || "";
+
+            document.getElementById('reg-mensualites-btn').classList.remove('hidden');
+        }
+
+        function redirigerVersMensualites() {
+            const form = document.getElementById('registration-form');
+            const studentId = form.dataset.studentId;
+            if (studentId) {
+                closeModal('registration-modal');
+                ouvrirModalMensualites(studentId);
+            }
+        }
+
+        function validerAjoutRapideEleve() {
+            const fn = document.getElementById('add-fast-firstname').value.trim();
+            const ln = document.getElementById('add-fast-lastname').value.trim();
+            const ph = document.getElementById('add-fast-phone').value.trim();
+            if (!fn || !ln) {
+                showToast("Prénom et Nom obligatoires", "error");
+                return;
+            }
+            const key = getCurrentClassKey();
+            const newSt = {
+                id: 'st_' + Date.now(),
+                firstName: fn,
+                lastName: ln,
+                phone: ph,
+                registrationAmount: 0,
+                grades: {},
+                mensualites: {}
+            };
+            appState.classes[key].students.push(newSt);
+            saveToStorage();
+            closeModal('add-student-modal');
+            showToast("Élève ajouté !");
+            render();
+        }
+
+        function openSubjectsModal() {
+            const key = getCurrentClassKey();
+            const container = document.getElementById('subjects-container');
+            container.innerHTML = "";
+            
             const subjects = appState.classes[key].subjects || [];
-            renderStudentsTable(appState.classes[key].students, subjects);
+            subjects.forEach((sub, index) => {
+                appendSubjectRowHTML(sub.name, sub.coef, index);
+            });
+            if (subjects.length === 0) addNewSubjectRow();
+            openModal('subjects-modal');
+        }
+
+        function appendSubjectRowHTML(name = "", coef = 2, index = null) {
+            const container = document.getElementById('subjects-container');
+            const idx = index !== null ? index : container.children.length;
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200";
+            
+            const coefLabel = isPrimary(appState.selectedClass) ? "/10" : "Coef.";
+
+          div.innerHTML = `
+                <div class="flex flex-col sm:flex-row items-start sm:items-center w-full gap-2">
+                    <input type="text" placeholder="Discipline" value="${name}" class="text-slate-900 w-full sm:flex-1 bg-white border rounded-lg px-3 py-2 text-sm outline-none sub-name">
+                    <div class="flex items-center justify-between w-full sm:w-auto min-w-[100px] gap-2">
+                        <div class="flex items-center bg-white border rounded-lg px-2 flex-1 sm:flex-none">
+                            <span class="text-xs text-slate-500 font-semibold border-r pr-2 mr-2 py-2">${coefLabel}</span>
+                            <input type="number" step="any" value="${coef}" class="text-slate-900 w-full sm:w-12 bg-transparent py-2 text-sm text-center outline-none sub-coef">
+                        </div>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-rose-500 hover:bg-rose-50 p-2.5 rounded-lg border border-transparent hover:border-rose-200 transition-all"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addNewSubjectRow() {
+            appendSubjectRowHTML("", isPrimary(appState.selectedClass) ? 10 : 2);
+        }
+
+        function loadStandardSubjects() {
+            const container = document.getElementById('subjects-container');
+            container.innerHTML = "";
+            let standards = [];
+            if (isPrimary(appState.selectedClass)) {
+                standards = [
+                    { name: "Langue & Communication", coef: 10 },
+                    { name: "Mathématiques", coef: 10 },
+                    { name: "Éducation Scientifique", coef: 10 },
+                    { name: "Éducation Sociale", coef: 10 }
+                ];
+            } else {
+                standards = [
+                    { name: "Mathématiques", coef: 4 },
+                    { name: "Français", coef: 5 },
+                    { name: "Anglais", coef: 3 },
+                    { name: "Histoire-Géographie", coef: 2 },
+                    { name: "Sciences de la Vie et de la Terre", coef: 2 },
+                    { name: "Sciences Physiques", coef: 2 }
+                ];
+            }
+            standards.forEach(s => appendSubjectRowHTML(s.name, s.coef));
+        }
+
+        function saveSubjectsList() {
+            const key = getCurrentClassKey();
+            const container = document.getElementById('subjects-container');
+            const rows = container.children;
+            const updatedSubjects = [];
+
+            for (let row of rows) {
+                const name = row.querySelector('.sub-name').value.trim();
+                const coef = parseFloat(row.querySelector('.sub-coef').value) || 1;
+                if (name) {
+                    updatedSubjects.push({ name, coef });
+                }
+            }
+
+            appState.classes[key].subjects = updatedSubjects;
+            saveToStorage();
+            closeModal('subjects-modal');
+            showToast("Disciplines enregistrées");
+            render();
+        }
+
+        function openSystemSettings() {
+            openModal('settings-modal');
+            document.getElementById('settings-year').value = appState.currentYear;
+            updateSettingsPeriodSelect();
+        }
+
+ function updateSettingsPeriodSelect() {
+        const sel = document.getElementById('settings-semester');
+        const isPrimClass = isPrimary(appState.selectedClass);
+        sel.innerHTML = "";
+        const max = isPrimClass ? 3 : 2;
+        const prefix = isPrimClass ? "Trimestre" : "Semestre";
+        for (let i = 1; i <= max; i++) {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = `${prefix} ${i}`;
+            if (appState.currentSemester == i) opt.selected = true;
+            sel.appendChild(opt);
+        }
+        document.getElementById('lbl-settings-period').textContent = isPrimClass ? "Trimestre courant" : "Semestre courant";
+    }
+
+    function saveSettings() {
+        appState.currentYear = document.getElementById('settings-year').value;
+        appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
+        saveToStorage();
+        closeModal('settings-modal');
+        updateHeaderDisplays();
+        render();
+    }
+
+    function updateHeaderDisplays() {
+        document.getElementById('display-year').textContent = appState.currentYear;
+        document.getElementById('display-semester').textContent = getPeriodLabel(appState.selectedClass, appState.currentSemester);
+    }
+        function toggleDev3() {
+            const key = getCurrentClassKey();
+            activeDev3Map[key] = !activeDev3Map[key];
+            renderGradesGrid();
+        }
+
+        function renderGradesGrid() {
+            const key = getCurrentClassKey();
+            const cls = appState.classes[key];
+            const select = document.getElementById('grade-subject-select');
+            
+            const activeSubject = select.value;
+            const tbody = document.getElementById('grades-table-body');
+            tbody.innerHTML = "";
+
+            const showDev3 = !!activeDev3Map[key];
+            document.getElementById('lbl-th-dev3').style.display = showDev3 ? '' : 'none';
+
+            if (!activeSubject) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 font-medium">Veuillez d'abord déclarer des matières pour cette classe.</td></tr>`;
+                return;
+            }
+
+            const currentSem = appState.currentYear + '_sem' + appState.currentSemester;
+
+            cls.students.forEach(st => {
+                if (!st.grades) st.grades = {};
+                if (!st.grades[currentSem]) st.grades[currentSem] = {};
+                if (!st.grades[currentSem][activeSubject]) {
+                    st.grades[currentSem][activeSubject] = { dev1: "", dev2: "", dev3: "", compo: "" };
+                }
+
+                const n = st.grades[currentSem][activeSubject];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2 font-medium text-slate-800">${st.firstName} ${st.lastName}</td>
+                    <td class="p-1"><input type="number" step="any" value="${n.dev1}" onchange="saveSingleGrade('${st.id}','${activeSubject}','dev1',this.value)" class="w-full text-center p-1.5 border rounded-lg bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500 outline-none font-semibold"></td>
+                    <td class="p-1"><input type="number" step="any" value="${n.dev2}" onchange="saveSingleGrade('${st.id}','${activeSubject}','dev2',this.value)" class="w-full text-center p-1.5 border rounded-lg bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500 outline-none font-semibold"></td>
+                    <td class="p-1" style="display: ${showDev3 ? '' : 'none'}"><input type="number" step="any" value="${n.dev3}" onchange="saveSingleGrade('${st.id}','${activeSubject}','dev3',this.value)" class="w-full text-center p-1.5 border rounded-lg bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500 outline-none font-semibold"></td>
+                    <td class="p-1"><input type="number" step="any" value="${n.compo}" onchange="saveSingleGrade('${st.id}','${activeSubject}','compo',this.value)" class="w-full text-center p-1.5 border rounded-lg bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500 outline-none font-semibold"></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function saveSingleGrade(studentId, subject, field, value) {
+            const key = getCurrentClassKey();
+            const student = appState.classes[key].students.find(s => s.id === studentId);
+            if (!student) return;
+
+            const currentSem = appState.currentYear + '_sem' + appState.currentSemester;
+            if (!student.grades[currentSem][subject]) {
+                student.grades[currentSem][subject] = { dev1: "", dev2: "", dev3: "", compo: "" };
+            }
+            student.grades[currentSem][subject][field] = value.trim() !== "" ? parseFloat(value) : "";
+            saveToStorage();
+            renderStudentsListOnly();
         }
 
         function goToNextSubject() {
             const select = document.getElementById('grade-subject-select');
-            if (select.options.length <= 1) return;
-            let nextIdx = select.selectedIndex + 1;
-            if (nextIdx >= select.options.length) nextIdx = 0;
-            select.selectedIndex = nextIdx;
+            if (select.selectedIndex < select.options.length - 1) {
+                select.selectedIndex += 1;
+            } else {
+                select.selectedIndex = 0;
+            }
             renderGradesGrid();
         }
 
-        function filterStudentsGlobal() {
-            const q = document.getElementById('grade-search').value.toLowerCase().trim();
-            const rows = document.getElementById('grades-table-body').querySelectorAll('tr');
-            rows.forEach(r => {
-                const name = r.querySelector('td').innerText.toLowerCase();
-                r.style.display = name.includes(q) ? '' : 'none';
+        function calculerMoyenneMatiere(gradesObj, keyClass) {
+            if (!gradesObj) return null;
+            let totalDev = 0, countDev = 0;
+            if (typeof gradesObj.dev1 === 'number') { totalDev += gradesObj.dev1; countDev++; }
+            if (typeof gradesObj.dev2 === 'number') { totalDev += gradesObj.dev2; countDev++; }
+            if (typeof gradesObj.dev3 === 'number') { totalDev += gradesObj.dev3; countDev++; }
+
+            let moyDev = countDev > 0 ? totalDev / countDev : null;
+            let compo = typeof gradesObj.compo === 'number' ? gradesObj.compo : null;
+
+            if (isPrimary(keyClass)) {
+                if (moyDev !== null && compo !== null) return (moyDev + compo) / 2;
+                return compo !== null ? compo : moyDev;
+            } else {
+                if (moyDev !== null && compo !== null) return (moyDev + compo * 2) / 3;
+                return compo !== null ? compo : moyDev;
+            }
+        }
+
+        function calculerMoyenneGenerale(student) {
+            const key = getCurrentClassKey();
+            const cls = appState.classes[key];
+            const currentSem = appState.currentYear + '_sem' + appState.currentSemester;
+
+            if (!student.grades || !student.grades[currentSem] || !cls.subjects || cls.subjects.length === 0) return null;
+
+            let totalPoints = 0, totalCoefs = 0;
+            let possessesGrades = false;
+
+            cls.subjects.forEach(sub => {
+                const g = student.grades[currentSem][sub.name];
+                const moyMat = calculerMoyenneMatiere(g, appState.selectedClass);
+                if (moyMat !== null) {
+                    possessesGrades = true;
+                    totalPoints += moyMat * sub.coef;
+                    totalCoefs += sub.coef;
+                }
             });
+
+            return totalCoefs > 0 && possessesGrades ? totalPoints / totalCoefs : null;
+        }
+
+        function renderStudentsListOnly() {
+            const key = getCurrentClassKey();
+            const cls = appState.classes[key];
+            const tbody = document.getElementById('students-table-body');
+            const emptyState = document.getElementById('empty-state');
+            tbody.innerHTML = "";
+
+            document.getElementById('class-badge').textContent = `${appState.selectedClass} ${appState.selectedSection}`;
+            document.getElementById('student-count').textContent = `${cls.students.length} élève(s) inscrit(s)`;
+            document.getElementById('filter-effectif').value = cls.students.length;
+
+            if (cls.students.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            cls.students.sort((a, b) => (a.lastName || "").localeCompare(b.lastName || "")).forEach(st => {
+                const mg = calculerMoyenneGenerale(st);
+                const mgAffiche = mg !== null ? `<span class="px-2.5 py-1 rounded-lg text-xs font-bold ${mg >= 10 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">${mg.toFixed(2)} / ${isPrimary(appState.selectedClass) ? '10' : '20'}</span>` : `<span class="text-xs text-slate-400 italic">Aucune note</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/60 border-b border-slate-100 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-5">
+                        <div class="font-semibold text-slate-900">${st.firstName} ${st.lastName}</div>
+                        <div class="text-[11px] text-slate-400">${st.phone ? '+221 ' + st.phone : 'Sans contact parent'}</div>
+                    </td>
+                    <td class="py-3 px-5">${mgAffiche}</td>
+                    <td class="py-3 px-5 text-right flex gap-1.5 justify-end items-center">
+                        <button onclick="imprimerBulletinEleve('${st.id}')" class="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-2.5 py-1.5 rounded-xl border border-emerald-200 text-xs font-semibold flex items-center gap-1 transition-all" title="Générer le bulletin">
+                            <i class="fa-solid fa-file-pdf"></i> Bulletin
+                        </button>
+                        <button onclick="ouvrirModalMensualites('${st.id}')" class="text-amber-600 hover:text-amber-700 hover:bg-amber-50 px-2.5 py-1.5 rounded-xl border border-amber-200 text-xs font-semibold flex items-center gap-1 transition-all" title="Mensualités">
+                            <i class="fa-solid fa-wallet"></i> Écolage
+                        </button>
+                        <button onclick="openEditStudent('${st.id}')" class="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 p-2 rounded-xl border border-indigo-100 transition-all" title="Modifier fiche élève">
+                            <i class="fa-solid fa-user-pen text-xs"></i>
+                        </button>
+                        <button onclick="supprimerEleveDirect('${st.id}')" class="text-rose-600 hover:text-rose-700 hover:bg-rose-50 p-2 rounded-xl border border-rose-100 transition-all" title="Supprimer">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function supprimerEleveDirect(id) {
+            if (!confirm("Supprimer définitivement cet élève de la base ?")) return;
+            const key = getCurrentClassKey();
+            appState.classes[key].students = appState.classes[key].students.filter(s => s.id !== id);
+            saveToStorage();
+            render();
+            showToast("Élève retiré", "info");
+        }
+
+        function render() {
+            const key = getCurrentClassKey();
+            const cls = appState.classes[key] || { students: [], subjects: [], tarifMensuel: 0 };
+            
+            const select = document.getElementById('grade-subject-select');
+            const cachedVal = select.value;
+            select.innerHTML = "";
+            
+            if (cls.subjects && cls.subjects.length > 0) {
+                cls.subjects.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.name; opt.textContent = s.name;
+                    if (s.name === cachedVal) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                document.getElementById('grades-section').classList.remove('hidden');
+            } else {
+                document.getElementById('grades-section').classList.add('hidden');
+            }
+
+            renderGradesGrid();
+            renderStudentsListOnly();
+        }
+
+        function calculerTotalPaye(student) {
+            const annee = appState.currentYear;
+            let total = 0;
+            if (student.mensualites && student.mensualites[annee]) {
+                Object.values(student.mensualites[annee]).forEach(pay => {
+                    total += parseFloat(pay.montant || 0);
+                });
+            }
+            return total;
+        }
+
+        function calculerEtAfficherBilansFinanciers() {
+            let totalInscriptions = 0;
+            let totalMensualites = 0;
+
+            if (appState.classes) {
+                Object.values(appState.classes).forEach(cls => {
+                    if (cls.students) {
+                        cls.students.forEach(st => {
+                            totalInscriptions += parseFloat(st.registrationAmount || 0);
+                            if (st.mensualites) {
+                                Object.values(st.mensualites).forEach(anneeObj => {
+                                    Object.values(anneeObj).forEach(mObj => {
+                                        totalMensualites += parseFloat(mObj.montant || 0);
+                                    });
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+
+            document.getElementById('bilan-ins').textContent = `${totalInscriptions.toLocaleString('fr-FR')} FCFA`;
+            document.getElementById('bilan-mens').textContent = `${totalMensualites.toLocaleString('fr-FR')} FCFA`;
+            document.getElementById('bilan-global').textContent = `${(totalInscriptions + totalMensualites).toLocaleString('fr-FR')} FCFA`;
+        }
+
+        async function ouvrirModalMensualites(studentId) {
+            const classKey = getCurrentClassKey();
+            const student = appState.classes[classKey].students.find(s => s.id === studentId);
+            if (!student) return;
+
+            if (!student.mensualites) student.mensualites = {};
+            const anneeCourante = appState.currentYear || "2024-2025"; 
+            if (!student.mensualites[anneeCourante]) student.mensualites[anneeCourante] = {};
+
+            const montantMensuelFixe = appState.classes[classKey].tarifMensuel || 0;
+
+            const titleEl = document.getElementById('mens-student-name');
+            titleEl.innerText = `Élève : ${student.firstName} ${student.lastName} (Classe : ${appState.selectedClass})`;
+            titleEl.dataset.currentStudent = studentId;
+
+            document.getElementById('mens-default-amount').innerText = `${montantMensuelFixe.toLocaleString('fr-FR')} F CFA / mois`;
+
+            const tbody = document.getElementById('mensualites-list-tbody');
+            tbody.innerHTML = "";
+
+            MOIS_SCOLAIRES.forEach(mois => {
+                const paiementInfo = student.mensualites[anneeCourante][mois.toLowerCase()];
+                const estPaye = !!paiementInfo;
+                
+                const badgeStatut = estPaye 
+                    ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-circle-check text-[10px]"></i> Payé</span>`
+                    : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200"><i class="fa-solid fa-clock text-[10px]"></i> En attente</span>`;
+
+                const montantAffiche = estPaye ? `${parseInt(paiementInfo.montant).toLocaleString('fr-FR')} F` : "-";
+                const dateAffichee = estPaye ? `<span>${paiementInfo.date}</span>` : "-";
+
+                const studentName = `${student.firstName} ${student.lastName}`;
+                const montantActuel = estPaye ? parseInt(paiementInfo.montant || 0) : 0;
+
+                let boutonAction = estPaye
+                    ? `<div class="flex gap-2 justify-center">
+                         <button type="button" onclick="annulerPaiementMois('${studentId}', '${anneeCourante}', '${mois.toLowerCase()}')" class="text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-lg text-xs font-medium border border-rose-200 transition-all">Annuler</button>
+                         <button type="button" onclick="envoyerRecuWhatsApp('${studentName}', '${mois}', ${montantActuel})" class="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-lg text-xs font-medium border border-emerald-200 transition-all" title="Envoyer le reçu WhatsApp">
+                            <i class="fa-brands fa-whatsapp text-sm"></i>
+                         </button>
+                       </div>`
+                    : `<button type="button" onclick="encaisserPaiementMois('${studentId}', '${anneeCourante}', '${mois.toLowerCase()}', ${montantMensuelFixe})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-semibold border border-indigo-200 transition-all">Encaisser</button>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-4 py-3.5 font-medium text-slate-900">${mois}</td>
+                    <td class="px-4 py-3.5">${badgeStatut}</td>
+                    <td class="px-4 py-3.5 text-right font-semibold text-slate-700">${montantAffiche}</td>
+                    <td class="px-4 py-3.5 text-center text-xs text-slate-500">${dateAffichee}</td>
+                    <td class="px-4 py-3.5 text-center">${boutonAction}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('mensualites-modal').classList.remove('hidden');
+        }
+
+        function encaisserPaiementMois(studentId, annee, moisKey, montant) {
+            if (montant <= 0) {
+                showToast("Veuillez d'abord définir un Tarif Classe supérieur à 0 F !", "error");
+                return;
+            }
+            const classKey = getCurrentClassKey();
+            const student = appState.classes[classKey].students.find(s => s.id === studentId);
+            if (!student) return;
+
+            const dateJour = new Date().toLocaleDateString('fr-FR');
+            student.mensualites[annee][moisKey] = {
+                montant: montant,
+                date: dateJour
+            };
+
+            saveToStorage();
+            showToast(`Mensualité de ${moisKey} encaissée !`, "success");
+            ouvrirModalMensualites(studentId);
+        }
+
+        function annulerPaiementMois(studentId, annee, moisKey) {
+            if (!confirm("Annuler cet encaissement ?")) return;
+            const classKey = getCurrentClassKey();
+            const student = appState.classes[classKey].students.find(s => s.id === studentId);
+            if (!student) return;
+
+            delete student.mensualites[annee][moisKey];
+            saveToStorage();
+            showToast("Encaissement annulé", "info");
+            ouvrirModalMensualites(studentId);
+        }
+
+        function envoyerRecuWhatsApp(nomEleve, mois, montant) {
+            const montantMensualite = parseInt(document.getElementById('mens-default-amount').textContent.replace(/[^0-9]/g, '')) || 0;
+            const reste = montantMensualite - montant;
+            
+            let message = `*REÇU DE PAIEMENT SCOLAIRE* 📄\n\n`;
+            message += `🔹 *Élève* : ${nomEleve}\n`;
+            message += `🔹 *Classe* : ${appState.selectedClass} ${appState.selectedSection}\n`;
+            message += `🔹 *Période/Mois* : ${mois}\n`;
+            message += `🔹 *Montant payé* : ${montant.toLocaleString('fr-FR')} FCFA\n\n`;
+            
+            if (reste > 0) {
+                message += `⚠️ *Reste à acquitter* : ${reste.toLocaleString('fr-FR')} FCFA.`;
+            } else {
+                message += `✅ *Statut* : Mensualité totalement soldée.`;
+            }
+            
+            message += `\n\n_Généré automatiquement par GestNotes._`;
+            
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
         }
 
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `Backup_GestNotes_${appState.currentYear}.json`);
+            downloadAnchor.setAttribute("download", `gestnotes_backup_${appState.currentYear}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
-            showToast("Sauvegarde exportée avec succès !");
+            showToast("Fichier de sauvegarde exporté");
         }
 
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const importedState = JSON.parse(e.target.result);
-                    if (importedState && importedState.classes) {
-                        appState = importedState;
-                        buildEmptyState();
-                        await saveToStorage();
-                        populateFilters();
-                        updateHeaderDisplays();
-                        render();
-                        showToast("Données importées !", "success");
-                    } else {
-                        alert("Fichier structurel JSON erroné.");
-                    }
-                } catch (err) {
-                    alert("Échec de la lecture du fichier.");
-                }
-            };
-            reader.readAsText(file);
+        function exportAllCSV() {
+            showToast("Fonctionnalité CSV initialisée", "info");
+        }
+        
+    
+function printAllReportCards() {
+    showToast("Préparation des impressions en cours...", "info");
+    const bridge = {
+        classKey: getCurrentClassKey(),
+        semester: appState.currentSemester,
+        year: appState.currentYear,
+        studentId: "ALL_STUDENTS"
+    };
+    localStorage.setItem("gestnotes_bulletin_bridge", JSON.stringify(bridge));
+    window.open('bulletin.html', '_blank');
+}
+
+function imprimerBulletinEleve(studentId) {
+    showToast("Génération du bulletin en cours...", "info");
+    const bridge = {
+        classKey: getCurrentClassKey(),
+        semester: appState.currentSemester,
+        year: appState.currentYear,
+        studentId: studentId
+    };
+    localStorage.setItem("gestnotes_bulletin_bridge", JSON.stringify(bridge));
+    window.open('bulletin.html', '_blank');
+}
+
+        function exporterFeuilleSaisie() {
+            window.print();
         }
 
-        function showToast(message, type = "info") {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast-animate flex items-center gap-3 bg-white border p-4 rounded-xl shadow-lg pointer-events-auto min-w-[300px] ${ type === 'success' ? 'border-emerald-500 text-emerald-800' : 'border-violet-500 text-violet-800' }`;
-            const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-circle-info text-violet-500';
-            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+        function importerNotesAuto(input) {
+            showToast("Analyse du fichier de notes...", "info");
         }
+
+        function filterStudentsGlobal() {
+            const val = document.getElementById('grade-search').value.toLowerCase();
+            const rows = document.getElementById('grades-table-body').children;
+            for (let row of rows) {
+                const text = row.cells[0]?.textContent.toLowerCase() || "";
+                row.style.display = text.includes(val) ? "" : "none";
+            }
+        }
+
+        function getPeriodLabel(period, isPrim) {
+    // Si isPrim n'est pas passé en paramètre, on le détecte automatiquement
+    if (isPrim === undefined && typeof appState !== 'undefined' && appState.selectedClass) {
+        isPrim = isPrimary(appState.selectedClass);
+    }
+    
+    const p = parseInt(period) || 1;
+    if (isPrim) {
+        return p === 1 ? "1er Trimestre" : `${p}ème Trimestre`;
+    } else {
+        return p === 1 ? "1er Semestre" : `${p}ème Semestre`;
+    }
+}
+
     </script>
 </body>
 </html>
