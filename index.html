@@ -195,10 +195,7 @@
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider sticky top-0 z-10">
                             <th class="p-3 text-left">Élève</th>
                             <th class="p-3 text-center" id="lbl-th-dev1">Devoir 1</th>
-                            <th class="p-3 text-center group cursor-pointer hover:bg-slate-200 select-none" onclick="toggleDev3()">
-                                <span id="lbl-th-dev2">Devoir 2 (+)</span>
-                                <i class="fa-solid fa-circle-plus ml-1 text-violet-500"></i>
-                            </th>
+                            <th class="p-3 text-center" id="lbl-th-dev2">Devoir 2</th>
                             <th class="p-3 text-center" id="lbl-th-dev3" style="display: none;">Devoir 3</th>
                             <th class="p-3 text-center" id="lbl-th-compo">Composition</th>
                         </tr>
@@ -256,12 +253,12 @@
             <form id="registration-form" class="space-y-4" onsubmit="validerInscriptionOuChangement(event)">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Prénom</label>
-                        <input type="text" id="reg-firstname" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
+                        <label class="block text-xs font-bold text-slate-900 mb-1">Prénom</label>
+                        <input type="text" id="reg-firstname" required class="text-slate-900 border border-slate-300 rounded-xl p-3 w-full bg-white outline-none focus:ring-2 focus:ring-violet-500/20 font-medium">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Nom</label>
-                        <input type="text" id="reg-lastname" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
+                        <label class="block text-xs font-bold text-slate-900 mb-1">Nom</label>
+                        <input type="text" id="reg-lastname" required class="text-slate-900 border border-slate-300 rounded-xl p-3 w-full bg-white outline-none focus:ring-2 focus:ring-violet-500/20 font-medium">
                     </div>
                 </div>
                 
@@ -1216,19 +1213,28 @@
             `;
 
             let tableHtml = `
-                <table style="width: 100%; border-collapse: collapse; font-size: 8px; border: 1.5px solid #000000; table-layout: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; border: 1.5px solid #000000; table-layout: auto;">
                     <thead>
                         <tr style="background-color: #f1f5f9; color: #000000;">
-                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: center; font-weight: bold; width: 35px; color: #000000;">ID</th>
-                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: left; font-weight: bold; width: 90px; color: #000000;">Nom</th>
-                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: left; font-weight: bold; width: 100px; color: #000000;">Prénom</th>
+                            <th rowspan="2" style="border: 2px solid #000000; padding: 6px; text-align: center; font-weight: 900; width: 45px; color: #000000; font-size: 9px;">ID</th>
+                            <th rowspan="2" style="border: 2px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 100px; color: #000000; font-size: 9px;">NOM</th>
+                            <th rowspan="2" style="border: 2px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 120px; color: #000000; font-size: 9px;">PRÉNOM</th>
             `;
 
             subjects.forEach(sub => {
-                const hasDev3 = !!subjectDev3Visible[sub.id];
-                const colSpan = hasDev3 ? 4 : 3;
+                const isPrim = isPrimary(appState.selectedClass);
+                const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id]; // Devoir 3 pour le secondaire
+                const hasNote2 = isPrim && !!subjectDev3Visible[sub.id]; // Note 2 pour le primaire
+                
+                let colSpan = 1;
+                if (isPrim) {
+                    colSpan = hasNote2 ? 3 : 2; // Note 1, Note 2 (optionnelle), Composition (CP)
+                } else {
+                    colSpan = hasDev3 ? 4 : 3; // Devoir 1, Devoir 2, Devoir 3 (optionnel), Composition (CP)
+                }
+
                 tableHtml += `
-                    <th colspan="${colSpan}" style="border: 1.5px solid #000000; padding: 5px; text-align: center; background-color: #f8fafc; font-weight: bold; color: #000000;">
+                    <th colspan="${colSpan}" style="border: 1px solid #000000; padding: 4px; text-align: center; background-color: #f8fafc; font-weight: bold; color: #000000;">
                         ${sub.name}
                     </th>
                 `;
@@ -1240,13 +1246,24 @@
             `;
 
             subjects.forEach(sub => {
-                const hasDev3 = !!subjectDev3Visible[sub.id];
-                tableHtml += `
-                    <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D1</th>
-                    <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D2</th>
-                    ${hasDev3 ? '<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D3</th>' : ''}
-                    <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>
-                `;
+                const isPrim = isPrimary(appState.selectedClass);
+                const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id];
+                const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
+
+                if (isPrim) {
+                    tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">N1</th>`;
+                    if (hasNote2) {
+                        tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">N2</th>`;
+                    }
+                    tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>`;
+                } else {
+                    tableHtml += `
+                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D1</th>
+                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D2</th>
+                        ${hasDev3 ? '<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D3</th>' : ''}
+                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>
+                    `;
+                }
             });
 
             tableHtml += `
@@ -1258,7 +1275,6 @@
             const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
 
             sorted.forEach((s, idx) => {
-                // Remplacement de l'ID brute par une valeur lisible et unique pour chaque élève
                 const shortId = s.id.replace('student_', '').slice(-5);
                 
                 tableHtml += `
@@ -1271,19 +1287,29 @@
                 subjects.forEach(sub => {
                     const periodGrades = s.grades[semKey] || {};
                     const g = periodGrades[sub.id] || {};
-                    const hasDev3 = !!subjectDev3Visible[sub.id];
+                    const isPrim = isPrimary(appState.selectedClass);
+                    const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id];
+                    const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
 
                     const d1Val = (g.dev1 !== undefined && g.dev1 !== "") ? parseFloat(g.dev1) : '';
                     const d2Val = (g.dev2 !== undefined && g.dev2 !== "") ? parseFloat(g.dev2) : '';
                     const d3Val = (g.dev3 !== undefined && g.dev3 !== "") ? parseFloat(g.dev3) : '';
                     const compoVal = (g.compo !== undefined && g.compo !== "") ? parseFloat(g.compo) : '';
 
-                    tableHtml += `
-                        <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d1Val}</td>
-                        <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d2Val}</td>
-                        ${hasDev3 ? `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d3Val}</td>` : ''}
-                        <td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: bold; background-color: #f1f5f9; color: #000000;">${compoVal}</td>
-                    `;
+                    if (isPrim) {
+                        tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d1Val}</td>`;
+                        if (hasNote2) {
+                            tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d2Val}</td>`;
+                        }
+                        tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: bold; background-color: #f1f5f9; color: #000000;">${compoVal}</td>`;
+                    } else {
+                        tableHtml += `
+                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d1Val}</td>
+                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d2Val}</td>
+                            ${hasDev3 ? `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d3Val}</td>` : ''}
+                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: bold; background-color: #f1f5f9; color: #000000;">${compoVal}</td>
+                        `;
+                    }
                 });
 
                 tableHtml += `
@@ -1559,18 +1585,26 @@
             const d2 = parseFloat(g.dev2);
             const d3 = parseFloat(g.dev3);
             const compo = parseFloat(g.compo);
+            const isPrim = isPrimary(appState.selectedClass);
 
             let hasDev = false;
             let sumDev = 0;
             let countDev = 0;
 
             if (!isNaN(d1)) { sumDev += d1; countDev++; hasDev = true; }
-            if (!isNaN(d2)) { sumDev += d2; countDev++; hasDev = true; }
-            if (subjectDev3Visible[subjectId] && !isNaN(d3)) { sumDev += d3; countDev++; hasDev = true; }
+            
+            if (isPrim) {
+                // Primaire : Note 1 et Note 2
+                if (!isNaN(d2)) { sumDev += d2; countDev++; hasDev = true; }
+            } else {
+                // Secondaire : Devoir 1, Devoir 2 et Devoir 3 (si actif)
+                if (!isNaN(d2)) { sumDev += d2; countDev++; hasDev = true; }
+                if (subjectDev3Visible[subjectId] && !isNaN(d3)) { sumDev += d3; countDev++; hasDev = true; }
+            }
 
             let moyDev = hasDev ? (sumDev / countDev) : 0;
 
-            if (isPrimary(appState.selectedClass)) {
+            if (isPrim) {
                 if (hasDev && !isNaN(compo)) return (moyDev + compo) / 2;
                 if (!isNaN(compo)) return compo;
                 if (hasDev) return moyDev;
@@ -1695,11 +1729,47 @@
             if (!clsData || !subSelect.value || clsData.students.length === 0) return;
 
             const subjectId = subSelect.value;
-            const isVisible3 = !!subjectDev3Visible[subjectId];
+            const isVisiblePlus = !!subjectDev3Visible[subjectId];
             const maxVal = isPrimary(appState.selectedClass) ? 10 : 20;
+            const isPrim = isPrimary(appState.selectedClass);
 
-            document.getElementById('lbl-th-dev3').style.display = isVisible3 ? '' : 'none';
-            document.getElementById('lbl-th-dev2').innerText = isVisible3 ? "Devoir 2" : "Devoir 2 (+)";
+            const thDev1 = document.getElementById('lbl-th-dev1');
+            const thDev2 = document.getElementById('lbl-th-dev2');
+            const thDev3 = document.getElementById('lbl-th-dev3');
+
+            // Réinitialisation des classes et gestionnaires d'événements pour éviter les doublons
+            thDev1.className = "p-3 text-center";
+            thDev1.onclick = null;
+            thDev2.className = "p-3 text-center";
+            thDev2.onclick = null;
+
+            if (isPrim) {
+                // Primaire : "Note 1" remplace "Devoir 1" avec le bouton (+)
+                thDev1.className = "p-3 text-center group cursor-pointer hover:bg-slate-200 select-none";
+                thDev1.innerHTML = `Note 1 <i class="fa-solid ${isVisiblePlus ? 'fa-circle-minus' : 'fa-circle-plus'} ml-1 text-violet-500"></i>`;
+                thDev1.onclick = toggleDev3;
+
+                // "Note 2" remplace "Devoir 2" et est affiché/masqué dynamiquement
+                thDev2.innerText = "Note 2";
+                thDev2.style.display = isVisiblePlus ? '' : 'none';
+
+                // Pas de Devoir 3 en primaire
+                thDev3.style.display = 'none';
+            } else {
+                // Secondaire : Devoir 1 est standard
+                thDev1.innerText = "Devoir 1";
+                thDev1.style.display = '';
+
+                // Devoir 2 comporte le bouton (+) pour le Devoir 3
+                thDev2.className = "p-3 text-center group cursor-pointer hover:bg-slate-200 select-none";
+                thDev2.innerHTML = `Devoir 2 <i class="fa-solid ${isVisiblePlus ? 'fa-circle-minus' : 'fa-circle-plus'} ml-1 text-violet-500"></i>`;
+                thDev2.onclick = toggleDev3;
+                thDev2.style.display = '';
+
+                // Devoir 3 est affiché/masqué dynamiquement
+                thDev3.innerText = "Devoir 3";
+                thDev3.style.display = isVisiblePlus ? '' : 'none';
+            }
 
             const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
             const semKey = "p_" + appState.currentSemester;
@@ -1707,14 +1777,20 @@
             sorted.forEach(s => {
                 const periodGrades = s.grades[semKey] || {};
                 const g = periodGrades[subjectId] || { dev1: "", dev2: "", dev3: "", compo: "" };
+                
+                const td1HTML = `<td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev1??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev1',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>`;
+                const td2HTML = `<td class="p-1" style="display: ${(!isPrim || isVisiblePlus) ? '' : 'none'}"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev2??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev2',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>`;
+                const td3HTML = `<td class="p-1" style="display: ${(!isPrim && isVisiblePlus) ? '' : 'none'}"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev3??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev3',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>`;
+                const tdCompoHTML = `<td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.compo??''}" onchange="saveGradeLive('${s.id}','${subjectId}','compo',this.value)" class="w-full bg-violet-50/40 focus:bg-white text-center font-extrabold text-sm p-2 rounded-lg border outline-none border-violet-200 focus:border-violet-500 text-violet-900"></td>`;
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/70 transition-colors";
                 tr.innerHTML = `
                     <td class="p-2 font-semibold text-slate-700 text-sm text-left pl-4">${s.lastname.toUpperCase()} ${s.firstname}</td>
-                    <td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev1??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev1',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
-                    <td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev2??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev2',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
-                    <td class="p-1" style="display:${isVisible3?'':'none'}"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev3??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev3',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
-                    <td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.compo??''}" onchange="saveGradeLive('${s.id}','${subjectId}','compo',this.value)" class="w-full bg-violet-50/40 focus:bg-white text-center font-extrabold text-sm p-2 rounded-lg border outline-none border-violet-200 focus:border-violet-500 text-violet-900"></td>
+                    ${td1HTML}
+                    ${td2HTML}
+                    ${td3HTML}
+                    ${tdCompoHTML}
                 `;
                 tbody.appendChild(tr);
             });
@@ -1807,3 +1883,6 @@
     </script>
 </body>
 </html>
+
+
+
