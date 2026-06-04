@@ -20,10 +20,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="html2pdf.bundle.min.js"></script>
     <script src="idb-keyval.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Hanken Grotesk', 'Inter', sans-serif;
             background-color: #f8fafc;
         }
 
@@ -68,51 +72,29 @@
             text-align: center;
             border: 1px solid #e2e8f0;
         }
-
-        .recensement-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .recensement-table th, .recensement-table td {
-            border: 1px solid #d1d5db;
-            padding: 6px;
-            text-align: center;
-            font-size: 11px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .recensement-table th:first-child, .recensement-table td:first-child {
-            width: 250px; 
-            text-align: left;
-            padding-left: 10px;
-        }
     </style>
 </head>
 
 <body class="min-h-screen bg-slate-50 flex flex-col text-slate-800">
 
-    <header class="bg-indigo-900 text-white shadow-md px-4 py-3 md:px-6 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
+    <header class="bg-[#4c1d95] text-white shadow-md px-4 py-3 md:px-6 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
         <div class="flex items-center gap-3">
             <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
-                <i class="fa-solid fa-graduation-cap text-2xl text-indigo-300"></i>
+                <i class="fa-solid fa-graduation-cap text-2xl text-violet-200"></i>
             </div>
             <div>
                 <h1 class="text-xl font-bold tracking-tight">GestNotes</h1>
-                <p class="text-xs text-indigo-200">Administration & Gestion des Notes</p>
+                <p class="text-xs text-violet-200">Administration & Gestion des Notes</p>
             </div>
         </div>
 
         <div class="flex items-center gap-4 ml-auto sm:ml-0">
-            <div class="bg-indigo-950/50 rounded-xl p-1 flex border border-indigo-800/50 text-sm">
-                <div class="px-3 py-1.5 font-medium text-indigo-200 flex items-center gap-1.5">
-                    <i class="fa-solid fa-calendar-days text-xs text-indigo-400"></i>
+            <div class="bg-violet-950/50 rounded-xl p-1 flex border border-violet-800/50 text-sm">
+                <div class="px-3 py-1.5 font-medium text-violet-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-calendar-days text-xs text-violet-400"></i>
                     <span id="display-year">2025-2026</span>
                 </div>
-                <div class="bg-indigo-600 px-3 py-1.5 rounded-lg font-semibold shadow-sm flex items-center gap-1.5">
+                <div class="bg-[#6d28d9] px-3 py-1.5 rounded-lg font-semibold shadow-sm flex items-center gap-1.5">
                     <i class="fa-solid fa-clock text-xs"></i>
                     <span id="display-semester">Semestre 1</span>
                 </div>
@@ -129,26 +111,26 @@
        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <button onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md">
-                    <i class="fas fa-file-download"></i> <span>Exporter</span>
+                    <i class="fas fa-file-download"></i> <span>Exporter Base</span>
                 </button>
 
                 <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
                 <button onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md">
-                    <i class="fas fa-file-upload"></i> <span>Importer</span>
+                    <i class="fas fa-file-upload"></i> <span>Importer Base</span>
                 </button>
                 
-                <button onclick="openRegistrationModal()" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white py-3 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all">
-                    <i class="fa-solid fa-user-plus"></i> Inscription
+                <button onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-3 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all">
+                    <i class="fa-solid fa-user-plus"></i> Inscription / Élève
                 </button>
                 
                 <button onclick="exporterFeuilleSaisie()" class="bg-slate-600 hover:bg-slate-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
-                    <i class="fa-solid fa-print"></i> Imprimer Grille
+                    <i class="fa-solid fa-file-csv"></i> Exporter Grille
                 </button>
                 
                 <button onclick="document.getElementById('importInput').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
                     <i class="fa-solid fa-file-import"></i> Importer Notes
                 </button>
-                <input type="file" id="importInput" class="hidden" accept=".csv,.txt" onchange="importerNotesAuto(this)">
+                <input type="file" id="importInput" class="hidden" accept=".csv" onchange="importerNotesAuto(this)">
             </div>
         </div>
 
@@ -156,19 +138,19 @@
             <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                 <div class="w-full sm:w-48">
                     <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Niveau d'étude</label>
-                    <select id="filter-class" onchange="onClassChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                    <select id="filter-class" onchange="onClassChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all">
                     </select>
                 </div>
 
                 <div class="w-full sm:w-48">
                     <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Série / Option</label>
-                    <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                    <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all">
                     </select>
                 </div>
 
                 <div class="w-full sm:w-24">
                     <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Effectif</label>
-                    <input type="text" id="filter-effectif" readonly value="0" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-center text-indigo-700 focus:outline-none cursor-default">
+                    <input type="text" id="filter-effectif" readonly value="0" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-center text-[#4c1d95] focus:outline-none cursor-default">
                 </div>
             </div>
 
@@ -176,10 +158,10 @@
                 <button onclick="openClassFeesModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-amber-100">
                     <i class="fa-solid fa-coins text-xs"></i> Tarifs classe
                 </button>
-                <button onclick="openModal('add-student-modal')" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-sm">
+                <button onclick="openRegistrationModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-sm">
                     <i class="fa-solid fa-plus text-xs"></i> Ajouter élève
                 </button>
-                <button onclick="openSubjectsModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-indigo-100">
+                <button onclick="openSubjectsModal()" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-violet-100">
                     <i class="fa-solid fa-book text-xs"></i> Gérer matières
                 </button>
             </div>
@@ -188,19 +170,19 @@
         <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 hidden flex flex-col gap-4">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
                 <h3 class="text-md font-bold text-slate-700 flex items-center gap-2 w-full lg:w-auto">
-                    <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Saisie des Notes
+                    <i class="fa-solid fa-pen-to-square text-[#4c1d95]"></i> Saisie des Notes
                 </h3>
                 
                 <div class="flex flex-col sm:flex-row w-full lg:w-auto items-center gap-3">
                     <div class="w-full sm:w-auto flex-1">
                         <input type="text" id="grade-search" oninput="filterStudentsGlobal()" placeholder="Rechercher un élève..." 
-                               class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20">
+                               class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500/20">
                     </div>
                   
                     <div class="flex w-full sm:w-auto items-center gap-2">
                         <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none">
                         </select>
-                        <button onclick="goToNextSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                        <button onclick="goToNextSubject()" class="bg-[#4c1d95] hover:bg-violet-800 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap">
                             Suivant <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
@@ -213,9 +195,9 @@
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider sticky top-0 z-10">
                             <th class="p-3 text-left">Élève</th>
                             <th class="p-3 text-center" id="lbl-th-dev1">Devoir 1</th>
-                            <th class="p-3 text-center group cursor-pointer hover:bg-slate-200" onclick="toggleDev3()">
-                                <span id="lbl-th-dev2">Devoir 2</span>
-                                <i class="fa-solid fa-circle-plus ml-1 text-indigo-400"></i>
+                            <th class="p-3 text-center group cursor-pointer hover:bg-slate-200 select-none" onclick="toggleDev3()">
+                                <span id="lbl-th-dev2">Devoir 2 (+)</span>
+                                <i class="fa-solid fa-circle-plus ml-1 text-violet-500"></i>
                             </th>
                             <th class="p-3 text-center" id="lbl-th-dev3" style="display: none;">Devoir 3</th>
                             <th class="p-3 text-center" id="lbl-th-compo">Composition</th>
@@ -231,17 +213,17 @@
                 <div>
                     <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                         Liste des élèves 
-                        <span id="class-badge" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-bold">...</span>
+                        <span id="class-badge" class="bg-violet-100 text-[#4c1d95] text-xs px-2.5 py-1 rounded-full font-bold">...</span>
                     </h2>
                     <p class="text-xs text-slate-500 mt-0.5" id="student-count">0 élève enregistré</p>
                 </div>
                 
                 <div class="flex items-center gap-2">
                     <button onclick="window.printAllReportCards()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
-                        <i class="fa-solid fa-print"></i> Bulletins
+                        <i class="fa-solid fa-print text-[#4c1d95]"></i> Imprimer Bulletins
                     </button>
                     <button onclick="window.exportAllCSV()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
-                        <i class="fa-solid fa-file-csv"></i> Exporter tout
+                        <i class="fa-solid fa-file-csv text-green-600"></i> Exporter Élèves
                     </button>
                 </div>
             </div>
@@ -268,7 +250,7 @@
     <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100">
             <h3 class="text-2xl font-bold mb-6 text-slate-800 border-b pb-4 flex items-center gap-2">
-                <i class="fa-solid fa-file-signature text-indigo-600"></i> Fiche d'Inscription Scolaire
+                <i class="fa-solid fa-file-signature text-[#4c1d95]"></i> Fiche d'Inscription Scolaire
             </h3>
             
             <form id="registration-form" class="space-y-4" onsubmit="validerInscriptionOuChangement(event)">
@@ -296,7 +278,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Téléphone Parent</label>
-                    <input type="tel" id="reg-phone" placeholder="77XXXXXXX ou 76XXXXXXX" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
+                    <input type="tel" id="reg-phone" placeholder="77XXXXXXX" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
@@ -314,7 +296,7 @@
                 
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Frais d'inscription de la classe (FCFA)</label>
-                    <input type="number" id="reg-amount" readonly class="text-indigo-600 font-bold text-lg border border-slate-200 rounded-xl p-3 w-full bg-slate-50 outline-none cursor-not-allowed">
+                    <input type="number" id="reg-amount" readonly class="text-[#4c1d95] font-bold text-lg border border-slate-200 rounded-xl p-3 w-full bg-slate-50 outline-none cursor-not-allowed">
                 </div>
 
                 <div class="mt-8 flex flex-wrap justify-end gap-3 pt-4 border-t border-slate-100">
@@ -324,7 +306,7 @@
                     <button type="button" id="reg-mensualites-btn" onclick="redirigerVersMensualites()" class="hidden bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md flex items-center gap-2">
                         <i class="fa-solid fa-wallet"></i> <span>Mensualités</span>
                     </button>
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-md">
+                    <button type="submit" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl font-semibold shadow-md">
                         Enregistrer
                     </button>
                 </div>
@@ -336,7 +318,7 @@
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 border border-slate-100 flex flex-col max-h-[90vh]">
             <div class="border-b pb-4 mb-4">
                 <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-wallet text-indigo-600"></i> Suivi des Paiements : <span id="mens-student-name" class="text-indigo-600 font-extrabold"></span>
+                    <i class="fa-solid fa-wallet text-[#4c1d95]"></i> Suivi des Paiements : <span id="mens-student-name" class="text-[#4c1d95] font-extrabold"></span>
                 </h3>
                 <p class="text-xs text-slate-500 mt-1">Classe : <span id="mens-student-class" class="font-bold"></span></p>
             </div>
@@ -348,7 +330,7 @@
                 </div>
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Scolarité Annuelle</p>
-                    <p class="text-lg font-bold text-indigo-700 mt-1" id="bilan-scolarite-fixee">0 F</p>
+                    <p class="text-lg font-bold text-[#4c1d95] mt-1" id="bilan-scolarite-fixee">0 F</p>
                 </div>
                 <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
                     <p class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Total Encaissé</p>
@@ -378,7 +360,7 @@
             </div>
 
             <div class="mt-4 pt-4 border-t border-slate-100 flex justify-end">
-                <button type="button" onclick="closeModal('mensualites-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm">
+                <button type="button" onclick="closeModal('mensualites-modal')" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm">
                     Fermer
                 </button>
             </div>
@@ -419,7 +401,7 @@
             <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2 border-b pb-3">
                 <i class="fa-solid fa-coins text-amber-500"></i> Tarifs de la classe
             </h3>
-            <p class="text-xs text-slate-500 mb-4">Ces montants s'appliqueront à tous les élèves de cette classe (<span id="fees-class-name" class="font-bold text-indigo-600"></span>).</p>
+            <p class="text-xs text-slate-500 mb-4">Ces montants s'appliqueront à tous les élèves de cette classe (<span id="fees-class-name" class="font-bold text-[#4c1d95]"></span>).</p>
             <form id="class-fees-form" onsubmit="saveClassFees(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Montant Inscription (FCFA)</label>
@@ -431,7 +413,7 @@
                 </div>
                 <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
                     <button type="button" onclick="closeModal('class-fees-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
-                    <button type="submit" class="bg-amber-50 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
+                    <button type="submit" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -439,20 +421,20 @@
 
     <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 border border-slate-200">
-            <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2"><i class="fa-solid fa-gear text-indigo-600"></i> Configuration</h3>
+            <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2"><i class="fa-solid fa-gear text-[#4c1d95]"></i> Configuration</h3>
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Année académique</label>
                     <input type="text" id="settings-year" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Période courante</label>
+                    <label id="lbl-settings-period" class="block text-xs font-semibold text-slate-500 mb-1">Période courante</label>
                     <select id="settings-semester" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5"></select>
                 </div>
             </div>
             <div class="mt-6 flex justify-end gap-2">
                 <button onclick="closeModal('settings-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
-                <button onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold">Appliquer</button>
+                <button onclick="saveSettings()" class="bg-[#4c1d95] text-white px-4 py-2 rounded-xl text-sm font-semibold">Appliquer</button>
             </div>
         </div>
     </div>
@@ -460,16 +442,16 @@
     <div id="subjects-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 border border-slate-200 max-h-[85vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-book text-indigo-600 mr-1"></i> Gestion des matières</h3>
-                <button onclick="loadStandardSubjects()" class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold">Charger standards</button>
+                <h3 id="lbl-subjects-title" class="text-lg font-bold text-slate-800">Gestion des matières</h3>
+                <button onclick="loadStandardSubjects()" class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold">Grille standard</button>
             </div>
             <div class="flex-1 overflow-y-auto space-y-3" id="subjects-container"></div>
-            <button onclick="addNewSubjectRow()" class="mt-4 border-2 border-dashed border-slate-200 text-slate-500 w-full py-2.5 rounded-xl text-sm font-semibold hover:text-indigo-600">
+            <button onclick="addNewSubjectRow()" class="mt-4 border-2 border-dashed border-slate-200 text-slate-500 w-full py-2.5 rounded-xl text-sm font-semibold hover:text-[#4c1d95]">
                 + Nouvelle ligne discipline
             </button>
             <div class="mt-5 flex justify-end gap-2 border-t pt-3">
                 <button onclick="closeModal('subjects-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Fermer</button>
-                <button onclick="saveSubjects()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
+                <button onclick="saveSubjects()" class="bg-[#4c1d95] text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
             </div>
         </div>
     </div>
@@ -491,7 +473,7 @@
                 </div>
             </div>
 
-            <div style="margin: 25px 0; background-color: #f8fafc; border-radius: 8px; padding: 15px 20px; border: 1px solid #f1f5f9; display: grid; grid-template-cols: 1fr 1fr; gap: 15px;">
+            <div style="margin: 25px 0; background-color: #f8fafc; border-radius: 8px; padding: 15px 20px; border: 1px solid #f1f5f9; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div>
                     <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Élève concerné</p>
                     <p style="margin: 5px 0 0; font-size: 16px; font-weight: 700; color: #0f172a;" id="recu-eleve-nom"></p>
@@ -533,7 +515,7 @@
                     <p style="margin: 2px 0 0;">GestNotes &bull; Solution de dématérialisation scolaire.</p>
                 </div>
                 <div style="text-align: center; border-top: 1px dashed #cbd5e1; padding-top: 10px; width: 180px;">
-                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600; tracking-wide: 0.5px;">Le Comptable</p>
+                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Le Comptable</p>
                     <div style="margin-top: 15px; color: #cbd5e1; font-style: italic; font-size: 12px;">Signature électronique</div>
                 </div>
             </div>
@@ -547,7 +529,6 @@
         let subjectDev3Visible = {};
         let appState = null;
         
-        // Indexation de l'élève et du mois sélectionné pour l'encaissement
         let currentStudentIdForFinance = null;
         let currentMonthIdxForFinance = null;
         let editingStudentId = null;
@@ -605,12 +586,6 @@
             if (!appState) appState = { classes: {} };
             if (!appState.classes) appState.classes = {};
 
-            for (let classKey in appState.classes) {
-                if (!appState.classes[classKey].fees) {
-                    appState.classes[classKey].fees = { inscription: 0, mensualite: 0 };
-                }
-            }
-
             classNames.forEach(c => {
                 const sections = getSectionsForClass(c);
                 sections.forEach(s => {
@@ -622,27 +597,14 @@
                             fees: { inscription: 0, mensualite: 0 }
                         };
                     }
+                    if (!appState.classes[key].fees) {
+                        appState.classes[key].fees = { inscription: 0, mensualite: 0 };
+                    }
                 });
             });
         }
 
-        async function migrateFromLocalStorage() {
-            const oldData = localStorage.getItem("gestnotes_state");
-            if (oldData) {
-                try {
-                    const parsedData = JSON.parse(oldData);
-                    await idbKeyval.set("gestnotes_state", parsedData);
-                    localStorage.removeItem("gestnotes_state");
-                    return true;
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-            return false;
-        }
-
         async function initApp() {
-            await migrateFromLocalStorage();
             const savedState = await idbKeyval.get("gestnotes_state");
             appState = savedState || DEFAULT_STATE;
             buildEmptyState();
@@ -657,7 +619,7 @@
             try {
                 await idbKeyval.set("gestnotes_state", appState);
             } catch (err) {
-                alert("Erreur lors de la sauvegarde sur le terminal.");
+                console.error("Erreur de sauvegarde locale", err);
             }
         }
 
@@ -680,7 +642,6 @@
         function updateHeaderDisplays() {
             document.getElementById('display-year').innerText = appState.currentYear;
             document.getElementById('display-semester').innerText = getPeriodLabel(appState.selectedClass, appState.currentSemester);
-            document.getElementById('lbl-settings-period').innerText = `Période active (${isPrimary(appState.selectedClass)?'Trimestres':'Semestres'})`;
         }
 
         function onClassChange() {
@@ -732,10 +693,9 @@
             updateHeaderDisplays();
             closeModal('settings-modal');
             render();
-            showToast("Configurations mises à jour !", "success");
+            showToast("Configurations appliquées !", "success");
         }
 
-        // MANAGEMENT DES FRAIS DE SCOLARITÉ PAR CLASSE
         function openClassFeesModal() {
             const key = getCurrentClassKey();
             const currentFees = appState.classes[key].fees || { inscription: 0, mensualite: 0 };
@@ -754,11 +714,10 @@
             };
             saveToStorage();
             closeModal('class-fees-modal');
-            showToast("Tarifs de la classe enregistrés !", "success");
+            showToast("Tarifs mis à jour !", "success");
             render();
         }
 
-        // OUVERTURE DE L'INSCRIPTION
         function openRegistrationModal() {
             editingStudentId = null;
             document.getElementById('registration-form').reset();
@@ -805,8 +764,6 @@
             const newKey = `${targetClass}_${targetSection}`;
             
             if (editingStudentId) {
-                // Modification de la fiche
-                let found = false;
                 for (let k in appState.classes) {
                     let idx = appState.classes[k].students.findIndex(s => s.id === editingStudentId);
                     if (idx !== -1) {
@@ -818,19 +775,15 @@
                         stObj.phone = phone;
                         
                         if (k !== newKey) {
-                            // Changement de classe physique
                             appState.classes[k].students.splice(idx, 1);
                             if (!appState.classes[newKey].students) appState.classes[newKey].students = [];
                             appState.classes[newKey].students.push(stObj);
                         }
-                        found = true;
                         break;
                     }
                 }
             } else {
-                // Nouvelle inscription
                 const targetFees = appState.classes[newKey].fees || { inscription: 0, mensualite: 0 };
-                // Tableau des mensualités par défaut (10 éléments : Index 0 = Inscription, Index 1-9 = Mois d'étude)
                 const paymentsStructure = moisAnnee.map((m, idx) => ({
                     designation: m,
                     statut: "Non payé",
@@ -855,7 +808,7 @@
             
             saveToStorage();
             closeModal('registration-modal');
-            showToast("Fiche d'inscription enregistrée !", "success");
+            showToast("Fiche d'inscription synchronisée !", "success");
             render();
         }
 
@@ -866,10 +819,7 @@
             
             for (let k in appState.classes) {
                 student = appState.classes[k].students.find(s => s.id === studentId);
-                if (student) {
-                    currentKey = k;
-                    break;
-                }
+                if (student) { currentKey = k; break; }
             }
             if (!student) return;
 
@@ -898,7 +848,6 @@
             openMensualitesModal(editingStudentId);
         }
 
-        // --- MOTEUR DE GESTION FINANCIÈRE ET SUIVI DES MENSUALITÉS ---
         function openMensualitesModal(studentId) {
             currentStudentIdForFinance = studentId;
             let student = null;
@@ -914,7 +863,6 @@
             document.getElementById('mens-student-name').innerText = `${student.firstname} ${student.lastname}`;
             document.getElementById('mens-student-class').innerText = parts[0] + " " + (parts[1] || "");
 
-            // Robustesse de la structure des paiements
             const targetFees = appState.classes[classKey].fees || { inscription: 0, mensualite: 0 };
             if (!student.payments || student.payments.length === 0) {
                 student.payments = moisAnnee.map((m, idx) => ({
@@ -926,7 +874,6 @@
                     dateEncaissement: ""
                 }));
             } else {
-                // Actualisation des montants dus si les tarifs généraux ont changé entre-temps pour les mois non encore payés
                 student.payments.forEach((p, idx) => {
                     if (p.statut === "Non payé") {
                         p.montantDu = idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0);
@@ -991,7 +938,6 @@
                 tbody.appendChild(tr);
             });
 
-            // Affichage du Bilan financier en temps réel
             document.getElementById('bilan-inscription').innerText = insFee.toLocaleString() + " F";
             document.getElementById('bilan-scolarite-fixee').innerText = totalDueScolarite.toLocaleString() + " F";
             document.getElementById('bilan-total-paye').innerText = totalPaye.toLocaleString() + " F";
@@ -1028,7 +974,7 @@
             const method = document.getElementById('encaissement-methode-select').value;
             
             if (amt <= 0) {
-                alert("Le montant collecté doit être supérieur à 0 F.");
+                alert("Le montant doit être supérieur à 0 F.");
                 return;
             }
 
@@ -1047,7 +993,7 @@
         }
 
         function annulerPaiementMois(studentId, monthIdx) {
-            if(!confirm("Êtes-vous sûr de vouloir annuler ce paiement ? Les données de encaissement seront effacées.")) return;
+            if(!confirm("Annuler ce versement ? Les informations de règlement seront effacées.")) return;
             let student = null;
             for (let k in appState.classes) {
                 student = appState.classes[k].students.find(s => s.id === studentId);
@@ -1062,11 +1008,10 @@
             p.dateEncaissement = "";
 
             saveToStorage();
-            showToast("Règlement annulé avec succès.", "info");
+            showToast("Règlement réinitialisé.", "info");
             renderMensualitesList(student);
         }
 
-        // --- LOGIQUE D'IMPRESSION CLEAN DU REÇU PDF ---
         function imprimerRecu(studentId, monthIdx) {
             let student = null;
             let classKey = "";
@@ -1079,7 +1024,6 @@
             const p = student.payments[monthIdx];
             const parts = classKey.split('_');
 
-            // Assignation des variables au conteneur HTML du reçu
             document.getElementById('recu-id').innerText = `GN-${Date.now().toString().slice(-6)}`;
             document.getElementById('recu-date').innerText = p.dateEncaissement.split(' ')[0];
             document.getElementById('recu-eleve-nom').innerText = `${student.firstname} ${student.lastname}`;
@@ -1102,7 +1046,6 @@
             html2pdf().set(options).from(element).save();
         }
 
-        // --- ENVOI DE LA NOTIFICATION WhatsApp ---
         function partagerWhatsApp(studentId, monthIdx) {
             let student = null;
             let classKey = "";
@@ -1111,7 +1054,7 @@
                 if (student) { classKey = k; break; }
             }
             if (!student || !student.phone) {
-                alert("Aucun numéro de téléphone enregistré pour le parent de cet élève.");
+                alert("Aucun numéro parent configuré sur la fiche de cet élève.");
                 return;
             }
 
@@ -1119,20 +1062,15 @@
             const classNameDisplay = classKey.replace('_', ' ');
             const typeLibelle = p.designation === 'Inscription' ? "les frais d'inscription" : `la mensualité de *${p.designation}*`;
             
-            // Formatage du message
             const message = `Chers parents, nous confirmons la bonne réception du règlement de ${typeLibelle} pour l'élève *${student.firstname} ${student.lastname}* (${classNameDisplay}) d'un montant de *${p.montantPaye.toLocaleString()} FCFA* via ${p.methode} le ${p.dateEncaissement}. Merci pour votre confiance. -- Direction GestNotes.`;
             
-            // Nettoyage de l'indicatif téléphonique du Sénégal si nécessaire
             let purePhone = student.phone.replace(/[\s\+\-]/g, '');
-            if (purePhone.length === 9) {
-                purePhone = "221" + purePhone;
-            }
+            if (purePhone.length === 9) purePhone = "221" + purePhone;
 
             const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         }
 
-        // --- ENGINE DE GESTION ADMINISTRATIVE STANDARD ---
         function openSubjectsModal() {
             const key = getCurrentClassKey();
             document.getElementById('lbl-subjects-title').innerText = `Disciplines : ${appState.selectedClass} ${appState.selectedSection||''}`;
@@ -1152,7 +1090,7 @@
             row.dataset.id = id || "sub_" + Date.now() + Math.random().toString(36).substr(2, 5);
             row.innerHTML = `
                 <input type="text" value="${name||''}" placeholder="Ex: Mathématiques" class="text-slate-900 flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none font-medium">
-                <div class="w-20 flex items-center gap-1">
+                <div class="w-24 flex items-center gap-1">
                     <span class="text-xs text-slate-400 font-bold">${getCoefLabel(appState.selectedClass)}</span>
                     <input type="number" step="any" value="${coef||1}" class="text-slate-900 w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm text-center font-bold outline-none">
                 </div>
@@ -1166,7 +1104,7 @@
         }
 
         function loadStandardSubjects() {
-            if (confirm("Remplacer les disciplines actuelles par la grille standard ?")) {
+            if (confirm("Remplacer les disciplines par la liste standard ?")) {
                 const container = document.getElementById('subjects-container');
                 container.innerHTML = "";
                 const standards = getDefaultSubjects(appState.selectedClass);
@@ -1189,61 +1127,232 @@
             appState.classes[key].subjects = arr;
             saveToStorage();
             closeModal('subjects-modal');
-            showToast("Grille de matières actualisée.", "success");
-            render();
-        }
-
-        function handleAddStudent(e) {
-            e.preventDefault();
-            const key = getCurrentClassKey();
-            const f = document.getElementById('student-firstname').value.trim();
-            const l = document.getElementById('student-lastname').value.trim();
-            const dob = document.getElementById('student-dob').value;
-            const pob = document.getElementById('student-pob').value.trim();
-            
-            const targetFees = appState.classes[key].fees || { inscription: 0, mensualite: 0 };
-            const paymentsStructure = moisAnnee.map((m, idx) => ({
-                designation: m,
-                statut: "Non payé",
-                montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
-                montantPaye: 0,
-                methode: "",
-                dateEncaissement: ""
-            }));
-
-            const ns = {
-                id: "student_" + Date.now(),
-                firstname: f,
-                lastname: l,
-                dob,
-                pob,
-                phone: "",
-                grades: {},
-                payments: paymentsStructure
-            };
-
-            appState.classes[key].students.push(ns);
-            saveToStorage();
-            document.getElementById('add-student-form').reset();
-            closeModal('add-student-modal');
-            showToast("Élève ajouté !", "success");
+            showToast("Liste des disciplines enregistrée.", "success");
             render();
         }
 
         function supprimerEleve(id) {
-            if (confirm("Supprimer définitivement cet élève ainsi que toutes ses notes et paiements ?")) {
+            if (confirm("Supprimer cet élève, ses notes et son historique financier ?")) {
                 const key = getCurrentClassKey();
                 const idx = appState.classes[key].students.findIndex(s => s.id === id);
                 if (idx !== -1) {
                     appState.classes[key].students.splice(idx, 1);
                     saveToStorage();
-                    showToast("Élève retiré.", "info");
+                    showToast("Élève retiré de la base.", "info");
                     render();
                 }
             }
         }
 
-        // --- CALCUL DES MOYENNES (RÈGLE SCOLAIRE SÉNÉGALAISE PRÉCISE) ---
+        function toggleDev3() {
+            const subSelect = document.getElementById('grade-subject-select');
+            if (!subSelect.value) return;
+            const subjectId = subSelect.value;
+            subjectDev3Visible[subjectId] = !subjectDev3Visible[subjectId];
+            renderGradesGrid();
+        }
+
+        function exporterFeuilleSaisie() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            const subSelect = document.getElementById('grade-subject-select');
+            if (!clsData || !subSelect.value || clsData.students.length === 0) {
+                showToast("Aucune donnée disponible à l'export.", "info");
+                return;
+            }
+            const subjectName = subSelect.options[subSelect.selectedIndex].text;
+            let csv = "ID,Nom,Prenom,Dev1,Dev2,Dev3,Compo\n";
+            clsData.students.forEach(s => {
+                const g = s.grades[subSelect.value] || {};
+                csv += `${s.id},${s.lastname},${s.firstname},${g.dev1||''},${g.dev2||''},${g.dev3||''},${g.compo||''}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", `Grille_${appState.selectedClass}_${subjectName.replace(/[^a-zA-Z0-9]/g, '_')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function importerNotesAuto(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const subSelect = document.getElementById('grade-subject-select');
+            if (!subSelect.value) {
+                alert("Sélectionnez d'abord la discipline active.");
+                return;
+            }
+            const subjectId = subSelect.value;
+            const key = getCurrentClassKey();
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lines = e.target.result.split('\n');
+                let count = 0;
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    const parts = line.split(',');
+                    if (parts.length < 3) continue;
+                    const sId = parts[0];
+                    const student = appState.classes[key].students.find(s => s.id === sId);
+                    if (student) {
+                        if (!student.grades[subjectId]) student.grades[subjectId] = {};
+                        if (parts[3] !== undefined && parts[3] !== "") student.grades[subjectId].dev1 = parseFloat(parts[3]);
+                        if (parts[4] !== undefined && parts[4] !== "") student.grades[subjectId].dev2 = parseFloat(parts[4]);
+                        if (parts[5] !== undefined && parts[5] !== "") student.grades[subjectId].dev3 = parseFloat(parts[5]);
+                        if (parts[6] !== undefined && parts[6] !== "") student.grades[subjectId].compo = parseFloat(parts[6]);
+                        count++;
+                    }
+                }
+                saveToStorage();
+                render();
+                showToast(`${count} lignes de notes synchronisées !`, "success");
+            };
+            reader.readAsText(file);
+            input.value = "";
+        }
+
+        window.exportAllCSV = function() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            if (!clsData || clsData.students.length === 0) {
+                showToast("Aucun élève dans cette section.", "info");
+                return;
+            }
+            let csv = "Nom,Prenom,Date Naissance,Lieu Naissance,Telephone Parent,Moyenne Generale\n";
+            clsData.students.forEach(s => {
+                const mg = calculerMoyenneGeneraleGlobale(s, clsData.subjects || []);
+                const displayMg = mg !== null ? mg.toFixed(2) : "N/A";
+                csv += `"${s.lastname}","${s.firstname}","${s.dob||''}","${s.pob||''}","${s.phone||''}",${displayMg}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", `Liste_Eleves_${key}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        window.printAllReportCards = function() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            if (!clsData || clsData.students.length === 0) {
+                showToast("Aucun élève à éditer.", "info");
+                return;
+            }
+            let printWindow = window.open('', '_blank');
+            let html = `
+            <html>
+            <head>
+                <title>Bulletins de Notes - ${appState.selectedClass}</title>
+                <style>
+                    body { font-family: 'Hanken Grotesk', sans-serif; color: #334155; padding: 20px; background: #fff; }
+                    .bulletin { page-break-after: always; border: 2px solid #4c1d95; padding: 30px; margin-bottom: 40px; border-radius: 8px; }
+                    .header { display: flex; justify-content: space-between; border-bottom: 2px solid #4c1d95; padding-bottom: 15px; }
+                    .title { color: #4c1d95; font-size: 22px; font-weight: bold; text-transform: uppercase; }
+                    .info-table { width: 100%; margin: 20px 0; border-collapse: collapse; }
+                    .info-table td { padding: 5px; font-size: 14px; }
+                    .grades-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                    .grades-table th, .grades-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-size: 13px; }
+                    .grades-table th { background-color: #f8fafc; color: #4c1d95; }
+                    .total-box { margin-top: 20px; text-align: right; font-size: 16px; font-weight: bold; color: #4c1d95; }
+                    .footer-signatures { margin-top: 50px; display: flex; justify-content: space-between; font-size: 12px; }
+                </style>
+            </head>
+            <body>
+            `;
+
+            clsData.students.forEach(s => {
+                const mg = calculerMoyenneGeneraleGlobale(s, clsData.subjects || []);
+                const displayMg = mg !== null ? mg.toFixed(2) : "N/A";
+                const labelCoefMax = isPrimary(appState.selectedClass) ? "Max" : "Coef";
+
+                html += `
+                <div class="bulletin">
+                    <div class="header">
+                        <div>
+                            <div class="title">GestNotes Academy</div>
+                            <div style="font-size: 12px; color: #64748b;">Dakar, Sénégal</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #4c1d95;">BULLETIN DE NOTES</div>
+                            <div style="font-size: 13px;">Année : ${appState.currentYear}</div>
+                            <div style="font-size: 13px;">${getPeriodLabel(appState.selectedClass, appState.currentSemester)}</div>
+                        </div>
+                    </div>
+                    
+                    <table class="info-table">
+                        <tr>
+                            <td><strong>Élève :</strong> ${s.lastname.toUpperCase()} ${s.firstname}</td>
+                            <td style="text-align: right;"><strong>Classe :</strong> ${appState.selectedClass} ${appState.selectedSection}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Né(e) le :</strong> ${s.dob ? new Date(s.dob).toLocaleDateString('fr-FR') : '-'} à ${s.pob || '-'}</td>
+                            <td style="text-align: right;"><strong>Effectif :</strong> ${clsData.students.length}</td>
+                        </tr>
+                    </table>
+
+                    <table class="grades-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; width: 40%;">Matière</th>
+                                <th>Devoirs</th>
+                                <th>Composition</th>
+                                <th>Moyenne</th>
+                                <th>${labelCoefMax}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                clsData.subjects.forEach(sub => {
+                    const g = s.grades[sub.id] || {};
+                    let devs = [];
+                    if(g.dev1 !== undefined && g.dev1 !== "") devs.push(g.dev1);
+                    if(g.dev2 !== undefined && g.dev2 !== "") devs.push(g.dev2);
+                    if(subjectDev3Visible[sub.id] && g.dev3 !== undefined && g.dev3 !== "") devs.push(g.dev3);
+                    
+                    const devsStr = devs.length > 0 ? devs.join(' | ') : '-';
+                    const compoStr = (g.compo !== undefined && g.compo !== "") ? g.compo : '-';
+                    const moyMat = calculerMoyenneEleveMatiere(s, sub.id);
+                    const moyMatStr = moyMat !== null ? moyMat.toFixed(2) : '-';
+
+                    html += `
+                    <tr>
+                        <td style="text-align: left;"><strong>${sub.name}</strong></td>
+                        <td>${devsStr}</td>
+                        <td>${compoStr}</td>
+                        <td><strong>${moyMatStr}</strong></td>
+                        <td>${sub.coef}</td>
+                    </tr>
+                    `;
+                });
+
+                html += `
+                        </tbody>
+                    </table>
+                    
+                    <div class="total-box">
+                        MOYENNE GÉNÉRALE : ${displayMg} / ${isPrimary(appState.selectedClass) ? '10' : '20'}
+                    </div>
+
+                    <div class="footer-signatures">
+                        <div>Le Parent d'Élève</div>
+                        <div>Le Titulaire de la Classe</div>
+                        <div>Le Directeur</div>
+                    </div>
+                </div>
+                `;
+            });
+
+            html += `</body></html>`;
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.print();
+        };
+
         function calculerMoyenneEleveMatiere(student, subjectId) {
             const g = student.grades[subjectId] || {};
             const d1 = parseFloat(g.dev1);
@@ -1262,13 +1371,11 @@
             let moyDev = hasDev ? (sumDev / countDev) : 0;
 
             if (isPrimary(appState.selectedClass)) {
-                // LOGIQUE PRIMAIRE : Note brute sur 10 (Devoirs et Compositions inclus harmonieusement)
                 if (hasDev && !isNaN(compo)) return (moyDev + compo) / 2;
                 if (!isNaN(compo)) return compo;
                 if (hasDev) return moyDev;
                 return null;
             } else {
-                // LOGIQUE SECONDAIRE : (Moyenne Devoirs + 2 * Composition) / 3
                 if (hasDev && !isNaN(compo)) return (moyDev + (compo * 2)) / 3;
                 if (!isNaN(compo)) return compo;
                 if (hasDev) return moyDev;
@@ -1279,14 +1386,12 @@
         function calculerMoyenneGeneraleGlobale(student, subjects) {
             let totalPoints = 0;
             let totalCoefs = 0;
-            let targetCount = 0;
 
             subjects.forEach(sub => {
                 const m = calculerMoyenneEleveMatiere(student, sub.id);
                 if (m !== null) {
                     totalPoints += m * (sub.coef || 1);
                     totalCoefs += (sub.coef || 1);
-                    targetCount++;
                 }
             });
 
@@ -1294,7 +1399,6 @@
             return totalPoints / totalCoefs;
         }
 
-        // --- MOTEUR DE RENDU DYNAMIQUE DE L'INTERFACE ---
         function render() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key] || { subjects: [], students: [] };
@@ -1321,14 +1425,13 @@
             }
             empty.classList.add('hidden');
 
-            // Tri par ordre alphabétique
             const sorted = [...students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
 
             sorted.forEach(s => {
                 const mg = calculerMoyenneGeneraleGlobale(s, subjects);
                 const displayMg = (mg === null) ? 
                     `<span class="text-slate-400 text-xs italic">Pas de note</span>` : 
-                    `<span class="font-extrabold text-indigo-700">${mg.toFixed(2)}</span>`;
+                    `<span class="font-extrabold text-[#4c1d95]">${mg.toFixed(2)}</span>`;
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
@@ -1340,13 +1443,13 @@
                     <td class="py-3 px-5 text-center text-base">${displayMg}</td>
                     <td class="py-3 px-5 text-right">
                         <div class="flex items-center justify-end gap-1">
-                            <button onclick="openMensualitesModal('${s.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-3 py-1.5 rounded-lg text-xs border border-amber-200 transition-all shadow-sm" title="Gérer la comptabilité de l'élève">
+                            <button onclick="openMensualitesModal('${s.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-3 py-1.5 rounded-lg text-xs border border-amber-200 transition-all shadow-sm">
                                 <i class="fa-solid fa-wallet mr-1"></i> Écolage
                             </button>
-                            <button onclick="openEditStudent('${s.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded-lg border border-indigo-100" title="Modifier la fiche">
+                            <button onclick="openEditStudent('${s.id}')" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] p-2 rounded-lg border border-violet-100">
                                 <i class="fa-solid fa-user-pen text-xs"></i>
                             </button>
-                            <button onclick="supprimerEleve('${s.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-lg border border-rose-100" title="Supprimer">
+                            <button onclick="supprimerEleve('${s.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-lg border border-rose-100">
                                 <i class="fa-solid fa-trash-can text-xs"></i>
                             </button>
                         </div>
@@ -1386,6 +1489,7 @@
 
             const subjectId = subSelect.value;
             const isVisible3 = !!subjectDev3Visible[subjectId];
+            const maxVal = isPrimary(appState.selectedClass) ? 10 : 20;
 
             document.getElementById('lbl-th-dev3').style.display = isVisible3 ? '' : 'none';
             document.getElementById('lbl-th-dev2').innerText = isVisible3 ? "Devoir 2" : "Devoir 2 (+)";
@@ -1398,10 +1502,10 @@
                 tr.className = "hover:bg-slate-50/70 transition-colors";
                 tr.innerHTML = `
                     <td class="p-2 font-semibold text-slate-700 text-sm text-left pl-4">${s.lastname.toUpperCase()} ${s.firstname}</td>
-                    <td class="p-1"><input type="number" step="any" min="0" max="20" value="${g.dev1??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev1',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
-                    <td class="p-1"><input type="number" step="any" min="0" max="20" value="${g.dev2??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev2',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
-                    <td class="p-1" id="td-dev3-${s.id}" style="display:${isVisible3?'':'none'}"><input type="number" step="any" min="0" max="20" value="${g.dev3??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev3',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
-                    <td class="p-1"><input type="number" step="any" min="0" max="20" value="${g.compo??''}" onchange="saveGradeLive('${s.id}','${subjectId}','compo',this.value)" class="w-full bg-indigo-50/40 focus:bg-white text-center font-extrabold text-sm p-2 rounded-lg border outline-none border-indigo-200 focus:border-indigo-500 text-indigo-900"></td>
+                    <td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev1??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev1',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
+                    <td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev2??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev2',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
+                    <td class="p-1" style="display:${isVisible3?'':'none'}"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev3??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev3',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>
+                    <td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.compo??''}" onchange="saveGradeLive('${s.id}','${subjectId}','compo',this.value)" class="w-full bg-violet-50/40 focus:bg-white text-center font-extrabold text-sm p-2 rounded-lg border outline-none border-violet-200 focus:border-violet-500 text-violet-900"></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -1421,7 +1525,6 @@
             }
             saveToStorage();
 
-            // Refresh asynchrone léger de la colonne moyenne générale sans rompre le focus
             const subjects = appState.classes[key].subjects || [];
             renderStudentsTable(appState.classes[key].students, subjects);
         }
@@ -1444,7 +1547,6 @@
             });
         }
 
-        // --- FONCTIONNALITÉS IMPORT / EXPORT JSON DATA ---
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
             const downloadAnchor = document.createElement('a');
@@ -1470,12 +1572,12 @@
                         populateFilters();
                         updateHeaderDisplays();
                         render();
-                        showToast("Données importées avec succès !", "success");
+                        showToast("Données importées !", "success");
                     } else {
-                        alert("Fichier JSON invalide.");
+                        alert("Fichier structurel JSON erroné.");
                     }
                 } catch (err) {
-                    alert("Erreur lors de la lecture du fichier.");
+                    alert("Échec de la lecture du fichier.");
                 }
             };
             reader.readAsText(file);
@@ -1484,8 +1586,8 @@
         function showToast(message, type = "info") {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `toast-animate flex items-center gap-3 bg-white border p-4 rounded-xl shadow-lg pointer-events-auto min-w-[300px] ${ type === 'success' ? 'border-emerald-500 text-emerald-800' : 'border-indigo-500 text-indigo-800' }`;
-            const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-circle-info text-indigo-500';
+            toast.className = `toast-animate flex items-center gap-3 bg-white border p-4 rounded-xl shadow-lg pointer-events-auto min-w-[300px] ${ type === 'success' ? 'border-emerald-500 text-emerald-800' : 'border-violet-500 text-violet-800' }`;
+            const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-circle-info text-violet-500';
             toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
