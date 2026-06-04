@@ -88,19 +88,19 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-4 ml-auto sm:ml-0">
-            <div class="bg-violet-950/50 rounded-xl p-1 flex border border-violet-800/50 text-sm">
-                <div class="px-3 py-1.5 font-medium text-violet-200 flex items-center gap-1.5">
+        <div class="flex items-center gap-3 ml-auto sm:ml-0">
+            <div class="bg-violet-950/50 rounded-xl p-1 flex border border-violet-800/50 text-xs sm:text-sm">
+                <div class="px-2.5 py-1.5 font-medium text-violet-200 flex items-center gap-1.5">
                     <i class="fa-solid fa-calendar-days text-xs text-violet-400"></i>
                     <span id="display-year">2025-2026</span>
                 </div>
-                <div class="bg-[#6d28d9] px-3 py-1.5 rounded-lg font-semibold shadow-sm flex items-center gap-1.5">
+                <div class="bg-[#6d28d9] px-2.5 py-1.5 rounded-lg font-semibold shadow-sm flex items-center gap-1.5">
                     <i class="fa-solid fa-clock text-xs"></i>
                     <span id="display-semester">Semestre 1</span>
                 </div>
             </div>
 
-            <button onclick="openModal('settings-modal')" class="p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10" title="Configuration de l'année/période">
+            <button onclick="openModal('settings-modal')" class="p-2 md:p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10" title="Configuration de l'année/période">
                 <i class="fa-solid fa-gear text-lg"></i>
             </button>
         </div>
@@ -110,58 +110,58 @@
         
        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                <button onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md">
+                <button onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md text-sm">
                     <i class="fas fa-file-download"></i> <span>Exporter Base</span>
                 </button>
 
                 <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
-                <button onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md">
+                <button onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md text-sm">
                     <i class="fas fa-file-upload"></i> <span>Importer Base</span>
                 </button>
                 
-                <button onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-3 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all">
+                <button onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm">
                     <i class="fa-solid fa-user-plus"></i> Inscription / Élève
                 </button>
                 
-                <button onclick="exporterFeuilleSaisie()" class="bg-slate-600 hover:bg-slate-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
+                <button onclick="exporterFeuilleSaisie()" class="bg-slate-600 hover:bg-slate-700 text-white py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md text-sm">
                     <i class="fa-solid fa-file-pdf"></i> Imprimer Grille PDF
                 </button>
                 
-                <button onclick="document.getElementById('importInput').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md">
+                <button onclick="document.getElementById('importInput').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md text-sm">
                     <i class="fa-solid fa-file-import"></i> Importer Notes
                 </button>
                 <input type="file" id="importInput" class="hidden" accept=".csv" onchange="importerNotesAuto(this)">
             </div>
         </div>
 
-        <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-wrap gap-4 items-center justify-between">
-            <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                <div class="w-full sm:w-48">
+        <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 items-end w-full md:w-auto">
+                <div class="col-span-1">
                     <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Niveau d'étude</label>
-                    <select id="filter-class" onchange="onClassChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all">
+                    <select id="filter-class" onchange="onClassChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all">
                     </select>
                 </div>
 
-                <div class="w-full sm:w-48">
+                <div class="col-span-1">
                     <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Série / Option</label>
-                    <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all">
+                    <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all">
                     </select>
                 </div>
 
-                <div class="w-full sm:w-24">
+                <div class="col-span-2 sm:col-span-1">
                     <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Effectif</label>
-                    <input type="text" id="filter-effectif" readonly value="0" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-center text-[#4c1d95] focus:outline-none cursor-default">
+                    <input type="text" id="filter-effectif" readonly value="0" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-center text-[#4c1d95] focus:outline-none cursor-default">
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0">
-                <button onclick="openClassFeesModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-amber-100">
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0">
+                <button onclick="openClassFeesModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-amber-100">
                     <i class="fa-solid fa-coins text-xs"></i> Tarifs classe
                 </button>
-                <button onclick="openRegistrationModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-sm">
+                <button onclick="openRegistrationModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
                     <i class="fa-solid fa-plus text-xs"></i> Ajouter élève
                 </button>
-                <button onclick="openSubjectsModal()" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border border-violet-100">
+                <button onclick="openSubjectsModal()" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-violet-100">
                     <i class="fa-solid fa-book text-xs"></i> Gérer matières
                 </button>
             </div>
@@ -219,22 +219,22 @@
                 </div>
                 
                 <div class="flex items-center gap-2">
-                    <button onclick="ouvrirBulletin('ALL_STUDENTS')" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
+                    <button onclick="ouvrirBulletin('ALL_STUDENTS')" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5">
                         <i class="fa-solid fa-print text-[#4c1d95]"></i> Imprimer Bulletins
                     </button>
-                    <button onclick="window.exportAllCSV()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
+                    <button onclick="window.exportAllCSV()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5">
                         <i class="fa-solid fa-file-csv text-green-600"></i> Exporter Élèves
                     </button>
                 </div>
             </div>
 
             <div class="overflow-x-auto flex-1">
-                <table class="w-full text-left border-collapse">
+                <table class="w-full text-left border-collapse min-w-[600px]">
                     <thead>
                         <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/70">
                             <th class="py-3.5 px-5">Élève</th>
-                            <th class="py-3.5 px-5 text-center">Moyenne Générale</th>
-                            <th class="py-3.5 px-5 text-right">Actions</th>
+                            <th class="py-3.5 px-5 text-center w-36">Moyenne Générale</th>
+                            <th class="py-3.5 px-5 text-right w-80">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
@@ -343,7 +343,7 @@
             </div>
 
             <div class="flex-1 overflow-y-auto border border-slate-100 rounded-xl">
-                <table class="w-full text-left text-sm">
+                <table class="w-full text-left text-sm min-w-[700px]">
                     <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[11px] tracking-wider sticky top-0">
                         <tr>
                             <th class="px-4 py-3 text-left">Frais / Période</th>
@@ -1061,14 +1061,29 @@
 
             const p = student.payments[monthIdx];
             const classNameDisplay = classKey.replace('_', ' ');
-            const typeLibelle = p.designation === 'Inscription' ? "les frais d'inscription" : `la mensualité de *${p.designation}*`;
+            const typeLibelle = p.designation === 'Inscription' ? "Frais d'inscription" : `Mensualité de *${p.designation}*`;
             
-            const message = `Chers parents, nous confirmons la bonne réception du règlement de ${typeLibelle} pour l'élève *${student.firstname} ${student.lastname}* (${classNameDisplay}) d'un montant de *${p.montantPaye.toLocaleString()} FCFA* via ${p.methode} le ${p.dateEncaissement}. Merci pour votre confiance. -- Direction GestNotes.`;
+            const message = `*REÇU DE PAIEMENT ÉLECTRONIQUE* 📄%0A` +
+                            `*GestNotes Academy* 🎓%0A` +
+                            `----------------------------------------%0A` +
+                            `Chers parents, %0A%0A` +
+                            `Nous avons le plaisir de vous confirmer la bonne réception du paiement de scolarité pour votre enfant :%0A%0A` +
+                            `👤 *Élève :* ${student.firstname} ${student.lastname.toUpperCase()}%0A` +
+                            `🏫 *Classe :* ${classNameDisplay}%0A` +
+                            `🧾 *Période :* ${typeLibelle}%0A` +
+                            `💵 *Montant versé :* *${p.montantPaye.toLocaleString()} FCFA*%0A` +
+                            `💳 *Mode de règlement :* ${p.methode}%0A` +
+                            `📅 *Date de transaction :* ${p.dateEncaissement}%0A` +
+                            `----------------------------------------%0A` +
+                            `✅ *Statut :* Paiement validé et enregistré.%0A%0A` +
+                            `Un reçu officiel au format PDF est archivé auprès de notre comptabilité.%0A` +
+                            `Merci pour votre précieuse collaboration et votre confiance envers notre établissement. 🙏%0A%0A` +
+                            `*La Direction, GestNotes.* 💼`;
             
             let purePhone = student.phone.replace(/[\s\+\-]/g, '');
             if (purePhone.length === 9) purePhone = "221" + purePhone;
 
-            const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(message)}`;
+            const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${message}`;
             window.open(url, '_blank');
         }
 
@@ -1091,8 +1106,8 @@
             row.dataset.id = id || "sub_" + Date.now() + Math.random().toString(36).substr(2, 5);
             row.innerHTML = `
                 <input type="text" value="${name||''}" placeholder="Ex: Mathématiques" class="text-slate-900 flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none font-medium">
-                <div class="w-24 flex items-center gap-1">
-                    <span class="text-xs text-slate-400 font-bold">${getCoefLabel(appState.selectedClass)}</span>
+                <div class="w-28 flex items-center gap-1.5">
+                    <span class="text-xs text-slate-400 font-bold whitespace-nowrap">${getCoefLabel(appState.selectedClass)}</span>
                     <input type="number" step="any" value="${coef||1}" class="text-slate-900 w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm text-center font-bold outline-none">
                 </div>
                 <button onclick="this.parentElement.remove()" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-all"><i class="fa-solid fa-trash-can"></i></button>
@@ -1171,42 +1186,47 @@
             }
 
             const element = document.createElement('div');
-            element.style.padding = '15px';
+            element.style.padding = '20px';
             element.style.fontFamily = "'Inter', Arial, sans-serif";
-            element.style.color = '#1e293b';
+            element.style.color = '#000000';
             element.style.backgroundColor = '#ffffff';
 
             let headerHtml = `
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #4c1d95; padding-bottom: 10px; margin-bottom: 15px;">
-                    <div>
-                        <h2 style="margin: 0; font-size: 16px; color: #4c1d95; text-transform: uppercase;">Grille Globale de Saisie des Notes</h2>
-                        <p style="margin: 3px 0 0; font-size: 10px; color: #64748b; font-weight: 600;">GestNotes Academy</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
+                    <div style="font-size: 8px; font-weight: bold; text-transform: uppercase; line-height: 1.3;">
+                        RÉPUBLIQUE DU SÉNÉGAL<br>
+                        Ministère de l'Éducation Nationale<br>
+                        Inspection de l'Éducation et de la Formation<br>
+                        <span style="color: #4c1d95; font-size: 9px; font-weight: 800;">GESTNOTES ACADEMY</span>
                     </div>
-                    <div style="text-align: right; font-size: 10px; color: #475569;">
-                        <strong>Année Académique :</strong> ${appState.currentYear}<br>
-                        <strong>Période :</strong> ${periodLabel}
+                    <div style="text-align: right; font-size: 8px; line-height: 1.3;">
+                        <strong>ANNÉE SCOLAIRE :</strong> ${appState.currentYear}<br>
+                        <strong>PÉRIODE :</strong> ${periodLabel}<br>
+                        <strong>CLASSE :</strong> ${appState.selectedClass} ${appState.selectedSection || 'Général'}
                     </div>
                 </div>
-                <div style="margin-bottom: 12px; font-size: 11px; display: flex; gap: 20px; font-weight: 500;">
-                    <div><strong>Classe :</strong> ${appState.selectedClass} ${appState.selectedSection || 'Général'}</div>
-                    <div><strong>Effectif :</strong> ${clsData.students.length} élève(s)</div>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <h2 style="margin: 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: underline;">
+                        FEUILLE DE NOTES ET ENREGISTREMENT DES RÉSULTATS
+                    </h2>
+                    <p style="margin: 2px 0 0; font-size: 8px; color: #475569;">Effectif de la classe : ${clsData.students.length} élève(s)</p>
                 </div>
             `;
 
             let tableHtml = `
-                <table style="width: 100%; border-collapse: collapse; font-size: 9px; border: 1px solid #cbd5e1; table-layout: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; border: 1.5px solid #000000; table-layout: auto;">
                     <thead>
-                        <tr style="background-color: #f8fafc;">
-                            <th rowspan="2" style="border: 1px solid #cbd5e1; padding: 4px; text-align: left;">Identifiant</th>
-                            <th rowspan="2" style="border: 1px solid #cbd5e1; padding: 4px; text-align: left;">Nom</th>
-                            <th rowspan="2" style="border: 1px solid #cbd5e1; padding: 4px; text-align: left;">Prénom</th>
+                        <tr style="background-color: #f1f5f9;">
+                            <th rowspan="2" style="border: 1px solid #000000; padding: 5px; text-align: left; width: 30px;">N°</th>
+                            <th rowspan="2" style="border: 1px solid #000000; padding: 5px; text-align: left; width: 100px;">Nom</th>
+                            <th rowspan="2" style="border: 1px solid #000000; padding: 5px; text-align: left; width: 120px;">Prénom</th>
             `;
 
             subjects.forEach(sub => {
                 const hasDev3 = !!subjectDev3Visible[sub.id];
                 const colSpan = hasDev3 ? 4 : 3;
                 tableHtml += `
-                    <th colspan="${colSpan}" style="border: 1px solid #cbd5e1; padding: 4px; text-align: center; background-color: #f5f3ff; color: #4c1d95; font-weight: bold;">
+                    <th colspan="${colSpan}" style="border: 1px solid #000000; padding: 4px; text-align: center; background-color: #f8fafc; font-weight: 800;">
                         ${sub.name}
                     </th>
                 `;
@@ -1220,10 +1240,10 @@
             subjects.forEach(sub => {
                 const hasDev3 = !!subjectDev3Visible[sub.id];
                 tableHtml += `
-                    <th style="border: 1px solid #cbd5e1; padding: 3px; text-align: center; font-weight: bold; width: 30px;">D1</th>
-                    <th style="border: 1px solid #cbd5e1; padding: 3px; text-align: center; font-weight: bold; width: 30px;">D2</th>
-                    ${hasDev3 ? '<th style="border: 1px solid #cbd5e1; padding: 3px; text-align: center; font-weight: bold; width: 30px;">D3</th>' : ''}
-                    <th style="border: 1px solid #cbd5e1; padding: 3px; text-align: center; font-weight: bold; width: 30px; background-color: #faf5ff;">CP</th>
+                    <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px;">D1</th>
+                    <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px;">D2</th>
+                    ${hasDev3 ? '<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px;">D3</th>' : ''}
+                    <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 800; width: 28px; background-color: #e2e8f0;">CP</th>
                 `;
             });
 
@@ -1235,12 +1255,12 @@
 
             const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
 
-            sorted.forEach(s => {
+            sorted.forEach((s, idx) => {
                 tableHtml += `
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="border: 1px solid #cbd5e1; padding: 4px; font-family: monospace; font-size: 8px; color: #64748b;">${s.id.replace('student_', '')}</td>
-                        <td style="border: 1px solid #cbd5e1; padding: 4px; font-weight: bold; text-transform: uppercase; white-space: nowrap;">${s.lastname}</td>
-                        <td style="border: 1px solid #cbd5e1; padding: 4px; white-space: nowrap;">${s.firstname}</td>
+                    <tr style="border-bottom: 1px solid #000000;">
+                        <td style="border: 1px solid #000000; padding: 5px; text-align: center; font-weight: 500;">${idx + 1}</td>
+                        <td style="border: 1px solid #000000; padding: 5px; font-weight: 800; text-transform: uppercase; white-space: nowrap;">${s.lastname}</td>
+                        <td style="border: 1px solid #000000; padding: 5px; white-space: nowrap;">${s.firstname}</td>
                 `;
 
                 subjects.forEach(sub => {
@@ -1254,10 +1274,10 @@
                     const compoVal = (g.compo !== undefined && g.compo !== "") ? parseFloat(g.compo) : '';
 
                     tableHtml += `
-                        <td style="border: 1px solid #cbd5e1; padding: 3px; text-align: center;">${d1Val}</td>
-                        <td style="border: 1px solid #cbd5e1; padding: 3px; text-align: center;">${d2Val}</td>
-                        ${hasDev3 ? `<td style="border: 1px solid #cbd5e1; padding: 3px; text-align: center;">${d3Val}</td>` : ''}
-                        <td style="border: 1px solid #cbd5e1; padding: 3px; text-align: center; font-weight: bold; background-color: #faf5ff;">${compoVal}</td>
+                        <td style="border: 1px solid #000000; padding: 4px; text-align: center;">${d1Val}</td>
+                        <td style="border: 1px solid #000000; padding: 4px; text-align: center;">${d2Val}</td>
+                        ${hasDev3 ? `<td style="border: 1px solid #000000; padding: 4px; text-align: center;">${d3Val}</td>` : ''}
+                        <td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: 800; background-color: #f1f5f9;">${compoVal}</td>
                     `;
                 });
 
@@ -1271,18 +1291,30 @@
                 </table>
             `;
 
-            element.innerHTML = headerHtml + tableHtml;
+            let footerHtml = `
+                <div style="margin-top: 25px; display: flex; justify-content: space-between; font-size: 8px; font-weight: bold; padding: 0 10px;">
+                    <div>Date d'édition : ${new Date().toLocaleDateString('fr-FR')}</div>
+                    <div style="text-align: center; width: 180px; border-top: 1px dashed #000; padding-top: 4px;">
+                        Signature de l'Enseignant
+                    </div>
+                    <div style="text-align: center; width: 180px; border-top: 1px dashed #000; padding-top: 4px;">
+                        Visa du Chef d'Établissement
+                    </div>
+                </div>
+            `;
+
+            element.innerHTML = headerHtml + tableHtml + footerHtml;
 
             const opt = {
                 margin: 8,
-                filename: `Grille_Globale_Saisie_${appState.selectedClass}.pdf`,
+                filename: `Grille_Evaluations_${appState.selectedClass}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, logging: false },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
             html2pdf().from(element).set(opt).save();
-            showToast("Génération de la grille globale PDF lancée !", "success");
+            showToast("Feuille de grille globale exportée !", "success");
         }
 
         window.ouvrirEncaissementDirect = function(studentId) {
@@ -1592,33 +1624,34 @@
 
             sorted.forEach(s => {
                 const mg = calculerMoyenneGeneraleGlobale(s, subjects);
+                const isPrimaryClass = isPrimary(appState.selectedClass);
                 const displayMg = (mg === null) ? 
                     `<span class="text-slate-400 text-xs italic">Pas de note</span>` : 
-                    `<span class="font-extrabold text-[#4c1d95]">${mg.toFixed(2)}</span>`;
+                    `<span class="font-extrabold text-[#4c1d95]">${mg.toFixed(2)}</span> <span class="text-[10px] text-slate-400">/${isPrimaryClass ? '10' : '20'}</span>`;
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
                 tr.innerHTML = `
                     <td class="py-3 px-5">
-                        <div class="font-bold text-slate-800 text-base">${s.lastname.toUpperCase()} ${s.firstname}</div>
-                        <div class="text-[11px] text-slate-400">${s.dob ? 'Né(e) le ' + new Date(s.dob).toLocaleDateString('fr-FR') : ''} ${s.pob ? 'à ' + s.pob : ''}</div>
+                        <div class="font-bold text-slate-800 text-base leading-tight">${s.lastname.toUpperCase()} ${s.firstname}</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">${s.dob ? 'Né(e) le ' + new Date(s.dob).toLocaleDateString('fr-FR') : ''} ${s.pob ? 'à ' + s.pob : ''}</div>
                     </td>
-                    <td class="py-3 px-5 text-center text-base">${displayMg}</td>
+                    <td class="py-3 px-5 text-center text-sm md:text-base font-semibold">${displayMg}</td>
                     <td class="py-3 px-5 text-right">
-                        <div class="flex items-center justify-end gap-1">
-                            <button onclick="ouvrirBulletin('${s.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-[#4c1d95] font-bold px-3 py-1.5 rounded-lg text-xs border border-indigo-200 transition-all shadow-sm">
-                                <i class="fa-solid fa-file-invoice mr-1"></i> Bulletin
+                        <div class="flex flex-wrap items-center justify-end gap-1.5">
+                            <button onclick="ouvrirBulletin('${s.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-[#4c1d95] font-bold px-2.5 py-1.5 rounded-lg text-xs border border-indigo-200 transition-all shadow-sm flex items-center gap-1" title="Imprimer le bulletin">
+                                <i class="fa-solid fa-file-invoice"></i> <span class="hidden sm:inline">Bulletin</span>
                             </button>
-                            <button onclick="ouvrirEncaissementDirect('${s.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold px-3 py-1.5 rounded-lg text-xs border border-emerald-200 transition-all shadow-sm" title="Encaisser paiement direct">
-                                <i class="fa-solid fa-cash-register mr-1"></i> Encaisser
+                            <button onclick="ouvrirEncaissementDirect('${s.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1.5 rounded-lg text-xs border border-emerald-200 transition-all shadow-sm flex items-center gap-1" title="Encaisser paiement direct">
+                                <i class="fa-solid fa-cash-register"></i> <span class="hidden sm:inline">Encaisser</span>
                             </button>
-                            <button onclick="openMensualitesModal('${s.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-3 py-1.5 rounded-lg text-xs border border-amber-200 transition-all shadow-sm">
-                                <i class="fa-solid fa-wallet mr-1"></i> Écolage
+                            <button onclick="openMensualitesModal('${s.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-2.5 py-1.5 rounded-lg text-xs border border-amber-200 transition-all shadow-sm flex items-center gap-1" title="Frais de scolarité / écolage">
+                                <i class="fa-solid fa-wallet"></i> <span class="hidden sm:inline">Écolage</span>
                             </button>
-                            <button onclick="openEditStudent('${s.id}')" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] p-2 rounded-lg border border-violet-100">
+                            <button onclick="openEditStudent('${s.id}')" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] p-2 rounded-lg border border-violet-100 flex items-center justify-center transition-colors" title="Modifier la fiche élève">
                                 <i class="fa-solid fa-user-pen text-xs"></i>
                             </button>
-                            <button onclick="supprimerEleve('${s.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-lg border border-rose-100">
+                            <button onclick="supprimerEleve('${s.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-lg border border-rose-100 flex items-center justify-center transition-colors" title="Supprimer l'élève">
                                 <i class="fa-solid fa-trash-can text-xs"></i>
                             </button>
                         </div>
