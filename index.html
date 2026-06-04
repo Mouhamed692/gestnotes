@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -219,7 +220,7 @@
                 </div>
                 
                 <div class="flex items-center gap-2">
-                    <button onclick="window.printAllReportCards()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
+                    <button onclick="ouvrirBulletin('ALL_STUDENTS')" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
                         <i class="fa-solid fa-print text-[#4c1d95]"></i> Imprimer Bulletins
                     </button>
                     <button onclick="window.exportAllCSV()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-all">
@@ -1161,9 +1162,11 @@
                 return;
             }
             const subjectName = subSelect.options[subSelect.selectedIndex].text;
+            const semKey = "p_" + appState.currentSemester;
             let csv = "ID,Nom,Prenom,Dev1,Dev2,Dev3,Compo\n";
             clsData.students.forEach(s => {
-                const g = s.grades[subSelect.value] || {};
+                const periodGrades = s.grades[semKey] || {};
+                const g = periodGrades[subSelect.value] || {};
                 csv += `${s.id},${s.lastname},${s.firstname},${g.dev1||''},${g.dev2||''},${g.dev3||''},${g.compo||''}\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1185,6 +1188,7 @@
             }
             const subjectId = subSelect.value;
             const key = getCurrentClassKey();
+            const semKey = "p_" + appState.currentSemester;
             const reader = new FileReader();
             reader.onload = function(e) {
                 const lines = e.target.result.split('\n');
@@ -1197,11 +1201,15 @@
                     const sId = parts[0];
                     const student = appState.classes[key].students.find(s => s.id === sId);
                     if (student) {
-                        if (!student.grades[subjectId]) student.grades[subjectId] = {};
-                        if (parts[3] !== undefined && parts[3] !== "") student.grades[subjectId].dev1 = parseFloat(parts[3]);
-                        if (parts[4] !== undefined && parts[4] !== "") student.grades[subjectId].dev2 = parseFloat(parts[4]);
-                        if (parts[5] !== undefined && parts[5] !== "") student.grades[subjectId].dev3 = parseFloat(parts[5]);
-                        if (parts[6] !== undefined && parts[6] !== "") student.grades[subjectId].compo = parseFloat(parts[6]);
+                        if (!student.grades) student.grades = {};
+                        if (!student.grades[semKey]) student.grades[semKey] = {};
+                        if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
+                        
+                        const targetField = student.grades[semKey][subjectId];
+                        if (parts[3] !== undefined && parts[3] !== "") targetField.dev1 = parseFloat(parts[3]);
+                        if (parts[4] !== undefined && parts[4] !== "") targetField.dev2 = parseFloat(parts[4]);
+                        if (parts[5] !== undefined && parts[5] !== "") targetField.dev3 = parseFloat(parts[5]);
+                        if (parts[6] !== undefined && parts[6] !== "") targetField.compo = parseFloat(parts[6]);
                         count++;
                     }
                 }
@@ -1235,6 +1243,18 @@
             document.body.removeChild(link);
         };
 
+        window.ouvrirBulletin = function(studentId) {
+            const key = getCurrentClassKey();
+            const bridge = {
+                classKey: key,
+                semester: appState.currentSemester,
+                studentId: studentId,
+                year: appState.currentYear
+            };
+            localStorage.setItem("gestnotes_bulletin_bridge", JSON.stringify(bridge));
+            window.location.href = "bulletin.html";
+        };
+
         window.printAllReportCards = function() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key];
@@ -1264,6 +1284,7 @@
             <body>
             `;
 
+            const semKey = "p_" + appState.currentSemester;
             clsData.students.forEach(s => {
                 const mg = calculerMoyenneGeneraleGlobale(s, clsData.subjects || []);
                 const displayMg = mg !== null ? mg.toFixed(2) : "N/A";
@@ -1308,7 +1329,8 @@
                 `;
 
                 clsData.subjects.forEach(sub => {
-                    const g = s.grades[sub.id] || {};
+                    const periodGrades = s.grades[semKey] || {};
+                    const g = periodGrades[sub.id] || {};
                     let devs = [];
                     if(g.dev1 !== undefined && g.dev1 !== "") devs.push(g.dev1);
                     if(g.dev2 !== undefined && g.dev2 !== "") devs.push(g.dev2);
@@ -1354,7 +1376,9 @@
         };
 
         function calculerMoyenneEleveMatiere(student, subjectId) {
-            const g = student.grades[subjectId] || {};
+            const semKey = "p_" + appState.currentSemester;
+            if (!student.grades || !student.grades[semKey] || !student.grades[semKey][subjectId]) return null;
+            const g = student.grades[semKey][subjectId];
             const d1 = parseFloat(g.dev1);
             const d2 = parseFloat(g.dev2);
             const d3 = parseFloat(g.dev3);
@@ -1443,6 +1467,9 @@
                     <td class="py-3 px-5 text-center text-base">${displayMg}</td>
                     <td class="py-3 px-5 text-right">
                         <div class="flex items-center justify-end gap-1">
+                            <button onclick="ouvrirBulletin('${s.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-[#4c1d95] font-bold px-3 py-1.5 rounded-lg text-xs border border-indigo-200 transition-all shadow-sm">
+                                <i class="fa-solid fa-file-invoice mr-1"></i> Bulletin
+                            </button>
                             <button onclick="openMensualitesModal('${s.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-3 py-1.5 rounded-lg text-xs border border-amber-200 transition-all shadow-sm">
                                 <i class="fa-solid fa-wallet mr-1"></i> Écolage
                             </button>
@@ -1495,9 +1522,11 @@
             document.getElementById('lbl-th-dev2').innerText = isVisible3 ? "Devoir 2" : "Devoir 2 (+)";
 
             const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
+            const semKey = "p_" + appState.currentSemester;
 
             sorted.forEach(s => {
-                const g = s.grades[subjectId] || { dev1: "", dev2: "", dev3: "", compo: "" };
+                const periodGrades = s.grades[semKey] || {};
+                const g = periodGrades[subjectId] || { dev1: "", dev2: "", dev3: "", compo: "" };
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/70 transition-colors";
                 tr.innerHTML = `
@@ -1516,12 +1545,15 @@
             const student = appState.classes[key].students.find(s => s.id === studentId);
             if (!student) return;
 
-            if (!student.grades[subjectId]) student.grades[subjectId] = {};
+            const semKey = "p_" + appState.currentSemester;
+            if (!student.grades) student.grades = {};
+            if (!student.grades[semKey]) student.grades[semKey] = {};
+            if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
             
             if (val.trim() === "") {
-                delete student.grades[subjectId][field];
+                delete student.grades[semKey][subjectId][field];
             } else {
-                student.grades[subjectId][field] = parseFloat(val);
+                student.grades[semKey][subjectId][field] = parseFloat(val);
             }
             saveToStorage();
 
