@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -1192,37 +1193,38 @@
 
             let headerHtml = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2.5px solid #000000; padding-bottom: 10px; margin-bottom: 15px;">
-                    <div style="font-size: 8px; font-weight: bold; text-transform: uppercase; line-height: 1.4; color: #000000;">
+                    <div style="font-size: 8.5px; font-weight: 900; text-transform: uppercase; line-height: 1.4; color: #000000;">
                         RÉPUBLIQUE DU SÉNÉGAL<br>
                         Ministère de l'Éducation Nationale<br>
                         Inspection de l'Éducation et de la Formation<br>
-                        <span style="color: #4c1d95; font-size: 9px; font-weight: 800;">GESTNOTES ACADEMY</span>
+                        <span style="color: #4c1d95; font-size: 9.5px; font-weight: 900;">GESTNOTES ACADEMY</span>
                     </div>
-                    <div style="text-align: right; font-size: 8.5px; line-height: 1.4; color: #000000;">
+                    <div style="text-align: right; font-size: 9px; line-height: 1.4; color: #000000; font-weight: bold;">
                         <strong>ANNÉE SCOLAIRE :</strong> ${appState.currentYear}<br>
                         <strong>PÉRIODE :</strong> ${periodLabel}<br>
                         <strong>CLASSE :</strong> ${appState.selectedClass} ${appState.selectedSection || 'Général'}
                     </div>
                 </div>
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <h2 style="margin: 0; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: underline; color: #000000;">
+                    <h2 style="margin: 0; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: underline; color: #000000;">
                         FEUILLE DE NOTES ET ENREGISTREMENT DES RÉSULTATS
                     </h2>
-                    <p style="margin: 4px 0 0; font-size: 9px; color: #334155; font-weight: 600;">Effectif de la classe : ${clsData.students.length} élève(s)</p>
+                    <p style="margin: 4px 0 0; font-size: 9px; color: #000000; font-weight: bold;">Effectif de la classe : ${clsData.students.length} élève(s)</p>
                 </div>
             `;
 
             let tableHtml = `
-                <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; border: 1.5px solid #000000; table-layout: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; border: 2.5px solid #000000; table-layout: auto;">
                     <thead>
                         <tr style="background-color: #f1f5f9; color: #000000;">
-                            <th rowspan="2" style="border: 2px solid #000000; padding: 6px; text-align: center; font-weight: 900; width: 45px; color: #000000; font-size: 9px;">ID</th>
-                            <th rowspan="2" style="border: 2px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 100px; color: #000000; font-size: 9px;">NOM</th>
-                            <th rowspan="2" style="border: 2px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 120px; color: #000000; font-size: 9px;">PRÉNOM</th>
+                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: center; font-weight: 900; width: 45px; color: #000000; font-size: 9px;">ID</th>
+                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 100px; color: #000000; font-size: 9px;">NOM</th>
+                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 110px; color: #000000; font-size: 9px;">PRÉNOM</th>
             `;
 
+            const isPrim = isPrimary(appState.selectedClass);
+
             subjects.forEach(sub => {
-                const isPrim = isPrimary(appState.selectedClass);
                 const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id]; // Devoir 3 pour le secondaire
                 const hasNote2 = isPrim && !!subjectDev3Visible[sub.id]; // Note 2 pour le primaire
                 
@@ -1234,7 +1236,7 @@
                 }
 
                 tableHtml += `
-                    <th colspan="${colSpan}" style="border: 1px solid #000000; padding: 4px; text-align: center; background-color: #f8fafc; font-weight: bold; color: #000000;">
+                    <th colspan="${colSpan}" style="border: 1.5px solid #000000; padding: 5px; text-align: center; background-color: #f8fafc; font-weight: 900; color: #000000; font-size: 8.5px;">
                         ${sub.name}
                     </th>
                 `;
@@ -1242,26 +1244,25 @@
 
             tableHtml += `
                         </tr>
-                        <tr style="background-color: #f1f5f9;">
+                        <tr style="background-color: #f1f5f9; color: #000000;">
             `;
 
             subjects.forEach(sub => {
-                const isPrim = isPrimary(appState.selectedClass);
                 const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id];
                 const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
 
                 if (isPrim) {
-                    tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">N1</th>`;
+                    tableHtml += `<th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">N1</th>`;
                     if (hasNote2) {
-                        tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">N2</th>`;
+                        tableHtml += `<th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">N2</th>`;
                     }
-                    tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>`;
+                    tableHtml += `<th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>`;
                 } else {
                     tableHtml += `
-                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D1</th>
-                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D2</th>
-                        ${hasDev3 ? '<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D3</th>' : ''}
-                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>
+                        <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D1</th>
+                        <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D2</th>
+                        ${hasDev3 ? '<th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D3</th>' : ''}
+                        <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>
                     `;
                 }
             });
@@ -1278,16 +1279,15 @@
                 const shortId = s.id.replace('student_', '').slice(-5);
                 
                 tableHtml += `
-                    <tr style="border-bottom: 1px solid #000000;">
-                        <td style="border: 1px solid #000000; padding: 5px; text-align: center; font-family: monospace; font-size: 8px; font-weight: bold; color: #000000;">${shortId}</td>
-                        <td style="border: 1px solid #000000; padding: 5px; font-weight: bold; text-transform: uppercase; white-space: nowrap; color: #000000;">${s.lastname}</td>
-                        <td style="border: 1px solid #000000; padding: 5px; white-space: nowrap; color: #000000;">${s.firstname}</td>
+                    <tr style="border-bottom: 1.5px solid #000000;">
+                        <td style="border: 1.5px solid #000000; padding: 5px; text-align: center; font-family: monospace; font-size: 8.5px; font-weight: 900; color: #000000;">${shortId}</td>
+                        <td style="border: 1.5px solid #000000; padding: 5px; font-weight: 900; text-transform: uppercase; white-space: nowrap; color: #000000;">${s.lastname}</td>
+                        <td style="border: 1.5px solid #000000; padding: 5px; white-space: nowrap; color: #000000; font-weight: bold;">${s.firstname}</td>
                 `;
 
                 subjects.forEach(sub => {
                     const periodGrades = s.grades[semKey] || {};
                     const g = periodGrades[sub.id] || {};
-                    const isPrim = isPrimary(appState.selectedClass);
                     const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id];
                     const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
 
@@ -1297,17 +1297,17 @@
                     const compoVal = (g.compo !== undefined && g.compo !== "") ? parseFloat(g.compo) : '';
 
                     if (isPrim) {
-                        tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d1Val}</td>`;
+                        tableHtml += `<td style="border: 1.5px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d1Val}</td>`;
                         if (hasNote2) {
-                            tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d2Val}</td>`;
+                            tableHtml += `<td style="border: 1.5px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d2Val}</td>`;
                         }
-                        tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: bold; background-color: #f1f5f9; color: #000000;">${compoVal}</td>`;
+                        tableHtml += `<td style="border: 1.5px solid #000000; padding: 4px; text-align: center; font-weight: 900; background-color: #f1f5f9; color: #000000;">${compoVal}</td>`;
                     } else {
                         tableHtml += `
-                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d1Val}</td>
-                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d2Val}</td>
-                            ${hasDev3 ? `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d3Val}</td>` : ''}
-                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: bold; background-color: #f1f5f9; color: #000000;">${compoVal}</td>
+                            <td style="border: 1.5px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d1Val}</td>
+                            <td style="border: 1.5px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d2Val}</td>
+                            ${hasDev3 ? `<td style="border: 1.5px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d3Val}</td>` : ''}
+                            <td style="border: 1.5px solid #000000; padding: 4px; text-align: center; font-weight: 900; background-color: #f1f5f9; color: #000000;">${compoVal}</td>
                         `;
                     }
                 });
@@ -1325,10 +1325,10 @@
             let footerHtml = `
                 <div style="margin-top: 35px; display: flex; justify-content: space-between; font-size: 8.5px; font-weight: bold; padding: 0 10px; color: #000000;">
                     <div>Date d'édition : ${new Date().toLocaleDateString('fr-FR')}</div>
-                    <div style="text-align: center; width: 180px; border-top: 1px dashed #000000; padding-top: 5px;">
+                    <div style="text-align: center; width: 180px; border-top: 1.5px dashed #000000; padding-top: 5px; font-weight: 900;">
                         Signature de l'Enseignant
                     </div>
-                    <div style="text-align: center; width: 180px; border-top: 1px dashed #000000; padding-top: 5px;">
+                    <div style="text-align: center; width: 180px; border-top: 1.5px dashed #000000; padding-top: 5px; font-weight: 900;">
                         Visa du Chef d'Établissement
                     </div>
                 </div>
@@ -1786,7 +1786,7 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/70 transition-colors";
                 tr.innerHTML = `
-                    <td class="p-2 font-semibold text-slate-700 text-sm text-left pl-4">${s.lastname.toUpperCase()} ${s.firstname}</td>
+                    <td class="p-2 font-bold text-[#000000] text-sm text-left pl-4">${s.lastname.toUpperCase()} ${s.firstname}</td>
                     ${td1HTML}
                     ${td2HTML}
                     ${td3HTML}
@@ -1883,6 +1883,5 @@
     </script>
 </body>
 </html>
-
 
 
