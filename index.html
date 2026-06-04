@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GestNotes">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link class="apple-touch-icon" href="icon-192.png">
     
     <title>GestNotes – Administration scolaire</title>
     
@@ -180,10 +180,10 @@
                     </div>
                   
                     <div class="flex w-full sm:w-auto items-center gap-2">
-                        <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none">
+                        <select id="grade-subject-select" onchange="renderGradesGrid()" class="flex-1 sm:flex-initial bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none min-w-[120px]">
                         </select>
-                        <button onclick="goToNextSubject()" class="bg-[#4c1d95] hover:bg-violet-800 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap">
-                            Suivant <i class="fa-solid fa-arrow-right"></i>
+                        <button onclick="goToNextSubject()" class="bg-[#4c1d95] hover:bg-violet-800 text-white text-sm px-3.5 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap">
+                            <span>Suivant</span> <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
                     </div>
                 </div>
@@ -458,8 +458,9 @@
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <div style="display: none;">
-        <div id="recu-template-container" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; background-color: #fff; max-width: 700px; margin: 0 auto; box-sizing: border-box;">
+    <!-- En DOM masqué hors-écran pour éviter le problème de rendu vide html2pdf (display:none) -->
+    <div style="position: absolute; left: -9999px; top: -9999px; width: 700px; height: auto; overflow: hidden; pointer-events: none;">
+        <div id="recu-template-container" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; background-color: #fff; width: 100%; box-sizing: border-box;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #4c1d95; padding-bottom: 20px;">
                 <div>
                     <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #4c1d95; text-transform: uppercase; letter-spacing: 1px;">GestNotes Academy</h1>
@@ -1061,24 +1062,19 @@
 
             const p = student.payments[monthIdx];
             const classNameDisplay = classKey.replace('_', ' ');
-            const typeLibelle = p.designation === 'Inscription' ? "Frais d'inscription" : `Mensualité de *${p.designation}*`;
+            const typeLibelle = p.designation === 'Inscription' ? "Frais d'inscription" : `Mensualité de ${p.designation}`;
             
-            const message = `*REÇU DE PAIEMENT ÉLECTRONIQUE* 📄%0A` +
-                            `*GestNotes Academy* 🎓%0A` +
-                            `----------------------------------------%0A` +
-                            `Chers parents, %0A%0A` +
-                            `Nous avons le plaisir de vous confirmer la bonne réception du paiement de scolarité pour votre enfant :%0A%0A` +
+            // Message condensé et optimisé pour WhatsApp
+            const message = `*GestNotes - Reçu de Paiement* 📄%0A%0A` +
+                            `Bonjour, nous confirmons le règlement pour :%0A` +
                             `👤 *Élève :* ${student.firstname} ${student.lastname.toUpperCase()}%0A` +
                             `🏫 *Classe :* ${classNameDisplay}%0A` +
-                            `🧾 *Période :* ${typeLibelle}%0A` +
-                            `💵 *Montant versé :* *${p.montantPaye.toLocaleString()} FCFA*%0A` +
-                            `💳 *Mode de règlement :* ${p.methode}%0A` +
-                            `📅 *Date de transaction :* ${p.dateEncaissement}%0A` +
-                            `----------------------------------------%0A` +
-                            `✅ *Statut :* Paiement validé et enregistré.%0A%0A` +
-                            `Un reçu officiel au format PDF est archivé auprès de notre comptabilité.%0A` +
-                            `Merci pour votre précieuse collaboration et votre confiance envers notre établissement. 🙏%0A%0A` +
-                            `*La Direction, GestNotes.* 💼`;
+                            `🧾 *Frais :* ${typeLibelle}%0A` +
+                            `💵 *Montant :* *${p.montantPaye.toLocaleString()} FCFA*%0A` +
+                            `💳 *Mode :* ${p.methode}%0A` +
+                            `📅 *Date :* ${p.dateEncaissement.split(' ')[0]}%0A%0A` +
+                            `✅ Enregistré avec succès. Merci de votre confiance !%0A` +
+                            `*La Direction* 🎓`;
             
             let purePhone = student.phone.replace(/[\s\+\-]/g, '');
             if (purePhone.length === 9) purePhone = "221" + purePhone;
@@ -1099,18 +1095,23 @@
             openModal('subjects-modal');
         }
 
+        // Structure mobile responsive pour chaque ligne de discipline
         function createSubjectRow(id, name, coef) {
             const container = document.getElementById('subjects-container');
             const row = document.createElement('div');
-            row.className = "flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200 subject-row-item";
+            row.className = "flex flex-col sm:flex-row sm:items-center gap-2 bg-slate-50 p-3 sm:p-2 rounded-xl border border-slate-200 subject-row-item";
             row.dataset.id = id || "sub_" + Date.now() + Math.random().toString(36).substr(2, 5);
             row.innerHTML = `
-                <input type="text" value="${name||''}" placeholder="Ex: Mathématiques" class="text-slate-900 flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none font-medium">
-                <div class="w-28 flex items-center gap-1.5">
-                    <span class="text-xs text-slate-400 font-bold whitespace-nowrap">${getCoefLabel(appState.selectedClass)}</span>
-                    <input type="number" step="any" value="${coef||1}" class="text-slate-900 w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm text-center font-bold outline-none">
+                <input type="text" value="${name||''}" placeholder="Nom de la matière" class="text-slate-900 flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none font-medium w-full">
+                <div class="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                    <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 flex-1 sm:flex-initial">
+                        <span class="text-xs text-slate-400 font-bold whitespace-nowrap">${getCoefLabel(appState.selectedClass)}</span>
+                        <input type="number" step="any" value="${coef||1}" class="text-slate-900 w-12 bg-transparent text-center font-bold outline-none text-sm">
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-all" title="Supprimer la matière">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </div>
-                <button onclick="this.parentElement.remove()" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-all"><i class="fa-solid fa-trash-can"></i></button>
             `;
             container.appendChild(row);
         }
@@ -1133,9 +1134,10 @@
             const rows = document.querySelectorAll('.subject-row-item');
             const arr = [];
             rows.forEach(r => {
-                const inputs = r.querySelectorAll('input');
-                const name = inputs[0].value.trim();
-                const coef = parseFloat(inputs[1].value) || 1;
+                const nameInput = r.querySelector('input[type="text"]');
+                const coefInput = r.querySelector('input[type="number"]');
+                const name = nameInput.value.trim();
+                const coef = parseFloat(coefInput.value) || 1;
                 if (name) {
                     arr.push({ id: r.dataset.id, name, coef });
                 }
@@ -1192,41 +1194,41 @@
             element.style.backgroundColor = '#ffffff';
 
             let headerHtml = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
-                    <div style="font-size: 8px; font-weight: bold; text-transform: uppercase; line-height: 1.3;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2.5px solid #000000; padding-bottom: 10px; margin-bottom: 15px;">
+                    <div style="font-size: 8px; font-weight: bold; text-transform: uppercase; line-height: 1.4; color: #000000;">
                         RÉPUBLIQUE DU SÉNÉGAL<br>
                         Ministère de l'Éducation Nationale<br>
                         Inspection de l'Éducation et de la Formation<br>
                         <span style="color: #4c1d95; font-size: 9px; font-weight: 800;">GESTNOTES ACADEMY</span>
                     </div>
-                    <div style="text-align: right; font-size: 8px; line-height: 1.3;">
+                    <div style="text-align: right; font-size: 8.5px; line-height: 1.4; color: #000000;">
                         <strong>ANNÉE SCOLAIRE :</strong> ${appState.currentYear}<br>
                         <strong>PÉRIODE :</strong> ${periodLabel}<br>
                         <strong>CLASSE :</strong> ${appState.selectedClass} ${appState.selectedSection || 'Général'}
                     </div>
                 </div>
-                <div style="text-align: center; margin-bottom: 15px;">
-                    <h2 style="margin: 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: underline;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: underline; color: #000000;">
                         FEUILLE DE NOTES ET ENREGISTREMENT DES RÉSULTATS
                     </h2>
-                    <p style="margin: 2px 0 0; font-size: 8px; color: #475569;">Effectif de la classe : ${clsData.students.length} élève(s)</p>
+                    <p style="margin: 4px 0 0; font-size: 9px; color: #334155; font-weight: 600;">Effectif de la classe : ${clsData.students.length} élève(s)</p>
                 </div>
             `;
 
             let tableHtml = `
-                <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; border: 1.5px solid #000000; table-layout: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 8px; border: 1.5px solid #000000; table-layout: auto;">
                     <thead>
-                        <tr style="background-color: #f1f5f9;">
-                            <th rowspan="2" style="border: 1px solid #000000; padding: 5px; text-align: left; width: 30px;">N°</th>
-                            <th rowspan="2" style="border: 1px solid #000000; padding: 5px; text-align: left; width: 100px;">Nom</th>
-                            <th rowspan="2" style="border: 1px solid #000000; padding: 5px; text-align: left; width: 120px;">Prénom</th>
+                        <tr style="background-color: #f1f5f9; color: #000000;">
+                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: center; font-weight: bold; width: 35px; color: #000000;">ID</th>
+                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: left; font-weight: bold; width: 90px; color: #000000;">Nom</th>
+                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: left; font-weight: bold; width: 100px; color: #000000;">Prénom</th>
             `;
 
             subjects.forEach(sub => {
                 const hasDev3 = !!subjectDev3Visible[sub.id];
                 const colSpan = hasDev3 ? 4 : 3;
                 tableHtml += `
-                    <th colspan="${colSpan}" style="border: 1px solid #000000; padding: 4px; text-align: center; background-color: #f8fafc; font-weight: 800;">
+                    <th colspan="${colSpan}" style="border: 1.5px solid #000000; padding: 5px; text-align: center; background-color: #f8fafc; font-weight: bold; color: #000000;">
                         ${sub.name}
                     </th>
                 `;
@@ -1240,10 +1242,10 @@
             subjects.forEach(sub => {
                 const hasDev3 = !!subjectDev3Visible[sub.id];
                 tableHtml += `
-                    <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px;">D1</th>
-                    <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px;">D2</th>
-                    ${hasDev3 ? '<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px;">D3</th>' : ''}
-                    <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 800; width: 28px; background-color: #e2e8f0;">CP</th>
+                    <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D1</th>
+                    <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D2</th>
+                    ${hasDev3 ? '<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; color: #000000;">D3</th>' : ''}
+                    <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: bold; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>
                 `;
             });
 
@@ -1256,11 +1258,14 @@
             const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
 
             sorted.forEach((s, idx) => {
+                // Remplacement de l'ID brute par une valeur lisible et unique pour chaque élève
+                const shortId = s.id.replace('student_', '').slice(-5);
+                
                 tableHtml += `
                     <tr style="border-bottom: 1px solid #000000;">
-                        <td style="border: 1px solid #000000; padding: 5px; text-align: center; font-weight: 500;">${idx + 1}</td>
-                        <td style="border: 1px solid #000000; padding: 5px; font-weight: 800; text-transform: uppercase; white-space: nowrap;">${s.lastname}</td>
-                        <td style="border: 1px solid #000000; padding: 5px; white-space: nowrap;">${s.firstname}</td>
+                        <td style="border: 1px solid #000000; padding: 5px; text-align: center; font-family: monospace; font-size: 8px; font-weight: bold; color: #000000;">${shortId}</td>
+                        <td style="border: 1px solid #000000; padding: 5px; font-weight: bold; text-transform: uppercase; white-space: nowrap; color: #000000;">${s.lastname}</td>
+                        <td style="border: 1px solid #000000; padding: 5px; white-space: nowrap; color: #000000;">${s.firstname}</td>
                 `;
 
                 subjects.forEach(sub => {
@@ -1274,10 +1279,10 @@
                     const compoVal = (g.compo !== undefined && g.compo !== "") ? parseFloat(g.compo) : '';
 
                     tableHtml += `
-                        <td style="border: 1px solid #000000; padding: 4px; text-align: center;">${d1Val}</td>
-                        <td style="border: 1px solid #000000; padding: 4px; text-align: center;">${d2Val}</td>
-                        ${hasDev3 ? `<td style="border: 1px solid #000000; padding: 4px; text-align: center;">${d3Val}</td>` : ''}
-                        <td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: 800; background-color: #f1f5f9;">${compoVal}</td>
+                        <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d1Val}</td>
+                        <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d2Val}</td>
+                        ${hasDev3 ? `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000;">${d3Val}</td>` : ''}
+                        <td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: bold; background-color: #f1f5f9; color: #000000;">${compoVal}</td>
                     `;
                 });
 
@@ -1292,12 +1297,12 @@
             `;
 
             let footerHtml = `
-                <div style="margin-top: 25px; display: flex; justify-content: space-between; font-size: 8px; font-weight: bold; padding: 0 10px;">
+                <div style="margin-top: 35px; display: flex; justify-content: space-between; font-size: 8.5px; font-weight: bold; padding: 0 10px; color: #000000;">
                     <div>Date d'édition : ${new Date().toLocaleDateString('fr-FR')}</div>
-                    <div style="text-align: center; width: 180px; border-top: 1px dashed #000; padding-top: 4px;">
+                    <div style="text-align: center; width: 180px; border-top: 1px dashed #000000; padding-top: 5px;">
                         Signature de l'Enseignant
                     </div>
-                    <div style="text-align: center; width: 180px; border-top: 1px dashed #000; padding-top: 4px;">
+                    <div style="text-align: center; width: 180px; border-top: 1px dashed #000000; padding-top: 5px;">
                         Visa du Chef d'Établissement
                     </div>
                 </div>
@@ -1478,7 +1483,7 @@
                     <table class="info-table">
                         <tr>
                             <td><strong>Élève :</strong> ${s.lastname.toUpperCase()} ${s.firstname}</td>
-                            <td style="text-align: right;"><strong>Classe :</strong> ${appState.selectedClass} ${appState.selectedSection}</td>
+                            <td style="text-align: right;"><strong>Classe :</strong> ${appState.selectedClass} ${s.selectedSection || ''}</td>
                         </tr>
                         <tr>
                             <td><strong>Né(e) le :</strong> ${s.dob ? new Date(s.dob).toLocaleDateString('fr-FR') : '-'} à ${s.pob || '-'}</td>
