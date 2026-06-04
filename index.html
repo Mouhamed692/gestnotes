@@ -1,6 +1,4 @@
-
-
-                                                                                                                                                                                        <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -1415,87 +1413,52 @@
             renderSubjectsSelect(clsData.subjects);
             renderGradesGrid();
         }
-function renderStudentsTable(students, subjects) {
-    const tbody = document.getElementById('students-table-body');
-    const empty = document.getElementById('empty-state');
-    tbody.innerHTML = "";
 
-    if (students.length === 0) {
-        empty.classList.remove('hidden');
-        return;
-    }
-    empty.classList.add('hidden');
+        function renderStudentsTable(students, subjects) {
+            const tbody = document.getElementById('students-table-body');
+            const empty = document.getElementById('empty-state');
+            tbody.innerHTML = "";
 
-    const sorted = [...students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
+            if (students.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
 
-    sorted.forEach(s => {
-        const mg = calculerMoyenneGeneraleGlobale(s, subjects);
-        const displayMg = (mg === null) ? 
-            `<span class="text-slate-400 text-xs italic">Pas de note</span>` : 
-            `<span class="font-extrabold text-[#4c1d95]">${mg.toFixed(2)}</span>`;
+            const sorted = [...students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
 
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
-        tr.innerHTML = `
-            <td class="py-3 px-3 sm:px-5">
-                <div class="font-bold text-slate-800 text-sm sm:text-base">${s.lastname.toUpperCase()} ${s.firstname}</div>
-                <div class="text-[10px] sm:text-[11px] text-slate-400">${s.dob ? 'Né(e) le ' + new Date(s.dob).toLocaleDateString('fr-FR') : ''}</div>
-            </td>
-            <td class="py-3 px-2 text-center text-sm">${displayMg}</td>
-            <td class="py-3 px-2 text-right">
-                <div class="flex items-center justify-end gap-1 flex-wrap">
-                    <button onclick="imprimerBulletin('${s.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2 py-1.5 rounded-lg text-[10px] shadow-sm transition-all">
-                        <i class="fa-solid fa-file-pdf sm:mr-1"></i><span class="hidden sm:inline">Bulletin</span>
-                    </button>
-                    
-                    <button onclick="openMensualitesModal('${s.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-2 py-1.5 rounded-lg text-[10px] border border-amber-200">
-                        <i class="fa-solid fa-wallet sm:mr-1"></i><span class="hidden sm:inline">Écolage</span>
-                    </button>
-                    
-                    <button onclick="openEditStudent('${s.id}')" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] px-2 py-1.5 rounded-lg border border-violet-100">
-                        <i class="fa-solid fa-user-pen"></i>
-                    </button>
-                    
-                    <button onclick="supprimerEleve('${s.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-2 py-1.5 rounded-lg border border-rose-100">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-        function imprimerBulletin(studentId) {
-    // 1. Récupérer les données de l'élève
-    const key = getCurrentClassKey();
-    const student = appState.classes[key].students.find(s => s.id === studentId);
-    
-    if (!student) {
-        showToast("Élève introuvable", "error");
-        return;
-    }
+            sorted.forEach(s => {
+                const mg = calculerMoyenneGeneraleGlobale(s, subjects);
+                const displayMg = (mg === null) ? 
+                    `<span class="text-slate-400 text-xs italic">Pas de note</span>` : 
+                    `<span class="font-extrabold text-[#4c1d95]">${mg.toFixed(2)}</span>`;
 
-    // 2. Créer dynamiquement le contenu du bulletin
-    const element = document.createElement('div');
-    element.innerHTML = `
-        <div style="padding: 40px; font-family: sans-serif;">
-            <h1>Bulletin de ${student.firstname} ${student.lastname}</h1>
-            <p>Classe: ${appState.selectedClass}</p>
-            </div>
-    `;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3 px-5">
+                        <div class="font-bold text-slate-800 text-base">${s.lastname.toUpperCase()} ${s.firstname}</div>
+                        <div class="text-[11px] text-slate-400">${s.dob ? 'Né(e) le ' + new Date(s.dob).toLocaleDateString('fr-FR') : ''} ${s.pob ? 'à ' + s.pob : ''}</div>
+                    </td>
+                    <td class="py-3 px-5 text-center text-base">${displayMg}</td>
+                    <td class="py-3 px-5 text-right">
+                        <div class="flex items-center justify-end gap-1">
+                            <button onclick="openMensualitesModal('${s.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-3 py-1.5 rounded-lg text-xs border border-amber-200 transition-all shadow-sm">
+                                <i class="fa-solid fa-wallet mr-1"></i> Écolage
+                            </button>
+                            <button onclick="openEditStudent('${s.id}')" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] p-2 rounded-lg border border-violet-100">
+                                <i class="fa-solid fa-user-pen text-xs"></i>
+                            </button>
+                            <button onclick="supprimerEleve('${s.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-lg border border-rose-100">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
-    // 3. Génération du PDF
-    const opt = {
-        margin: 10,
-        filename: `Bulletin_${student.lastname}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().set(opt).from(element).save();
-}
-       
         function renderSubjectsSelect(subjects) {
             const select = document.getElementById('grade-subject-select');
             const gSection = document.getElementById('grades-section');
