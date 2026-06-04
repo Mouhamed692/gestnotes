@@ -142,7 +142,7 @@
         <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; margin-bottom: 15px;"></i>
         <h2 style="margin: 0 0 10px 0; font-size: 18px;">Données introuvables ou corrompues</h2>
         <p id="error-text" style="margin-bottom: 20px; font-size: 14px;">Veuillez générer ce bulletin depuis l'interface GestNotes.</p>
-        <a href="accueil.html" id="btn-error-return" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Retourner à GestNotes</a>
+        <a href="index.html" id="btn-error-return" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Retourner à GestNotes</a>
    </div>
 
    <div class="bulletin-wrapper no-print" id="setup-panel">
@@ -163,7 +163,7 @@
             </div>
             
             <div class="actions-row">
-                <a id="btn-panel-return" href="accueil.html" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Quitter le bulletin</a>
+                <a id="btn-panel-return" href="index.html" class="btn btn-indigo"><i class="fa-solid fa-arrow-left"></i> Quitter le bulletin</a>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-amber" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> Sauvegarder en PDF</button>
                     <button class="btn btn-emerald" onclick="window.print()"><i class="fa-solid fa-print"></i> Lancer l'impression</button>
@@ -466,8 +466,8 @@
                     div.querySelector('.id-logo-box').innerHTML = `<img src="${savedLogo}" alt="Logo Établissement">`;
                 }
                 
-                div.querySelector('#lbl-firstname').textContent = student.firstName || "-";
-                div.querySelector('#lbl-lastname').textContent = student.lastName || "-";
+                div.querySelector('#lbl-firstname').textContent = student.firstname || "-";
+                div.querySelector('#lbl-lastname').textContent = student.lastname || "-";
                 div.querySelector('#lbl-birth').textContent = `${student.dob ? student.dob.split('-').reverse().join('/') : '-'} à ${student.pob || '-'}`;
                 div.querySelector('#lbl-class').textContent = bridge.classKey.replace('_', ' ');
                 div.querySelector('#lbl-count').textContent = clsData.students.length;
@@ -578,4 +578,3 @@
 </script>
 </body>
 </html>
-"""
