@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -481,7 +482,8 @@
                 div.querySelector('#lbl-semester').textContent = isPrim ? `Trimestre ${bridge.semester}` : `Semestre ${bridge.semester}`;
                 div.querySelector('#lbl-th-coef').textContent = isPrim ? "Max" : "Coef";
                 
-                div.querySelector('#lbl-th-dev-single').textContent = isPrim ? "Moy. Notes" : "Moy. Devoirs";
+                // Modification dynamique de "Moy. Devoirs" en "Moy. Note" pour le niveau primaire
+                div.querySelector('#lbl-th-dev-single').textContent = isPrim ? "Moy. Note" : "Moy. Devoirs";
 
                 const tbody = div.querySelector('#table-grades-rows');
                 const currentPeriodGrades = student.grades ? student.grades[semKey] : null;
