@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -558,6 +557,7 @@
                     let avgNum = parseFloat(stats.avg.replace(',', '.'));
                     let refAvg = isPrim ? (avgNum * 2) : avgNum;
 
+                    // Attribution automatique des mentions (Tableau des Mentions)
                     const decisions = [
                         { id: 'chk-excellent', cond: refAvg >= 19 },
                         { id: 'chk-tresbien', cond: refAvg >= 16 && refAvg < 19 },
@@ -568,6 +568,21 @@
                     ];
 
                     decisions.forEach(item => {
+                        let el = div.querySelector(`#${item.id}`);
+                        if (el) el.textContent = item.cond ? "X" : "";
+                    });
+
+                    // Attribution automatique des décisions du conseil (Décisions du Conseil)
+                    const councils = [
+                        { id: 'chk-felicitations', cond: refAvg >= 15 },
+                        { id: 'chk-encouragement', cond: refAvg >= 13 && refAvg < 15 },
+                        { id: 'chk-tableau-honneur', cond: refAvg >= 12 },
+                        { id: 'chk-conseil-assezbien', cond: refAvg >= 9 && refAvg < 12 },
+                        { id: 'chk-avertissement', cond: refAvg >= 8 && refAvg < 10 },
+                        { id: 'chk-blame', cond: refAvg < 8 }
+                    ];
+
+                    councils.forEach(item => {
                         let el = div.querySelector(`#${item.id}`);
                         if (el) el.textContent = item.cond ? "X" : "";
                     });
