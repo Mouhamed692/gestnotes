@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -546,6 +547,14 @@
 
         function getPeriodLabel(className, periodNum) {
             return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
+        }
+
+        // Renommer Devoir 1 et Devoir 2 en Note 1 et Note 2 si niveau primaire
+        function getDevoirLabel(className, num) {
+            if (isPrimary(className)) {
+                return `Note ${num}`;
+            }
+            return `Devoir ${num}`;
         }
 
         function getCoefLabel(className) {
@@ -1214,12 +1223,12 @@
             `;
 
             let tableHtml = `
-                <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; border: 2.5px solid #000000; table-layout: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; border: 1.5px solid #000000; table-layout: auto;">
                     <thead>
                         <tr style="background-color: #f1f5f9; color: #000000;">
-                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: center; font-weight: 900; width: 45px; color: #000000; font-size: 9px;">ID</th>
-                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 100px; color: #000000; font-size: 9px;">NOM</th>
-                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 110px; color: #000000; font-size: 9px;">PRÉNOM</th>
+                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: center; font-weight: 900; width: 85px; color: #000000; font-size: 9px;">IDENTIFIANT (ID)</th>
+                            <th rowspan="2" style="border: 2px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 100px; color: #000000; font-size: 9px;">NOM</th>
+                            <th rowspan="2" style="border: 2px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 120px; color: #000000; font-size: 9px;">PRÉNOM</th>
             `;
 
             const isPrim = isPrimary(appState.selectedClass);
@@ -1236,7 +1245,7 @@
                 }
 
                 tableHtml += `
-                    <th colspan="${colSpan}" style="border: 1.5px solid #000000; padding: 5px; text-align: center; background-color: #f8fafc; font-weight: 900; color: #000000; font-size: 8.5px;">
+                    <th colspan="${colSpan}" style="border: 1px solid #000000; padding: 5px; text-align: center; background-color: #f8fafc; font-weight: 900; color: #000000; font-size: 8.5px;">
                         ${sub.name}
                     </th>
                 `;
@@ -1252,17 +1261,17 @@
                 const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
 
                 if (isPrim) {
-                    tableHtml += `<th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">N1</th>`;
+                    tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">N1</th>`;
                     if (hasNote2) {
-                        tableHtml += `<th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">N2</th>`;
+                        tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">N2</th>`;
                     }
-                    tableHtml += `<th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>`;
+                    tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>`;
                 } else {
                     tableHtml += `
-                        <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D1</th>
-                        <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D2</th>
-                        ${hasDev3 ? '<th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D3</th>' : ''}
-                        <th style="border: 1.5px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>
+                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D1</th>
+                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D2</th>
+                        ${hasDev3 ? '<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D3</th>' : ''}
+                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>
                     `;
                 }
             });
@@ -1276,11 +1285,9 @@
             const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
 
             sorted.forEach((s, idx) => {
-                const shortId = s.id.replace('student_', '').slice(-5);
-                
                 tableHtml += `
                     <tr style="border-bottom: 1.5px solid #000000;">
-                        <td style="border: 1.5px solid #000000; padding: 5px; text-align: center; font-family: monospace; font-size: 8.5px; font-weight: 900; color: #000000;">${shortId}</td>
+                        <td style="border: 1px solid #000000; padding: 5px; text-align: center; font-family: 'Courier New', Courier, monospace; font-size: 8.5px; font-weight: bold; color: #000000; letter-spacing: 0.5px;">${s.id}</td>
                         <td style="border: 1.5px solid #000000; padding: 5px; font-weight: 900; text-transform: uppercase; white-space: nowrap; color: #000000;">${s.lastname}</td>
                         <td style="border: 1.5px solid #000000; padding: 5px; white-space: nowrap; color: #000000; font-weight: bold;">${s.firstname}</td>
                 `;
@@ -1288,6 +1295,7 @@
                 subjects.forEach(sub => {
                     const periodGrades = s.grades[semKey] || {};
                     const g = periodGrades[sub.id] || {};
+                    const isPrim = isPrimary(appState.selectedClass);
                     const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id];
                     const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
 
@@ -1297,17 +1305,17 @@
                     const compoVal = (g.compo !== undefined && g.compo !== "") ? parseFloat(g.compo) : '';
 
                     if (isPrim) {
-                        tableHtml += `<td style="border: 1.5px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d1Val}</td>`;
+                        tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d1Val}</td>`;
                         if (hasNote2) {
-                            tableHtml += `<td style="border: 1.5px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d2Val}</td>`;
+                            tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d2Val}</td>`;
                         }
-                        tableHtml += `<td style="border: 1.5px solid #000000; padding: 4px; text-align: center; font-weight: 900; background-color: #f1f5f9; color: #000000;">${compoVal}</td>`;
+                        tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: 900; background-color: #f1f5f9; color: #000000;">${compoVal}</td>`;
                     } else {
                         tableHtml += `
-                            <td style="border: 1.5px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d1Val}</td>
-                            <td style="border: 1.5px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d2Val}</td>
-                            ${hasDev3 ? `<td style="border: 1.5px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d3Val}</td>` : ''}
-                            <td style="border: 1.5px solid #000000; padding: 4px; text-align: center; font-weight: 900; background-color: #f1f5f9; color: #000000;">${compoVal}</td>
+                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d1Val}</td>
+                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d2Val}</td>
+                            ${hasDev3 ? `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d3Val}</td>` : ''}
+                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: 900; background-color: #f1f5f9; color: #000000;">${compoVal}</td>
                         `;
                     }
                 });
@@ -1398,20 +1406,51 @@
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
-                    const parts = line.split(',');
+                    
+                    // Gestion intelligente des séparateurs standard (point-virgule, virgule ou tabulation)
+                    let parts = [];
+                    if (line.includes(';')) {
+                        parts = line.split(';');
+                    } else if (line.includes('\t')) {
+                        parts = line.split('\t');
+                    } else {
+                        parts = line.split(',');
+                    }
+                    
                     if (parts.length < 3) continue;
-                    const sId = parts[0];
-                    const student = appState.classes[key].students.find(s => s.id === sId);
+                    
+                    // Suppression des guillemets d'encapsulation (propres à l'OCR ou exports Excel)
+                    const sId = parts[0].replace(/['"]/g, '').trim();
+                    const cleanImportId = sId.replace(/\D/g, ''); // Extraction des chiffres seuls pour l'appariement robuste
+                    
+                    const student = appState.classes[key].students.find(s => {
+                        const cleanStId = s.id.replace(/\D/g, '');
+                        return s.id === sId || (cleanImportId && cleanStId === cleanImportId);
+                    });
+                    
                     if (student) {
                         if (!student.grades) student.grades = {};
                         if (!student.grades[semKey]) student.grades[semKey] = {};
                         if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
                         
                         const targetField = student.grades[semKey][subjectId];
-                        if (parts[3] !== undefined && parts[3] !== "") targetField.dev1 = parseFloat(parts[3]);
-                        if (parts[4] !== undefined && parts[4] !== "") targetField.dev2 = parseFloat(parts[4]);
-                        if (parts[5] !== undefined && parts[5] !== "") targetField.dev3 = parseFloat(parts[5]);
-                        if (parts[6] !== undefined && parts[6] !== "") targetField.compo = parseFloat(parts[6]);
+                        
+                        // Nettoyage et conversion des valeurs textuelles en float
+                        const cleanVal = (val) => {
+                            if (val === undefined) return "";
+                            const cleaned = val.replace(/['"]/g, '').trim();
+                            return cleaned === "" ? "" : parseFloat(cleaned);
+                        };
+
+                        const val1 = cleanVal(parts[3]);
+                        const val2 = cleanVal(parts[4]);
+                        const val3 = cleanVal(parts[5]);
+                        const valcompo = cleanVal(parts[6]);
+
+                        if (val1 !== "") targetField.dev1 = val1;
+                        if (val2 !== "") targetField.dev2 = val2;
+                        if (val3 !== "") targetField.dev3 = val3;
+                        if (valcompo !== "") targetField.compo = valcompo;
                         count++;
                     }
                 }
@@ -1883,5 +1922,3 @@
     </script>
 </body>
 </html>
-
-
