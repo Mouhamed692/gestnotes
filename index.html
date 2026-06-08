@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -5,6 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link class="apple-touch-icon" href="icon-192.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4c1d95">
 
@@ -12,7 +15,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GestNotes">
-    <link class="apple-touch-icon" href="icon-192.png">
     
     <title>GestNotes – Administration scolaire</title>
     
@@ -695,6 +697,41 @@
             return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
         }
 
+        // Configuration pour la recherche / récupération automatique après changement de paramètres cloud (Anti-écrasement)
+        async function pullFromCloudSilentAfterConfig() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('gestnotes_sync')
+                    .select('state')
+                    .eq('id', appState.schoolId)
+                    .single();
+
+                if (!error && data && data.state) {
+                    const savedKeys = {
+                        schoolId: appState.schoolId,
+                        supabaseUrl: appState.supabaseUrl,
+                        supabaseKey: appState.supabaseKey
+                    };
+                    appState = data.state;
+                    appState.schoolId = savedKeys.schoolId;
+                    appState.supabaseUrl = savedKeys.supabaseUrl;
+                    appState.supabaseKey = savedKeys.supabaseKey;
+
+                    await idbKeyval.set("gestnotes_state", appState);
+                    buildEmptyState();
+                    populateFilters();
+                    updateHeaderDisplays();
+                    showToast("Données existantes récupérées avec succès !", "success");
+                } else if (error && error.code === 'PGRST116') {
+                    // Si aucune donnée n'existe en ligne pour ce compte, on synchronise l'état local actuel pour l'initialiser
+                    showToast("Aucune donnée cloud trouvée. Initialisation de votre espace...", "info");
+                    await saveToStorage();
+                }
+            } catch (err) {
+                console.error("Erreur de récupération initiale :", err);
+            }
+        }
+
         function getDevoirLabel(className, num) {
             if (isPrimary(className)) {
                 return `Note ${num}`;
@@ -869,24 +906,99 @@
             }
         }
 
+        // Initialisation automatique et récupération silencieuse au démarrage
         async function initApp() {
+            // 1. Chargement initial rapide depuis la mémoire locale (IndexedDB)
             const savedState = await idbKeyval.get("gestnotes_state");
             appState = savedState || DEFAULT_STATE;
             buildEmptyState();
             populateFilters();
             updateHeaderDisplays();
-            initSupabase(); // Initialisation de Supabase après lecture de l'état
+            
+            // 2. Initialisation du client Supabase
+            initSupabase();
+            
+            // 3. Si Supabase est connecté et configuré, on synchronise au démarrage
+            if (supabaseClient && appState.schoolId && appState.schoolId !== "ecole_default") {
+                try {
+                    // Témoin visuel de chargement cloud (orange clignotant)
+                    const indicator = document.getElementById('sync-status-indicator');
+                    if (indicator) {
+                        indicator.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+                        indicator.title = "Vérification des mises à jour sur le Cloud...";
+                    }
+                    
+                    const { data, error } = await supabaseClient
+                        .from('gestnotes_sync')
+                        .select('state')
+                        .eq('id', appState.schoolId)
+                        .single();
+
+                    if (!error && data && data.state) {
+                        // On préserve vos clés de connexion locales
+                        const savedKeys = {
+                            schoolId: appState.schoolId,
+                            supabaseUrl: appState.supabaseUrl,
+                            supabaseKey: appState.supabaseKey
+                        };
+                        
+                        appState = data.state;
+                        appState.schoolId = savedKeys.schoolId;
+                        appState.supabaseUrl = savedKeys.supabaseUrl;
+                        appState.supabaseKey = savedKeys.supabaseKey;
+
+                        // Mise à jour de la mémoire locale et de l'interface
+                        await idbKeyval.set("gestnotes_state", appState);
+                        buildEmptyState();
+                        populateFilters();
+                        updateHeaderDisplays();
+                        showToast("Données synchronisées depuis le Cloud !", "success");
+                    }
+                    updateSyncStatus(true);
+                } catch (err) {
+                    console.error("Échec de la synchronisation au démarrage :", err);
+                    updateSyncStatus(false);
+                }
+            }
+            
             applyRoleRestrictions();
             render();
         }
 
         window.addEventListener('DOMContentLoaded', initApp);
 
+        // Sauvegarde locale instantanée et synchronisation automatique en tâche de fond vers Supabase
         async function saveToStorage() {
             try {
+                // 1. Sauvegarde locale instantanée
                 await idbKeyval.set("gestnotes_state", appState);
+                
+                // 2. Si connecté au cloud, envoi automatique en tâche de fond
+                if (supabaseClient) {
+                    const indicator = document.getElementById('sync-status-indicator');
+                    if (indicator) {
+                        indicator.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+                        indicator.title = "Synchronisation en cours...";
+                    }
+                    
+                    const targetSchoolId = appState.schoolId || "ecole_default";
+                    const { error } = await supabaseClient
+                        .from('gestnotes_sync')
+                        .upsert({
+                            id: targetSchoolId,
+                            state: appState,
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'id' });
+
+                    if (error) {
+                        console.error("Échec de l'auto-synchronisation :", error);
+                        updateSyncStatus(false);
+                    } else {
+                        updateSyncStatus(true);
+                    }
+                }
             } catch (err) {
-                console.error("Erreur de sauvegarde locale", err);
+                console.error("Erreur de sauvegarde locale :", err);
             }
         }
 
@@ -959,19 +1071,39 @@
             }
         }
 
-        function saveSettings() {
+        // Paramétrage Cloud sécurisé pour éviter l'écrasement intempestif au démarrage sur nouvel appareil
+        async function saveSettings() {
+            const oldSchoolId = appState.schoolId;
+            const oldUrl = appState.supabaseUrl;
+            
             appState.currentYear = document.getElementById('settings-year').value;
             appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
             
-            // Enregistrement de l'enclavement Supabase
-            appState.schoolId = document.getElementById('settings-sb-school-id').value.trim();
-            appState.supabaseUrl = document.getElementById('settings-sb-url').value.trim();
-            appState.supabaseKey = document.getElementById('settings-sb-key').value.trim();
+            const newSchoolId = document.getElementById('settings-sb-school-id').value.trim();
+            const newUrl = document.getElementById('settings-sb-url').value.trim();
+            const newKey = document.getElementById('settings-sb-key').value.trim();
 
-            saveToStorage();
+            const cloudConfigChanged = (newSchoolId !== oldSchoolId || newUrl !== oldUrl);
+            
+            appState.schoolId = newSchoolId;
+            appState.supabaseUrl = newUrl;
+            appState.supabaseKey = newKey;
+
+            // Enregistrement local pur d'abord
+            await idbKeyval.set("gestnotes_state", appState);
+            
             updateHeaderDisplays();
-            initSupabase(); // Relancer la connexion
+            initSupabase(); 
             closeModal('settings-modal');
+            
+            // Sécurité : Si c'est un nouveau compte cloud ou un changement, on rapatrie d'abord les notes existantes
+            if (cloudConfigChanged && supabaseClient && newSchoolId) {
+                showToast("Recherche de données existantes sur le cloud...", "info");
+                await pullFromCloudSilentAfterConfig();
+            } else {
+                await saveToStorage(); // Sauvegarde standard
+            }
+            
             render();
             showToast("Configurations appliquées !", "success");
         }
