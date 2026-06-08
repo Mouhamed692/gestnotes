@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -127,34 +126,26 @@
     <main class="flex-1 overflow-auto p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
         
        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-                <button onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-2.5 px-3 rounded-xl hover:bg-green-700 transition-all shadow-md text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <button onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md text-sm">
                     <i class="fas fa-file-download"></i> <span>Exporter Base</span>
                 </button>
 
                 <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
-                <button onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-3 rounded-xl hover:bg-blue-700 transition-all shadow-md text-xs">
+                <button onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md text-sm">
                     <i class="fas fa-file-upload"></i> <span>Importer Base</span>
                 </button>
                 
-                <button id="btn-add-student-shortcut" onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-3 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-xs">
+                <button id="btn-add-student-shortcut" onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm">
                     <i class="fa-solid fa-user-plus"></i> Inscription / Élève
                 </button>
                 
-                <button onclick="exporterFeuilleSaisie()" class="bg-slate-600 hover:bg-slate-700 text-white py-2.5 px-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md text-xs">
+                <button onclick="exporterFeuilleSaisie()" class="bg-slate-600 hover:bg-slate-700 text-white py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md text-sm">
                     <i class="fa-solid fa-file-pdf"></i> Imprimer Grille PDF
                 </button>
-
-                <button onclick="exporterCanevasCSV()" class="bg-amber-600 hover:bg-amber-700 text-white py-2.5 px-3 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all shadow-md text-xs" title="Modèle pour UNE SEULE matière">
-                    <i class="fa-solid fa-file-csv"></i> <span>Canevas Simple</span>
-                </button>
-
-                <button onclick="exporterCanevasGlobalCSV()" class="bg-orange-600 hover:bg-orange-700 text-white py-2.5 px-3 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all shadow-md text-xs" title="Modèle pour TOUTES les matières en même temps">
-                    <i class="fa-solid fa-table"></i> <span>Canevas Global</span>
-                </button>
                 
-                <button onclick="document.getElementById('importInput').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md text-xs">
-                    <i class="fa-solid fa-file-import"></i> <span>Importer Notes</span>
+                <button onclick="document.getElementById('importInput').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md text-sm">
+                    <i class="fa-solid fa-file-import"></i> Importer Notes
                 </button>
                 <input type="file" id="importInput" class="hidden" accept=".csv" onchange="importerNotesAuto(this)">
             </div>
@@ -1799,126 +1790,9 @@
             openEncaissementModal(unpaidIdx);
         };
 
-        // Génère et télécharge un modèle CSV structuré pour la saisie externe (compatible Excel)
-        window.exporterCanevasCSV = function() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            const subSelect = document.getElementById('grade-subject-select');
-            
-            if (!subSelect || !subSelect.value) {
-                showToast("Veuillez d'abord configurer et sélectionner une discipline active.", "info");
-                return;
-            }
-            const subjectName = subSelect.options[subSelect.selectedIndex].text;
-            
-            if (!clsData || clsData.students.length === 0) {
-                showToast("Aucun élève inscrit dans cette section pour générer un canevas.", "info");
-                return;
-            }
-
-            // Entêtes structurés attendus par l'importateur
-            let csv = "ID;Nom;Prenom;Note_1_ou_Dev_1;Note_2_ou_Dev_2;Dev_3;Composition\n";
-            const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
-            
-            sorted.forEach(s => {
-                const semKey = "p_" + appState.currentSemester;
-                const periodGrades = s.grades[semKey] || {};
-                const g = periodGrades[subSelect.value] || {};
-                
-                const dev1 = g.dev1 !== undefined ? g.dev1 : "";
-                const dev2 = g.dev2 !== undefined ? g.dev2 : "";
-                const dev3 = g.dev3 !== undefined ? g.dev3 : "";
-                const compo = g.compo !== undefined ? g.compo : "";
-                
-                csv += `"${s.id}";"${s.lastname.toUpperCase()}";"${s.firstname}";"${dev1}";"${dev2}";"${dev3}";"${compo}"\n`;
-            });
-            
-            // Signature UTF-8 BOM pour conserver l'affichage des accents sous Excel
-            const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            const subjectClean = subjectName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            link.setAttribute("download", `Canevas_Notes_${appState.selectedClass}_${subjectClean}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast("Canevas CSV téléchargé ! Saisissez vos notes puis réimportez le fichier.", "success");
-        };
-
-        // Génère le Canevas Global (Toutes les matières de la classe côte à côte)
-        window.exporterCanevasGlobalCSV = function() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            if (!clsData || clsData.students.length === 0) {
-                showToast("Aucun élève inscrit dans cette section.", "info");
-                return;
-            }
-            const subjects = clsData.subjects || [];
-            if (subjects.length === 0) {
-                showToast("Aucune discipline configurée pour cette classe.", "info");
-                return;
-            }
-
-            let csv = "ID;Nom;Prenom";
-            const isPrim = isPrimary(appState.selectedClass);
-
-            subjects.forEach(sub => {
-                const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id];
-                const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
-
-                if (isPrim) {
-                    csv += `;"${sub.name} (N1)"`;
-                    if (hasNote2) csv += `;"${sub.name} (N2)"`;
-                    csv += `;"${sub.name} (CP)"`;
-                } else {
-                    csv += `;"${sub.name} (D1)";"${sub.name} (D2)"`;
-                    if (hasDev3) csv += `;"${sub.name} (D3)"`;
-                    csv += `;"${sub.name} (CP)"`;
-                }
-            });
-            csv += "\n";
-
-            const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
-            sorted.forEach(s => {
-                csv += `"${s.id}";"${s.lastname.toUpperCase()}";"${s.firstname}"`;
-                
-                subjects.forEach(sub => {
-                    const semKey = "p_" + appState.currentSemester;
-                    const periodGrades = s.grades[semKey] || {};
-                    const g = periodGrades[sub.id] || {};
-                    const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id];
-                    const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
-
-                    const dev1 = g.dev1 !== undefined ? g.dev1 : "";
-                    const dev2 = g.dev2 !== undefined ? g.dev2 : "";
-                    const dev3 = g.dev3 !== undefined ? g.dev3 : "";
-                    const compo = g.compo !== undefined ? g.compo : "";
-
-                    if (isPrim) {
-                        csv += `;"${dev1}"`;
-                        if (hasNote2) csv += `;"${dev2}"`;
-                        csv += `;"${compo}"`;
-                    } else {
-                        csv += `;"${dev1}";"${dev2}"`;
-                        if (hasDev3) csv += `;"${dev3}"`;
-                        csv += `;"${compo}"`;
-                    }
-                });
-                csv += "\n";
-            });
-
-            const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Canevas_Global_Notes_${appState.selectedClass}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast("Canevas Global CSV téléchargé !", "success");
-        };
-
         // Nettoyage de chaîne pour la tolérance aux accents et casse (Fuzzy Matching)
         function cleanStringForFuzzy(str) {
+            if (!str) return "";
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
         }
 
@@ -1947,7 +1821,10 @@
                 }
 
                 // Détection intelligente du mode global (présence d'indicateurs de type)
-                const isGlobal = headers.some(h => h.includes('(D1)') || h.includes('(N1)') || h.includes('(CP)'));
+                const isGlobal = headers.some(h => {
+                    const cleanH = cleanStringForFuzzy(h);
+                    return cleanH.includes('d1') || cleanH.includes('n1') || cleanH.includes('cp') || cleanH.includes('devoir') || cleanH.includes('note') || cleanH.includes('compo') || cleanH.includes('composition');
+                });
 
                 if (isGlobal) {
                     // --- MODE D'IMPORTATION GLOBALE MULTI-MATIÈRES ---
@@ -1957,26 +1834,34 @@
                     headers.forEach((header, idx) => {
                         if (idx < 3) return; // Ignore ID, Nom, Prenom
                         
-                        // Analyse de la colonne (ex: "Mathématiques (D1)")
-                        const match = header.match(/(.+?)\s*\((D1|D2|D3|N1|N2|CP)\)/i);
-                        if (match) {
-                            const csvSubName = match[1].trim();
-                            const type = match[2].toUpperCase();
-                            
-                            // Association floue avec les matières enregistrées dans GestNotes
-                            const matchedSubject = subjects.find(s => cleanStringForFuzzy(s.name) === cleanStringForFuzzy(csvSubName));
-                            
-                            if (matchedSubject) {
-                                let field = "";
-                                if (type === "D1" || type === "N1") field = "dev1";
-                                else if (type === "D2" || type === "N2") field = "dev2";
-                                else if (type === "D3") field = "dev3";
-                                else if (type === "CP") field = "compo";
+                        const cleanedHeader = cleanStringForFuzzy(header);
+                        let matchedSubject = null;
+                        let matchedField = "";
 
-                                if (field) {
-                                    colMap[idx] = { subjectId: matchedSubject.id, field: field };
-                                }
+                        // 1. Recherche floue de la matière correspondante
+                        for (let sub of subjects) {
+                            const cleanSub = cleanStringForFuzzy(sub.name);
+                            if (cleanedHeader.includes(cleanSub)) {
+                                matchedSubject = sub;
+                                break;
                             }
+                        }
+
+                        // 2. Détection floue du type d'évaluation dans la colonne
+                        if (matchedSubject) {
+                            if (cleanedHeader.includes("d1") || cleanedHeader.includes("n1") || cleanedHeader.includes("devoir1") || cleanedHeader.includes("note1")) {
+                                matchedField = "dev1";
+                            } else if (cleanedHeader.includes("d2") || cleanedHeader.includes("n2") || cleanedHeader.includes("devoir2") || cleanedHeader.includes("note2")) {
+                                matchedField = "dev2";
+                            } else if (cleanedHeader.includes("d3") || cleanedHeader.includes("n3") || cleanedHeader.includes("devoir3") || cleanedHeader.includes("note3")) {
+                                matchedField = "dev3";
+                            } else if (cleanedHeader.includes("cp") || cleanedHeader.includes("compo") || cleanedHeader.includes("composition")) {
+                                matchedField = "compo";
+                            }
+                        }
+
+                        if (matchedSubject && matchedField) {
+                            colMap[idx] = { subjectId: matchedSubject.id, field: matchedField };
                         }
                     });
 
@@ -2000,14 +1885,17 @@
 
                         const sId = parts[0].replace(/['"]/g, '').trim();
                         const cleanImportId = sId.replace(/\D/g, '');
-                        const csvLastName = parts[1] ? parts[1].replace(/['"]/g, '').trim().toLowerCase() : "";
-                        const csvFirstName = parts[2] ? parts[2].replace(/['"]/g, '').trim().toLowerCase() : "";
+                        const csvLastName = parts[1] ? parts[1].replace(/['"]/g, '').trim() : "";
+                        const csvFirstName = parts[2] ? parts[2].replace(/['"]/g, '').trim() : "";
 
                         const student = appState.classes[key].students.find(s => {
                             const cleanStId = s.id.replace(/\D/g, '');
                             const idMatches = s.id === sId || (cleanImportId && cleanStId === cleanImportId);
                             if (idMatches) return true;
-                            return s.lastname.toLowerCase() === csvLastName && s.firstname.toLowerCase() === csvFirstName;
+                            
+                            // Comparaison insensible aux accents, à la casse et aux espaces/tirets superflus
+                            return cleanStringForFuzzy(s.lastname) === cleanStringForFuzzy(csvLastName) && 
+                                   cleanStringForFuzzy(s.firstname) === cleanStringForFuzzy(csvFirstName);
                         });
 
                         if (student) {
@@ -2050,7 +1938,7 @@
                     render();
                     
                     if (skipped > 0) {
-                        showToast(`Import Global : ${count} élèves mis à jour (${skipped} lignes ignorées)`, "info");
+                        showToast(`Import Global : ${count} élèves mis à jour (${skipped} ignorés)`, "info");
                     } else {
                         showToast(`Import Global : ${count} fiches élèves mises à jour pour toutes leurs matières !`, "success");
                     }
@@ -2082,14 +1970,16 @@
                         
                         const sId = parts[0].replace(/['"]/g, '').trim();
                         const cleanImportId = sId.replace(/\D/g, '');
-                        const csvLastName = parts[1] ? parts[1].replace(/['"]/g, '').trim().toLowerCase() : "";
-                        const csvFirstName = parts[2] ? parts[2].replace(/['"]/g, '').trim().toLowerCase() : "";
+                        const csvLastName = parts[1] ? parts[1].replace(/['"]/g, '').trim() : "";
+                        const csvFirstName = parts[2] ? parts[2].replace(/['"]/g, '').trim() : "";
                         
                         const student = appState.classes[key].students.find(s => {
                             const cleanStId = s.id.replace(/\D/g, '');
                             const idMatches = s.id === sId || (cleanImportId && cleanStId === cleanImportId);
                             if (idMatches) return true;
-                            return s.lastname.toLowerCase() === csvLastName && s.firstname.toLowerCase() === csvFirstName;
+                            
+                            return cleanStringForFuzzy(s.lastname) === cleanStringForFuzzy(csvLastName) && 
+                                   cleanStringForFuzzy(s.firstname) === cleanStringForFuzzy(csvFirstName);
                         });
                         
                         if (student) {
@@ -2836,4 +2726,3 @@
     </script>
 </body>
 </html>
-
