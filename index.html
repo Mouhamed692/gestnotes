@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -22,6 +20,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="html2pdf.bundle.min.js"></script>
     <script src="idb-keyval.js"></script>
+    <!-- Chargement du SDK officiel Supabase (Gratuit) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -85,12 +85,26 @@
                 <i class="fa-solid fa-graduation-cap text-2xl text-violet-200"></i>
             </div>
             <div>
-                <h1 class="text-xl font-bold tracking-tight">GestNotes</h1>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-bold tracking-tight">GestNotes</h1>
+                    <!-- Témoin lumineux de synchronisation cloud (Rouge si déconnecté, Vert si connecté) -->
+                    <span id="sync-status-indicator" class="w-2.5 h-2.5 rounded-full bg-rose-500" title="Sauvegarde Cloud déconnectée"></span>
+                </div>
                 <p class="text-xs text-violet-200">Administration & Gestion des Notes</p>
             </div>
         </div>
 
         <div class="flex items-center gap-3 ml-auto sm:ml-0">
+            <!-- Sélecteur de rôle de simulation -->
+            <div class="flex items-center gap-1.5">
+                <label class="hidden md:inline text-xs font-semibold text-violet-200">Rôle :</label>
+                <select id="role-selector" onchange="onRoleChange()" class="bg-violet-950/80 text-white border border-violet-800 rounded-xl text-xs px-2.5 py-2 outline-none font-semibold cursor-pointer hover:bg-violet-900 transition-all">
+                    <option value="admin">👑 Directeur / Admin</option>
+                    <option value="comptable">💼 Comptable</option>
+                    <option value="enseignant">📝 Enseignant</option>
+                </select>
+            </div>
+
             <div class="bg-violet-950/50 rounded-xl p-1 flex border border-violet-800/50 text-xs sm:text-sm">
                 <div class="px-2.5 py-1.5 font-medium text-violet-200 flex items-center gap-1.5">
                     <i class="fa-solid fa-calendar-days text-xs text-violet-400"></i>
@@ -121,7 +135,7 @@
                     <i class="fas fa-file-upload"></i> <span>Importer Base</span>
                 </button>
                 
-                <button onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm">
+                <button id="btn-add-student-shortcut" onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm">
                     <i class="fa-solid fa-user-plus"></i> Inscription / Élève
                 </button>
                 
@@ -157,15 +171,38 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0">
-                <button onclick="openClassFeesModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-amber-100">
+                <button id="btn-wa-reminders" onclick="openWhatsAppRemindersModal()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-emerald-100">
+                    <i class="fa-brands fa-whatsapp text-xs font-bold"></i> Relances WA
+                </button>
+                <button id="btn-class-fees" onclick="openClassFeesModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-amber-100">
                     <i class="fa-solid fa-coins text-xs"></i> Tarifs classe
                 </button>
-                <button onclick="openRegistrationModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+                <button id="btn-add-student" onclick="openRegistrationModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
                     <i class="fa-solid fa-plus text-xs"></i> Ajouter élève
                 </button>
-                <button onclick="openSubjectsModal()" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-violet-100">
+                <button id="btn-manage-subjects" onclick="openSubjectsModal()" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-violet-100">
                     <i class="fa-solid fa-book text-xs"></i> Gérer matières
                 </button>
+            </div>
+        </section>
+
+        <!-- Section Statistiques Financières de Classe -->
+        <section id="class-stats-section" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+                <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Attendu (Classe)</p>
+                <p class="text-xl font-bold text-slate-800 mt-1" id="stats-total-attendu">0 F</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 border-l-4 border-l-emerald-500">
+                <p class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Total Encaissé</p>
+                <p class="text-xl font-bold text-emerald-700 mt-1" id="stats-total-encaisse">0 F</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 border-l-4 border-l-rose-500">
+                <p class="text-[10px] uppercase font-bold text-rose-600 tracking-wider">Reste à Recouvrer</p>
+                <p class="text-xl font-bold text-rose-700 mt-1" id="stats-reste-recouvrer">0 F</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+                <p class="text-[10px] uppercase font-bold text-violet-600 tracking-wider">Taux de Recouvrement</p>
+                <p class="text-xl font-bold text-violet-700 mt-1" id="stats-taux-recouvrement">0%</p>
             </div>
         </section>
 
@@ -293,7 +330,7 @@
                     </div>
                 </div>
                 
-                <div>
+                <div id="reg-amount-container">
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Frais d'inscription de la classe (FCFA)</label>
                     <input type="number" id="reg-amount" readonly class="text-[#4c1d95] font-bold text-lg border border-slate-200 rounded-xl p-3 w-full bg-slate-50 outline-none cursor-not-allowed">
                 </div>
@@ -419,7 +456,7 @@
     </div>
 
     <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 border border-slate-200">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 border border-slate-200 max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2"><i class="fa-solid fa-gear text-[#4c1d95]"></i> Configuration</h3>
             <div class="space-y-4">
                 <div>
@@ -431,9 +468,109 @@
                     <select id="settings-semester" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5"></select>
                 </div>
             </div>
-            <div class="mt-6 flex justify-end gap-2">
+            
+            <!-- Module de Promotion de classe (Transition d'année) -->
+            <div class="border-t pt-4 mt-4">
+                <h4 class="text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider flex items-center gap-1">
+                    <i class="fa-solid fa-angles-up text-amber-600"></i> Transition académique
+                </h4>
+                <p class="text-[10px] text-slate-500 mb-3">Promouvoir les profils de cette classe vers la classe supérieure en réinitialisant les évaluations.</p>
+                <div class="grid grid-cols-1 gap-2">
+                    <select id="rollover-target-class" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
+                    </select>
+                    <button onclick="executeRollover()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-bolt"></i> Exécuter la promotion
+                    </button>
+                </div>
+            </div>
+
+            <!-- Configuration Supabase (Cloud gratuit) -->
+            <div class="border-t pt-4 mt-4">
+                <h4 class="text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider flex items-center gap-1">
+                    <i class="fa-solid fa-cloud text-violet-600"></i> Configuration Supabase (Gratuit)
+                </h4>
+                <p class="text-[10px] text-slate-500 mb-3">Sauvegardez vos données d'administration en ligne pour y accéder depuis n'importe quel appareil.</p>
+                <div class="space-y-2">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Identifiant Unique de l'École</label>
+                        <input type="text" id="settings-sb-school-id" placeholder="Ex: ecole_sainte_marie" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">URL de Projet Supabase</label>
+                        <input type="text" id="settings-sb-url" placeholder="https://xxxxxx.supabase.co" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Clé Publique Anon Supabase</label>
+                        <input type="password" id="settings-sb-key" placeholder="eyJhbGciOi..." class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-2">
+                        <button onclick="syncToCloud()" class="bg-violet-600 hover:bg-violet-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder
+                        </button>
+                        <button onclick="pullFromCloud()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> Restaurer
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeModal('settings-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
                 <button onclick="saveSettings()" class="bg-[#4c1d95] text-white px-4 py-2 rounded-xl text-sm font-semibold">Appliquer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Centre de Relance WhatsApp -->
+    <div id="wa-reminders-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 border border-slate-100 flex flex-col max-h-[85vh]">
+            <div class="border-b pb-4 mb-4">
+                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-emerald-600 text-2xl"></i> Centre de Relance WhatsApp
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">Générez des messages de relance personnalisés et gratuits pour les parents en retard de versement.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Mois / Échéance à cibler</label>
+                    <select id="wa-reminder-month" onchange="renderWhatsAppReminders()" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none font-medium">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Modèle de notification</label>
+                    <select id="wa-template-selector" onchange="onWaTemplateChange()" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none font-medium">
+                        <option value="reminder">Rappel de mensualité impayée</option>
+                        <option value="bulletin">Notification de bulletin disponible</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Message personnalisé (Variables supportées : {eleve}, {classe}, {frais}, {montant}, {periode})</label>
+                <textarea id="wa-reminder-text" rows="3" oninput="renderWhatsAppReminders()" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs outline-none focus:ring-2 focus:ring-violet-500/20 font-medium resize-none"></textarea>
+            </div>
+
+            <div class="flex-1 overflow-y-auto border border-slate-100 rounded-xl mb-4">
+                <table class="w-full text-left text-xs min-w-[550px]">
+                    <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px] tracking-wider sticky top-0">
+                        <tr>
+                            <th class="px-4 py-3">Élève</th>
+                            <th class="px-4 py-3">Échéance</th>
+                            <th class="px-4 py-3 text-right">Reste Dû</th>
+                            <th class="px-4 py-3 text-center">Parent Mobile</th>
+                            <th class="px-4 py-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wa-reminders-list-tbody" class="divide-y divide-slate-100 text-slate-700">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end pt-4 border-t border-slate-100">
+                <button type="button" onclick="closeModal('wa-reminders-modal')" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md">
+                    Fermer
+                </button>
             </div>
         </div>
     </div>
@@ -528,6 +665,7 @@
         
         let subjectDev3Visible = {};
         let appState = null;
+        let supabaseClient = null; // Client global de connexion
         
         let currentStudentIdForFinance = null;
         let currentMonthIdxForFinance = null;
@@ -538,6 +676,14 @@
             currentSemester: 1,
             selectedClass: "6ème",
             selectedSection: "",
+            currentRole: "admin", // Rôle actif par défaut
+            schoolId: "ecole_default",
+            supabaseUrl: "",
+            supabaseKey: "",
+            waTemplates: {
+                reminder: "Bonjour, nous vous rappelons que le paiement de {frais} de {montant} FCFA pour l'élève {eleve} ({classe}) reste attendu pour la période {periode}. Merci de votre confiance ! 🎓",
+                bulletin: "Bonjour, nous vous informons que le bulletin de {eleve} ({classe}) pour la période {periode} est disponible au secrétariat de l'école. Cordialement. 🎓"
+            },
             classes: {}
         };
 
@@ -549,7 +695,6 @@
             return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
         }
 
-        // Renommer Devoir 1 et Devoir 2 en Note 1 et Note 2 si niveau primaire
         function getDevoirLabel(className, num) {
             if (isPrimary(className)) {
                 return `Note ${num}`;
@@ -612,12 +757,126 @@
             });
         }
 
+        // Initialisation de Supabase
+        function initSupabase() {
+            const url = appState.supabaseUrl || "";
+            const key = appState.supabaseKey || "";
+            if (url && key) {
+                try {
+                    // Instanciation de l'objet global Supabase
+                    supabaseClient = supabase.createClient(url, key);
+                    updateSyncStatus(true);
+                } catch (err) {
+                    console.error("Erreur de connexion Supabase :", err);
+                    updateSyncStatus(false);
+                }
+            } else {
+                updateSyncStatus(false);
+            }
+        }
+
+        function updateSyncStatus(connected) {
+            const indicator = document.getElementById('sync-status-indicator');
+            if (indicator) {
+                if (connected) {
+                    indicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                    indicator.title = "Connecté au Cloud Supabase (Sauvegardes disponibles)";
+                } else {
+                    indicator.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+                    indicator.title = "Cloud Supabase déconnecté ou non configuré";
+                }
+            }
+        }
+
+        // Sauvegarder l'état actuel sur Supabase (Gratuit)
+        async function syncToCloud() {
+            if (!supabaseClient) {
+                showToast("Configuration Supabase manquante dans les paramètres.", "info");
+                return;
+            }
+            try {
+                showToast("Synchronisation Cloud en cours...", "info");
+                const targetSchoolId = appState.schoolId || "ecole_default";
+
+                const { error } = await supabaseClient
+                    .from('gestnotes_sync')
+                    .upsert({
+                        id: targetSchoolId,
+                        state: appState,
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'id' });
+
+                if (error) throw error;
+                showToast("Base de données synchronisée sur le Cloud !", "success");
+            } catch (err) {
+                console.error("Échec de synchronisation cloud", err);
+                showToast("Échec de synchronisation : " + err.message, "info");
+            }
+        }
+
+        // Récupérer et écraser l'état local depuis Supabase
+        async function pullFromCloud() {
+            if (!supabaseClient) {
+                showToast("Configuration Supabase manquante dans les paramètres.", "info");
+                return;
+            }
+            if (!confirm("Attention : Charger la sauvegarde en ligne écrasera l'historique non synchronisé de cet appareil. Continuer ?")) {
+                return;
+            }
+            try {
+                showToast("Chargement de la base depuis le Cloud...", "info");
+                const targetSchoolId = appState.schoolId || "ecole_default";
+
+                const { data, error } = await supabaseClient
+                    .from('gestnotes_sync')
+                    .select('state')
+                    .eq('id', targetSchoolId)
+                    .single();
+
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        showToast("Aucune sauvegarde trouvée en ligne pour cet ID d'école.", "info");
+                    } else {
+                        throw error;
+                    }
+                    return;
+                }
+
+                if (data && data.state) {
+                    // Préserver les clés de connexion pour éviter la déconnexion locale
+                    const savedKeys = {
+                        schoolId: appState.schoolId,
+                        supabaseUrl: appState.supabaseUrl,
+                        supabaseKey: appState.supabaseKey
+                    };
+                    
+                    appState = data.state;
+                    appState.schoolId = savedKeys.schoolId;
+                    appState.supabaseUrl = savedKeys.supabaseUrl;
+                    appState.supabaseKey = savedKeys.supabaseKey;
+
+                    await saveToStorage();
+                    buildEmptyState();
+                    populateFilters();
+                    updateHeaderDisplays();
+                    applyRoleRestrictions();
+                    render();
+                    showToast("Base de données restaurée avec succès !", "success");
+                }
+            } catch (err) {
+                console.error("Échec du chargement cloud", err);
+                showToast("Erreur de récupération : " + err.message, "info");
+            }
+        }
+
         async function initApp() {
             const savedState = await idbKeyval.get("gestnotes_state");
             appState = savedState || DEFAULT_STATE;
             buildEmptyState();
             populateFilters();
             updateHeaderDisplays();
+            initSupabase(); // Initialisation de Supabase après lecture de l'état
+            applyRoleRestrictions();
             render();
         }
 
@@ -670,6 +929,12 @@
             if (id === 'settings-modal') {
                 document.getElementById('settings-year').value = appState.currentYear;
                 updateSettingsPeriodSelect();
+                populateRolloverSelector();
+                
+                // Préremplir la configuration Supabase
+                document.getElementById('settings-sb-school-id').value = appState.schoolId || "ecole_default";
+                document.getElementById('settings-sb-url').value = appState.supabaseUrl || "";
+                document.getElementById('settings-sb-key').value = appState.supabaseKey || "";
             }
         }
 
@@ -697,8 +962,15 @@
         function saveSettings() {
             appState.currentYear = document.getElementById('settings-year').value;
             appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
+            
+            // Enregistrement de l'enclavement Supabase
+            appState.schoolId = document.getElementById('settings-sb-school-id').value.trim();
+            appState.supabaseUrl = document.getElementById('settings-sb-url').value.trim();
+            appState.supabaseKey = document.getElementById('settings-sb-key').value.trim();
+
             saveToStorage();
             updateHeaderDisplays();
+            initSupabase(); // Relancer la connexion
             closeModal('settings-modal');
             render();
             showToast("Configurations appliquées !", "success");
@@ -1069,14 +1341,14 @@
 
             const p = student.payments[monthIdx];
             const classNameDisplay = classKey.replace('_', ' ');
-            const typeLibelle = p.designation === 'Inscription' ? "Frais d'inscription" : `Mensualité de ${p.designation}`;
+            const typeFrais = p.designation === 'Inscription' ? "Frais d'inscription" : `Mensualité de ${p.designation}`;
             
             // Message condensé et optimisé pour WhatsApp
             const message = `*GestNotes - Reçu de Paiement* 📄%0A%0A` +
                             `Bonjour, nous confirmons le règlement pour :%0A` +
                             `👤 *Élève :* ${student.firstname} ${student.lastname.toUpperCase()}%0A` +
                             `🏫 *Classe :* ${classNameDisplay}%0A` +
-                            `🧾 *Frais :* ${typeLibelle}%0A` +
+                            `🧾 *Frais :* ${typeFrais}%0A` +
                             `💵 *Montant :* *${p.montantPaye.toLocaleString()} FCFA*%0A` +
                             `💳 *Mode :* ${p.methode}%0A` +
                             `📅 *Date :* ${p.dateEncaissement.split(' ')[0]}%0A%0A` +
@@ -1102,7 +1374,6 @@
             openModal('subjects-modal');
         }
 
-        // Structure mobile responsive pour chaque ligne de discipline
         function createSubjectRow(id, name, coef) {
             const container = document.getElementById('subjects-container');
             const row = document.createElement('div');
@@ -1407,7 +1678,6 @@
                     const line = lines[i].trim();
                     if (!line) continue;
                     
-                    // Gestion intelligente des séparateurs standard (point-virgule, virgule ou tabulation)
                     let parts = [];
                     if (line.includes(';')) {
                         parts = line.split(';');
@@ -1419,9 +1689,8 @@
                     
                     if (parts.length < 3) continue;
                     
-                    // Suppression des guillemets d'encapsulation (propres à l'OCR ou exports Excel)
                     const sId = parts[0].replace(/['"]/g, '').trim();
-                    const cleanImportId = sId.replace(/\D/g, ''); // Extraction des chiffres seuls pour l'appariement robuste
+                    const cleanImportId = sId.replace(/\D/g, '');
                     
                     const student = appState.classes[key].students.find(s => {
                         const cleanStId = s.id.replace(/\D/g, '');
@@ -1435,7 +1704,6 @@
                         
                         const targetField = student.grades[semKey][subjectId];
                         
-                        // Nettoyage et conversion des valeurs textuelles en float
                         const cleanVal = (val) => {
                             if (val === undefined) return "";
                             const cleaned = val.replace(/['"]/g, '').trim();
@@ -1633,10 +1901,8 @@
             if (!isNaN(d1)) { sumDev += d1; countDev++; hasDev = true; }
             
             if (isPrim) {
-                // Primaire : Note 1 et Note 2
                 if (!isNaN(d2)) { sumDev += d2; countDev++; hasDev = true; }
             } else {
-                // Secondaire : Devoir 1, Devoir 2 et Devoir 3 (si actif)
                 if (!isNaN(d2)) { sumDev += d2; countDev++; hasDev = true; }
                 if (subjectDev3Visible[subjectId] && !isNaN(d3)) { sumDev += d3; countDev++; hasDev = true; }
             }
@@ -1672,6 +1938,227 @@
             return totalPoints / totalCoefs;
         }
 
+        function calculateClassStats() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            if (!clsData) return;
+
+            const students = clsData.students || [];
+            const fees = clsData.fees || { inscription: 0, mensualite: 0 };
+            
+            let totalExpected = 0;
+            let totalCollected = 0;
+
+            students.forEach(s => {
+                const insExpected = fees.inscription || 0;
+                const monthlyExpected = (fees.mensualite || 0) * 9;
+                totalExpected += (insExpected + monthlyExpected);
+
+                if (s.payments) {
+                    s.payments.forEach(p => {
+                        totalCollected += (p.montantPaye || 0);
+                    });
+                }
+            });
+
+            const totalRemaining = totalExpected - totalCollected;
+            const recoveryRate = totalExpected > 0 ? ((totalCollected / totalExpected) * 100).toFixed(1) : 0;
+
+            document.getElementById('stats-total-attendu').innerText = totalExpected.toLocaleString() + " F";
+            document.getElementById('stats-total-encaisse').innerText = totalCollected.toLocaleString() + " F";
+            document.getElementById('stats-reste-recouvrer').innerText = totalRemaining.toLocaleString() + " F";
+            document.getElementById('stats-taux-recouvrement').innerText = recoveryRate + "%";
+        }
+
+        function onRoleChange() {
+            const role = document.getElementById('role-selector').value;
+            appState.currentRole = role;
+            saveToStorage();
+            applyRoleRestrictions();
+        }
+
+        function applyRoleRestrictions() {
+            const role = appState.currentRole || "admin";
+            document.getElementById('role-selector').value = role;
+
+            const classFeesBtn = document.getElementById('btn-class-fees');
+            const subjectsBtn = document.getElementById('btn-manage-subjects');
+            const waRemindersBtn = document.getElementById('btn-wa-reminders');
+            const gradesSec = document.getElementById('grades-section');
+            const addStudentBtn = document.getElementById('btn-add-student');
+            const addStudentBtnShortcut = document.getElementById('btn-add-student-shortcut');
+            const statsSection = document.getElementById('class-stats-section');
+            const regAmountContainer = document.getElementById('reg-amount-container');
+
+            if (classFeesBtn) classFeesBtn.style.display = '';
+            if (subjectsBtn) subjectsBtn.style.display = '';
+            if (waRemindersBtn) waRemindersBtn.style.display = '';
+            if (gradesSec) gradesSec.style.display = '';
+            if (addStudentBtn) addStudentBtn.style.display = '';
+            if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = '';
+            if (statsSection) statsSection.style.display = 'grid';
+            if (regAmountContainer) regAmountContainer.style.display = '';
+
+            if (role === 'enseignant') {
+                if (classFeesBtn) classFeesBtn.style.display = 'none';
+                if (waRemindersBtn) waRemindersBtn.style.display = 'none';
+                if (addStudentBtn) addStudentBtn.style.display = 'none';
+                if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = 'none';
+                if (statsSection) statsSection.style.display = 'none';
+                if (regAmountContainer) regAmountContainer.style.display = 'none';
+            } else if (role === 'comptable') {
+                if (subjectsBtn) subjectsBtn.style.display = 'none';
+                if (gradesSec) gradesSec.style.display = 'none';
+            }
+
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key] || { subjects: [], students: [] };
+            renderStudentsTable(clsData.students, clsData.subjects);
+        }
+
+        function openWhatsAppRemindersModal() {
+            const monthSelect = document.getElementById('wa-reminder-month');
+            monthSelect.innerHTML = moisAnnee.map((m, idx) => `<option value="${idx}">${m}</option>`).join('');
+            
+            if (!appState.waTemplates) {
+                appState.waTemplates = {
+                    reminder: "Bonjour, nous vous rappelons que le paiement de {frais} de {montant} FCFA pour l'élève {eleve} ({classe}) reste attendu pour la période {periode}. Merci de votre confiance ! 🎓",
+                    bulletin: "Bonjour, nous vous informons que le bulletin de {eleve} ({classe}) pour la période {periode} est disponible au secrétariat de l'école. Cordialement. 🎓"
+                };
+            }
+            
+            document.getElementById('wa-template-selector').value = "reminder";
+            onWaTemplateChange();
+            openModal('wa-reminders-modal');
+        }
+
+        function onWaTemplateChange() {
+            const tKey = document.getElementById('wa-template-selector').value;
+            document.getElementById('wa-reminder-text').value = appState.waTemplates[tKey] || "";
+            renderWhatsAppReminders();
+        }
+
+        function renderWhatsAppReminders() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            const monthIdx = parseInt(document.getElementById('wa-reminder-month').value);
+            const templateText = document.getElementById('wa-reminder-text').value;
+            const tbody = document.getElementById('wa-reminders-list-tbody');
+            tbody.innerHTML = "";
+
+            if (!clsData || clsData.students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">Aucun élève trouvé</td></tr>`;
+                return;
+            }
+
+            let count = 0;
+            clsData.students.forEach(s => {
+                const p = s.payments ? s.payments[monthIdx] : null;
+                if (p && p.statut === "Non payé" && p.montantDu > 0) {
+                    count++;
+                    const typeFrais = monthIdx === 0 ? "Frais d'inscription" : `Mensualité de ${p.designation}`;
+                    
+                    let personalizedMsg = templateText
+                        .replace(/{eleve}/g, `${s.firstname} ${s.lastname.toUpperCase()}`)
+                        .replace(/{classe}/g, `${appState.selectedClass} ${appState.selectedSection||''}`.trim())
+                        .replace(/{frais}/g, typeFrais)
+                        .replace(/{montant}/g, p.montantDu.toLocaleString())
+                        .replace(/{periode}/g, p.designation);
+
+                    const encodedMsg = encodeURIComponent(personalizedMsg);
+                    let phoneNum = s.phone || "";
+                    let purePhone = phoneNum.replace(/[\s\+\-]/g, '');
+                    if (purePhone.length === 9) purePhone = "221" + purePhone;
+
+                    const waUrl = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodedMsg}`;
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 font-bold text-slate-800">${s.lastname.toUpperCase()} ${s.firstname}</td>
+                        <td class="px-4 py-3 text-slate-500 font-medium">${p.designation === 'Inscription' ? 'Inscription' : 'Mois de ' + p.designation}</td>
+                        <td class="px-4 py-3 text-right font-extrabold text-rose-600">${p.montantDu.toLocaleString()} F</td>
+                        <td class="px-4 py-3 text-center text-slate-500 font-semibold">${phoneNum || 'Non renseigné'}</td>
+                        <td class="px-4 py-3 text-center">
+                            <a href="${phoneNum ? waUrl : '#'}" target="${phoneNum ? '_blank' : ''}" onclick="${!phoneNum ? 'alert(\'Aucun numéro parent renseigné pour cet élève.\'); return false;' : ''}" class="inline-flex items-center justify-center p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors" title="Envoyer le rappel WhatsApp">
+                                <i class="fa-brands fa-whatsapp font-bold text-sm"></i>
+                            </a>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (count === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">Tout le monde est à jour pour cette période 🎉</td></tr>`;
+            }
+        }
+
+        function populateRolloverSelector() {
+            const select = document.getElementById('rollover-target-class');
+            select.innerHTML = `<option value="">-- Vers la classe --</option>` + 
+                classNames.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        function executeRollover() {
+            const targetClass = document.getElementById('rollover-target-class').value;
+            if (!targetClass) {
+                alert("Veuillez choisir une classe de destination.");
+                return;
+            }
+
+            const currentKey = getCurrentClassKey();
+            const currentStudents = appState.classes[currentKey].students || [];
+            if (currentStudents.length === 0) {
+                alert("Aucun élève dans la classe actuelle à promouvoir.");
+                return;
+            }
+
+            if (!confirm(`Confirmer la promotion de ${currentStudents.length} élève(s) de ${appState.selectedClass} vers ${targetClass} ? Les notes seront archivées (remises à blanc) et les frais réinitialisés pour la nouvelle classe.`)) {
+                return;
+            }
+
+            const targetKey = `${targetClass}_`;
+            const targetClsObj = appState.classes[targetKey];
+            const targetFees = (targetClsObj && targetClsObj.fees) ? targetClsObj.fees : { inscription: 0, mensualite: 0 };
+
+            let count = 0;
+            currentStudents.forEach(s => {
+                const newPayments = moisAnnee.map((m, idx) => ({
+                    designation: m,
+                    statut: "Non payé",
+                    montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
+                    montantPaye: 0,
+                    methode: "",
+                    dateEncaissement: ""
+                }));
+
+                const promotedStudent = {
+                    id: "student_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+                    firstname: s.firstname,
+                    lastname: s.lastname,
+                    dob: s.dob || "",
+                    pob: s.pob || "",
+                    phone: s.phone || "",
+                    grades: {},
+                    payments: newPayments
+                };
+
+                appState.classes[targetKey].students.push(promotedStudent);
+                count++;
+            });
+
+            saveToStorage();
+            closeModal('settings-modal');
+            showToast(`${count} élève(s) promu(s) en ${targetClass} !`, "success");
+            
+            appState.selectedClass = targetClass;
+            appState.selectedSection = "";
+            populateFilters();
+            updateHeaderDisplays();
+            render();
+        }
+
         function render() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key] || { subjects: [], students: [] };
@@ -1685,6 +2172,7 @@
             renderStudentsTable(clsData.students, clsData.subjects);
             renderSubjectsSelect(clsData.subjects);
             renderGradesGrid();
+            calculateClassStats();
         }
 
         function renderStudentsTable(students, subjects) {
@@ -1699,6 +2187,7 @@
             empty.classList.add('hidden');
 
             const sorted = [...students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
+            const role = appState.currentRole || "admin";
 
             sorted.forEach(s => {
                 const mg = calculerMoyenneGeneraleGlobale(s, subjects);
@@ -1706,6 +2195,9 @@
                 const displayMg = (mg === null) ? 
                     `<span class="text-slate-400 text-xs italic">Pas de note</span>` : 
                     `<span class="font-extrabold text-[#4c1d95]">${mg.toFixed(2)}</span> <span class="text-[10px] text-slate-400">/${isPrimaryClass ? '10' : '20'}</span>`;
+
+                const showFinances = role !== 'enseignant';
+                const showEdits = role !== 'comptable';
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
@@ -1720,16 +2212,18 @@
                             <button onclick="ouvrirBulletin('${s.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-[#4c1d95] font-bold px-2.5 py-1.5 rounded-lg text-xs border border-indigo-200 transition-all shadow-sm flex items-center gap-1" title="Imprimer le bulletin">
                                 <i class="fa-solid fa-file-invoice"></i> <span class="hidden sm:inline">Bulletin</span>
                             </button>
-                            <button onclick="ouvrirEncaissementDirect('${s.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1.5 rounded-lg text-xs border border-emerald-200 transition-all shadow-sm flex items-center gap-1" title="Encaisser paiement direct">
+                            
+                            <button onclick="ouvrirEncaissementDirect('${s.id}')" style="display: ${showFinances ? '' : 'none'}" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1.5 rounded-lg text-xs border border-emerald-200 transition-all shadow-sm flex items-center gap-1" title="Encaisser paiement direct">
                                 <i class="fa-solid fa-cash-register"></i> <span class="hidden sm:inline">Encaisser</span>
                             </button>
-                            <button onclick="openMensualitesModal('${s.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-2.5 py-1.5 rounded-lg text-xs border border-amber-200 transition-all shadow-sm flex items-center gap-1" title="Frais de scolarité / écolage">
+                            <button onclick="openMensualitesModal('${s.id}')" style="display: ${showFinances ? '' : 'none'}" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-2.5 py-1.5 rounded-lg text-xs border border-amber-200 transition-all shadow-sm flex items-center gap-1" title="Frais de scolarité / écolage">
                                 <i class="fa-solid fa-wallet"></i> <span class="hidden sm:inline">Écolage</span>
                             </button>
-                            <button onclick="openEditStudent('${s.id}')" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] p-2 rounded-lg border border-violet-100 flex items-center justify-center transition-colors" title="Modifier la fiche élève">
+                            
+                            <button onclick="openEditStudent('${s.id}')" style="display: ${showEdits ? '' : 'none'}" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] p-2 rounded-lg border border-violet-100 flex items-center justify-center transition-colors" title="Modifier la fiche élève">
                                 <i class="fa-solid fa-user-pen text-xs"></i>
                             </button>
-                            <button onclick="supprimerEleve('${s.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-lg border border-rose-100 flex items-center justify-center transition-colors" title="Supprimer l'élève">
+                            <button onclick="supprimerEleve('${s.id}')" style="display: ${showEdits ? '' : 'none'}" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-lg border border-rose-100 flex items-center justify-center transition-colors" title="Supprimer l'élève">
                                 <i class="fa-solid fa-trash-can text-xs"></i>
                             </button>
                         </div>
@@ -1742,8 +2236,9 @@
         function renderSubjectsSelect(subjects) {
             const select = document.getElementById('grade-subject-select');
             const gSection = document.getElementById('grades-section');
+            const role = appState.currentRole || "admin";
             
-            if (subjects.length === 0) {
+            if (subjects.length === 0 || role === 'comptable') {
                 gSection.classList.add('hidden');
                 select.innerHTML = "";
                 return;
@@ -1776,36 +2271,29 @@
             const thDev2 = document.getElementById('lbl-th-dev2');
             const thDev3 = document.getElementById('lbl-th-dev3');
 
-            // Réinitialisation des classes et gestionnaires d'événements pour éviter les doublons
             thDev1.className = "p-3 text-center";
             thDev1.onclick = null;
             thDev2.className = "p-3 text-center";
             thDev2.onclick = null;
 
             if (isPrim) {
-                // Primaire : "Note 1" remplace "Devoir 1" avec le bouton (+)
                 thDev1.className = "p-3 text-center group cursor-pointer hover:bg-slate-200 select-none";
                 thDev1.innerHTML = `Note 1 <i class="fa-solid ${isVisiblePlus ? 'fa-circle-minus' : 'fa-circle-plus'} ml-1 text-violet-500"></i>`;
                 thDev1.onclick = toggleDev3;
 
-                // "Note 2" remplace "Devoir 2" et est affiché/masqué dynamiquement
                 thDev2.innerText = "Note 2";
                 thDev2.style.display = isVisiblePlus ? '' : 'none';
 
-                // Pas de Devoir 3 en primaire
                 thDev3.style.display = 'none';
             } else {
-                // Secondaire : Devoir 1 est standard
                 thDev1.innerText = "Devoir 1";
                 thDev1.style.display = '';
 
-                // Devoir 2 comporte le bouton (+) pour le Devoir 3
                 thDev2.className = "p-3 text-center group cursor-pointer hover:bg-slate-200 select-none";
                 thDev2.innerHTML = `Devoir 2 <i class="fa-solid ${isVisiblePlus ? 'fa-circle-minus' : 'fa-circle-plus'} ml-1 text-violet-500"></i>`;
                 thDev2.onclick = toggleDev3;
                 thDev2.style.display = '';
 
-                // Devoir 3 est affiché/masqué dynamiquement
                 thDev3.innerText = "Devoir 3";
                 thDev3.style.display = isVisiblePlus ? '' : 'none';
             }
@@ -1898,6 +2386,7 @@
                         await saveToStorage();
                         populateFilters();
                         updateHeaderDisplays();
+                        applyRoleRestrictions();
                         render();
                         showToast("Données importées !", "success");
                     } else {
