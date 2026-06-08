@@ -1,4 +1,9 @@
+Voici votre code HTML complet, mis à jour avec le système de rôle local sécurisé
+par mot de passe.
 
+Désormais, le rôle de chaque appareil est mémorisé de façon indépendante, et le
+passage aux rôles Directeur / Admin et Comptable requiert la saisie d'un code
+secret (défini sur 1234 dans ce code).
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -828,7 +833,7 @@
         // Sauvegarder l'état actuel sur Supabase (Gratuit)
         async function syncToCloud() {
             if (!supabaseClient) {
-                showToast("Configuration Supabase manquante dans les paramètres.", "info");
+                showToast("Configuration Supabase avant de continuer.", "info");
                 return;
             }
             try {
@@ -2103,14 +2108,27 @@
         }
 
         function onRoleChange() {
-            const role = document.getElementById('role-selector').value;
-            appState.currentRole = role;
-            saveToStorage();
+            const select = document.getElementById('role-selector');
+            const targetRole = select.value;
+            const currentLocalRole = localStorage.getItem("gestnotes_local_role") || "enseignant";
+
+            // Protection par mot de passe pour passer Directeur/Admin ou Comptable
+            if (targetRole === 'admin' || targetRole === 'comptable') {
+                const password = prompt("Saisissez le code d'accès pour activer ce rôle :");
+                if (password !== "1234") { // Vous pouvez remplacer "1234" par le mot de passe de votre choix
+                    alert("Code d'accès incorrect ! Accès refusé.");
+                    select.value = currentLocalRole; // Annule le changement de rôle et remet le précédent
+                    return;
+                }
+            }
+
+            localStorage.setItem("gestnotes_local_role", targetRole);
             applyRoleRestrictions();
         }
 
         function applyRoleRestrictions() {
-            const role = appState.currentRole || "admin";
+            // Lecture du rôle mémorisé localement sur cet appareil (par défaut "enseignant")
+            const role = localStorage.getItem("gestnotes_local_role") || "enseignant";
             document.getElementById('role-selector').value = role;
 
             const classFeesBtn = document.getElementById('btn-class-fees');
@@ -2319,7 +2337,9 @@
             empty.classList.add('hidden');
 
             const sorted = [...students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
-            const role = appState.currentRole || "admin";
+            
+            // Lecture du rôle local
+            const role = localStorage.getItem("gestnotes_local_role") || "enseignant";
 
             sorted.forEach(s => {
                 const mg = calculerMoyenneGeneraleGlobale(s, subjects);
@@ -2368,7 +2388,9 @@
         function renderSubjectsSelect(subjects) {
             const select = document.getElementById('grade-subject-select');
             const gSection = document.getElementById('grades-section');
-            const role = appState.currentRole || "admin";
+            
+            // Lecture du rôle local
+            const role = localStorage.getItem("gestnotes_local_role") || "enseignant";
             
             if (subjects.length === 0 || role === 'comptable') {
                 gSection.classList.add('hidden');
