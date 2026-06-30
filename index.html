@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -97,13 +96,16 @@
 
         <div class="flex items-center gap-3 ml-auto sm:ml-0">
             <!-- Sélecteur de rôle de simulation -->
-            <div class="flex items-center gap-1.5">
-                <label class="hidden md:inline text-xs font-semibold text-violet-200">Rôle :</label>
-                <select id="role-selector" onchange="onRoleChange()" class="bg-violet-950/80 text-white border border-violet-800 rounded-xl text-xs px-2.5 py-2 outline-none font-semibold cursor-pointer hover:bg-violet-900 transition-all">
-                    <option value="admin">👑 Directeur / Admin</option>
-                    <option value="comptable">💼 Comptable</option>
-                    <option value="enseignant">📝 Enseignant</option>
-                </select>
+            <div class="flex flex-col items-end gap-1">
+                <div class="flex items-center gap-1.5">
+                    <label class="hidden md:inline text-xs font-semibold text-violet-200">Rôle :</label>
+                    <select id="role-selector" onchange="onRoleChange()" class="bg-violet-950/80 text-white border border-violet-800 rounded-xl text-xs px-2.5 py-2 outline-none font-semibold cursor-pointer hover:bg-violet-900 transition-all">
+                        <option value="admin">👑 Directeur / Admin</option>
+                        <option value="comptable">💼 Comptable</option>
+                        <option value="enseignant">📝 Enseignant</option>
+                    </select>
+                </div>
+                <span id="active-teacher-indicator" class="text-[10px] text-violet-200 font-semibold hidden bg-violet-900/60 px-2 py-0.5 rounded-md"></span>
             </div>
 
             <div class="bg-violet-950/50 rounded-xl p-1 flex border border-violet-800/50 text-xs sm:text-sm">
@@ -765,19 +767,19 @@
         function getDefaultSubjects(className) {
             if (isPrimary(className)) {
                 return [
-                    { id: "sub_lang", name: "Langue & Communication", coef: 10 },
-                    { id: "sub_math", name: "Mathématiques", coef: 10 },
-                    { id: "sub_es", name: "Éducation Science & Sociale", coef: 10 },
-                    { id: "sub_ed", name: "Éducation Développement", coef: 10 }
+                    { id: "sub_lang", name: "Langue & Communication", coef: 10, teacherName: "", accessCode: "" },
+                    { id: "sub_math", name: "Mathématiques", coef: 10, teacherName: "", accessCode: "" },
+                    { id: "sub_es", name: "Éducation Science & Sociale", coef: 10, teacherName: "", accessCode: "" },
+                    { id: "sub_ed", name: "Éducation Développement", coef: 10, teacherName: "", accessCode: "" }
                 ];
             }
             return [
-                { id: "sub_math", name: "Mathématiques", coef: 4 },
-                { id: "sub_pc", name: "Physique-Chimie", coef: 3 },
-                { id: "sub_svt", name: "SVT", coef: 2 },
-                { id: "sub_fr", name: "Français", coef: 4 },
-                { id: "sub_hg", name: "Histoire-Géographie", coef: 2 },
-                { id: "sub_ang", name: "Anglais", coef: 2 }
+                { id: "sub_math", name: "Mathématiques", coef: 4, teacherName: "", accessCode: "" },
+                { id: "sub_pc", name: "Physique-Chimie", coef: 3, teacherName: "", accessCode: "" },
+                { id: "sub_svt", name: "SVT", coef: 2, teacherName: "", accessCode: "" },
+                { id: "sub_fr", name: "Français", coef: 4, teacherName: "", accessCode: "" },
+                { id: "sub_hg", name: "Histoire-Géographie", coef: 2, teacherName: "", accessCode: "" },
+                { id: "sub_ang", name: "Anglais", coef: 2, teacherName: "", accessCode: "" }
             ];
         }
 
@@ -991,13 +993,99 @@
 
         window.addEventListener('DOMContentLoaded', initApp);
 
+        // Fusionne intelligemment l'état local et le cloud pour éviter les pertes de données
+        function mergeStates(local, cloud) {
+            if (!cloud || !cloud.classes) return local;
+            
+            for (let classKey in local.classes) {
+                if (!cloud.classes[classKey]) continue;
+                
+                // Fusion des matières pour récupérer les enseignants configurés par l'Admin
+                if (cloud.classes[classKey].subjects) {
+                    cloud.classes[classKey].subjects.forEach(cSub => {
+                        let lSub = local.classes[classKey].subjects.find(s => s.id === cSub.id);
+                        if (lSub) {
+                            lSub.teacherName = cSub.teacherName || "";
+                            lSub.accessCode = cSub.accessCode || "";
+                            lSub.name = cSub.name;
+                            lSub.coef = cSub.coef;
+                        } else {
+                            local.classes[classKey].subjects.push(cSub);
+                        }
+                    });
+                }
+                
+                if (cloud.classes[classKey].fees) {
+                    local.classes[classKey].fees = cloud.classes[classKey].fees;
+                }
+
+                const localStudents = local.classes[classKey].students || [];
+                const cloudStudents = cloud.classes[classKey].students || [];
+                
+                cloudStudents.forEach(cStudent => {
+                    let lStudent = localStudents.find(s => s.id === cStudent.id);
+                    if (!lStudent) {
+                        localStudents.push(cStudent);
+                    } else {
+                        // Fusion des notes
+                        if (cStudent.grades) {
+                            if (!lStudent.grades) lStudent.grades = {};
+                            for (let periodKey in cStudent.grades) {
+                                if (!lStudent.grades[periodKey]) {
+                                    lStudent.grades[periodKey] = cStudent.grades[periodKey];
+                                } else {
+                                    for (let subId in cStudent.grades[periodKey]) {
+                                        if (!lStudent.grades[periodKey][subId]) {
+                                            lStudent.grades[periodKey][subId] = cStudent.grades[periodKey][subId];
+                                        } else {
+                                            const cGrades = cStudent.grades[periodKey][subId];
+                                            const lGrades = lStudent.grades[periodKey][subId];
+                                            const currentActiveSub = document.getElementById('grade-subject-select')?.value;
+
+                                            // Si ce n'est pas la matière actuellement en cours de saisie par le prof sur ce téléphone,
+                                            // on charge les notes des autres profs enregistrées sur le Cloud
+                                            if (subId !== currentActiveSub) {
+                                                if (cGrades.dev1 !== undefined && cGrades.dev1 !== "") lGrades.dev1 = cGrades.dev1;
+                                                if (cGrades.dev2 !== undefined && cGrades.dev2 !== "") lGrades.dev2 = cGrades.dev2;
+                                                if (cGrades.dev3 !== undefined && cGrades.dev3 !== "") lGrades.dev3 = cGrades.dev3;
+                                                if (cGrades.compo !== undefined && cGrades.compo !== "") lGrades.compo = cGrades.compo;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Fusion des paiements
+                        if (cStudent.payments) {
+                            if (!lStudent.payments) {
+                                lStudent.payments = cStudent.payments;
+                            } else {
+                                cStudent.payments.forEach((cPay, idx) => {
+                                    let lPay = lStudent.payments[idx];
+                                    if (lPay) {
+                                        if (cPay.statut === "Payé" && lPay.statut !== "Payé") {
+                                            lStudent.payments[idx] = cPay;
+                                        }
+                                    } else {
+                                        lStudent.payments[idx] = cPay;
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+            return local;
+        }
+
         // Sauvegarde locale instantanée et synchronisation automatique en tâche de fond vers Supabase
         async function saveToStorage() {
             try {
                 // 1. Sauvegarde locale instantanée (toujours disponible, même déconnecté)
                 await idbKeyval.set("gestnotes_state", appState);
                 
-                // 2. Si connecté au cloud ET connecté à Internet, envoi en tâche de fond
+                // 2. Si connecté au cloud ET connecté à Internet, fusion intelligente avant envoi
                 if (supabaseClient && navigator.onLine) {
                     const indicator = document.getElementById('sync-status-indicator');
                     if (indicator) {
@@ -1006,6 +1094,20 @@
                     }
                     
                     const targetSchoolId = appState.schoolId || "ecole_default";
+                    
+                    // Récupération de l'état cloud le plus récent
+                    const { data, error: fetchError } = await supabaseClient
+                        .from('gestnotes_sync')
+                        .select('state')
+                        .eq('id', targetSchoolId)
+                        .single();
+                    
+                    if (!fetchError && data && data.state) {
+                        // Fusion de l'état local actuel avec les notes des autres profs sur le Cloud
+                        appState = mergeStates(appState, data.state);
+                        await idbKeyval.set("gestnotes_state", appState);
+                    }
+
                     const { error } = await supabaseClient
                         .from('gestnotes_sync')
                         .upsert({
@@ -1400,6 +1502,7 @@
             openModal('encaissement-modal');
         }
 
+        // Valide un encaissement
         function validerEncaissement() {
             let student = null;
             for (let k in appState.classes) {
@@ -1527,19 +1630,26 @@
             container.innerHTML = "";
             
             const subjects = appState.classes[key].subjects || [];
-            subjects.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef));
+            subjects.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef, sub.teacherName || "", sub.accessCode || ""));
             if(subjects.length === 0) addNewSubjectRow();
             openModal('subjects-modal');
         }
 
-        function createSubjectRow(id, name, coef) {
+        // Crée une ligne pour éditer les détails de la matière (Nom, Coeff, Enseignant, Code)
+        function createSubjectRow(id, name, coef, teacherName = "", accessCode = "") {
             const container = document.getElementById('subjects-container');
             const row = document.createElement('div');
             row.className = "flex flex-col sm:flex-row sm:items-center gap-2 bg-slate-50 p-3 sm:p-2 rounded-xl border border-slate-200 subject-row-item";
             row.dataset.id = id || "sub_" + Date.now() + Math.random().toString(36).substr(2, 5);
             row.innerHTML = `
-                <input type="text" value="${name||''}" placeholder="Nom de la matière" class="text-slate-900 flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none font-medium w-full">
-                <div class="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                <div class="flex-1 flex flex-col gap-1 w-full">
+                    <input type="text" value="${name||''}" placeholder="Nom de la matière" class="text-slate-900 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none font-medium w-full">
+                    <div class="grid grid-cols-2 gap-1.5 w-full">
+                        <input type="text" value="${teacherName||''}" placeholder="Nom du Prof" class="text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none w-full" title="Nom de l'enseignant">
+                        <input type="text" value="${accessCode||''}" placeholder="Code d'accès" class="text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none w-full" title="Code d'accès secret de l'enseignant pour restreindre sa vue">
+                    </div>
+                </div>
+                <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto mt-1 sm:mt-0">
                     <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 flex-1 sm:flex-initial">
                         <span class="text-xs text-slate-400 font-bold whitespace-nowrap">${getCoefLabel(appState.selectedClass)}</span>
                         <input type="number" step="any" value="${coef||1}" class="text-slate-900 w-12 bg-transparent text-center font-bold outline-none text-sm">
@@ -1553,7 +1663,7 @@
         }
 
         function addNewSubjectRow() {
-            createSubjectRow("", "", 1);
+            createSubjectRow("", "", 1, "", "");
         }
 
         function loadStandardSubjects() {
@@ -1561,7 +1671,7 @@
                 const container = document.getElementById('subjects-container');
                 container.innerHTML = "";
                 const standards = getDefaultSubjects(appState.selectedClass);
-                standards.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef));
+                standards.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef, "", ""));
             }
         }
 
@@ -1570,12 +1680,18 @@
             const rows = document.querySelectorAll('.subject-row-item');
             const arr = [];
             rows.forEach(r => {
-                const nameInput = r.querySelector('input[type="text"]');
+                const nameInput = r.querySelector('input[placeholder="Nom de la matière"]');
                 const coefInput = r.querySelector('input[type="number"]');
+                const teacherInput = r.querySelector('input[placeholder="Nom du Prof"]');
+                const codeInput = r.querySelector('input[placeholder="Code d\'accès"]');
+                
                 const name = nameInput.value.trim();
                 const coef = parseFloat(coefInput.value) || 1;
+                const teacherName = teacherInput ? teacherInput.value.trim() : "";
+                const accessCode = codeInput ? codeInput.value.trim() : "";
+                
                 if (name) {
-                    arr.push({ id: r.dataset.id, name, coef });
+                    arr.push({ id: r.dataset.id, name, coef, teacherName, accessCode });
                 }
             });
             appState.classes[key].subjects = arr;
@@ -2295,6 +2411,7 @@
             document.getElementById('stats-taux-recouvrement').innerText = recoveryRate + "%";
         }
 
+        // Changement de rôle
         function onRoleChange() {
             const select = document.getElementById('role-selector');
             const targetRole = select.value;
@@ -2308,16 +2425,37 @@
                     select.value = currentLocalRole; // Annule le changement de rôle et remet le précédent
                     return;
                 }
+                localStorage.removeItem("gestnotes_teacher_code");
+            }
+
+            if (targetRole === 'enseignant') {
+                const code = prompt("Saisissez votre Code Enseignant pour restreindre à votre matière (laissez vide pour tout voir) :");
+                localStorage.setItem("gestnotes_teacher_code", code ? code.trim() : "");
             }
 
             localStorage.setItem("gestnotes_local_role", targetRole);
             applyRoleRestrictions();
+            render();
         }
 
+        // Gère l'affichage en fonction des rôles et du code prof configuré
         function applyRoleRestrictions() {
             // Lecture du rôle mémorisé localement sur cet appareil (par défaut "enseignant")
             const role = localStorage.getItem("gestnotes_local_role") || "enseignant";
+            const teacherCode = localStorage.getItem("gestnotes_teacher_code") || "";
             document.getElementById('role-selector').value = role;
+
+            const indicator = document.getElementById('active-teacher-indicator');
+            if (role === 'enseignant' && teacherCode !== "") {
+                if (indicator) {
+                    indicator.innerText = `Code Prof : ${teacherCode}`;
+                    indicator.classList.remove('hidden');
+                }
+            } else {
+                if (indicator) {
+                    indicator.classList.add('hidden');
+                }
+            }
 
             const classFeesBtn = document.getElementById('btn-class-fees');
             const subjectsBtn = document.getElementById('btn-manage-subjects');
@@ -2573,14 +2711,21 @@
             });
         }
 
+        // Filtre la liste des matières en fonction du code enseignant si configuré
         function renderSubjectsSelect(subjects) {
             const select = document.getElementById('grade-subject-select');
             const gSection = document.getElementById('grades-section');
             
             // Lecture du rôle local
             const role = localStorage.getItem("gestnotes_local_role") || "enseignant";
+            const teacherCode = localStorage.getItem("gestnotes_teacher_code") || "";
+
+            let filtered = subjects;
+            if (role === 'enseignant' && teacherCode !== "") {
+                filtered = subjects.filter(sub => sub.accessCode === teacherCode);
+            }
             
-            if (subjects.length === 0 || role === 'comptable') {
+            if (filtered.length === 0 || role === 'comptable') {
                 gSection.classList.add('hidden');
                 select.innerHTML = "";
                 return;
@@ -2588,9 +2733,9 @@
             gSection.classList.remove('hidden');
 
             const oldVal = select.value;
-            select.innerHTML = subjects.map(sub => `<option value="${sub.id}">${sub.name} (${getCoefLabel(appState.selectedClass)}: ${sub.coef})</option>`).join('');
+            select.innerHTML = filtered.map(sub => `<option value="${sub.id}">${sub.name} (${getCoefLabel(appState.selectedClass)}: ${sub.coef})</option>`).join('');
             
-            if (oldVal && subjects.find(x => x.id === oldVal)) {
+            if (oldVal && filtered.find(x => x.id === oldVal)) {
                 select.value = oldVal;
             }
         }
