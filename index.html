@@ -837,6 +837,14 @@
                     if (!appState.classes[key].fees) {
                         appState.classes[key].fees = { inscription: 0, mensualite: 0 };
                     }
+                    
+                    // Sécurité anti-perte lors de la lecture d'une ancienne sauvegarde cloud
+                    if (!appState.classes[key].students) {
+                        appState.classes[key].students = [];
+                    }
+                    if (!appState.classes[key].subjects) {
+                        appState.classes[key].subjects = getDefaultSubjects(c);
+                    }
                 });
             });
         }
