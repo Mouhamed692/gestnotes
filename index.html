@@ -1352,8 +1352,7 @@
             const insFee = (targetClass && targetClass.fees) ? (targetClass.fees.inscription || 0) : 0;
             document.getElementById('reg-amount').value = insFee;
         }
-
-        function validerInscriptionOuChangement(e) {
+function validerInscriptionOuChangement(e) {
             e.preventDefault();
             const firstName = document.getElementById('reg-firstname').value.trim();
             const lastName = document.getElementById('reg-lastname').value.trim();
@@ -1365,7 +1364,14 @@
             
             const newKey = `${targetClass}_${targetSection}`;
             
+            // S'assurer que la structure existe
+            if (!appState.classes[newKey]) {
+                appState.classes[newKey] = { subjects: getDefaultSubjects(targetClass), students: [], fees: { inscription: 0, mensualite: 0 } };
+            }
+            if (!appState.classes[newKey].students) appState.classes[newKey].students = [];
+
             if (editingStudentId) {
+                // ... (code existant de modification)
                 for (let k in appState.classes) {
                     let idx = appState.classes[k].students.findIndex(s => s.id === editingStudentId);
                     if (idx !== -1) {
@@ -1378,7 +1384,6 @@
                         
                         if (k !== newKey) {
                             appState.classes[k].students.splice(idx, 1);
-                            if (!appState.classes[newKey].students) appState.classes[newKey].students = [];
                             appState.classes[newKey].students.push(stObj);
                         }
                         break;
@@ -1386,15 +1391,6 @@
                 }
             } else {
                 const targetFees = appState.classes[newKey].fees || { inscription: 0, mensualite: 0 };
-                const paymentsStructure = moisAnnee.map((m, idx) => ({
-                    designation: m,
-                    statut: "Non payé",
-                    montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
-                    montantPaye: 0,
-                    methode: "",
-                    dateEncaissement: ""
-                }));
-
                 const newStudent = {
                     id: "student_" + Date.now(),
                     firstname: firstName,
@@ -1403,17 +1399,35 @@
                     pob: pob,
                     phone: phone,
                     grades: {},
-                    payments: paymentsStructure
+                    payments: moisAnnee.map((m, idx) => ({
+                        designation: m,
+                        statut: "Non payé",
+                        montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
+                        montantPaye: 0,
+                        methode: "",
+                        dateEncaissement: ""
+                    }))
                 };
                 appState.classes[newKey].students.push(newStudent);
             }
             
+            // CORRECTION : Forcer le basculement de la vue vers la classe de l'élève
+            appState.selectedClass = targetClass;
+            appState.selectedSection = targetSection;
+            
+            // Mettre à jour les menus déroulants de filtre
+            document.getElementById('filter-class').value = targetClass;
+            updateSectionFilterOptions();
+            document.getElementById('filter-section').value = targetSection;
+            
             saveToStorage();
             closeModal('registration-modal');
-            showToast("Fiche d'inscription synchronisée !", "success");
+            showToast("Élève ajouté avec succès !", "success");
+            
+            // Re-render global
             render();
         }
-
+     
         function openEditStudent(studentId) {
             editingStudentId = studentId;
             let student = null;
