@@ -631,6 +631,20 @@
         </div>
     </div>
 
+    <!-- Modal de confirmation de suppression et d'actions personnalisé (Anti-blocage Iframe) -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-slate-900/60 z-55 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
+            <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2 border-b pb-2" id="confirm-modal-title">
+                <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Confirmation
+            </h4>
+            <p class="text-sm text-slate-600 mb-6" id="confirm-modal-message">Voulez-vous vraiment effectuer cette action ?</p>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button type="button" onclick="closeModal('confirm-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold hover:bg-slate-50">Annuler</button>
+                <button id="confirm-modal-btn" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm">Valider</button>
+            </div>
+        </div>
+    </div>
+
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- En DOM masqué hors-écran pour éviter le problème de rendu vide html2pdf (display:none) -->
@@ -925,53 +939,56 @@
                 showToast("Configuration Supabase manquante dans les paramètres.", "info");
                 return;
             }
-            if (!confirm("Attention : Charger la sauvegarde en ligne écrasera l'historique non synchronisé de cet appareil. Continuer ?")) {
-                return;
-            }
-            try {
-                showToast("Chargement de la base depuis le Cloud...", "info");
-                const targetSchoolId = appState.schoolId || "ecole_default";
+            
+            askConfirmation(
+                "Attention : Charger la sauvegarde en ligne écrasera l'historique non synchronisé de cet appareil. Voulez-vous continuer ?",
+                `<i class="fa-solid fa-cloud-arrow-down text-indigo-600"></i> Restaurer la base`,
+                async function() {
+                    try {
+                        showToast("Chargement de la base depuis le Cloud...", "info");
+                        const targetSchoolId = appState.schoolId || "ecole_default";
 
-                const { data, error } = await supabaseClient
-                    .from('gestnotes_sync')
-                    .select('state')
-                    .eq('id', targetSchoolId)
-                    .single();
+                        const { data, error } = await supabaseClient
+                            .from('gestnotes_sync')
+                            .select('state')
+                            .eq('id', targetSchoolId)
+                            .single();
 
-                if (error) {
-                    if (error.code === 'PGRST116') {
-                        showToast("Aucune sauvegarde trouvée en ligne pour cet ID d'école.", "info");
-                    } else {
-                        throw error;
+                        if (error) {
+                            if (error.code === 'PGRST116') {
+                                showToast("Aucune sauvegarde trouvée en ligne pour cet ID d'école.", "info");
+                            } else {
+                                throw error;
+                            }
+                            return;
+                        }
+
+                        if (data && data.state) {
+                            const savedKeys = {
+                                schoolId: appState.schoolId,
+                                supabaseUrl: appState.supabaseUrl,
+                                supabaseKey: appState.supabaseKey
+                            };
+                            
+                            appState = data.state;
+                            appState.schoolId = savedKeys.schoolId;
+                            appState.supabaseUrl = savedKeys.supabaseUrl;
+                            appState.supabaseKey = savedKeys.supabaseKey;
+
+                            await saveToStorage();
+                            buildEmptyState();
+                            populateFilters();
+                            updateHeaderDisplays();
+                            applyRoleRestrictions();
+                            render();
+                            showToast("Base de données restaurée avec succès !", "success");
+                        }
+                    } catch (err) {
+                        console.error("Échec du chargement cloud", err);
+                        showToast("Erreur de récupération : " + err.message, "info");
                     }
-                    return;
                 }
-
-                if (data && data.state) {
-                    // Préserver les clés de connexion pour éviter la déconnexion locale
-                    const savedKeys = {
-                        schoolId: appState.schoolId,
-                        supabaseUrl: appState.supabaseUrl,
-                        supabaseKey: appState.supabaseKey
-                    };
-                    
-                    appState = data.state;
-                    appState.schoolId = savedKeys.schoolId;
-                    appState.supabaseUrl = savedKeys.supabaseUrl;
-                    appState.supabaseKey = savedKeys.supabaseKey;
-
-                    await saveToStorage();
-                    buildEmptyState();
-                    populateFilters();
-                    updateHeaderDisplays();
-                    applyRoleRestrictions();
-                    render();
-                    showToast("Base de données restaurée avec succès !", "success");
-                }
-            } catch (err) {
-                console.error("Échec du chargement cloud", err);
-                showToast("Erreur de récupération : " + err.message, "info");
-            }
+            );
         }
 
         // Initialisation automatique et récupération silencieuse au démarrage
@@ -1286,7 +1303,7 @@
             initSupabase(); 
             closeModal('settings-modal');
             
-            // Securité : Si c'est un nouveau compte cloud ou un changement, on rapatrie d'abord les notes existantes
+            // Sécurité : Si c'est un nouveau compte cloud ou un changement, on rapatrie d'abord les notes existantes
             if (cloudConfigChanged && supabaseClient && newSchoolId && navigator.onLine) {
                 showToast("Recherche de données existantes sur le cloud...", "info");
                 await pullFromCloudSilentAfterConfig();
@@ -1592,7 +1609,7 @@
             const method = document.getElementById('encaissement-methode-select').value;
             
             if (amt <= 0) {
-                alert("Le montant doit être supérieur à 0 F.");
+                showToast("Le montant doit être supérieur à 0 F.", "info");
                 return;
             }
 
@@ -1612,7 +1629,6 @@
         }
 
         function annulerPaiementMois(studentId, monthIdx) {
-            if(!confirm("Annuler ce versement ? Les informations de règlement seront effacées.")) return;
             let student = null;
             for (let k in appState.classes) {
                 student = appState.classes[k].students.find(s => s.id === studentId);
@@ -1621,14 +1637,21 @@
             if (!student) return;
 
             const p = student.payments[monthIdx];
-            p.montantPaye = 0;
-            p.statut = "Non payé";
-            p.methode = "";
-            p.dateEncaissement = "";
+            
+            askConfirmation(
+                `Annuler ce versement ? Les informations de règlement pour la période "${p.designation}" seront définitivement effacées.`,
+                `<i class="fa-solid fa-rotate-left text-amber-600"></i> Annuler le versement`,
+                function() {
+                    p.montantPaye = 0;
+                    p.statut = "Non payé";
+                    p.methode = "";
+                    p.dateEncaissement = "";
 
-            saveToStorage();
-            showToast("Règlement réinitialisé.", "info");
-            renderMensualitesList(student);
+                    saveToStorage();
+                    showToast("Règlement réinitialisé.", "info");
+                    renderMensualitesList(student);
+                }
+            );
         }
 
         function imprimerRecu(studentId, monthIdx) {
@@ -1673,7 +1696,7 @@
                 if (student) { classKey = k; break; }
             }
             if (!student || !student.phone) {
-                alert("Aucun numéro parent configuré sur la fiche de cet élève.");
+                showToast("Aucun numéro parent configuré sur la fiche de cet élève.", "info");
                 return;
             }
 
@@ -1742,12 +1765,16 @@
         }
 
         function loadStandardSubjects() {
-            if (confirm("Remplacer les disciplines par la liste standard ?")) {
-                const container = document.getElementById('subjects-container');
-                container.innerHTML = "";
-                const standards = getDefaultSubjects(appState.selectedClass);
-                standards.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef, "", ""));
-            }
+            askConfirmation(
+                "Remplacer les disciplines actuelles de cette classe par la liste standard ? Toutes les matières non standards seront retirées.",
+                `<i class="fa-solid fa-book-open text-violet-600"></i> Grille standard`,
+                function() {
+                    const container = document.getElementById('subjects-container');
+                    container.innerHTML = "";
+                    const standards = getDefaultSubjects(appState.selectedClass);
+                    standards.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef, "", ""));
+                }
+            );
         }
 
         function saveSubjects() {
@@ -1776,17 +1803,40 @@
             render();
         }
 
+        // SUPPRESSION ROBUSTE GLOBALE D'UN ÉLÈVE (Anti-blocage confirmation Iframe)
         function supprimerEleve(id) {
-            if (confirm("Supprimer cet élève, ses notes et son historique financier ?")) {
-                const key = getCurrentClassKey();
-                const idx = appState.classes[key].students.findIndex(s => s.id === id);
-                if (idx !== -1) {
-                    appState.classes[key].students.splice(idx, 1);
-                    saveToStorage();
-                    showToast("Élève retiré de la base.", "info");
-                    render();
+            let targetClassKey = null;
+            let student = null;
+            
+            // Rechercher l'élève dans toutes les classes d'abord
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === id);
+                if (student) {
+                    targetClassKey = k;
+                    break;
                 }
             }
+            
+            if (!student || !targetClassKey) {
+                showToast("Élève introuvable.", "info");
+                return;
+            }
+
+            const nameFormatted = `${student.firstname} ${(student.lastname || "").toUpperCase()}`;
+            
+            askConfirmation(
+                `Êtes-vous sûr de vouloir supprimer définitivement l'élève ${nameFormatted}, ainsi que toutes ses notes et son historique financier ?`,
+                `<i class="fa-solid fa-user-slash text-rose-600"></i> Supprimer l'élève`,
+                function() {
+                    const idx = appState.classes[targetClassKey].students.findIndex(s => s.id === id);
+                    if (idx !== -1) {
+                        appState.classes[targetClassKey].students.splice(idx, 1);
+                        saveToStorage();
+                        showToast("Élève retiré de la base.", "info");
+                        render();
+                    }
+                }
+            );
         }
 
         function toggleDev3() {
@@ -2878,6 +2928,24 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
+        // CONFIRMATION PERSONNALISÉE SÉCURISÉE (Anti-blocage bac à sable Iframe)
+        function askConfirmation(message, title, onConfirm) {
+            document.getElementById('confirm-modal-message').innerText = message;
+            
+            const titleEl = document.getElementById('confirm-modal-title');
+            if (titleEl) {
+                titleEl.innerHTML = title || `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Confirmation`;
+            }
+            
+            const confirmBtn = document.getElementById('confirm-modal-btn');
+            confirmBtn.onclick = function() {
+                closeModal('confirm-modal');
+                if (onConfirm) onConfirm();
+            };
+            
+            openModal('confirm-modal');
+        }
+
         // RESTAURATION DE LA FONCTION RENDER GLOBALE MANQUANTE
         function render() {
             const key = getCurrentClassKey();
@@ -2902,6 +2970,42 @@
             renderSubjectsSelect(clsData.subjects);
             renderGradesGrid();
             calculateClassStats();
+        }
+
+        // SUPPRESSION ROBUSTE GLOBALE D'UN ÉLÈVE (Anti-blocage confirmation Iframe)
+        function supprimerEleve(id) {
+            let targetClassKey = null;
+            let student = null;
+            
+            // Rechercher l'élève dans toutes les classes d'abord
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === id);
+                if (student) {
+                    targetClassKey = k;
+                    break;
+                }
+            }
+            
+            if (!student || !targetClassKey) {
+                showToast("Élève introuvable.", "info");
+                return;
+            }
+
+            const nameFormatted = `${student.firstname} ${(student.lastname || "").toUpperCase()}`;
+            
+            askConfirmation(
+                `Êtes-vous sûr de vouloir supprimer définitivement l'élève ${nameFormatted}, ainsi que toutes ses notes et son historique financier ?`,
+                `<i class="fa-solid fa-user-slash text-rose-600"></i> Supprimer l'élève`,
+                function() {
+                    const idx = appState.classes[targetClassKey].students.findIndex(s => s.id === id);
+                    if (idx !== -1) {
+                        appState.classes[targetClassKey].students.splice(idx, 1);
+                        saveToStorage();
+                        showToast("Élève retiré de la base.", "info");
+                        render();
+                    }
+                }
+            );
         }
 
         function renderStudentsTable(students, subjects) {
