@@ -209,7 +209,7 @@
             </div>
         </section>
 
-        <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 hidden flex flex-col gap-4">
+        <section id="grades-section" style="display: none;" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col gap-4">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
                 <h3 class="text-md font-bold text-slate-700 flex items-center gap-2 w-full lg:w-auto">
                     <i class="fa-solid fa-pen-to-square text-[#4c1d95]"></i> Saisie des Notes
@@ -842,7 +842,7 @@
                     if (!appState.classes[key].students) {
                         appState.classes[key].students = [];
                     }
-                    if (!appState.classes[key].subjects) {
+                    if (!appState.classes[key].subjects || appState.classes[key].subjects.length === 0) {
                         appState.classes[key].subjects = getDefaultSubjects(c);
                     }
                 });
@@ -1353,86 +1353,83 @@
             document.getElementById('reg-amount').value = insFee;
         }
 
-
-    function validerInscriptionOuChangement(e) {
-        e.preventDefault();
-        const firstName = document.getElementById('reg-firstname').value.trim();
-        const lastName = document.getElementById('reg-lastname').value.trim();
-        const dob = document.getElementById('reg-dob').value;
-        const pob = document.getElementById('reg-pob').value.trim();
-        const phone = document.getElementById('reg-phone').value.trim();
-        const targetClass = document.getElementById('reg-class').value;
-        const targetSection = document.getElementById('reg-section').value;
-        
-        const newKey = `${targetClass}_${targetSection}`;
-        
-        if (editingStudentId) {
-            // Modification
-            for (let k in appState.classes) {
-                let idx = appState.classes[k].students.findIndex(s => s.id === editingStudentId);
-                if (idx !== -1) {
-                    let stObj = appState.classes[k].students[idx];
-                    stObj.firstname = firstName;
-                    stObj.lastname = lastName;
-                    stObj.dob = dob;
-                    stObj.pob = pob;
-                    stObj.phone = phone;
-                    
-                    if (k !== newKey) {
-                        appState.classes[k].students.splice(idx, 1);
-                        if (!appState.classes[newKey]) appState.classes[newKey] = { students: [], subjects: getDefaultSubjects(targetClass), fees: { inscription: 0, mensualite: 0 } };
-                        if (!appState.classes[newKey].students) appState.classes[newKey].students = [];
-                        appState.classes[newKey].students.push(stObj);
+        function validerInscriptionOuChangement(e) {
+            e.preventDefault();
+            const firstName = document.getElementById('reg-firstname').value.trim();
+            const lastName = document.getElementById('reg-lastname').value.trim();
+            const dob = document.getElementById('reg-dob').value;
+            const pob = document.getElementById('reg-pob').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const targetClass = document.getElementById('reg-class').value;
+            const targetSection = document.getElementById('reg-section').value;
+            
+            const newKey = `${targetClass}_${targetSection}`;
+            
+            if (editingStudentId) {
+                // Modification
+                for (let k in appState.classes) {
+                    let idx = appState.classes[k].students.findIndex(s => s.id === editingStudentId);
+                    if (idx !== -1) {
+                        let stObj = appState.classes[k].students[idx];
+                        stObj.firstname = firstName;
+                        stObj.lastname = lastName;
+                        stObj.dob = dob;
+                        stObj.pob = pob;
+                        stObj.phone = phone;
+                        
+                        if (k !== newKey) {
+                            appState.classes[k].students.splice(idx, 1);
+                            if (!appState.classes[newKey]) appState.classes[newKey] = { students: [], subjects: getDefaultSubjects(targetClass), fees: { inscription: 0, mensualite: 0 } };
+                            if (!appState.classes[newKey].students) appState.classes[newKey].students = [];
+                            appState.classes[newKey].students.push(stObj);
+                        }
+                        break;
                     }
-                    break;
                 }
-            }
-        } else {
-            // Nouvel élève
-            if (!appState.classes[newKey]) {
-                appState.classes[newKey] = { students: [], subjects: getDefaultSubjects(targetClass), fees: { inscription: 0, mensualite: 0 } };
-            }
-            if (!appState.classes[newKey].students) appState.classes[newKey].students = [];
+            } else {
+                // Nouvel élève
+                if (!appState.classes[newKey]) {
+                    appState.classes[newKey] = { students: [], subjects: getDefaultSubjects(targetClass), fees: { inscription: 0, mensualite: 0 } };
+                }
+                if (!appState.classes[newKey].students) appState.classes[newKey].students = [];
 
-            const targetFees = appState.classes[newKey].fees || { inscription: 0, mensualite: 0 };
-            const paymentsStructure = moisAnnee.map((m, idx) => ({
-                designation: m,
-                statut: "Non payé",
-                montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
-                montantPaye: 0,
-                methode: "",
-                dateEncaissement: ""
-            }));
+                const targetFees = appState.classes[newKey].fees || { inscription: 0, mensualite: 0 };
+                const paymentsStructure = moisAnnee.map((m, idx) => ({
+                    designation: m,
+                    statut: "Non payé",
+                    montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
+                    montantPaye: 0,
+                    methode: "",
+                    dateEncaissement: ""
+                }));
 
-            const newStudent = {
-                id: "student_" + Date.now(),
-                firstname: firstName,
-                lastname: lastName,
-                dob: dob,
-                pob: pob,
-                phone: phone,
-                grades: {},
-                payments: paymentsStructure
-            };
-            appState.classes[newKey].students.push(newStudent);
+                const newStudent = {
+                    id: "student_" + Date.now(),
+                    firstname: firstName,
+                    lastname: lastName,
+                    dob: dob,
+                    pob: pob,
+                    phone: phone,
+                    grades: {},
+                    payments: paymentsStructure
+                };
+                appState.classes[newKey].students.push(newStudent);
+            }
+            
+            // CORRECTION : Forcer l'affichage de la classe de l'élève inscrit
+            appState.selectedClass = targetClass;
+            appState.selectedSection = targetSection;
+            
+            saveToStorage();
+            closeModal('registration-modal');
+            showToast("Élève enregistré avec succès !", "success");
+            
+            // Mettre à jour les menus déroulants et rafraîchir l'interface
+            populateFilters();
+            updateHeaderDisplays();
+            render();
         }
-        
-        // CORRECTION : Forcer l'affichage de la classe de l'élève inscrit
-        appState.selectedClass = targetClass;
-        appState.selectedSection = targetSection;
-        
-        saveToStorage();
-        closeModal('registration-modal');
-        showToast("Élève enregistré avec succès !", "success");
-        
-        // Mettre à jour les menus déroulants et rafraîchir l'interface
-        populateFilters();
-        updateHeaderDisplays();
-        render();
-    }
 
-
-     
         function openEditStudent(studentId) {
             editingStudentId = studentId;
             let student = null;
@@ -2647,7 +2644,7 @@
             if (classFeesBtn) classFeesBtn.style.display = '';
             if (subjectsBtn) subjectsBtn.style.display = '';
             if (waRemindersBtn) waRemindersBtn.style.display = '';
-            if (gradesSec) gradesSec.style.display = '';
+            if (gradesSec) gradesSec.style.display = 'flex'; // Modifié de '' à 'flex'
             if (addStudentBtn) addStudentBtn.style.display = '';
             if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = '';
             if (statsSection) statsSection.style.display = 'grid';
@@ -2699,11 +2696,11 @@
             }
             
             if (filtered.length === 0 || role === 'comptable') {
-                gSection.classList.add('hidden');
+                gSection.style.display = 'none'; // Modifié de classList.add('hidden')
                 select.innerHTML = "";
                 return;
             }
-            gSection.classList.remove('hidden');
+            gSection.style.display = 'flex'; // Modifié de classList.remove('hidden')
 
             const oldVal = select.value;
             select.innerHTML = filtered.map(sub => `<option value="${sub.id}">${sub.name} (${getCoefLabel(appState.selectedClass)}: ${sub.coef})</option>`).join('');
@@ -2766,7 +2763,11 @@
                 thDev3.style.display = isVisiblePlus ? '' : 'none';
             }
 
-            const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
+            const sorted = [...clsData.students].sort((a,b) => {
+                const nameA = (a.lastname || "").toUpperCase();
+                const nameB = (b.lastname || "").toUpperCase();
+                return nameA.localeCompare(nameB) || (a.firstname || "").localeCompare(b.firstname || "");
+            });
             const semKey = "p_" + appState.currentSemester;
 
             sorted.forEach(s => {
@@ -2781,7 +2782,7 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/70 transition-colors";
                 tr.innerHTML = `
-                    <td class="p-2 font-bold text-[#000000] text-sm text-left pl-4">${s.lastname.toUpperCase()} ${s.firstname}</td>
+                    <td class="p-2 font-bold text-[#000000] text-sm text-left pl-4">${(s.lastname || "").toUpperCase()} ${s.firstname || ""}</td>
                     ${td1HTML}
                     ${td2HTML}
                     ${td3HTML}
@@ -2875,6 +2876,79 @@
             toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
+        }
+
+
+        function renderStudentsTable(students, subjects) {
+            const tbody = document.getElementById('students-table-body');
+            const empty = document.getElementById('empty-state');
+            tbody.innerHTML = "";
+
+            if (!students || students.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            const sorted = [...students].sort((a,b) => {
+                const nameA = (a.lastname || "").toUpperCase();
+                const nameB = (b.lastname || "").toUpperCase();
+                return nameA.localeCompare(nameB) || (a.firstname || "").localeCompare(b.firstname || "");
+            });
+            
+            const role = localStorage.getItem("gestnotes_local_role") || "admin";
+
+            sorted.forEach(s => {
+                const mg = calculerMoyenneGeneraleGlobale(s, subjects);
+                const isPrimaryClass = isPrimary(appState.selectedClass);
+                const displayMg = (mg === null) ? 
+                    `<span class="text-slate-400 text-xs italic">Pas de note</span>` : 
+                    `<span class="font-extrabold text-[#4c1d95]">${mg.toFixed(2)}</span> <span class="text-[10px] text-slate-400">/${isPrimaryClass ? '10' : '20'}</span>`;
+
+                const showFinances = role !== 'enseignant';
+                const showEdits = role !== 'comptable';
+
+                let dobFormatted = "";
+                if (s.dob) {
+                    try {
+                        dobFormatted = 'Né(e) le ' + new Date(s.dob).toLocaleDateString('fr-FR');
+                    } catch(e) {
+                        dobFormatted = 'Né(e) le ' + s.dob;
+                    }
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3 px-5">
+                        <div class="font-bold text-slate-800 text-base leading-tight">${(s.lastname || "").toUpperCase()} ${s.firstname || ""}</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">${dobFormatted} ${s.pob ? 'à ' + s.pob : ''}</div>
+                    </td>
+                    <td class="py-3 px-5 text-center text-sm md:text-base font-semibold">${displayMg}</td>
+                    <td class="py-3 px-5 text-right">
+                        <div class="flex flex-wrap items-center justify-end gap-1.5">
+                            <button onclick="ouvrirBulletin('${s.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-[#4c1d95] font-bold px-2.5 py-1.5 rounded-lg text-xs border border-indigo-200 transition-all shadow-sm flex items-center gap-1" title="Imprimer le bulletin">
+                                <i class="fa-solid fa-file-invoice"></i> <span class="hidden sm:inline">Bulletin</span>
+                            </button>
+                            
+                            <button onclick="ouvrirEncaissementDirect('${s.id}')" style="display: ${showFinances ? '' : 'none'}" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1.5 rounded-lg text-xs border border-emerald-200 transition-all shadow-sm flex items-center gap-1" title="Encaisser paiement direct">
+                                <i class="fa-solid fa-cash-register"></i> <span class="hidden sm:inline">Encaisser</span>
+                            </button>
+                            <button onclick="openMensualitesModal('${s.id}')" style="display: ${showFinances ? '' : 'none'}" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-2.5 py-1.5 rounded-lg text-xs border border-amber-200 transition-all shadow-sm flex items-center gap-1" title="Frais de scolarité / écolage">
+                                <i class="fa-solid fa-wallet"></i> <span class="hidden sm:inline">Écolage</span>
+                            </button>
+                            
+                            <button onclick="openEditStudent('${s.id}')" style="display: ${showEdits ? '' : 'none'}" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] p-2 rounded-lg border border-violet-100 flex items-center justify-center transition-colors" title="Modifier la fiche élève">
+                                <i class="fa-solid fa-user-pen text-xs"></i>
+                            </button>
+                            <button onclick="supprimerEleve('${s.id}')" style="display: ${showEdits ? '' : 'none'}" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-lg border border-rose-100 flex items-center justify-center transition-colors" title="Supprimer l'élève">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
     </script>
 </body>
