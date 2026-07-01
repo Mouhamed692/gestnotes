@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link class="apple-touch-icon" href="icon-192.png">
-    <link rel="manifest" href="manifest.json">
+    <link class="manifest" href="manifest.json">
     <meta name="theme-color" content="#4c1d95">
 
     <meta name="mobile-web-app-capable" content="yes">
@@ -838,7 +838,7 @@
                         appState.classes[key].fees = { inscription: 0, mensualite: 0 };
                     }
                     
-                    // Sécurité anti-perte lors de la lecture d'une ancienne sauvegarde cloud
+                    // Sécurité anti-perte lors de la lecture d'une ancienne sauvegarde cloud ou état vide
                     if (!appState.classes[key].students) {
                         appState.classes[key].students = [];
                     }
@@ -1286,7 +1286,7 @@
             initSupabase(); 
             closeModal('settings-modal');
             
-            // Sécurité : Si c'est un nouveau compte cloud ou un changement, on rapatrie d'abord les notes existantes
+            // Securité : Si c'est un nouveau compte cloud ou un changement, on rapatrie d'abord les notes existantes
             if (cloudConfigChanged && supabaseClient && newSchoolId && navigator.onLine) {
                 showToast("Recherche de données existantes sur le cloud...", "info");
                 await pullFromCloudSilentAfterConfig();
@@ -2878,6 +2878,31 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
+        // RESTAURATION DE LA FONCTION RENDER GLOBALE MANQUANTE
+        function render() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key] || { subjects: [], students: [] };
+            if (!clsData.students) clsData.students = [];
+            if (!clsData.subjects) clsData.subjects = [];
+
+            const classBadge = document.getElementById('class-badge');
+            if (classBadge) {
+                classBadge.innerText = appState.selectedClass + " " + (appState.selectedSection || "Général");
+            }
+            const studentCount = document.getElementById('student-count');
+            if (studentCount) {
+                studentCount.innerText = `${clsData.students.length} élève(s) inscrit(s)`;
+            }
+            const filterEffectif = document.getElementById('filter-effectif');
+            if (filterEffectif) {
+                filterEffectif.value = clsData.students.length;
+            }
+
+            renderStudentsTable(clsData.students, clsData.subjects);
+            renderSubjectsSelect(clsData.subjects);
+            renderGradesGrid();
+            calculateClassStats();
+        }
 
         function renderStudentsTable(students, subjects) {
             const tbody = document.getElementById('students-table-body');
