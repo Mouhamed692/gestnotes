@@ -477,7 +477,7 @@
                 <h4 class="text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider flex items-center gap-1">
                     <i class="fa-solid fa-angles-up text-amber-600"></i> Transition académique
                 </h4>
-                <p class="text-[10px] text-slate-500 mb-3">Promouvoir les profils de cette classe vers la classe supérieure en réinitialisent les évaluations.</p>
+                <p class="text-[10px] text-slate-500 mb-3">Promouvoir les profils de cette classe vers la classe supérieure en réinitialisant les évaluations.</p>
                 <div class="grid grid-cols-1 gap-2">
                     <select id="rollover-target-class" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
                     </select>
@@ -550,7 +550,7 @@
             </div>
 
             <div class="mb-4">
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Message personnalisé (Variables supportées : {eleve}, {classe}, {frais}, {montant}, {periode})</label>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Message personnalisé (Variables : {eleve}, {classe}, {frais}, {montant}, {periode})</label>
                 <textarea id="wa-reminder-text" rows="3" oninput="renderWhatsAppReminders()" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs outline-none focus:ring-2 focus:ring-violet-500/20 font-medium resize-none"></textarea>
             </div>
 
@@ -713,6 +713,23 @@
     </div>
 
     <script>
+        // Fallback global idbKeyval si le script idb-keyval.js n'est pas accessible en mode déconnecté
+        if (typeof idbKeyval === 'undefined') {
+            window.idbKeyval = {
+                get: async (key) => {
+                    try {
+                        const val = localStorage.getItem(key);
+                        return val ? JSON.parse(val) : null;
+                    } catch (e) { return null; }
+                },
+                set: async (key, val) => {
+                    try {
+                        localStorage.setItem(key, JSON.stringify(val));
+                    } catch (e) {}
+                }
+            };
+        }
+
         // Enregistrement du Service Worker pour le fonctionnement hors-ligne (PWA)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -1433,7 +1450,6 @@
                 appState.classes[newKey].students.push(newStudent);
             }
             
-            // CORRECTION : Forcer l'affichage de la classe de l'élève inscrit
             appState.selectedClass = targetClass;
             appState.selectedSection = targetSection;
             
@@ -1803,12 +1819,11 @@
             render();
         }
 
-        // SUPPRESSION ROBUSTE GLOBALE D'UN ÉLÈVE (Anti-blocage confirmation Iframe)
+        // SUPPRESSION ROBUSTE GLOBALE D'UN ÉLÈVE
         function supprimerEleve(id) {
             let targetClassKey = null;
             let student = null;
             
-            // Rechercher l'élève dans toutes les classes d'abord
             for (let k in appState.classes) {
                 student = appState.classes[k].students.find(s => s.id === id);
                 if (student) {
@@ -2544,9 +2559,9 @@
             // Protection par mot de passe pour passer Directeur/Admin ou Comptable
             if (targetRole === 'admin' || targetRole === 'comptable') {
                 const password = prompt("Saisissez le code d'accès pour activer ce rôle :");
-                if (password !== "1234") { // Vous pouvez remplacer "1234" par le mot de passe de votre choix
+                if (password !== "1234") { 
                     alert("Code d'accès incorrect ! Accès refusé.");
-                    select.value = currentLocalRole; // Annule le changement de rôle et remet le précédent
+                    select.value = currentLocalRole; // Annule le changement de rôle
                     return;
                 }
                 // Nettoyer la session Enseignant en quittant
@@ -2559,7 +2574,6 @@
                 applyRoleRestrictions();
                 render();
             } else if (targetRole === 'enseignant') {
-                // Déclencher le processus d'authentification enseignant via le formulaire
                 openTeacherLoginModal();
             }
         }
@@ -2694,14 +2708,13 @@
             if (classFeesBtn) classFeesBtn.style.display = '';
             if (subjectsBtn) subjectsBtn.style.display = '';
             if (waRemindersBtn) waRemindersBtn.style.display = '';
-            if (gradesSec) gradesSec.style.display = 'flex'; // Modifié de '' à 'flex'
+            if (gradesSec) gradesSec.style.display = 'flex';
             if (addStudentBtn) addStudentBtn.style.display = '';
             if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = '';
             if (statsSection) statsSection.style.display = 'grid';
             if (regAmountContainer) regAmountContainer.style.display = '';
             if (settingsBtn) settingsBtn.style.display = '';
 
-            // Verrouiller/Déverrouiller les filtres de classes
             const filterClass = document.getElementById('filter-class');
             const filterSection = document.getElementById('filter-section');
 
@@ -2746,19 +2759,19 @@
             }
             
             if (filtered.length === 0 || role === 'comptable') {
-                gSection.style.display = 'none'; // Modifié de classList.add('hidden')
+                gSection.style.display = 'none';
                 select.innerHTML = "";
                 return;
             }
-            gSection.style.display = 'flex'; // Modifié de classList.remove('hidden')
+            gSection.style.display = 'flex';
 
             const oldVal = select.value;
             select.innerHTML = filtered.map(sub => `<option value="${sub.id}">${sub.name} (${getCoefLabel(appState.selectedClass)}: ${sub.coef})</option>`).join('');
             
             if (role === 'enseignant' && teacherSubjectId !== "") {
                 select.value = teacherSubjectId;
-                select.disabled = true; // Empêcher l'enseignant de changer de matière
-                if (nextBtn) nextBtn.style.display = 'none'; // Cacher le bouton "Suivant"
+                select.disabled = true; 
+                if (nextBtn) nextBtn.style.display = 'none';
             } else {
                 select.disabled = false;
                 if (nextBtn) nextBtn.style.display = '';
@@ -2946,7 +2959,7 @@
             openModal('confirm-modal');
         }
 
-        // RESTAURATION DE LA FONCTION RENDER GLOBALE MANQUANTE
+        // RESTAURATION DE LA FONCTION RENDER GLOBALE
         function render() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key] || { subjects: [], students: [] };
@@ -2970,42 +2983,6 @@
             renderSubjectsSelect(clsData.subjects);
             renderGradesGrid();
             calculateClassStats();
-        }
-
-        // SUPPRESSION ROBUSTE GLOBALE D'UN ÉLÈVE (Anti-blocage confirmation Iframe)
-        function supprimerEleve(id) {
-            let targetClassKey = null;
-            let student = null;
-            
-            // Rechercher l'élève dans toutes les classes d'abord
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === id);
-                if (student) {
-                    targetClassKey = k;
-                    break;
-                }
-            }
-            
-            if (!student || !targetClassKey) {
-                showToast("Élève introuvable.", "info");
-                return;
-            }
-
-            const nameFormatted = `${student.firstname} ${(student.lastname || "").toUpperCase()}`;
-            
-            askConfirmation(
-                `Êtes-vous sûr de vouloir supprimer définitivement l'élève ${nameFormatted}, ainsi que toutes ses notes et son historique financier ?`,
-                `<i class="fa-solid fa-user-slash text-rose-600"></i> Supprimer l'élève`,
-                function() {
-                    const idx = appState.classes[targetClassKey].students.findIndex(s => s.id === id);
-                    if (idx !== -1) {
-                        appState.classes[targetClassKey].students.splice(idx, 1);
-                        saveToStorage();
-                        showToast("Élève retiré de la base.", "info");
-                        render();
-                    }
-                }
-            );
         }
 
         function renderStudentsTable(students, subjects) {
@@ -3079,6 +3056,163 @@
                 tbody.appendChild(tr);
             });
         }
+
+        // ==========================================
+        //  FONCTIONS AJOUTÉES POUR RÉSOUDRE LES BUGS
+        // ==========================================
+
+        function populateRolloverSelector() {
+            const select = document.getElementById('rollover-target-class');
+            if (select) {
+                select.innerHTML = '<option value="">-- Choisir la classe cible --</option>' + 
+                    classNames.map(c => `<option value="${c}">Vers ${c}</option>`).join('');
+            }
+        }
+
+        function executeRollover() {
+            const targetClass = document.getElementById('rollover-target-class').value;
+            if (!targetClass) {
+                showToast("Veuillez sélectionner une classe de destination.", "info");
+                return;
+            }
+            const currentKey = getCurrentClassKey();
+            const currentClsData = appState.classes[currentKey];
+            if (!currentClsData || !currentClsData.students || currentClsData.students.length === 0) {
+                showToast("Aucun élève dans la classe actuelle à promouvoir.", "info");
+                return;
+            }
+
+            askConfirmation(
+                `Voulez-vous promouvoir les ${currentClsData.students.length} élèves de ${appState.selectedClass} ${appState.selectedSection || ''} vers la classe de ${targetClass} ? Leurs notes et versements de l'année courante seront réinitialisés pour leur nouveau cursus.`,
+                `<i class="fa-solid fa-angles-up text-amber-600"></i> Confirmer la promotion`,
+                async function() {
+                    const targetKey = `${targetClass}_${appState.selectedSection}`;
+                    if (!appState.classes[targetKey]) {
+                        appState.classes[targetKey] = {
+                            subjects: getDefaultSubjects(targetClass),
+                            students: [],
+                            fees: { inscription: 0, mensualite: 0 }
+                        };
+                    }
+
+                    const targetFees = appState.classes[targetKey].fees || { inscription: 0, mensualite: 0 };
+
+                    currentClsData.students.forEach(student => {
+                        student.grades = {};
+                        student.payments = moisAnnee.map((m, idx) => ({
+                            designation: m,
+                            statut: "Non payé",
+                            montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
+                            montantPaye: 0,
+                            methode: "",
+                            dateEncaissement: ""
+                        }));
+                        appState.classes[targetKey].students.push(student);
+                    });
+
+                    currentClsData.students = [];
+                    appState.selectedClass = targetClass;
+                    
+                    await saveToStorage();
+                    closeModal('settings-modal');
+                    populateFilters();
+                    updateHeaderDisplays();
+                    render();
+                    showToast(`Promotion des élèves vers ${targetClass} validée !`, "success");
+                }
+            );
+        }
+
+        function openWhatsAppRemindersModal() {
+            const monthSelect = document.getElementById('wa-reminder-month');
+            if (monthSelect) {
+                monthSelect.innerHTML = moisAnnee.map((m, idx) => `<option value="${idx}">${m}</option>`).join('');
+            }
+            const templateSelector = document.getElementById('wa-template-selector');
+            if (templateSelector) {
+                templateSelector.value = "reminder";
+            }
+            onWaTemplateChange();
+            openModal('wa-reminders-modal');
+        }
+
+        function onWaTemplateChange() {
+            const selector = document.getElementById('wa-template-selector');
+            const textarea = document.getElementById('wa-reminder-text');
+            if (selector && textarea) {
+                textarea.value = appState.waTemplates[selector.value] || "";
+            }
+            renderWhatsAppReminders();
+        }
+
+        function renderWhatsAppReminders() {
+            const monthIdx = parseInt(document.getElementById('wa-reminder-month').value) || 0;
+            const templateText = document.getElementById('wa-reminder-text').value;
+            const tbody = document.getElementById('wa-reminders-list-tbody');
+            tbody.innerHTML = "";
+
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            if (!clsData || !clsData.students || clsData.students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun élève enregistré dans cette classe.</td></tr>`;
+                return;
+            }
+
+            const monthName = moisAnnee[monthIdx];
+            let count = 0;
+
+            clsData.students.forEach(s => {
+                const pay = s.payments ? s.payments[monthIdx] : null;
+                if (pay && pay.statut !== "Payé") {
+                    count++;
+                    const resteDu = pay.montantDu - pay.montantPaye;
+                    
+                    let customizedMessage = templateText
+                        .replace(/{eleve}/g, `${s.firstname} ${s.lastname.toUpperCase()}`)
+                        .replace(/{classe}/g, `${appState.selectedClass} ${appState.selectedSection || ''}`)
+                        .replace(/{frais}/g, monthIdx === 0 ? "Frais d'inscription" : `Mensualité de ${monthName}`)
+                        .replace(/{montant}/g, resteDu.toLocaleString())
+                        .replace(/{periode}/g, monthName);
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50/50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 font-bold text-slate-800">${s.lastname.toUpperCase()} ${s.firstname}</td>
+                        <td class="px-4 py-3 text-slate-600">${monthIdx === 0 ? "Frais d'inscription" : "Mensualité " + monthName}</td>
+                        <td class="px-4 py-3 text-right font-extrabold text-rose-600">${resteDu.toLocaleString()} F</td>
+                        <td class="px-4 py-3 text-center text-slate-500">${s.phone || '-'}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="sendIndividualWaReminder('${s.id}', ${monthIdx}, \`${encodeURIComponent(customizedMessage)}\`)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1 mx-auto">
+                                <i class="fa-brands fa-whatsapp"></i> Envoyer
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (count === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-emerald-600 font-semibold">Tous les parents sont à jour pour cette échéance ! 🎉</td></tr>`;
+            }
+        }
+
+        window.sendIndividualWaReminder = function(studentId, monthIdx, encodedMessage) {
+            let student = null;
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === studentId);
+                if (student) break;
+            }
+            if (!student || !student.phone) {
+                showToast("Le numéro parent est manquant ou invalide.", "info");
+                return;
+            }
+
+            let purePhone = student.phone.replace(/[\s\+\-]/g, '');
+            if (purePhone.length === 9) purePhone = "221" + purePhone; // Préfixe Sénégal automatique si requis
+
+            const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodedMessage}`;
+            window.open(url, '_blank');
+        };
     </script>
 </body>
 </html>
