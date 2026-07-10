@@ -570,7 +570,10 @@
                 </table>
             </div>
 
-            <div class="flex justify-end pt-4 border-t border-slate-100">
+            <div class="flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-100">
+                <button type="button" onclick="sendAllWaReminders()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-comments"></i> Relancer Tout le Monde (1 clic)
+                </button>
                 <button type="button" onclick="closeModal('wa-reminders-modal')" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md">
                     Fermer
                 </button>
@@ -1096,6 +1099,10 @@
             for (let classKey in local.classes) {
                 if (!cloud.classes[classKey]) continue;
                 
+                // Assurer que les structures de tableaux locales existent
+                if (!local.classes[classKey].subjects) local.classes[classKey].subjects = [];
+                if (!local.classes[classKey].students) local.classes[classKey].students = [];
+                
                 // Fusion des matières pour récupérer les enseignants configurés par l'Admin
                 if (cloud.classes[classKey].subjects) {
                     cloud.classes[classKey].subjects.forEach(cSub => {
@@ -1115,7 +1122,7 @@
                     local.classes[classKey].fees = cloud.classes[classKey].fees;
                 }
 
-                const localStudents = local.classes[classKey].students || [];
+                const localStudents = local.classes[classKey].students;
                 const cloudStudents = cloud.classes[classKey].students || [];
                 
                 cloudStudents.forEach(cStudent => {
@@ -3212,6 +3219,56 @@
 
             const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodedMessage}`;
             window.open(url, '_blank');
+        };
+
+        window.sendAllWaReminders = function() {
+            const monthIdx = parseInt(document.getElementById('wa-reminder-month').value) || 0;
+            const templateText = document.getElementById('wa-reminder-text').value;
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            if (!clsData || !clsData.students || clsData.students.length === 0) return;
+
+            const monthName = moisAnnee[monthIdx];
+            const targets = [];
+
+            clsData.students.forEach(s => {
+                const pay = s.payments ? s.payments[monthIdx] : null;
+                if (pay && pay.statut !== "Payé") {
+                    if (s.phone) {
+                        const resteDu = pay.montantDu - pay.montantPaye;
+                        let customizedMessage = templateText
+                            .replace(/{eleve}/g, `${s.firstname} ${s.lastname.toUpperCase()}`)
+                            .replace(/{classe}/g, `${appState.selectedClass} ${appState.selectedSection || ''}`)
+                            .replace(/{frais}/g, monthIdx === 0 ? "Frais d'inscription" : `Mensualité de ${monthName}`)
+                            .replace(/{montant}/g, resteDu.toLocaleString())
+                            .replace(/{periode}/g, monthName);
+                        
+                        let purePhone = s.phone.replace(/[\s\+\-]/g, '');
+                        if (purePhone.length === 9) purePhone = "221" + purePhone;
+
+                        targets.push({ phone: purePhone, msg: encodeURIComponent(customizedMessage) });
+                    }
+                }
+            });
+
+            if (targets.length === 0) {
+                showToast("Aucun retardataire avec numéro de téléphone trouvé.", "info");
+                return;
+            }
+
+            askConfirmation(
+                `Vous êtes sur le point d'ouvrir ${targets.length} discussions WhatsApp. Si votre navigateur bloque les fenêtres surgissantes (pop-ups), veuillez les autoriser pour ce site dans la barre d'adresse. Voulez-vous continuer ?`,
+                `<i class="fa-brands fa-whatsapp text-emerald-600"></i> Relance de masse`,
+                function() {
+                    targets.forEach((t, index) => {
+                        setTimeout(() => {
+                            const url = `https://api.whatsapp.com/send?phone=${t.phone}&text=${t.msg}`;
+                            window.open(url, '_blank');
+                        }, index * 800); // Délai de 800ms entre chaque ouverture pour respecter les limitations du navigateur
+                    });
+                    showToast(`${targets.length} relances lancées !`, "success");
+                }
+            );
         };
     </script>
 </body>
