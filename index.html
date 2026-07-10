@@ -492,7 +492,13 @@
                 <h4 class="text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider flex items-center gap-1">
                     <i class="fa-solid fa-cloud text-violet-600"></i> Configuration Supabase (Gratuit)
                 </h4>
-                <p class="text-[10px] text-slate-500 mb-3">Sauvegardez vos données d'administration en ligne pour y accéder depuis n'importe quel appareil.</p>
+                <p class="text-[10px] text-slate-500 mb-2">Sauvegardez vos données d'administration en ligne pour y accéder depuis n'importe quel appareil.</p>
+                
+                <!-- Notice explicative de partage d'appareils -->
+                <p class="text-[10px] text-amber-700 font-medium mb-3 bg-amber-50 p-2.5 rounded-xl border border-amber-200/80">
+                    <i class="fa-solid fa-circle-info mr-1"></i> <strong>Lier un autre appareil :</strong> Installez cette application sur le second appareil, allez dans ses paramètres, et saisissez-y <strong>exactement les mêmes</strong> informations ci-dessous, puis cliquez sur "Appliquer" ou "Restaurer".
+                </p>
+
                 <div class="space-y-2">
                     <div>
                         <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Identifiant Unique de l'École</label>
@@ -802,6 +808,8 @@
                     buildEmptyState();
                     populateFilters();
                     updateHeaderDisplays();
+                    applyRoleRestrictions();
+                    render();
                     showToast("Données existantes récupérées avec succès !", "success");
                 } else if (error && error.code === 'PGRST116') {
                     // Si aucune donnée n'existe en ligne pour ce compte, on synchronise l'état local actuel pour l'initialiser
