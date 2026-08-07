@@ -1021,19 +1021,22 @@
 
         // Initialisation automatique et récupération silencieuse au démarrage
         async function initApp() {
-            // 1. Chargement initial rapide depuis la mémoire locale (IndexedDB)
-            const savedState = await idbKeyval.get("gestnotes_state");
-            appState = savedState || DEFAULT_STATE;
-            buildEmptyState();
-            
-            // Si l'utilisateur actuel est un enseignant connecté, restaurer sa classe/section sur son écran d'accueil
-            const role = localStorage.getItem("gestnotes_local_role") || "admin";
-            if (role === "enseignant") {
-                const tClass = localStorage.getItem("gestnotes_teacher_class");
-                const tSection = localStorage.getItem("gestnotes_teacher_section");
-                if (tClass) appState.selectedClass = tClass;
-                if (tSection !== null) appState.selectedSection = tSection;
-            }
+          // ... (début de la fonction initApp)
+const savedState = await idbKeyval.get("gestnotes_state");
+appState = savedState || DEFAULT_STATE;
+buildEmptyState();
+
+// Restauration robuste du rôle enregistré localement
+const role = localStorage.getItem("gestnotes_local_role") || "admin";
+appState.currentRole = role; // S'assurer que l'état en mémoire est synchronisé
+
+if (role === "enseignant") {
+    const tClass = localStorage.getItem("gestnotes_teacher_class");
+    const tSection = localStorage.getItem("gestnotes_teacher_section");
+    if (tClass) appState.selectedClass = tClass;
+    if (tSection !== null) appState.selectedSection = tSection;
+}
+
 
             populateFilters();
             updateHeaderDisplays();
@@ -1101,95 +1104,98 @@
         window.addEventListener('DOMContentLoaded', initApp);
 
         // Fusionne intelligemment l'état local et le cloud pour éviter les pertes de données
-        function mergeStates(local, cloud) {
-            if (!cloud || !cloud.classes) return local;
-            
-            for (let classKey in local.classes) {
-                if (!cloud.classes[classKey]) continue;
-                
-                // Assurer que les structures de tableaux locales existent
-                if (!local.classes[classKey].subjects) local.classes[classKey].subjects = [];
-                if (!local.classes[classKey].students) local.classes[classKey].students = [];
-                
-                // Fusion des matières pour récupérer les enseignants configurés par l'Admin
-                if (cloud.classes[classKey].subjects) {
-                    cloud.classes[classKey].subjects.forEach(cSub => {
-                        let lSub = local.classes[classKey].subjects.find(s => s.id === cSub.id);
-                        if (lSub) {
-                            lSub.teacherName = cSub.teacherName || "";
-                            lSub.accessCode = cSub.accessCode || "";
-                            lSub.name = cSub.name;
-                            lSub.coef = cSub.coef;
+       function mergeStates(local, cloud) {
+    if (!cloud || !cloud.classes) return local;
+    
+    // S'assurer que les structures fondamentales existent dans l'objet cloud
+    if (!local.classes) local.classes = {};
+
+    for (let classKey in local.classes) {
+        if (!cloud.classes[classKey]) continue;
+        
+        if (!local.classes[classKey].subjects) local.classes[classKey].subjects = [];
+        if (!local.classes[classKey].students) local.classes[classKey].students = [];
+        
+        // Fusion des matières
+        if (cloud.classes[classKey].subjects) {
+            cloud.classes[classKey].subjects.forEach(cSub => {
+                let lSub = local.classes[classKey].subjects.find(s => s.id === cSub.id);
+                if (lSub) {
+                    lSub.teacherName = cSub.teacherName || "";
+                    lSub.accessCode = cSub.accessCode || "";
+                    lSub.name = cSub.name;
+                    lSub.coef = cSub.coef;
+                } else {
+                    local.classes[classKey].subjects.push(cSub);
+                }
+            });
+        }
+        
+        if (cloud.classes[classKey].fees) {
+            local.classes[classKey].fees = cloud.classes[classKey].fees;
+        }
+
+        const localStudents = local.classes[classKey].students;
+        const cloudStudents = cloud.classes[classKey].students || [];
+        
+        cloudStudents.forEach(cStudent => {
+            let lStudent = localStudents.find(s => s.id === cStudent.id);
+            if (!lStudent) {
+                localStudents.push(cStudent);
+            } else {
+                // Fusion des notes période par période
+                if (cStudent.grades) {
+                    if (!lStudent.grades) lStudent.grades = {};
+                    for (let periodKey in cStudent.grades) {
+                        if (!lStudent.grades[periodKey]) {
+                            lStudent.grades[periodKey] = cStudent.grades[periodKey];
                         } else {
-                            local.classes[classKey].subjects.push(cSub);
-                        }
-                    });
-                }
-                
-                if (cloud.classes[classKey].fees) {
-                    local.classes[classKey].fees = cloud.classes[classKey].fees;
-                }
-
-                const localStudents = local.classes[classKey].students;
-                const cloudStudents = cloud.classes[classKey].students || [];
-                
-                cloudStudents.forEach(cStudent => {
-                    let lStudent = localStudents.find(s => s.id === cStudent.id);
-                    if (!lStudent) {
-                        localStudents.push(cStudent);
-                    } else {
-                        // Fusion des notes
-                        if (cStudent.grades) {
-                            if (!lStudent.grades) lStudent.grades = {};
-                            for (let periodKey in cStudent.grades) {
-                                if (!lStudent.grades[periodKey]) {
-                                    lStudent.grades[periodKey] = cStudent.grades[periodKey];
+                            for (let subId in cStudent.grades[periodKey]) {
+                                if (!lStudent.grades[periodKey][subId]) {
+                                    lStudent.grades[periodKey][subId] = cStudent.grades[periodKey][subId];
                                 } else {
-                                    for (let subId in cStudent.grades[periodKey]) {
-                                        if (!lStudent.grades[periodKey][subId]) {
-                                            lStudent.grades[periodKey][subId] = cStudent.grades[periodKey][subId];
-                                        } else {
-                                            const cGrades = cStudent.grades[periodKey][subId];
-                                            const lGrades = lStudent.grades[periodKey][subId];
-                                            const currentActiveSub = document.getElementById('grade-subject-select')?.value;
+                                    const cGrades = cStudent.grades[periodKey][subId];
+                                    const lGrades = lStudent.grades[periodKey][subId];
+                                    
+                                    // Utilisation d'une variable sécurisée si l'élément DOM n'est pas encore instancié
+                                    const selectEl = document.getElementById('grade-subject-select');
+                                    const currentActiveSub = selectEl ? selectEl.value : null;
 
-                                            // Si ce n'est pas la matière actuellement en cours de saisie par le prof sur ce téléphone,
-                                            // on charge les notes des autres profs enregistrées sur le Cloud
-                                            if (subId !== currentActiveSub) {
-                                                if (cGrades.dev1 !== undefined && cGrades.dev1 !== "") lGrades.dev1 = cGrades.dev1;
-                                                if (cGrades.dev2 !== undefined && cGrades.dev2 !== "") lGrades.dev2 = cGrades.dev2;
-                                                if (cGrades.dev3 !== undefined && cGrades.dev3 !== "") lGrades.dev3 = cGrades.dev3;
-                                                if (cGrades.compo !== undefined && cGrades.compo !== "") lGrades.compo = cGrades.compo;
-                                            }
-                                        }
+                                    if (subId !== currentActiveSub) {
+                                        if (cGrades.dev1 !== undefined) lGrades.dev1 = cGrades.dev1;
+                                        if (cGrades.dev2 !== undefined) lGrades.dev2 = cGrades.dev2;
+                                        if (cGrades.dev3 !== undefined) lGrades.dev3 = cGrades.dev3;
+                                        if (cGrades.compo !== undefined) lGrades.compo = cGrades.compo;
                                     }
                                 }
                             }
                         }
-                        
-                        // Fusion des paiements
-                        if (cStudent.payments) {
-                            if (!lStudent.payments) {
-                                lStudent.payments = cStudent.payments;
-                            } else {
-                                cStudent.payments.forEach((cPay, idx) => {
-                                    let lPay = lStudent.payments[idx];
-                                    if (lPay) {
-                                        if (cPay.statut === "Payé" && lPay.statut !== "Payé") {
-                                            lStudent.payments[idx] = cPay;
-                                        }
-                                    } else {
-                                        lStudent.payments[idx] = cPay;
-                                    }
-                                });
-                            }
-                        }
                     }
-                });
+                }
+                
+                // Fusion des paiements
+                if (cStudent.payments) {
+                    if (!lStudent.payments) {
+                        lStudent.payments = cStudent.payments;
+                    } else {
+                        cStudent.payments.forEach((cPay, idx) => {
+                            let lPay = lStudent.payments[idx];
+                            if (lPay) {
+                                // Priorité au statut payé venant du cloud s'il y a divergence
+                                if (cPay.statut === "Payé" && lPay.statut !== "Payé") {
+                                    lStudent.payments[idx] = cPay;
+                                }
+                            } else {
+                                lStudent.payments[idx] = cPay;
+                            }
+                        });
+                    }
+                }
             }
-            return local;
-        }
-
+        });
+    }
+    return local;
+}
         // Sauvegarde locale instantanée et synchronisation automatique en tâche de fond vers Supabase
         async function saveToStorage() {
             try {
@@ -2869,28 +2875,30 @@
                 tbody.appendChild(tr);
             });
         }
+function saveGradeLive(studentId, subjectId, field, val) {
+    const key = getCurrentClassKey();
+    const student = appState.classes[key].students.find(s => s.id === studentId);
+    if (!student) return;
 
-        function saveGradeLive(studentId, subjectId, field, val) {
-            const key = getCurrentClassKey();
-            const student = appState.classes[key].students.find(s => s.id === studentId);
-            if (!student) return;
+    const semKey = "p_" + appState.currentSemester;
+    if (!student.grades) student.grades = {};
+    if (!student.grades[semKey]) student.grades[semKey] = {};
+    if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
+    
+    const cleanVal = val.trim();
+    if (cleanVal === "" || isNaN(parseFloat(cleanVal))) {
+        // Supprime la clé pour éviter d'encombrer le stockage local et cloud
+        delete student.grades[semKey][subjectId][field];
+    } else {
+        student.grades[semKey][subjectId][field] = parseFloat(cleanVal);
+    }
+    
+    saveToStorage();
 
-            const semKey = "p_" + appState.currentSemester;
-            if (!student.grades) student.grades = {};
-            if (!student.grades[semKey]) student.grades[semKey] = {};
-            if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
-            
-            if (val.trim() === "") {
-                delete student.grades[semKey][subjectId][field];
-            } else {
-                student.grades[semKey][subjectId][field] = parseFloat(val);
-            }
-            saveToStorage();
-
-            const subjects = appState.classes[key].subjects || [];
-            renderStudentsTable(appState.classes[key].students, subjects);
-        }
-
+    const subjects = appState.classes[key].subjects || [];
+    renderStudentsTable(appState.classes[key].students, subjects);
+}
+     
         function goToNextSubject() {
             const select = document.getElementById('grade-subject-select');
             if (select.options.length <= 1) return;
