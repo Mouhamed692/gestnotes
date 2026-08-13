@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -125,29 +123,18 @@
         
        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                
-                <!-- BOUTONS ACTIONS DIRECTEUR / ADMIN -->
                 <button id="btn-export-base" onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md text-sm">
-                    <i class="fas fa-file-download"></i> <span>Exporter Base</span>
+                    <i class="fas fa-file-download"></i> <span>Exporter Base (.txt)</span>
                 </button>
 
-                <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
-                <button id="btn-import-base" onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md text-sm" title="Permet d'importer une base complète OU de fusionner un fichier JSON de notes d'enseignant">
-                    <i class="fas fa-file-upload"></i> <span>Importer Fichier</span>
+                <!-- Bouton d'export ciblé enseignant au format .txt -->
+                <button id="btn-export-teacher-grades" onclick="exportTeacherGradesOnly()" class="hidden flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm">
+                    <i class="fa-solid fa-file-export"></i> <span>Exporter mes Notes (.txt)</span>
                 </button>
 
-                <!-- BOUTON RECEPTION DIRECTEUR DEPUIS GOOGLE SHEETS (Option 2) -->
-                <button id="btn-sync-gs-pull" onclick="syncGsPull()" class="flex items-center justify-center gap-2 bg-[#6d28d9] text-white font-bold py-2.5 px-4 rounded-xl hover:bg-violet-800 transition-all shadow-md text-sm" title="Récupérer l'ensemble des notes publiées en ligne par les enseignants">
-                    <i class="fa-solid fa-cloud-arrow-down"></i> <span>Récupérer Sheets</span>
-                </button>
-
-                <!-- BOUTONS SECTIONS ENSEIGNANTS -->
-                <button id="btn-export-teacher-grades" onclick="exportTeacherGradesOnly()" class="hidden flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm" title="Exporter un fichier JSON de notes léger à transmettre par e-mail ou clé USB">
-                    <i class="fa-solid fa-file-export"></i> <span>Exporter mes Notes</span>
-                </button>
-
-                <button id="btn-sync-gs-push" onclick="syncGsPush()" class="hidden flex items-center justify-center gap-2 bg-teal-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-teal-700 transition-all shadow-md text-sm" title="Envoyer directement vos notes sur le tableur de l'école">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>Envoyer Sheets</span>
+                <input type="file" id="importFile" accept=".txt" class="hidden" onchange="importData(event)">
+                <button id="btn-import-base" onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md text-sm" title="Importer un fichier de sauvegarde complète ou un fichier de notes enseignant au format .txt">
+                    <i class="fas fa-file-upload"></i> <span>Importer Fichier (.txt)</span>
                 </button>
                 
                 <button id="btn-add-student-shortcut" onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm">
@@ -482,16 +469,6 @@
                     <label id="lbl-settings-period" class="block text-xs font-semibold text-slate-500 mb-1">Période courante</label>
                     <select id="settings-semester" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5"></select>
                 </div>
-                <div class="border-t pt-4">
-                    <h4 class="text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider flex items-center gap-1">
-                        <i class="fa-solid fa-cloud text-violet-600"></i> Liaison Google Sheets
-                    </h4>
-                    <p class="text-[10px] text-slate-500 mb-2">Permet d'envoyer ou de recevoir les notes des enseignants directement via votre tableur.</p>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">URL de l'application Web Google Script</label>
-                        <input type="text" id="settings-gs-url" placeholder="https://script.google.com/macros/s/.../exec" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs outline-none">
-                    </div>
-                </div>
             </div>
             
             <!-- Module de Promotion de classe (Transition d'année) -->
@@ -750,7 +727,6 @@
             selectedClass: "6ème",
             selectedSection: "",
             currentRole: "admin", // Rôle actif par défaut
-            gsUrl: "", // URL Google Sheets
             waTemplates: {
                 reminder: "Bonjour, nous vous rappelons que le paiement de {frais} de {montant} FCFA pour l'élève {eleve} ({classe}) reste attendu pour la période {periode}. Merci de votre confiance ! 🎓",
                 bulletin: "Bonjour, nous vous informons que le bulletin de {eleve} ({classe}) pour la période {periode} est disponible au secrétariat de l'école. Cordialement. 🎓"
@@ -909,7 +885,6 @@
                 document.getElementById('settings-year').value = appState.currentYear;
                 updateSettingsPeriodSelect();
                 populateRolloverSelector();
-                document.getElementById('settings-gs-url').value = appState.gsUrl || "";
             }
         }
 
@@ -937,7 +912,6 @@
         async function saveSettings() {
             appState.currentYear = document.getElementById('settings-year').value;
             appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
-            appState.gsUrl = document.getElementById('settings-gs-url').value.trim();
 
             await saveToStorage();
             
@@ -1432,266 +1406,19 @@
             render();
         }
 
-        function supprimerEleve(id) {
-            let targetClassKey = null;
-            let student = null;
-            
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === id);
-                if (student) {
-                    targetClassKey = k;
-                    break;
-                }
-            }
-            
-            if (!student || !targetClassKey) {
-                showToast("Élève introuvable.", "info");
-                return;
-            }
-
-            const nameFormatted = `${student.firstname} ${(student.lastname || "").toUpperCase()}`;
-            
-            askConfirmation(
-                `Êtes-vous sûr de vouloir supprimer définitivement l'élève ${nameFormatted}, ainsi que toutes ses notes et son historique financier ?`,
-                `<i class="fa-solid fa-user-slash text-rose-600"></i> Supprimer l'élève`,
-                function() {
-                    const idx = appState.classes[targetClassKey].students.findIndex(s => s.id === id);
-                    if (idx !== -1) {
-                        appState.classes[targetClassKey].students.splice(idx, 1);
-                        saveToStorage();
-                        showToast("Élève retiré de la base.", "info");
-                        render();
-                    }
-                }
-            );
+        // --- EXPORTATION BASE COMPLÈTE EN FORMAT TEXTE (.txt) ---
+        function exportData() {
+            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `Backup_GestNotes_${appState.currentYear}.txt`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("Sauvegarde exportée avec succès !");
         }
 
-        function toggleDev3() {
-            const subSelect = document.getElementById('grade-subject-select');
-            if (!subSelect.value) return;
-            const subjectId = subSelect.value;
-            subjectDev3Visible[subjectId] = !subjectDev3Visible[subjectId];
-            renderGradesGrid();
-        }
-
-        function exporterFeuilleSaisie() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            if (!clsData || clsData.students.length === 0) {
-                showToast("Aucune donnée disponible à l'export.", "info");
-                return;
-            }
-            
-            const semKey = "p_" + appState.currentSemester;
-            const periodLabel = getPeriodLabel(appState.selectedClass, appState.currentSemester);
-            const subjects = clsData.subjects || [];
-
-            if (subjects.length === 0) {
-                showToast("Aucune discipline configurée pour cette classe.", "info");
-                return;
-            }
-
-            const element = document.createElement('div');
-            element.style.padding = '20px';
-            element.style.fontFamily = "'Inter', Arial, sans-serif";
-            element.style.color = '#000000';
-            element.style.backgroundColor = '#ffffff';
-
-            let headerHtml = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2.5px solid #000000; padding-bottom: 10px; margin-bottom: 15px;">
-                    <div style="font-size: 8.5px; font-weight: 900; text-transform: uppercase; line-height: 1.4; color: #000000;">
-                        RÉPUBLIQUE DU SÉNÉGAL<br>
-                        Ministère de l'Éducation Nationale<br>
-                        Inspection de l'Éducation et de la Formation<br>
-                        <span style="color: #4c1d95; font-size: 9.5px; font-weight: 900;">GESTNOTES ACADEMY</span>
-                    </div>
-                    <div style="text-align: right; font-size: 9px; line-height: 1.4; color: #000000; font-weight: bold;">
-                        <strong>ANNÉE SCOLAIRE :</strong> ${appState.currentYear}<br>
-                        <strong>PÉRIODE :</strong> ${periodLabel}<br>
-                        <strong>CLASSE :</strong> ${appState.selectedClass} ${appState.selectedSection || 'Général'}
-                    </div>
-                </div>
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h2 style="margin: 0; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: underline; color: #000000;">
-                        FEUILLE DE NOTES ET ENREGISTREMENT DES RÉSULTATS
-                    </h2>
-                    <p style="margin: 4px 0 0; font-size: 9px; color: #000000; font-weight: bold;">Effectif de la classe : ${clsData.students.length} élève(s)</p>
-                </div>
-            `;
-
-            let tableHtml = `
-                <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; border: 1.5px solid #000000; table-layout: auto;">
-                    <thead>
-                        <tr style="background-color: #f1f5f9; color: #000000;">
-                            <th rowspan="2" style="border: 1.5px solid #000000; padding: 6px; text-align: center; font-weight: 900; width: 85px; color: #000000; font-size: 9px;">IDENTIFIANT (ID)</th>
-                            <th rowspan="2" style="border: 2px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 100px; color: #000000; font-size: 9px;">NOM</th>
-                            <th rowspan="2" style="border: 2px solid #000000; padding: 6px; text-align: left; font-weight: 900; width: 120px; color: #000000; font-size: 9px;">PRÉNOM</th>
-            `;
-
-            const isPrim = isPrimary(appState.selectedClass);
-
-            subjects.forEach(sub => {
-                const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id];
-                const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
-                
-                let colSpan = 1;
-                if (isPrim) {
-                    colSpan = hasNote2 ? 3 : 2;
-                } else {
-                    colSpan = hasDev3 ? 4 : 3;
-                }
-
-                tableHtml += `
-                    <th colspan="${colSpan}" style="border: 1px solid #000000; padding: 5px; text-align: center; background-color: #f8fafc; font-weight: 900; color: #000000; font-size: 8.5px;">
-                        ${sub.name}
-                    </th>
-                `;
-            });
-
-            tableHtml += `
-                        </tr>
-                        <tr style="background-color: #f1f5f9; color: #000000;">
-            `;
-
-            subjects.forEach(sub => {
-                const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id];
-                const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
-
-                if (isPrim) {
-                    tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">N1</th>`;
-                    if (hasNote2) {
-                        tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">N2</th>`;
-                    }
-                    tableHtml += `<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>`;
-                } else {
-                    tableHtml += `
-                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D1</th>
-                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D2</th>
-                        ${hasDev3 ? '<th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; color: #000000;">D3</th>' : ''}
-                        <th style="border: 1px solid #000000; padding: 3px; text-align: center; font-weight: 900; width: 28px; background-color: #e2e8f0; color: #000000;">CP</th>
-                    `;
-                }
-            });
-
-            tableHtml += `
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            const sorted = [...clsData.students].sort((a,b) => a.lastname.localeCompare(b.lastname) || a.firstname.localeCompare(b.firstname));
-
-            sorted.forEach((s, idx) => {
-                tableHtml += `
-                    <tr style="border-bottom: 1.5px solid #000000;">
-                        <td style="border: 1px solid #000000; padding: 5px; text-align: center; font-family: 'Courier New', Courier, monospace; font-size: 8.5px; font-weight: bold; color: #000000; letter-spacing: 0.5px;">${s.id}</td>
-                        <td style="border: 1.5px solid #000000; padding: 5px; font-weight: 900; text-transform: uppercase; white-space: nowrap; color: #000000;">${s.lastname}</td>
-                        <td style="border: 1.5px solid #000000; padding: 5px; white-space: nowrap; color: #000000; font-weight: bold;">${s.firstname}</td>
-                `;
-
-                subjects.forEach(sub => {
-                    const periodGrades = s.grades[semKey] || {};
-                    const g = periodGrades[sub.id] || {};
-                    const isPrim = isPrimary(appState.selectedClass);
-                    const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id];
-                    const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
-
-                    const d1Val = (g.dev1 !== undefined && g.dev1 !== "") ? parseFloat(g.dev1) : '';
-                    const d2Val = (g.dev2 !== undefined && g.dev2 !== "") ? parseFloat(g.dev2) : '';
-                    const d3Val = (g.dev3 !== undefined && g.dev3 !== "") ? parseFloat(g.dev3) : '';
-                    const compoVal = (g.compo !== undefined && g.compo !== "") ? parseFloat(g.compo) : '';
-
-                    if (isPrim) {
-                        tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d1Val}</td>`;
-                        if (hasNote2) {
-                            tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d2Val}</td>`;
-                        }
-                        tableHtml += `<td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: 900; background-color: #f1f5f9; color: #000000;">${compoVal}</td>`;
-                    } else {
-                        tableHtml += `
-                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d1Val}</td>
-                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d2Val}</td>
-                            ${hasDev3 ? `<td style="border: 1px solid #000000; padding: 4px; text-align: center; color: #000000; font-weight: bold;">${d3Val}</td>` : ''}
-                            <td style="border: 1px solid #000000; padding: 4px; text-align: center; font-weight: 900; background-color: #f1f5f9; color: #000000;">${compoVal}</td>
-                        `;
-                    }
-                });
-
-                tableHtml += `
-                    </tr>
-                `;
-            });
-
-            tableHtml += `
-                    </tbody>
-                </table>
-            `;
-
-            let footerHtml = `
-                <div style="margin-top: 35px; display: flex; justify-content: space-between; font-size: 8.5px; font-weight: bold; padding: 0 10px; color: #000000;">
-                    <div>Date d'édition : ${new Date().toLocaleDateString('fr-FR')}</div>
-                    <div style="text-align: center; width: 180px; border-top: 1.5px dashed #000000; padding-top: 5px; font-weight: 900;">
-                        Signature de l'Enseignant
-                    </div>
-                    <div style="text-align: center; width: 180px; border-top: 1.5px dashed #000000; padding-top: 5px; font-weight: 900;">
-                        Visa du Chef d'Établissement
-                    </div>
-                </div>
-            `;
-
-            element.innerHTML = headerHtml + tableHtml + footerHtml;
-
-            const opt = {
-                margin: 8,
-                filename: `Grille_Evaluations_${appState.selectedClass}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            };
-
-            html2pdf().from(element).set(opt).save();
-            showToast("Feuille de grille globale exportée !", "success");
-        }
-
-        window.ouvrirEncaissementDirect = function(studentId) {
-            currentStudentIdForFinance = studentId;
-            let student = null;
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === studentId);
-                if (student) break;
-            }
-            if (!student) return;
-
-            const key = getCurrentClassKey();
-            const targetFees = appState.classes[key].fees || { inscription: 0, mensualite: 0 };
-            
-            if (!student.payments || student.payments.length === 0) {
-                student.payments = moisAnnee.map((m, idx) => ({
-                    designation: m,
-                    statut: "Non payé",
-                    montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
-                    montantPaye: 0,
-                    methode: "",
-                    dateEncaissement: ""
-                }));
-            }
-
-            const unpaidIdx = student.payments.findIndex(p => p.statut === "Non payé");
-            if (unpaidIdx === -1) {
-                showToast("Tous les paiements sont à jour pour cet élève !", "info");
-                return;
-            }
-
-            openEncaissementModal(unpaidIdx);
-        };
-
-        // Nettoyage de chaîne pour la tolérance aux accents et casse (Fuzzy Matching)
-        function cleanStringForFuzzy(str) {
-            if (!str) return "";
-            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-        }
-
-        // --- EXPORT CIBLÉ DES NOTES ENSEIGNANT (Option 1) ---
+        // --- EXPORTATION DES NOTES DE L'ENSEIGNANT EN FORMAT TEXTE (.txt) ---
         function exportTeacherGradesOnly() {
             const role = localStorage.getItem("gestnotes_local_role") || "admin";
             const teacherSubjectId = localStorage.getItem("gestnotes_teacher_subject") || "";
@@ -1718,127 +1445,17 @@
                 }
             });
             
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(gradesExport));
+            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(gradesExport));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `Notes_${appState.selectedClass}_${teacherSubjectId}.json`);
+            downloadAnchor.setAttribute("download", `Notes_${appState.selectedClass}_${teacherSubjectId}.txt`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
             showToast("Fichier de notes exporté !");
         }
 
-        // --- ENVOYER LES NOTES SUR GOOGLE SHEETS (Option 2) ---
-        async function syncGsPush() {
-            const url = appState.gsUrl;
-            if (!url) {
-                showToast("Veuillez configurer l'URL Google Sheets dans les paramètres.", "info");
-                return;
-            }
-            const role = localStorage.getItem("gestnotes_local_role") || "admin";
-            const teacherSubjectId = localStorage.getItem("gestnotes_teacher_subject") || "";
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            const semKey = "p_" + appState.currentSemester;
-            
-            if (!clsData) return;
-            const subjectId = role === 'enseignant' ? teacherSubjectId : document.getElementById('grade-subject-select').value;
-            
-            if (!subjectId) {
-                showToast("Veuillez sélectionner une discipline.", "info");
-                return;
-            }
-            
-            const payload = {
-                action: "save_grades",
-                classKey: key,
-                semester: semKey,
-                subjectId: subjectId,
-                grades: {}
-            };
-            
-            clsData.students.forEach(s => {
-                if (s.grades && s.grades[semKey] && s.grades[semKey][subjectId]) {
-                    payload.grades[s.id] = s.grades[semKey][subjectId];
-                }
-            });
-            
-            showToast("Envoi vers Google Sheets...", "info");
-            
-            try {
-                const resp = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify(payload),
-                    redirect: "follow"
-                });
-                const res = await resp.json();
-                if (res.status === "success") {
-                    showToast("Notes sauvegardées en ligne !", "success");
-                } else {
-                    showToast("Erreur : " + res.message, "info");
-                }
-            } catch (err) {
-                showToast("Notes transmises !", "success");
-            }
-        }
-
-        // --- RÉCUPÉRER LES NOTES DEPUIS GOOGLE SHEETS (Option 2) ---
-        async function syncGsPull() {
-            const url = appState.gsUrl;
-            if (!url) {
-                showToast("Veuillez configurer l'URL Google Sheets dans les paramètres.", "info");
-                return;
-            }
-            
-            showToast("Récupération depuis Google Sheets...", "info");
-            
-            try {
-                const resp = await fetch(url, {
-                    method: "GET",
-                    redirect: "follow"
-                });
-                const res = await resp.json();
-                if (res.status === "success" && res.data) {
-                    let updateCount = 0;
-                    
-                    res.data.forEach(item => {
-                        const classKey = item.classKey;
-                        const semKey = item.semester;
-                        const studentId = item.studentId;
-                        const subjectId = item.subjectId;
-                        
-                        if (appState.classes[classKey]) {
-                            const student = appState.classes[classKey].students.find(s => s.id === studentId);
-                            if (student) {
-                                if (!student.grades) student.grades = {};
-                                if (!student.grades[semKey]) student.grades[semKey] = {};
-                                if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
-                                
-                                const g = student.grades[semKey][subjectId];
-                                if (item.dev1 !== "") g.dev1 = parseFloat(item.dev1); else delete g.dev1;
-                                if (item.dev2 !== "") g.dev2 = parseFloat(item.dev2); else delete g.dev2;
-                                if (item.dev3 !== "") g.dev3 = parseFloat(item.dev3); else delete g.dev3;
-                                if (item.compo !== "") g.compo = parseFloat(item.compo); else delete g.compo;
-                                
-                                updateCount++;
-                            }
-                        }
-                    });
-                    
-                    await saveToStorage();
-                    render();
-                    showToast(`${updateCount} notes fusionnées depuis Sheets !`, "success");
-                } else {
-                    showToast("Erreur ou aucune donnée trouvée sur le tableur.", "info");
-                }
-            } catch (err) {
-                console.error(err);
-                showToast("Échec de la récupération des notes.", "info");
-            }
-        }
-
-        // --- IMPORTATION INTELLIGENTE (Base Complète OU Notes Enseignant) ---
+        // --- IMPORTATION INTELLIGENTE DU FICHIER TEXTE BRUT (.txt) ---
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1847,9 +1464,9 @@
                 try {
                     const importedState = JSON.parse(e.target.result);
                     
-                    // Détection intelligente du fichier importé
+                    // Détection intelligente du format du fichier texte
                     if (importedState && importedState.type === "teacher_grades_export") {
-                        // Cas 1 : Fichier JSON d'un enseignant (Notes d'une matière/classe)
+                        // Cas 1 : Exportation ciblée d'enseignant
                         const classKey = importedState.classKey;
                         const semKey = importedState.semesterKey;
                         const subjectId = importedState.subjectId;
@@ -1877,7 +1494,7 @@
                         showToast(`${updateCount} notes d'élèves importées et fusionnées !`, "success");
                         
                     } else if (importedState && importedState.classes) {
-                        // Cas 2 : Restauration d'une sauvegarde complète
+                        // Cas 2 : Restauration de la sauvegarde complète
                         appState = importedState;
                         buildEmptyState();
                         await saveToStorage();
@@ -1887,14 +1504,14 @@
                         render();
                         showToast("Base de données importée !", "success");
                     } else {
-                        alert("Le fichier JSON n'est pas reconnu par GestNotes (Format non valide).");
+                        alert("Le fichier texte n'est pas reconnu par GestNotes (Structure erronée).");
                     }
                 } catch (err) {
-                    alert("Échec de la lecture du fichier : " + err.message);
+                    alert("Échec de la lecture du fichier texte.");
                 }
             };
             reader.readAsText(file);
-            event.target.value = ""; // Réinitialiser le sélecteur de fichier
+            event.target.value = ""; // Réinitialiser le sélecteur
         }
 
         function importerNotesAuto(input) {
@@ -2512,8 +2129,6 @@
             const btnExportBase = document.getElementById('btn-export-base');
             const btnImportBase = document.getElementById('btn-import-base');
             const btnExportTeacherGrades = document.getElementById('btn-export-teacher-grades');
-            const btnSyncGsPush = document.getElementById('btn-sync-gs-push');
-            const btnSyncGsPull = document.getElementById('btn-sync-gs-pull');
 
             if (classFeesBtn) classFeesBtn.style.display = '';
             if (subjectsBtn) subjectsBtn.style.display = '';
@@ -2528,8 +2143,6 @@
             if (btnExportBase) btnExportBase.style.display = '';
             if (btnImportBase) btnImportBase.style.display = '';
             if (btnExportTeacherGrades) btnExportTeacherGrades.classList.add('hidden');
-            if (btnSyncGsPush) btnSyncGsPush.classList.add('hidden');
-            if (btnSyncGsPull) btnSyncGsPull.style.display = '';
 
             const filterClass = document.getElementById('filter-class');
             const filterSection = document.getElementById('filter-section');
@@ -2545,10 +2158,8 @@
                 
                 if (btnExportBase) btnExportBase.style.display = 'none';
                 if (btnImportBase) btnImportBase.style.display = 'none';
-                if (btnSyncGsPull) btnSyncGsPull.style.display = 'none';
                 
                 if (btnExportTeacherGrades) btnExportTeacherGrades.classList.remove('hidden');
-                if (btnSyncGsPush) btnSyncGsPush.classList.remove('hidden');
                 
                 if (filterClass) filterClass.disabled = true;
                 if (filterSection) filterSection.disabled = true;
@@ -2560,7 +2171,6 @@
                     if (subjectsBtn) subjectsBtn.style.display = 'none';
                     if (gradesSec) gradesSec.style.display = 'none';
                     if (settingsBtn) settingsBtn.style.display = 'none';
-                    if (btnSyncGsPull) btnSyncGsPull.style.display = 'none';
                 }
             }
 
@@ -2568,495 +2178,6 @@
             const clsData = appState.classes[key] || { subjects: [], students: [] };
             renderStudentsTable(clsData.students, clsData.subjects);
         }
-
-        function renderSubjectsSelect(subjects) {
-            const select = document.getElementById('grade-subject-select');
-            const gSection = document.getElementById('grades-section');
-            const nextBtn = document.getElementById('btn-next-subject');
-            
-            const role = localStorage.getItem("gestnotes_local_role") || "admin";
-            const teacherSubjectId = localStorage.getItem("gestnotes_teacher_subject") || "";
-
-            let filtered = subjects;
-            if (role === 'enseignant' && teacherSubjectId !== "") {
-                filtered = subjects.filter(sub => sub.id === teacherSubjectId);
-            }
-            
-            if (filtered.length === 0 || role === 'comptable') {
-                gSection.style.display = 'none';
-                select.innerHTML = "";
-                return;
-            }
-            gSection.style.display = 'flex';
-
-            const oldVal = select.value;
-            select.innerHTML = filtered.map(sub => `<option value="${sub.id}">${sub.name} (${getCoefLabel(appState.selectedClass)}: ${sub.coef})</option>`).join('');
-            
-            if (role === 'enseignant' && teacherSubjectId !== "") {
-                select.value = teacherSubjectId;
-                select.disabled = true; 
-                if (nextBtn) nextBtn.style.display = 'none';
-            } else {
-                select.disabled = false;
-                if (nextBtn) nextBtn.style.display = '';
-                if (oldVal && filtered.find(x => x.id === oldVal)) {
-                    select.value = oldVal;
-                }
-            }
-        }
-
-        function renderGradesGrid() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            const subSelect = document.getElementById('grade-subject-select');
-            const tbody = document.getElementById('grades-table-body');
-            tbody.innerHTML = "";
-
-            if (!clsData || !subSelect.value || clsData.students.length === 0) return;
-
-            const subjectId = subSelect.value;
-            const isVisiblePlus = !!subjectDev3Visible[subjectId];
-            const maxVal = isPrimary(appState.selectedClass) ? 10 : 20;
-            const isPrim = isPrimary(appState.selectedClass);
-
-            const thDev1 = document.getElementById('lbl-th-dev1');
-            const thDev2 = document.getElementById('lbl-th-dev2');
-            const thDev3 = document.getElementById('lbl-th-dev3');
-
-            thDev1.className = "p-3 text-center";
-            thDev1.onclick = null;
-            thDev2.className = "p-3 text-center";
-            thDev2.onclick = null;
-
-            if (isPrim) {
-                thDev1.className = "p-3 text-center group cursor-pointer hover:bg-slate-200 select-none";
-                thDev1.innerHTML = `Note 1 <i class="fa-solid ${isVisiblePlus ? 'fa-circle-minus' : 'fa-circle-plus'} ml-1 text-violet-500"></i>`;
-                thDev1.onclick = toggleDev3;
-
-                thDev2.innerText = "Note 2";
-                thDev2.style.display = isVisiblePlus ? '' : 'none';
-
-                thDev3.style.display = 'none';
-            } else {
-                thDev1.innerText = "Devoir 1";
-                thDev1.style.display = '';
-
-                thDev2.className = "p-3 text-center group cursor-pointer hover:bg-slate-200 select-none";
-                thDev2.innerHTML = `Devoir 2 <i class="fa-solid ${isVisiblePlus ? 'fa-circle-minus' : 'fa-circle-plus'} ml-1 text-violet-500"></i>`;
-                thDev2.onclick = toggleDev3;
-                thDev2.style.display = '';
-
-                thDev3.innerText = "Devoir 3";
-                thDev3.style.display = isVisiblePlus ? '' : 'none';
-            }
-
-            const sorted = [...clsData.students].sort((a,b) => {
-                const nameA = (a.lastname || "").toUpperCase();
-                const nameB = (b.lastname || "").toUpperCase();
-                return nameA.localeCompare(nameB) || (a.firstname || "").localeCompare(b.firstname || "");
-            });
-            const semKey = "p_" + appState.currentSemester;
-
-            sorted.forEach(s => {
-                const periodGrades = s.grades[semKey] || {};
-                const g = periodGrades[subjectId] || { dev1: "", dev2: "", dev3: "", compo: "" };
-                
-                const td1HTML = `<td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev1??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev1',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>`;
-                const td2HTML = `<td class="p-1" style="display: ${(!isPrim || isVisiblePlus) ? '' : 'none'}"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev2??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev2',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>`;
-                const td3HTML = `<td class="p-1" style="display: ${(!isPrim && isVisiblePlus) ? '' : 'none'}"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.dev3??''}" onchange="saveGradeLive('${s.id}','${subjectId}','dev3',this.value)" class="w-full bg-slate-50 focus:bg-white text-center font-bold text-sm p-2 rounded-lg border outline-none border-slate-200"></td>`;
-                const tdCompoHTML = `<td class="p-1"><input type="number" step="any" min="0" max="${maxVal}" placeholder="/${maxVal}" value="${g.compo??''}" onchange="saveGradeLive('${s.id}','${subjectId}','compo',this.value)" class="w-full bg-violet-50/40 focus:bg-white text-center font-extrabold text-sm p-2 rounded-lg border outline-none border-violet-200 focus:border-violet-500 text-violet-900"></td>`;
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/70 transition-colors";
-                tr.innerHTML = `
-                    <td class="p-2 font-bold text-[#000000] text-sm text-left pl-4">${(s.lastname || "").toUpperCase()} ${s.firstname || ""}</td>
-                    ${td1HTML}
-                    ${td2HTML}
-                    ${td3HTML}
-                    ${tdCompoHTML}
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function saveGradeLive(studentId, subjectId, field, val) {
-            const key = getCurrentClassKey();
-            const student = appState.classes[key].students.find(s => s.id === studentId);
-            if (!student) return;
-
-            const semKey = "p_" + appState.currentSemester;
-            if (!student.grades) student.grades = {};
-            if (!student.grades[semKey]) student.grades[semKey] = {};
-            if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
-            
-            const cleanVal = val.trim();
-            if (cleanVal === "" || isNaN(parseFloat(cleanVal))) {
-                delete student.grades[semKey][subjectId][field];
-            } else {
-                student.grades[semKey][subjectId][field] = parseFloat(cleanVal);
-            }
-            
-            saveToStorage();
-
-            const subjects = appState.classes[key].subjects || [];
-            renderStudentsTable(appState.classes[key].students, subjects);
-        }
-     
-        function goToNextSubject() {
-            const select = document.getElementById('grade-subject-select');
-            if (select.options.length <= 1) return;
-            let nextIdx = select.selectedIndex + 1;
-            if (nextIdx >= select.options.length) nextIdx = 0;
-            select.selectedIndex = nextIdx;
-            renderGradesGrid();
-        }
-
-        function filterStudentsGlobal() {
-            const q = document.getElementById('grade-search').value.toLowerCase().trim();
-            const rows = document.getElementById('grades-table-body').querySelectorAll('tr');
-            rows.forEach(r => {
-                const name = r.querySelector('td').innerText.toLowerCase();
-                r.style.display = name.includes(q) ? '' : 'none';
-            });
-        }
-
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `Backup_GestNotes_${appState.currentYear}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-            showToast("Sauvegarde exportée avec succès !");
-        }
-
-        function showToast(message, type = "info") {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast-animate flex items-center gap-3 bg-white border p-4 rounded-xl shadow-lg pointer-events-auto min-w-[300px] ${ type === 'success' ? 'border-emerald-500 text-emerald-800' : 'border-violet-500 text-violet-800' }`;
-            const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-circle-info text-violet-500';
-            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        function askConfirmation(message, title, onConfirm) {
-            document.getElementById('confirm-modal-message').innerText = message;
-            
-            const titleEl = document.getElementById('confirm-modal-title');
-            if (titleEl) {
-                titleEl.innerHTML = title || `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Confirmation`;
-            }
-            
-            const confirmBtn = document.getElementById('confirm-modal-btn');
-            confirmBtn.onclick = function() {
-                closeModal('confirm-modal');
-                if (onConfirm) onConfirm();
-            };
-            
-            openModal('confirm-modal');
-        }
-
-        function render() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key] || { subjects: [], students: [] };
-            if (!clsData.students) clsData.students = [];
-            if (!clsData.subjects) clsData.subjects = [];
-
-            const classBadge = document.getElementById('class-badge');
-            if (classBadge) {
-                classBadge.innerText = appState.selectedClass + " " + (appState.selectedSection || "Général");
-            }
-            const studentCount = document.getElementById('student-count');
-            if (studentCount) {
-                studentCount.innerText = `${clsData.students.length} élève(s) inscrit(s)`;
-            }
-            const filterEffectif = document.getElementById('filter-effectif');
-            if (filterEffectif) {
-                filterEffectif.value = clsData.students.length;
-            }
-
-            renderStudentsTable(clsData.students, clsData.subjects);
-            renderSubjectsSelect(clsData.subjects);
-            renderGradesGrid();
-            calculateClassStats();
-        }
-
-        function renderStudentsTable(students, subjects) {
-            const tbody = document.getElementById('students-table-body');
-            const empty = document.getElementById('empty-state');
-            tbody.innerHTML = "";
-
-            if (!students || students.length === 0) {
-                empty.classList.remove('hidden');
-                return;
-            }
-            empty.classList.add('hidden');
-
-            const sorted = [...students].sort((a,b) => {
-                const nameA = (a.lastname || "").toUpperCase();
-                const nameB = (b.lastname || "").toUpperCase();
-                return nameA.localeCompare(nameB) || (a.firstname || "").localeCompare(b.firstname || "");
-            });
-            
-            const role = localStorage.getItem("gestnotes_local_role") || "admin";
-
-            sorted.forEach(s => {
-                const mg = calculerMoyenneGeneraleGlobale(s, subjects);
-                const isPrimaryClass = isPrimary(appState.selectedClass);
-                const displayMg = (mg === null) ? 
-                    `<span class="text-slate-400 text-xs italic">Pas de note</span>` : 
-                    `<span class="font-extrabold text-[#4c1d95]">${mg.toFixed(2)}</span> <span class="text-[10px] text-slate-400">/${isPrimaryClass ? '10' : '20'}</span>`;
-
-                const showFinances = role !== 'enseignant';
-                const showEdits = role !== 'comptable';
-
-                let dobFormatted = "";
-                if (s.dob) {
-                    try {
-                        dobFormatted = 'Né(e) le ' + new Date(s.dob).toLocaleDateString('fr-FR');
-                    } catch(e) {
-                        dobFormatted = 'Né(e) le ' + s.dob;
-                    }
-                }
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
-                tr.innerHTML = `
-                    <td class="py-3 px-5">
-                        <div class="font-bold text-slate-800 text-base leading-tight">${(s.lastname || "").toUpperCase()} ${s.firstname || ""}</div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">${dobFormatted} ${s.pob ? 'à ' + s.pob : ''}</div>
-                    </td>
-                    <td class="py-3 px-5 text-center text-sm md:text-base font-semibold">${displayMg}</td>
-                    <td class="py-3 px-5 text-right">
-                        <div class="flex flex-wrap items-center justify-end gap-1.5">
-                            <button onclick="ouvrirBulletin('${s.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-[#4c1d95] font-bold px-2.5 py-1.5 rounded-lg text-xs border border-indigo-200 transition-all shadow-sm flex items-center gap-1" title="Imprimer le bulletin">
-                                <i class="fa-solid fa-file-invoice"></i> <span class="hidden sm:inline">Bulletin</span>
-                            </button>
-                            
-                            <button onclick="ouvrirEncaissementDirect('${s.id}')" style="display: ${showFinances ? '' : 'none'}" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1.5 rounded-lg text-xs border border-emerald-200 transition-all shadow-sm flex items-center gap-1" title="Encaisser paiement direct">
-                                <i class="fa-solid fa-cash-register"></i> <span class="hidden sm:inline">Encaisser</span>
-                            </button>
-                            <button onclick="openMensualitesModal('${s.id}')" style="display: ${showFinances ? '' : 'none'}" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-2.5 py-1.5 rounded-lg text-xs border border-amber-200 transition-all shadow-sm flex items-center gap-1" title="Frais de scolarité / écolage">
-                                <i class="fa-solid fa-wallet"></i> <span class="hidden sm:inline">Écolage</span>
-                            </button>
-                            
-                            <button onclick="openEditStudent('${s.id}')" style="display: ${showEdits ? '' : 'none'}" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] p-2 rounded-lg border border-violet-100 flex items-center justify-center transition-colors" title="Modifier la fiche élève">
-                                <i class="fa-solid fa-user-pen text-xs"></i>
-                            </button>
-                            <button onclick="supprimerEleve('${s.id}')" style="display: ${showEdits ? '' : 'none'}" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-lg border border-rose-100 flex items-center justify-center transition-colors" title="Supprimer l'élève">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function populateRolloverSelector() {
-            const select = document.getElementById('rollover-target-class');
-            if (select) {
-                select.innerHTML = '<option value="">-- Choisir la classe cible --</option>' + 
-                    classNames.map(c => `<option value="${c}">Vers ${c}</option>`).join('');
-            }
-        }
-
-        function executeRollover() {
-            const targetClass = document.getElementById('rollover-target-class').value;
-            if (!targetClass) {
-                showToast("Veuillez sélectionner une classe de destination.", "info");
-                return;
-            }
-            const currentKey = getCurrentClassKey();
-            const currentClsData = appState.classes[currentKey];
-            if (!currentClsData || !currentClsData.students || currentClsData.students.length === 0) {
-                showToast("Aucun élève dans la classe actuelle à promouvoir.", "info");
-                return;
-            }
-
-            askConfirmation(
-                `Voulez-vous promouvoir les ${currentClsData.students.length} élèves de ${appState.selectedClass} ${appState.selectedSection || ''} vers la classe de ${targetClass} ? Leurs notes et versements de l'année courante seront réinitialisés pour leur nouveau cursus.`,
-                `<i class="fa-solid fa-angles-up text-amber-600"></i> Confirmer la promotion`,
-                async function() {
-                    const targetKey = `${targetClass}_${appState.selectedSection}`;
-                    if (!appState.classes[targetKey]) {
-                        appState.classes[targetKey] = {
-                            subjects: getDefaultSubjects(targetClass),
-                            students: [],
-                            fees: { inscription: 0, mensualite: 0 }
-                        };
-                    }
-
-                    const targetFees = appState.classes[targetKey].fees || { inscription: 0, mensualite: 0 };
-
-                    currentClsData.students.forEach(student => {
-                        student.grades = {};
-                        student.payments = moisAnnee.map((m, idx) => ({
-                            designation: m,
-                            statut: "Non payé",
-                            montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
-                            montantPaye: 0,
-                            methode: "",
-                            dateEncaissement: ""
-                        }));
-                        appState.classes[targetKey].students.push(student);
-                    });
-
-                    currentClsData.students = [];
-                    appState.selectedClass = targetClass;
-                    
-                    await saveToStorage();
-                    closeModal('settings-modal');
-                    populateFilters();
-                    updateHeaderDisplays();
-                    render();
-                    showToast(`Promotion des élèves vers ${targetClass} validée !`, "success");
-                }
-            );
-        }
-
-        function openWhatsAppRemindersModal() {
-            const monthSelect = document.getElementById('wa-reminder-month');
-            if (monthSelect) {
-                monthSelect.innerHTML = moisAnnee.map((m, idx) => `<option value="${idx}">${m}</option>`).join('');
-            }
-            const templateSelector = document.getElementById('wa-template-selector');
-            if (templateSelector) {
-                templateSelector.value = "reminder";
-            }
-            onWaTemplateChange();
-            openModal('wa-reminders-modal');
-        }
-
-        function onWaTemplateChange() {
-            const selector = document.getElementById('wa-template-selector');
-            const textarea = document.getElementById('wa-reminder-text');
-            if (selector && textarea) {
-                textarea.value = appState.waTemplates[selector.value] || "";
-            }
-            renderWhatsAppReminders();
-        }
-
-        function renderWhatsAppReminders() {
-            const monthIdx = parseInt(document.getElementById('wa-reminder-month').value) || 0;
-            const templateText = document.getElementById('wa-reminder-text').value;
-            const tbody = document.getElementById('wa-reminders-list-tbody');
-            tbody.innerHTML = "";
-
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            if (!clsData || !clsData.students || clsData.students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun élève enregistré dans cette classe.</td></tr>`;
-                return;
-            }
-
-            const monthName = moisAnnee[monthIdx];
-            let count = 0;
-
-            clsData.students.forEach(s => {
-                const pay = s.payments ? s.payments[monthIdx] : null;
-                if (pay && pay.statut !== "Payé") {
-                    count++;
-                    const resteDu = pay.montantDu - pay.montantPaye;
-                    
-                    let customizedMessage = templateText
-                        .replace(/{eleve}/g, `${s.firstname} ${s.lastname.toUpperCase()}`)
-                        .replace(/{classe}/g, `${appState.selectedClass} ${appState.selectedSection || ''}`)
-                        .replace(/{frais}/g, monthIdx === 0 ? "Frais d'inscription" : `Mensualité de ${monthName}`)
-                        .replace(/{montant}/g, resteDu.toLocaleString())
-                        .replace(/{periode}/g, monthName);
-
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50/50 transition-colors";
-                    tr.innerHTML = `
-                        <td class="px-4 py-3 font-bold text-slate-800">${s.lastname.toUpperCase()} ${s.firstname}</td>
-                        <td class="px-4 py-3 text-slate-600">${monthIdx === 0 ? "Frais d'inscription" : "Mensualité " + monthName}</td>
-                        <td class="px-4 py-3 text-right font-extrabold text-rose-600">${resteDu.toLocaleString()} F</td>
-                        <td class="px-4 py-3 text-center text-slate-500">${s.phone || '-'}</td>
-                        <td class="px-4 py-3 text-center">
-                            <button onclick="sendIndividualWaReminder('${s.id}', ${monthIdx}, \`${encodeURIComponent(customizedMessage)}\`)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1 mx-auto">
-                                <i class="fa-brands fa-whatsapp"></i> Envoyer
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-
-            if (count === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-emerald-600 font-semibold">Tous les parents sont à jour pour cette échéance ! 🎉</td></tr>`;
-            }
-        }
-
-        window.sendIndividualWaReminder = function(studentId, monthIdx, encodedMessage) {
-            let student = null;
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === studentId);
-                if (student) break;
-            }
-            if (!student || !student.phone) {
-                showToast("Le numéro parent est manquant ou invalide.", "info");
-                return;
-            }
-
-            let purePhone = student.phone.replace(/[\s\+\-]/g, '');
-            if (purePhone.length === 9) purePhone = "221" + purePhone;
-
-            const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodedMessage}`;
-            window.open(url, '_blank');
-        };
-
-        window.sendAllWaReminders = function() {
-            const monthIdx = parseInt(document.getElementById('wa-reminder-month').value) || 0;
-            const templateText = document.getElementById('wa-reminder-text').value;
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            if (!clsData || !clsData.students || clsData.students.length === 0) return;
-
-            const monthName = moisAnnee[monthIdx];
-            const targets = [];
-
-            clsData.students.forEach(s => {
-                const pay = s.payments ? s.payments[monthIdx] : null;
-                if (pay && pay.statut !== "Payé") {
-                    if (s.phone) {
-                        const resteDu = pay.montantDu - pay.montantPaye;
-                        let customizedMessage = templateText
-                            .replace(/{eleve}/g, `${s.firstname} ${s.lastname.toUpperCase()}`)
-                            .replace(/{classe}/g, `${appState.selectedClass} ${appState.selectedSection || ''}`)
-                            .replace(/{frais}/g, monthIdx === 0 ? "Frais d'inscription" : `Mensualité de ${monthName}`)
-                            .replace(/{montant}/g, resteDu.toLocaleString())
-                            .replace(/{periode}/g, monthName);
-                        
-                        let purePhone = s.phone.replace(/[\s\+\-]/g, '');
-                        if (purePhone.length === 9) purePhone = "221" + purePhone;
-
-                        targets.push({ phone: purePhone, msg: encodeURIComponent(customizedMessage) });
-                    }
-                }
-            });
-
-            if (targets.length === 0) {
-                showToast("Aucun retardataire avec numéro de téléphone trouvé.", "info");
-                return;
-            }
-
-            askConfirmation(
-                `Vous êtes sur le point d'ouvrir ${targets.length} discussions WhatsApp. Si votre navigateur bloque les fenêtres surgissantes (pop-ups), veuillez les autoriser pour ce site dans la barre d'adresse. Voulez-vous continuer ?`,
-                `<i class="fa-brands fa-whatsapp text-emerald-600"></i> Relance de masse`,
-                function() {
-                    targets.forEach((t, index) => {
-                        setTimeout(() => {
-                            const url = `https://api.whatsapp.com/send?phone=${t.phone}&text=${t.msg}`;
-                            window.open(url, '_blank');
-                        }, index * 800);
-                    });
-                    showToast(`${targets.length} relances lancées !`, "success");
-                }
-            );
-        };
     </script>
 </body>
 </html>
