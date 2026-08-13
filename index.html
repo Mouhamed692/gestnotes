@@ -20,8 +20,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="html2pdf.bundle.min.js"></script>
     <script src="idb-keyval.js"></script>
-    <!-- Chargement du SDK officiel Supabase (Gratuit) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -85,11 +83,7 @@
                 <i class="fa-solid fa-graduation-cap text-2xl text-violet-200"></i>
             </div>
             <div>
-                <div class="flex items-center gap-2">
-                    <h1 class="text-xl font-bold tracking-tight">GestNotes</h1>
-                    <!-- Témoin lumineux de synchronisation cloud (Rouge si déconnecté, Vert si connecté) -->
-                    <span id="sync-status-indicator" class="w-2.5 h-2.5 rounded-full bg-rose-500" title="Sauvegarde Cloud déconnectée"></span>
-                </div>
+                <h1 class="text-xl font-bold tracking-tight">GestNotes</h1>
                 <p class="text-xs text-violet-200">Administration & Gestion des Notes</p>
             </div>
         </div>
@@ -129,13 +123,18 @@
         
        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                <button onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md text-sm">
+                <button id="btn-export-base" onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md text-sm">
                     <i class="fas fa-file-download"></i> <span>Exporter Base</span>
                 </button>
 
+                <!-- Bouton d'export ciblé enseignant (masqué par défaut) -->
+                <button id="btn-export-teacher-grades" onclick="exportTeacherGradesOnly()" class="hidden flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm">
+                    <i class="fa-solid fa-file-export"></i> <span>Exporter mes Notes</span>
+                </button>
+
                 <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
-                <button onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md text-sm">
-                    <i class="fas fa-file-upload"></i> <span>Importer Base</span>
+                <button id="btn-import-base" onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md text-sm">
+                    <i class="fas fa-file-upload"></i> <span>Importer Fichier</span>
                 </button>
                 
                 <button id="btn-add-student-shortcut" onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm">
@@ -147,7 +146,7 @@
                 </button>
                 
                 <button onclick="document.getElementById('importInput').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md text-sm">
-                    <i class="fa-solid fa-file-import"></i> Importer Notes
+                    <i class="fa-solid fa-file-import"></i> Importer CSV
                 </button>
                 <input type="file" id="importInput" class="hidden" accept=".csv" onchange="importerNotesAuto(this)">
             </div>
@@ -487,42 +486,6 @@
                 </div>
             </div>
 
-            <!-- Configuration Supabase (Cloud gratuit) -->
-            <div class="border-t pt-4 mt-4">
-                <h4 class="text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider flex items-center gap-1">
-                    <i class="fa-solid fa-cloud text-violet-600"></i> Configuration Supabase (Gratuit)
-                </h4>
-                <p class="text-[10px] text-slate-500 mb-2">Sauvegardez vos données d'administration en ligne pour y accéder depuis n'importe quel appareil.</p>
-                
-                <!-- Notice explicative de partage d'appareils -->
-                <p class="text-[10px] text-amber-700 font-medium mb-3 bg-amber-50 p-2.5 rounded-xl border border-amber-200/80">
-                    <i class="fa-solid fa-circle-info mr-1"></i> <strong>Lier un autre appareil :</strong> Installez cette application sur le second appareil, allez dans ses paramètres, et saisissez-y <strong>exactement les mêmes</strong> informations ci-dessous, puis cliquez sur "Appliquer" ou "Restaurer".
-                </p>
-
-                <div class="space-y-2">
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Identifiant Unique de l'École</label>
-                        <input type="text" id="settings-sb-school-id" placeholder="Ex: ecole_sainte_marie" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">URL de Projet Supabase</label>
-                        <input type="text" id="settings-sb-url" placeholder="https://xxxxxx.supabase.co" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Clé Publique Anon Supabase</label>
-                        <input type="password" id="settings-sb-key" placeholder="eyJhbGciOi..." class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 pt-2">
-                        <button onclick="syncToCloud()" class="bg-violet-600 hover:bg-violet-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> Sauvegarder
-                        </button>
-                        <button onclick="pullFromCloud()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-cloud-arrow-down"></i> Restaurer
-                        </button>
-                    </div>
-                </div>
-            </div>
-
             <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeModal('settings-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
                 <button onclick="saveSettings()" class="bg-[#4c1d95] text-white px-4 py-2 rounded-xl text-sm font-semibold">Appliquer</button>
@@ -753,7 +716,6 @@
         
         let subjectDev3Visible = {};
         let appState = null;
-        let supabaseClient = null; // Client global de connexion
         
         let currentStudentIdForFinance = null;
         let currentMonthIdxForFinance = null;
@@ -765,9 +727,6 @@
             selectedClass: "6ème",
             selectedSection: "",
             currentRole: "admin", // Rôle actif par défaut
-            schoolId: "ecole_default",
-            supabaseUrl: "",
-            supabaseKey: "",
             waTemplates: {
                 reminder: "Bonjour, nous vous rappelons que le paiement de {frais} de {montant} FCFA pour l'élève {eleve} ({classe}) reste attendu pour la période {periode}. Merci de votre confiance ! 🎓",
                 bulletin: "Bonjour, nous vous informons que le bulletin de {eleve} ({classe}) pour la période {periode} est disponible au secrétariat de l'école. Cordialement. 🎓"
@@ -781,44 +740,6 @@
 
         function getPeriodLabel(className, periodNum) {
             return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
-        }
-
-        // Configuration pour la recherche / récupération automatique après changement de paramètres cloud (Anti-écrasement)
-        async function pullFromCloudSilentAfterConfig() {
-            if (!navigator.onLine) return; // Aucun traitement silencieux si hors-ligne
-            try {
-                const { data, error } = await supabaseClient
-                    .from('gestnotes_sync')
-                    .select('state')
-                    .eq('id', appState.schoolId)
-                    .single();
-
-                if (!error && data && data.state) {
-                    const savedKeys = {
-                        schoolId: appState.schoolId,
-                        supabaseUrl: appState.supabaseUrl,
-                        supabaseKey: appState.supabaseKey
-                    };
-                    appState = data.state;
-                    appState.schoolId = savedKeys.schoolId;
-                    appState.supabaseUrl = savedKeys.supabaseUrl;
-                    appState.supabaseKey = savedKeys.supabaseKey;
-
-                    await idbKeyval.set("gestnotes_state", appState);
-                    buildEmptyState();
-                    populateFilters();
-                    updateHeaderDisplays();
-                    applyRoleRestrictions();
-                    render();
-                    showToast("Données existantes récupérées avec succès !", "success");
-                } else if (error && error.code === 'PGRST116') {
-                    // Si aucune donnée n'existe en ligne pour ce compte, on synchronise l'état local actuel pour l'initialiser
-                    showToast("Aucune donnée cloud trouvée. Initialisation de votre espace...", "info");
-                    await saveToStorage();
-                }
-            } catch (err) {
-                console.error("Erreur de récupération initiale :", err);
-            }
         }
 
         function getDevoirLabel(className, num) {
@@ -880,7 +801,6 @@
                         appState.classes[key].fees = { inscription: 0, mensualite: 0 };
                     }
                     
-                    // Sécurité anti-perte lors de la lecture d'une ancienne sauvegarde cloud ou état vide
                     if (!appState.classes[key].students) {
                         appState.classes[key].students = [];
                     }
@@ -891,357 +811,35 @@
             });
         }
 
-        // Initialisation de Supabase sécurisée pour le mode hors-ligne
-        function initSupabase() {
-            if (typeof supabase === 'undefined') {
-                console.warn("Le SDK Supabase n'est pas disponible (fonctionnement hors-ligne).");
-                updateSyncStatus(false);
-                return;
-            }
-            const url = appState.supabaseUrl || "";
-            const key = appState.supabaseKey || "";
-            if (url && key) {
-                try {
-                    // Instanciation de l'objet global Supabase
-                    supabaseClient = supabase.createClient(url, key);
-                    updateSyncStatus(navigator.onLine);
-                } catch (err) {
-                    console.error("Erreur de connexion Supabase :", err);
-                    updateSyncStatus(false);
-                }
-            } else {
-                updateSyncStatus(false);
-            }
-        }
-
-        function updateSyncStatus(connected) {
-            const indicator = document.getElementById('sync-status-indicator');
-            if (indicator) {
-                if (connected && navigator.onLine) {
-                    indicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                    indicator.title = "Connecté au Cloud Supabase (Sauvegardes disponibles)";
-                } else {
-                    indicator.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
-                    indicator.title = "Mode hors-ligne ou Cloud déconnecté";
-                }
-            }
-        }
-
-        // Sauvegarder l'état actuel sur Supabase (Gratuit)
-        async function syncToCloud() {
-            if (!navigator.onLine) {
-                showToast("Cette action nécessite une connexion Internet active.", "info");
-                return;
-            }
-            if (!supabaseClient) {
-                showToast("Configuration Supabase avant de continuer.", "info");
-                return;
-            }
-            try {
-                showToast("Synchronisation Cloud en cours...", "info");
-                const targetSchoolId = appState.schoolId || "ecole_default";
-
-                const { error } = await supabaseClient
-                    .from('gestnotes_sync')
-                    .upsert({
-                        id: targetSchoolId,
-                        state: appState,
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'id' });
-
-                if (error) throw error;
-                showToast("Base de données synchronisée sur le Cloud !", "success");
-            } catch (err) {
-                console.error("Échec de synchronisation cloud", err);
-                showToast("Échec de synchronisation : " + err.message, "info");
-            }
-        }
-
-        // Récupérer et écraser l'état local depuis Supabase
-        async function pullFromCloud() {
-            if (!navigator.onLine) {
-                showToast("Cette action nécessite une connexion Internet active.", "info");
-                return;
-            }
-            if (!supabaseClient) {
-                showToast("Configuration Supabase manquante dans les paramètres.", "info");
-                return;
-            }
-            
-            askConfirmation(
-                "Attention : Charger la sauvegarde en ligne écrasera l'historique non synchronisé de cet appareil. Voulez-vous continuer ?",
-                `<i class="fa-solid fa-cloud-arrow-down text-indigo-600"></i> Restaurer la base`,
-                async function() {
-                    try {
-                        showToast("Chargement de la base depuis le Cloud...", "info");
-                        const targetSchoolId = appState.schoolId || "ecole_default";
-
-                        const { data, error } = await supabaseClient
-                            .from('gestnotes_sync')
-                            .select('state')
-                            .eq('id', targetSchoolId)
-                            .single();
-
-                        if (error) {
-                            if (error.code === 'PGRST116') {
-                                showToast("Aucune sauvegarde trouvée en ligne pour cet ID d'école.", "info");
-                            } else {
-                                throw error;
-                            }
-                            return;
-                        }
-
-                        if (data && data.state) {
-                            const savedKeys = {
-                                schoolId: appState.schoolId,
-                                supabaseUrl: appState.supabaseUrl,
-                                supabaseKey: appState.supabaseKey
-                            };
-                            
-                            appState = data.state;
-                            appState.schoolId = savedKeys.schoolId;
-                            appState.supabaseUrl = savedKeys.supabaseUrl;
-                            appState.supabaseKey = savedKeys.supabaseKey;
-
-                            await saveToStorage();
-                            buildEmptyState();
-                            populateFilters();
-                            updateHeaderDisplays();
-                            applyRoleRestrictions();
-                            render();
-                            showToast("Base de données restaurée avec succès !", "success");
-                        }
-                    } catch (err) {
-                        console.error("Échec du chargement cloud", err);
-                        showToast("Erreur de récupération : " + err.message, "info");
-                    }
-                }
-            );
-        }
-
-        // Initialisation automatique et récupération silencieuse au démarrage
+        // Initialisation automatique de l'application (Stockage Local Uniquement)
         async function initApp() {
-          // ... (début de la fonction initApp)
-const savedState = await idbKeyval.get("gestnotes_state");
-appState = savedState || DEFAULT_STATE;
-buildEmptyState();
+            const savedState = await idbKeyval.get("gestnotes_state");
+            appState = savedState || DEFAULT_STATE;
+            buildEmptyState();
 
-// Restauration robuste du rôle enregistré localement
-const role = localStorage.getItem("gestnotes_local_role") || "admin";
-appState.currentRole = role; // S'assurer que l'état en mémoire est synchronisé
+            // Restauration robuste du rôle enregistré localement
+            const role = localStorage.getItem("gestnotes_local_role") || "admin";
+            appState.currentRole = role;
 
-if (role === "enseignant") {
-    const tClass = localStorage.getItem("gestnotes_teacher_class");
-    const tSection = localStorage.getItem("gestnotes_teacher_section");
-    if (tClass) appState.selectedClass = tClass;
-    if (tSection !== null) appState.selectedSection = tSection;
-}
-
+            if (role === "enseignant") {
+                const tClass = localStorage.getItem("gestnotes_teacher_class");
+                const tSection = localStorage.getItem("gestnotes_teacher_section");
+                if (tClass) appState.selectedClass = tClass;
+                if (tSection !== null) appState.selectedSection = tSection;
+            }
 
             populateFilters();
             updateHeaderDisplays();
-            
-            // 2. Initialisation du client Supabase
-            initSupabase();
-            
-            // 3. Si Supabase est connecté, configuré, et que l'appareil est connecté à internet
-            if (supabaseClient && appState.schoolId && appState.schoolId !== "ecole_default" && navigator.onLine) {
-                try {
-                    // Témoin visuel de chargement cloud (orange clignotant)
-                    const indicator = document.getElementById('sync-status-indicator');
-                    if (indicator) {
-                        indicator.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
-                        indicator.title = "Vérification des mises à jour sur le Cloud...";
-                    }
-                    
-                    const { data, error } = await supabaseClient
-                        .from('gestnotes_sync')
-                        .select('state')
-                        .eq('id', appState.schoolId)
-                        .single();
-
-                    if (!error && data && data.state) {
-                        // On préserve vos clés de connexion locales
-                        const savedKeys = {
-                            schoolId: appState.schoolId,
-                            supabaseUrl: appState.supabaseUrl,
-                            supabaseKey: appState.supabaseKey
-                        };
-                        
-                        appState = data.state;
-                        appState.schoolId = savedKeys.schoolId;
-                        appState.supabaseUrl = savedKeys.supabaseUrl;
-                        appState.supabaseKey = savedKeys.supabaseKey;
-
-                        // Recalibrer la vue enseignant si active
-                        if (role === "enseignant") {
-                            const tClass = localStorage.getItem("gestnotes_teacher_class");
-                            const tSection = localStorage.getItem("gestnotes_teacher_section");
-                            if (tClass) appState.selectedClass = tClass;
-                            if (tSection !== null) appState.selectedSection = tSection;
-                        }
-
-                        // Mise à jour de la mémoire locale et de l'interface
-                        await idbKeyval.set("gestnotes_state", appState);
-                        buildEmptyState();
-                        populateFilters();
-                        updateHeaderDisplays();
-                        showToast("Données synchronisées depuis le Cloud !", "success");
-                    }
-                    updateSyncStatus(true);
-                } catch (err) {
-                    console.error("Échec de la synchronisation au démarrage :", err);
-                    updateSyncStatus(false);
-                }
-            } else {
-                updateSyncStatus(false);
-            }
-            
             applyRoleRestrictions();
             render();
         }
 
         window.addEventListener('DOMContentLoaded', initApp);
 
-        // Fusionne intelligemment l'état local et le cloud pour éviter les pertes de données
-       function mergeStates(local, cloud) {
-    if (!cloud || !cloud.classes) return local;
-    
-    // S'assurer que les structures fondamentales existent dans l'objet cloud
-    if (!local.classes) local.classes = {};
-
-    for (let classKey in local.classes) {
-        if (!cloud.classes[classKey]) continue;
-        
-        if (!local.classes[classKey].subjects) local.classes[classKey].subjects = [];
-        if (!local.classes[classKey].students) local.classes[classKey].students = [];
-        
-        // Fusion des matières
-        if (cloud.classes[classKey].subjects) {
-            cloud.classes[classKey].subjects.forEach(cSub => {
-                let lSub = local.classes[classKey].subjects.find(s => s.id === cSub.id);
-                if (lSub) {
-                    lSub.teacherName = cSub.teacherName || "";
-                    lSub.accessCode = cSub.accessCode || "";
-                    lSub.name = cSub.name;
-                    lSub.coef = cSub.coef;
-                } else {
-                    local.classes[classKey].subjects.push(cSub);
-                }
-            });
-        }
-        
-        if (cloud.classes[classKey].fees) {
-            local.classes[classKey].fees = cloud.classes[classKey].fees;
-        }
-
-        const localStudents = local.classes[classKey].students;
-        const cloudStudents = cloud.classes[classKey].students || [];
-        
-        cloudStudents.forEach(cStudent => {
-            let lStudent = localStudents.find(s => s.id === cStudent.id);
-            if (!lStudent) {
-                localStudents.push(cStudent);
-            } else {
-                // Fusion des notes période par période
-                if (cStudent.grades) {
-                    if (!lStudent.grades) lStudent.grades = {};
-                    for (let periodKey in cStudent.grades) {
-                        if (!lStudent.grades[periodKey]) {
-                            lStudent.grades[periodKey] = cStudent.grades[periodKey];
-                        } else {
-                            for (let subId in cStudent.grades[periodKey]) {
-                                if (!lStudent.grades[periodKey][subId]) {
-                                    lStudent.grades[periodKey][subId] = cStudent.grades[periodKey][subId];
-                                } else {
-                                    const cGrades = cStudent.grades[periodKey][subId];
-                                    const lGrades = lStudent.grades[periodKey][subId];
-                                    
-                                    // Utilisation d'une variable sécurisée si l'élément DOM n'est pas encore instancié
-                                    const selectEl = document.getElementById('grade-subject-select');
-                                    const currentActiveSub = selectEl ? selectEl.value : null;
-
-                                    if (subId !== currentActiveSub) {
-                                        if (cGrades.dev1 !== undefined) lGrades.dev1 = cGrades.dev1;
-                                        if (cGrades.dev2 !== undefined) lGrades.dev2 = cGrades.dev2;
-                                        if (cGrades.dev3 !== undefined) lGrades.dev3 = cGrades.dev3;
-                                        if (cGrades.compo !== undefined) lGrades.compo = cGrades.compo;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // Fusion des paiements
-                if (cStudent.payments) {
-                    if (!lStudent.payments) {
-                        lStudent.payments = cStudent.payments;
-                    } else {
-                        cStudent.payments.forEach((cPay, idx) => {
-                            let lPay = lStudent.payments[idx];
-                            if (lPay) {
-                                // Priorité au statut payé venant du cloud s'il y a divergence
-                                if (cPay.statut === "Payé" && lPay.statut !== "Payé") {
-                                    lStudent.payments[idx] = cPay;
-                                }
-                            } else {
-                                lStudent.payments[idx] = cPay;
-                            }
-                        });
-                    }
-                }
-            }
-        });
-    }
-    return local;
-}
-        // Sauvegarde locale instantanée et synchronisation automatique en tâche de fond vers Supabase
+        // Sauvegarde locale instantanée (PWA hors-ligne résiliente)
         async function saveToStorage() {
             try {
-                // 1. Sauvegarde locale instantanée (toujours disponible, même déconnecté)
                 await idbKeyval.set("gestnotes_state", appState);
-                
-                // 2. Si connecté au cloud ET connecté à Internet, fusion intelligente avant envoi
-                if (supabaseClient && navigator.onLine) {
-                    const indicator = document.getElementById('sync-status-indicator');
-                    if (indicator) {
-                        indicator.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
-                        indicator.title = "Synchronisation en cours...";
-                    }
-                    
-                    const targetSchoolId = appState.schoolId || "ecole_default";
-                    
-                    // Récupération de l'état cloud le plus récent
-                    const { data, error: fetchError } = await supabaseClient
-                        .from('gestnotes_sync')
-                        .select('state')
-                        .eq('id', targetSchoolId)
-                        .single();
-                    
-                    if (!fetchError && data && data.state) {
-                        // Fusion de l'état local actuel avec les notes des autres profs sur le Cloud
-                        appState = mergeStates(appState, data.state);
-                        await idbKeyval.set("gestnotes_state", appState);
-                    }
-
-                    const { error } = await supabaseClient
-                        .from('gestnotes_sync')
-                        .upsert({
-                            id: targetSchoolId,
-                            state: appState,
-                            updated_at: new Date().toISOString()
-                        }, { onConflict: 'id' });
-
-                    if (error) {
-                        console.error("Échec de l'auto-synchronisation :", error);
-                        updateSyncStatus(false);
-                    } else {
-                        updateSyncStatus(true);
-                    }
-                } else {
-                    updateSyncStatus(false);
-                }
             } catch (err) {
                 console.error("Erreur de sauvegarde locale :", err);
             }
@@ -1287,11 +885,6 @@ if (role === "enseignant") {
                 document.getElementById('settings-year').value = appState.currentYear;
                 updateSettingsPeriodSelect();
                 populateRolloverSelector();
-                
-                // Préremplir la configuration Supabase
-                document.getElementById('settings-sb-school-id').value = appState.schoolId || "ecole_default";
-                document.getElementById('settings-sb-url').value = appState.supabaseUrl || "";
-                document.getElementById('settings-sb-key').value = appState.supabaseKey || "";
             }
         }
 
@@ -1316,39 +909,14 @@ if (role === "enseignant") {
             }
         }
 
-        // Paramétrage Cloud sécurisé pour éviter l'écrasement intempestif au démarrage sur nouvel appareil
         async function saveSettings() {
-            const oldSchoolId = appState.schoolId;
-            const oldUrl = appState.supabaseUrl;
-            
             appState.currentYear = document.getElementById('settings-year').value;
             appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
-            
-            const newSchoolId = document.getElementById('settings-sb-school-id').value.trim();
-            const newUrl = document.getElementById('settings-sb-url').value.trim();
-            const newKey = document.getElementById('settings-sb-key').value.trim();
 
-            const cloudConfigChanged = (newSchoolId !== oldSchoolId || newUrl !== oldUrl);
-            
-            appState.schoolId = newSchoolId;
-            appState.supabaseUrl = newUrl;
-            appState.supabaseKey = newKey;
-
-            // Enregistrement local pur d'abord
-            await idbKeyval.set("gestnotes_state", appState);
+            await saveToStorage();
             
             updateHeaderDisplays();
-            initSupabase(); 
             closeModal('settings-modal');
-            
-            // Sécurité : Si c'est un nouveau compte cloud ou un changement, on rapatrie d'abord les notes existantes
-            if (cloudConfigChanged && supabaseClient && newSchoolId && navigator.onLine) {
-                showToast("Recherche de données existantes sur le cloud...", "info");
-                await pullFromCloudSilentAfterConfig();
-            } else {
-                await saveToStorage(); // Sauvegarde standard
-            }
-            
             render();
             showToast("Configurations appliquées !", "success");
         }
@@ -1478,7 +1046,6 @@ if (role === "enseignant") {
             closeModal('registration-modal');
             showToast("Élève enregistré avec succès !", "success");
             
-            // Mettre à jour les menus déroulants et rafraîchir l'interface
             populateFilters();
             updateHeaderDisplays();
             render();
@@ -1840,7 +1407,6 @@ if (role === "enseignant") {
             render();
         }
 
-        // SUPPRESSION ROBUSTE GLOBALE D'UN ÉLÈVE
         function supprimerEleve(id) {
             let targetClassKey = null;
             let student = null;
@@ -1940,14 +1506,14 @@ if (role === "enseignant") {
             const isPrim = isPrimary(appState.selectedClass);
 
             subjects.forEach(sub => {
-                const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id]; // Devoir 3 pour le secondaire
-                const hasNote2 = isPrim && !!subjectDev3Visible[sub.id]; // Note 2 pour le primaire
+                const hasDev3 = !isPrim && !!subjectDev3Visible[sub.id];
+                const hasNote2 = isPrim && !!subjectDev3Visible[sub.id];
                 
                 let colSpan = 1;
                 if (isPrim) {
-                    colSpan = hasNote2 ? 3 : 2; // Note 1, Note 2 (optionnelle), Composition (CP)
+                    colSpan = hasNote2 ? 3 : 2;
                 } else {
-                    colSpan = hasDev3 ? 4 : 3; // Devoir 1, Devoir 2, Devoir 3 (optionnel), Composition (CP)
+                    colSpan = hasDev3 ? 4 : 3;
                 }
 
                 tableHtml += `
@@ -2100,6 +1666,102 @@ if (role === "enseignant") {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
         }
 
+        // --- EXPORT CIBLÉ DES NOTES ENSEIGNANT (Solution 1) ---
+        function exportTeacherGradesOnly() {
+            const role = localStorage.getItem("gestnotes_local_role") || "admin";
+            const teacherSubjectId = localStorage.getItem("gestnotes_teacher_subject") || "";
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            const semKey = "p_" + appState.currentSemester;
+            
+            if (role !== 'enseignant' || !teacherSubjectId || !clsData) {
+                showToast("Action réservée aux enseignants connectés.", "info");
+                return;
+            }
+            
+            const gradesExport = {
+                type: "teacher_grades_export",
+                classKey: key,
+                semesterKey: semKey,
+                subjectId: teacherSubjectId,
+                grades: {}
+            };
+            
+            clsData.students.forEach(s => {
+                if (s.grades && s.grades[semKey] && s.grades[semKey][teacherSubjectId]) {
+                    gradesExport.grades[s.id] = s.grades[semKey][teacherSubjectId];
+                }
+            });
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(gradesExport));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `Notes_${appState.selectedClass}_${teacherSubjectId}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("Fichier de notes exporté !");
+        }
+
+        // --- IMPORTATION INTELLIGENTE (Base Complète OU Notes Enseignant) ---
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const importedState = JSON.parse(e.target.result);
+                    
+                    // Détection intelligente du fichier importé
+                    if (importedState && importedState.type === "teacher_grades_export") {
+                        // Cas 1 : C'est un export de notes provenant d'un enseignant
+                        const classKey = importedState.classKey;
+                        const semKey = importedState.semesterKey;
+                        const subjectId = importedState.subjectId;
+                        
+                        if (!appState.classes[classKey]) {
+                            showToast("La classe correspondante n'existe pas dans votre base locale.", "info");
+                            return;
+                        }
+                        
+                        let updateCount = 0;
+                        const students = appState.classes[classKey].students || [];
+                        
+                        students.forEach(s => {
+                            if (importedState.grades[s.id]) {
+                                if (!s.grades) s.grades = {};
+                                if (!s.grades[semKey]) s.grades[semKey] = {};
+                                
+                                s.grades[semKey][subjectId] = importedState.grades[s.id];
+                                updateCount++;
+                            }
+                        });
+                        
+                        await saveToStorage();
+                        render();
+                        showToast(`${updateCount} notes d'élèves importées et fusionnées avec succès !`, "success");
+                        
+                    } else if (importedState && importedState.classes) {
+                        // Cas 2 : C'est une restauration complète de la base de données de l'école
+                        appState = importedState;
+                        buildEmptyState();
+                        await saveToStorage();
+                        populateFilters();
+                        updateHeaderDisplays();
+                        applyRoleRestrictions();
+                        render();
+                        showToast("Base de données complète restaurée !", "success");
+                    } else {
+                        alert("Le fichier JSON n'est pas reconnu par GestNotes.");
+                    }
+                } catch (err) {
+                    alert("Échec de la lecture du fichier : " + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ""; // Réinitialiser le sélecteur de fichier
+        }
+
         function importerNotesAuto(input) {
             const file = input.files[0];
             if (!file) return;
@@ -2113,7 +1775,6 @@ if (role === "enseignant") {
                 const lines = text.split(/\r?\n/);
                 if (lines.length < 2) return;
 
-                // Extraction de l'en-tête pour détecter le mode (Simple ou Global)
                 const headerLine = lines[0].trim();
                 let headers = [];
                 if (headerLine.includes(';')) {
@@ -2124,25 +1785,22 @@ if (role === "enseignant") {
                     headers = headerLine.split(',').map(h => h.replace(/['"]/g, '').trim());
                 }
 
-                // Détection intelligente du mode global (présence d'indicateurs de type)
                 const isGlobal = headers.some(h => {
                     const cleanH = cleanStringForFuzzy(h);
                     return cleanH.includes('d1') || cleanH.includes('n1') || cleanH.includes('cp') || cleanH.includes('devoir') || cleanH.includes('note') || cleanH.includes('compo') || cleanH.includes('composition');
                 });
 
                 if (isGlobal) {
-                    // --- MODE D'IMPORTATION GLOBALE MULTI-MATIÈRES ---
                     const colMap = {};
                     const subjects = appState.classes[key].subjects || [];
 
                     headers.forEach((header, idx) => {
-                        if (idx < 3) return; // Ignore ID, Nom, Prenom
+                        if (idx < 3) return;
                         
                         const cleanedHeader = cleanStringForFuzzy(header);
                         let matchedSubject = null;
                         let matchedField = "";
 
-                        // 1. Recherche floue de la matière correspondante
                         for (let sub of subjects) {
                             const cleanSub = cleanStringForFuzzy(sub.name);
                             if (cleanedHeader.includes(cleanSub)) {
@@ -2151,7 +1809,6 @@ if (role === "enseignant") {
                             }
                         }
 
-                        // 2. Détection floue du type d'évaluation dans la colonne
                         if (matchedSubject) {
                             if (cleanedHeader.includes("d1") || cleanedHeader.includes("n1") || cleanedHeader.includes("devoir1") || cleanedHeader.includes("note1")) {
                                 matchedField = "dev1";
@@ -2205,7 +1862,6 @@ if (role === "enseignant") {
                             if (!student.grades) student.grades = {};
                             if (!student.grades[semKey]) student.grades[semKey] = {};
 
-                            // Injection de toutes les colonnes de notes détectées dans le profil de l'élève
                             for (let colIdx in colMap) {
                                 const colInfo = colMap[colIdx];
                                 const valStr = parts[colIdx];
@@ -2243,11 +1899,10 @@ if (role === "enseignant") {
                     if (skipped > 0) {
                         showToast(`Import Global : ${count} élèves mis à jour (${skipped} ignorés)`, "info");
                     } else {
-                        showToast(`Import Global : ${count} fiches élèves mises à jour pour toutes leurs matières !`, "success");
+                        showToast(`Import Global : ${count} fiches élèves mises à jour !`, "success");
                     }
 
                 } else {
-                    // --- MODE D'IMPORTATION UNIQUE (MATIÈRE PAR MATIÈRE) ---
                     if (!subSelect.value) {
                         alert("Sélectionnez d'abord la discipline active dans le panneau de saisie.");
                         return;
@@ -2571,21 +2226,18 @@ if (role === "enseignant") {
             document.getElementById('stats-taux-recouvrement').innerText = recoveryRate + "%";
         }
 
-        // Changement de rôle avec authentification Directeur / Comptable et Enseignant
         function onRoleChange() {
             const select = document.getElementById('role-selector');
             const targetRole = select.value;
             const currentLocalRole = localStorage.getItem("gestnotes_local_role") || "admin";
 
-            // Protection par mot de passe pour passer Directeur/Admin ou Comptable
             if (targetRole === 'admin' || targetRole === 'comptable') {
                 const password = prompt("Saisissez le code d'accès pour activer ce rôle :");
                 if (password !== "1234") { 
                     alert("Code d'accès incorrect ! Accès refusé.");
-                    select.value = currentLocalRole; // Annule le changement de rôle
+                    select.value = currentLocalRole;
                     return;
                 }
-                // Nettoyer la session Enseignant en quittant
                 localStorage.removeItem("gestnotes_teacher_name");
                 localStorage.removeItem("gestnotes_teacher_class");
                 localStorage.removeItem("gestnotes_teacher_section");
@@ -2599,7 +2251,6 @@ if (role === "enseignant") {
             }
         }
 
-        // Charge les données dans le formulaire enseignant
         function openTeacherLoginModal() {
             const classSel = document.getElementById('t-login-class');
             classSel.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -2654,7 +2305,6 @@ if (role === "enseignant") {
             select.value = localStorage.getItem("gestnotes_local_role") || "admin";
         }
 
-        // Enregistre la session enseignant et verrouille l'interface sur sa classe et sa matière
         function submitTeacherLogin() {
             const name = document.getElementById('t-login-name').value.trim();
             const cls = document.getElementById('t-login-class').value;
@@ -2676,7 +2326,6 @@ if (role === "enseignant") {
             localStorage.setItem("gestnotes_teacher_section", sect);
             localStorage.setItem("gestnotes_teacher_subject", subId);
 
-            // Verrouiller la classe et la section active de l'application
             appState.selectedClass = cls;
             appState.selectedSection = sect;
             
@@ -2690,7 +2339,6 @@ if (role === "enseignant") {
             render();
         }
 
-        // Gère l'affichage en fonction des rôles et de la matière affectée
         function applyRoleRestrictions() {
             const role = localStorage.getItem("gestnotes_local_role") || "admin";
             const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
@@ -2724,8 +2372,12 @@ if (role === "enseignant") {
             const statsSection = document.getElementById('class-stats-section');
             const regAmountContainer = document.getElementById('reg-amount-container');
             const settingsBtn = document.getElementById('btn-settings');
+            
+            // Éléments d'exports ciblés enseignant / admin
+            const btnExportBase = document.getElementById('btn-export-base');
+            const btnImportBase = document.getElementById('btn-import-base');
+            const btnExportTeacherGrades = document.getElementById('btn-export-teacher-grades');
 
-            // Réinitialiser les affichages
             if (classFeesBtn) classFeesBtn.style.display = '';
             if (subjectsBtn) subjectsBtn.style.display = '';
             if (waRemindersBtn) waRemindersBtn.style.display = '';
@@ -2735,6 +2387,10 @@ if (role === "enseignant") {
             if (statsSection) statsSection.style.display = 'grid';
             if (regAmountContainer) regAmountContainer.style.display = '';
             if (settingsBtn) settingsBtn.style.display = '';
+            
+            if (btnExportBase) btnExportBase.style.display = '';
+            if (btnImportBase) btnImportBase.style.display = '';
+            if (btnExportTeacherGrades) btnExportTeacherGrades.classList.add('hidden');
 
             const filterClass = document.getElementById('filter-class');
             const filterSection = document.getElementById('filter-section');
@@ -2747,6 +2403,11 @@ if (role === "enseignant") {
                 if (statsSection) statsSection.style.display = 'none';
                 if (regAmountContainer) regAmountContainer.style.display = 'none';
                 if (settingsBtn) settingsBtn.style.display = 'none';
+                
+                // On bascule l'affichage pour que l'enseignant n'accède qu'à l'export de ses notes
+                if (btnExportBase) btnExportBase.style.display = 'none';
+                if (btnImportBase) btnImportBase.style.display = 'none';
+                if (btnExportTeacherGrades) btnExportTeacherGrades.classList.remove('hidden');
                 
                 if (filterClass) filterClass.disabled = true;
                 if (filterSection) filterSection.disabled = true;
@@ -2875,29 +2536,29 @@ if (role === "enseignant") {
                 tbody.appendChild(tr);
             });
         }
-function saveGradeLive(studentId, subjectId, field, val) {
-    const key = getCurrentClassKey();
-    const student = appState.classes[key].students.find(s => s.id === studentId);
-    if (!student) return;
 
-    const semKey = "p_" + appState.currentSemester;
-    if (!student.grades) student.grades = {};
-    if (!student.grades[semKey]) student.grades[semKey] = {};
-    if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
-    
-    const cleanVal = val.trim();
-    if (cleanVal === "" || isNaN(parseFloat(cleanVal))) {
-        // Supprime la clé pour éviter d'encombrer le stockage local et cloud
-        delete student.grades[semKey][subjectId][field];
-    } else {
-        student.grades[semKey][subjectId][field] = parseFloat(cleanVal);
-    }
-    
-    saveToStorage();
+        function saveGradeLive(studentId, subjectId, field, val) {
+            const key = getCurrentClassKey();
+            const student = appState.classes[key].students.find(s => s.id === studentId);
+            if (!student) return;
 
-    const subjects = appState.classes[key].subjects || [];
-    renderStudentsTable(appState.classes[key].students, subjects);
-}
+            const semKey = "p_" + appState.currentSemester;
+            if (!student.grades) student.grades = {};
+            if (!student.grades[semKey]) student.grades[semKey] = {};
+            if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
+            
+            const cleanVal = val.trim();
+            if (cleanVal === "" || isNaN(parseFloat(cleanVal))) {
+                delete student.grades[semKey][subjectId][field];
+            } else {
+                student.grades[semKey][subjectId][field] = parseFloat(cleanVal);
+            }
+            
+            saveToStorage();
+
+            const subjects = appState.classes[key].subjects || [];
+            renderStudentsTable(appState.classes[key].students, subjects);
+        }
      
         function goToNextSubject() {
             const select = document.getElementById('grade-subject-select');
@@ -2928,32 +2589,6 @@ function saveGradeLive(studentId, subjectId, field, val) {
             showToast("Sauvegarde exportée avec succès !");
         }
 
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const importedState = JSON.parse(e.target.result);
-                    if (importedState && importedState.classes) {
-                        appState = importedState;
-                        buildEmptyState();
-                        await saveToStorage();
-                        populateFilters();
-                        updateHeaderDisplays();
-                        applyRoleRestrictions();
-                        render();
-                        showToast("Données importées !", "success");
-                    } else {
-                        alert("Fichier structurel JSON erroné.");
-                    }
-                } catch (err) {
-                    alert("Échec de la lecture du fichier.");
-                }
-            };
-            reader.readAsText(file);
-        }
-
         function showToast(message, type = "info") {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -2964,7 +2599,6 @@ function saveGradeLive(studentId, subjectId, field, val) {
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // CONFIRMATION PERSONNALISÉE SÉCURISÉE (Anti-blocage bac à sable Iframe)
         function askConfirmation(message, title, onConfirm) {
             document.getElementById('confirm-modal-message').innerText = message;
             
@@ -2982,7 +2616,6 @@ function saveGradeLive(studentId, subjectId, field, val) {
             openModal('confirm-modal');
         }
 
-        // RESTAURATION DE LA FONCTION RENDER GLOBALE
         function render() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key] || { subjects: [], students: [] };
@@ -3079,10 +2712,6 @@ function saveGradeLive(studentId, subjectId, field, val) {
                 tbody.appendChild(tr);
             });
         }
-
-        // ==========================================
-        //  FONCTIONS AJOUTÉES POUR RÉSOUDRE LES BUGS
-        // ==========================================
 
         function populateRolloverSelector() {
             const select = document.getElementById('rollover-target-class');
@@ -3231,7 +2860,7 @@ function saveGradeLive(studentId, subjectId, field, val) {
             }
 
             let purePhone = student.phone.replace(/[\s\+\-]/g, '');
-            if (purePhone.length === 9) purePhone = "221" + purePhone; // Préfixe Sénégal automatique si requis
+            if (purePhone.length === 9) purePhone = "221" + purePhone;
 
             const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodedMessage}`;
             window.open(url, '_blank');
@@ -3280,7 +2909,7 @@ function saveGradeLive(studentId, subjectId, field, val) {
                         setTimeout(() => {
                             const url = `https://api.whatsapp.com/send?phone=${t.phone}&text=${t.msg}`;
                             window.open(url, '_blank');
-                        }, index * 800); // Délai de 800ms entre chaque ouverture pour respecter les limitations du navigateur
+                        }, index * 800);
                     });
                     showToast(`${targets.length} relances lancées !`, "success");
                 }
