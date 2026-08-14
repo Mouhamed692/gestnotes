@@ -356,7 +356,10 @@
                 <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                     <i class="fa-solid fa-wallet text-[#4c1d95]"></i> Suivi des Paiements : <span id="mens-student-name" class="text-[#4c1d95] font-extrabold"></span>
                 </h3>
-                <p class="text-xs text-slate-500 mt-1">Classe : <span id="mens-student-class" class="font-bold"></span></p>
+                <p class="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-2">
+                    <span>Classe : <span id="mens-student-class" class="font-bold"></span></span>
+                    <span id="mens-student-previous" class="hidden"></span>
+                </p>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
@@ -473,7 +476,7 @@
                 <h4 class="text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider flex items-center gap-1">
                     <i class="fa-solid fa-angles-up text-amber-600"></i> Transition académique
                 </h4>
-                <p class="text-[10px] text-slate-500 mb-3">Promouvoir les profils de cette classe vers la classe supérieure en réinitialisant les évaluations.</p>
+                <p class="text-[10px] text-slate-500 mb-3">Promouvoir les profils de cette classe vers la classe supérieure en reportant l'historique de profil et les soldes impayés.</p>
                 <div class="grid grid-cols-1 gap-2">
                     <select id="rollover-target-class" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
                     </select>
@@ -1091,6 +1094,29 @@
             document.getElementById('mens-student-name').innerText = `${student.firstname} ${student.lastname}`;
             document.getElementById('mens-student-class').innerText = parts[0] + " " + (parts[1] || "");
 
+            // Render previous profile link if present
+            const previousIndicator = document.getElementById('mens-student-previous');
+            if (student.previousStudentId) {
+                let prevClassKey = "";
+                let prevStudent = null;
+                for (let k in appState.classes) {
+                    prevStudent = appState.classes[k].students.find(oldS => oldS.id === student.previousStudentId);
+                    if (prevStudent) { prevClassKey = k; break; }
+                }
+                if (prevStudent) {
+                    const prevParts = prevClassKey.split('_');
+                    const prevClassDisplayName = prevParts[0] + " " + (prevParts[1] || "");
+                    if (previousIndicator) {
+                        previousIndicator.innerHTML = `<span class="bg-violet-100 text-[#4c1d95] text-[10px] px-2.5 py-1 rounded-lg font-bold border border-violet-200">Profil promu de : ${prevClassDisplayName}</span>`;
+                        previousIndicator.classList.remove('hidden');
+                    }
+                } else {
+                    if (previousIndicator) previousIndicator.classList.add('hidden');
+                }
+            } else {
+                if (previousIndicator) previousIndicator.classList.add('hidden');
+            }
+
             const targetFees = appState.classes[classKey].fees || { inscription: 0, mensualite: 0 };
             if (!student.payments || student.payments.length === 0) {
                 student.payments = moisAnnee.map((m, idx) => ({
@@ -1104,7 +1130,11 @@
             } else {
                 student.payments.forEach((p, idx) => {
                     if (p.statut === "Non payé") {
-                        p.montantDu = idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0);
+                        if (idx === 0) {
+                            p.montantDu = targetFees.inscription || 0;
+                        } else if (p.designation !== 'Dette Antérieure') {
+                            p.montantDu = targetFees.mensualite || 0;
+                        }
                     }
                 });
             }
@@ -1151,10 +1181,19 @@
                     `;
                 }
 
+                let designationLabel = '';
+                if (p.designation === 'Inscription') {
+                    designationLabel = 'Frais d\'inscription';
+                } else if (p.designation === 'Dette Antérieure') {
+                    designationLabel = 'Dette de l\'année précédente';
+                } else {
+                    designationLabel = 'Mensualité ' + p.designation;
+                }
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/50 transition-colors";
                 tr.innerHTML = `
-                    <td class="px-4 py-3 text-left font-bold text-slate-700">${p.designation === 'Inscription' ? 'Frais d\'inscription' : 'Mensualité ' + p.designation}</td>
+                    <td class="px-4 py-3 text-left font-bold text-slate-700">${designationLabel}</td>
                     <td class="px-4 py-3 text-center">
                         <span class="px-2.5 py-1 border text-xs rounded-full font-bold uppercase tracking-wider ${badgeColor}">${p.statut}</span>
                     </td>
@@ -1185,7 +1224,15 @@
             if (!student) return;
 
             const p = student.payments[monthIdx];
-            document.getElementById('encaissement-mois-titre').innerText = p.designation === 'Inscription' ? 'Frais d\'Inscription' : 'Mensualité de ' + p.designation;
+            let titleText = "";
+            if (p.designation === 'Inscription') {
+                titleText = 'Frais d\'Inscription';
+            } else if (p.designation === 'Dette Antérieure') {
+                titleText = 'Dette de l\'année précédente';
+            } else {
+                titleText = 'Mensualité de ' + p.designation;
+            }
+            document.getElementById('encaissement-mois-titre').innerText = titleText;
             document.getElementById('encaissement-montant-input').value = p.montantDu;
             openModal('encaissement-modal');
         }
@@ -1264,7 +1311,16 @@
             document.getElementById('recu-eleve-nom').innerText = `${student.firstname} ${student.lastname}`;
             document.getElementById('recu-eleve-classe').innerText = `Classe : ${parts[0]} ${parts[1] || ''}`;
             document.getElementById('recu-annee-scolaire').innerText = appState.currentYear;
-            document.getElementById('recu-designation').innerText = p.designation === 'Inscription' ? 'Frais d\'inscription scolaire' : `Frais de scolarité - Mois de ${p.designation}`;
+            
+            let designationText = "";
+            if (p.designation === 'Inscription') {
+                designationText = 'Frais d\'inscription scolaire';
+            } else if (p.designation === 'Dette Antérieure') {
+                designationText = 'Règlement dette de l\'année précédente';
+            } else {
+                designationText = `Frais de scolarité - Mois de ${p.designation}`;
+            }
+            document.getElementById('recu-designation').innerText = designationText;
             document.getElementById('recu-methode').innerText = p.methode;
             document.getElementById('recu-montant').innerText = `${p.montantPaye.toLocaleString()} FCFA`;
             document.getElementById('recu-total').innerText = `${p.montantPaye.toLocaleString()} FCFA`;
@@ -1295,7 +1351,14 @@
 
             const p = student.payments[monthIdx];
             const classNameDisplay = classKey.replace('_', ' ');
-            const typeFrais = p.designation === 'Inscription' ? "Frais d'inscription" : `Mensualité de ${p.designation}`;
+            let typeFrais = "";
+            if (p.designation === 'Inscription') {
+                typeFrais = "Frais d'inscription";
+            } else if (p.designation === 'Dette Antérieure') {
+                typeFrais = "Dette de l'année précédente";
+            } else {
+                typeFrais = `Mensualité de ${p.designation}`;
+            }
             
             const message = `*GestNotes - Reçu de Paiement* 📄%0A%0A` +
                             `Bonjour, nous confirmons le règlement pour :%0A` +
@@ -2540,7 +2603,7 @@
             }
             
             askConfirmation(
-                `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClass}) ? <br><br>⚠️ Leurs évaluations actuelles seront archivées pour la nouvelle année académique.`,
+                `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClass}) ? <br><br>⚠️ Les profils seront liés et leurs éventuelles dettes financières non soldées seront reportées sur la nouvelle fiche.`,
                 `<i class="fa-solid fa-angles-up text-amber-600"></i> Valider la promotion`,
                 function() {
                     const targetKey = `${targetClass}_${appState.selectedSection}`;
@@ -2555,18 +2618,47 @@
                     
                     let promotedCount = 0;
                     currentClsData.students.forEach(s => {
-                        const promotedStudent = {
-                            ...s,
-                            id: "student_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
-                            grades: {},
-                            payments: moisAnnee.map((m, idx) => ({
-                                designation: m,
+                        // Calcul du solde impayé (dette) cumulé
+                        let totalDue = 0;
+                        let totalPaid = 0;
+                        if (s.payments) {
+                            s.payments.forEach(p => {
+                                totalDue += (p.montantDu || 0);
+                                totalPaid += (p.montantPaye || 0);
+                            });
+                        }
+                        const remainingDebt = Math.max(0, totalDue - totalPaid);
+
+                        const targetFees = appState.classes[targetKey].fees || { inscription: 0, mensualite: 0 };
+
+                        // Création du tableau de paiement standard
+                        const basePayments = moisAnnee.map((m, idx) => ({
+                            designation: m,
+                            statut: "Non payé",
+                            montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
+                            montantPaye: 0,
+                            methode: "",
+                            dateEncaissement: ""
+                        }));
+
+                        // Si l'élève a une dette, on ajoute une ligne de paiement spéciale au tableau
+                        if (remainingDebt > 0) {
+                            basePayments.push({
+                                designation: "Dette Antérieure",
                                 statut: "Non payé",
-                                montantDu: idx === 0 ? (appState.classes[targetKey].fees.inscription || 0) : (appState.classes[targetKey].fees.mensualite || 0),
+                                montantDu: remainingDebt,
                                 montantPaye: 0,
                                 methode: "",
                                 dateEncaissement: ""
-                            }))
+                            });
+                        }
+
+                        const promotedStudent = {
+                            ...s,
+                            id: "student_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+                            previousStudentId: s.id, // ID du profil précédent conservé en lien de traçabilité
+                            grades: {},
+                            payments: basePayments
                         };
                         appState.classes[targetKey].students.push(promotedStudent);
                         promotedCount++;
