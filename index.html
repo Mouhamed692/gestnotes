@@ -1096,7 +1096,13 @@
 
             // Render previous profile link if present
             const previousIndicator = document.getElementById('mens-student-previous');
-            if (student.previousStudentId) {
+            if (student.previousClassName) {
+                if (previousIndicator) {
+                    previousIndicator.innerHTML = `<span class="bg-violet-100 text-[#4c1d95] text-[10px] px-2.5 py-1 rounded-lg font-bold border border-violet-200">Profil promu de : ${student.previousClassName}</span>`;
+                    previousIndicator.classList.remove('hidden');
+                }
+            } else if (student.previousStudentId) {
+                // Fallback de secours pour les anciennes promotions si existantes
                 let prevClassKey = "";
                 let prevStudent = null;
                 for (let k in appState.classes) {
@@ -2602,8 +2608,10 @@
                 return;
             }
             
+            const currentClassNameDisplay = appState.selectedClass + " " + (appState.selectedSection || "");
+            
             askConfirmation(
-                `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClass}) ? <br><br>⚠️ Les profils seront liés et leurs éventuelles dettes financières non soldées seront reportées sur la nouvelle fiche.`,
+                `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClass}) ? <br><br>⚠️ Les élèves seront déplacés vers la classe supérieure et retirés de leur classe d'origine (${currentClassNameDisplay}). Leurs éventuelles dettes financières non soldées seront reportées sur la nouvelle fiche.`,
                 `<i class="fa-solid fa-angles-up text-amber-600"></i> Valider la promotion`,
                 function() {
                     const targetKey = `${targetClass}_${appState.selectedSection}`;
@@ -2657,6 +2665,7 @@
                             ...s,
                             id: "student_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
                             previousStudentId: s.id, // ID du profil précédent conservé en lien de traçabilité
+                            previousClassName: currentClassNameDisplay, // Classe d'origine mémorisée directement
                             grades: {},
                             payments: basePayments
                         };
@@ -2664,11 +2673,14 @@
                         promotedCount++;
                     });
                     
+                    // On vide la classe d'origine (suppression des élèves transférés)
+                    currentClsData.students = [];
+                    
                     saveToStorage();
                     appState.selectedClass = targetClass;
                     populateFilters();
                     closeModal('settings-modal');
-                    showToast(`${promotedCount} élèves promus en ${targetClass} !`, "success");
+                    showToast(`${promotedCount} élèves déplacés avec succès en ${targetClass} !`, "success");
                     render();
                 }
             );
