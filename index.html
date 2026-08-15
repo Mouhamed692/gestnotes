@@ -406,7 +406,8 @@
         </div>
     </div>
 
-    <div id="encaissement-modal" class="hidden fixed inset-0 bg-slate-900/50 z-55 flex items-center justify-center p-4 backdrop-blur-sm">
+    <!-- Corrected: z-55 replaced with z-[60] to show properly on top of z-50 modal -->
+    <div id="encaissement-modal" class="hidden fixed inset-0 bg-slate-900/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
             <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2 border-b pb-2">
                 <i class="fa-solid fa-cash-register text-emerald-600"></i> Encaisser Paiement
@@ -602,7 +603,8 @@
         </div>
     </div>
 
-    <div id="confirm-modal" class="hidden fixed inset-0 bg-slate-900/60 z-55 flex items-center justify-center p-4 backdrop-blur-sm">
+    <!-- Corrected: z-55 replaced with z-[70] to stack atop all elements reliably -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
             <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2 border-b pb-2" id="confirm-modal-title">
                 <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Confirmation
@@ -749,7 +751,6 @@
             return isPrimary(className) ? "Max" : "Coef";
         }
 
-        // Configuration dynamique du nombre de mensualités : moisAnnee hors "Inscription"
         function getMensualitesExpectedCount() {
             return moisAnnee.length - 1;
         }
@@ -830,7 +831,6 @@
                 if (tSection !== null) appState.selectedSection = tSection;
             }
 
-            // Migration sécurisée de la structure des templates WhatsApp
             if (appState.waTemplates && !appState.waTemplates.receipt) {
                 appState.waTemplates.receipt = DEFAULT_STATE.waTemplates.receipt;
             }
@@ -1106,7 +1106,6 @@
             document.getElementById('mens-student-name').innerText = `${student.firstname} ${student.lastname}`;
             document.getElementById('mens-student-class').innerText = parts[0] + " " + (parts[1] || "");
 
-            // Render previous profile link if present
             const previousIndicator = document.getElementById('mens-student-previous');
             if (student.previousClassName) {
                 if (previousIndicator) {
@@ -1114,7 +1113,6 @@
                     previousIndicator.classList.remove('hidden');
                 }
             } else if (student.previousStudentId) {
-                // Fallback de secours pour les anciennes promotions si existantes
                 let prevClassKey = "";
                 let prevStudent = null;
                 for (let k in appState.classes) {
@@ -1312,6 +1310,8 @@
             );
         }
 
+        /* Corrected: Solved empty/blank PDF issue by duplicating the container 
+           temporarily onto viewport coordinates before processing */
         function imprimerRecu(studentId, monthIdx) {
             let student = null;
             let classKey = "";
@@ -1343,16 +1343,29 @@
             document.getElementById('recu-montant').innerText = `${p.montantPaye.toLocaleString()} FCFA`;
             document.getElementById('recu-total').innerText = `${p.montantPaye.toLocaleString()} FCFA`;
 
-            const element = document.getElementById('recu-template-container');
+            const source = document.getElementById('recu-template-container');
+            const clone = source.cloneNode(true);
+            
+            clone.style.position = 'fixed';
+            clone.style.left = '0px';
+            clone.style.top = '0px';
+            clone.style.width = '700px';
+            clone.style.zIndex = '-9999';
+            clone.style.backgroundColor = '#ffffff';
+            
+            document.body.appendChild(clone);
+
             const options = {
                 margin: 10,
                 filename: `Recu_${p.designation}_${student.lastname}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(options).from(element).save();
+            html2pdf().set(options).from(clone).save().then(() => {
+                clone.remove();
+            });
         }
 
         function partagerWhatsApp(studentId, monthIdx) {
@@ -1367,7 +1380,6 @@
                 return;
             }
 
-            // Génération et téléchargement automatique du reçu PDF d'abord (Option 1)
             try {
                 imprimerRecu(studentId, monthIdx);
             } catch (err) {
@@ -1385,12 +1397,10 @@
                 typeFrais = `Mensualité de ${p.designation}`;
             }
 
-            // Calcul dynamique du solde restant
             let totalDu = student.payments.reduce((acc, curr) => acc + (curr.montantDu || 0), 0);
             let totalPaye = student.payments.reduce((acc, curr) => acc + (curr.montantPaye || 0), 0);
             let resteAPayer = Math.max(0, totalDu - totalPaye);
 
-            // Remplacement des variables à l'aide du template personnalisable
             const tpl = appState.waTemplates.receipt || "Bonjour, nous confirmons le règlement pour l'élève {eleve} ({classe}) d'un montant de {montant} FCFA au titre de : {frais} ({methode}) le {date}. Reste à payer global : {solde} FCFA. Merci de votre confiance ! 🎓";
             let msg = tpl
                 .replace(/{eleve}/g, `${student.firstname} ${student.lastname.toUpperCase()}`)
@@ -1401,7 +1411,6 @@
                 .replace(/{date}/g, p.dateEncaissement.split(' ')[0])
                 .replace(/{solde}/g, resteAPayer.toLocaleString());
             
-            // Nettoyage robuste du numéro de téléphone (Sénégal)
             let purePhone = student.phone.replace(/\D/g, ''); 
             if (purePhone.startsWith('00221')) {
                 purePhone = purePhone.substring(2);
@@ -1411,7 +1420,6 @@
 
             const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(msg)}`;
             
-            // Message d'aide (Option 1)
             alert(`ℹ️ Reçu PDF officiel téléchargé !\n\nLe reçu de paiement a été enregistré sur votre appareil.\n\nVous allez maintenant être redirigé vers WhatsApp. Veuillez joindre ce fichier PDF téléchargé en tant que pièce jointe (ou par glisser-déposer) dans la discussion avec le parent.`);
 
             window.open(url, '_blank');
@@ -1684,7 +1692,6 @@
 
                         const sId = parts[0].replace(/['"]/g, '').trim();
                         const cleanImportId = sId.replace(/\D/g, '');
-                        // On attend des en-têtes ordonnés : Prénom d'abord (colonne 1), puis Nom (colonne 2)
                         const csvFirstName = parts[1] ? parts[1].replace(/['"]/g, '').trim() : "";
                         const csvLastName = parts[2] ? parts[2].replace(/['"]/g, '').trim() : "";
 
@@ -1767,7 +1774,6 @@
                         
                         const sId = parts[0].replace(/['"]/g, '').trim();
                         const cleanImportId = sId.replace(/\D/g, '');
-                        // Adaptation de l'importateur individuel à l'ordre Prénom, Nom
                         const csvFirstName = parts[1] ? parts[1].replace(/['"]/g, '').trim() : "";
                         const csvLastName = parts[2] ? parts[2].replace(/['"]/g, '').trim() : "";
                         
@@ -1833,12 +1839,10 @@
                 showToast("Aucun élève dans cette section.", "info");
                 return;
             }
-            // Changement de l'en-tête pour Prénom, Nom
             let csv = "Prenom,Nom,Date Naissance,Lieu Naissance,Telephone Parent,Moyenne Generale\n";
             clsData.students.forEach(s => {
                 const mg = calculerMoyenneGeneraleGlobale(s, clsData.subjects || []);
                 const displayMg = mg !== null ? mg.toFixed(2) : "N/A";
-                // Écriture du Prénom puis du Nom
                 csv += `"${s.firstname}","${s.lastname}","${s.dob||''}","${s.pob||''}","${s.phone||''}",${displayMg}\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1931,7 +1935,6 @@
 
             students.forEach(s => {
                 const insExpected = fees.inscription || 0;
-                // Calcul automatique du coût cumulé attendu selon l'échéancier moisAnnee
                 const monthlyExpected = (fees.mensualite || 0) * getMensualitesExpectedCount();
                 totalExpected += (insExpected + monthlyExpected);
 
@@ -2151,8 +2154,6 @@
             renderStudentsTable(clsData.students, clsData.subjects);
         }
 
-        // --- PROCÉDURES DE RENDU ET LOGIQUE MANQUANTES ---
-
         function render() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key] || { students: [], subjects: [] };
@@ -2319,7 +2320,6 @@
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/50 transition-colors border-b border-slate-100";
-                // Rendu structuré : Prénom en gras, Nom de famille en casse normale
                 tr.innerHTML = `
                     <td class="py-3 px-5 font-bold text-slate-800">
                         ${s.firstname} <span class="font-normal text-slate-600">${s.lastname.toUpperCase()}</span>
@@ -2406,7 +2406,6 @@
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/50 transition-colors";
-                // Structure Prénom Nom dans la table de saisie des évaluations
                 tr.innerHTML = `
                     <td class="p-3 text-left font-semibold text-slate-700">
                         ${s.firstname} ${s.lastname.toUpperCase()}
@@ -2561,7 +2560,6 @@
                     
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 transition-colors";
-                    // Prénom Nom dans les relances
                     tr.innerHTML = `
                         <td class="px-4 py-3 font-semibold text-slate-800">${s.firstname} ${s.lastname.toUpperCase()}</td>
                         <td class="px-4 py-3 text-slate-600 font-medium">${monthIdx === 0 ? "Frais d'inscription" : p.designation}</td>
@@ -2668,7 +2666,6 @@
                     
                     let promotedCount = 0;
                     currentClsData.students.forEach(s => {
-                        // Calcul du solde impayé (dette) cumulé
                         let totalDue = 0;
                         let totalPaid = 0;
                         if (s.payments) {
@@ -2681,7 +2678,6 @@
 
                         const targetFees = appState.classes[targetKey].fees || { inscription: 0, mensualite: 0 };
 
-                        // Création du tableau de paiement standard
                         const basePayments = moisAnnee.map((m, idx) => ({
                             designation: m,
                             statut: "Non payé",
@@ -2691,7 +2687,6 @@
                             dateEncaissement: ""
                         }));
 
-                        // Si l'élève a une dette, on ajoute une ligne de paiement spéciale au tableau
                         if (remainingDebt > 0) {
                             basePayments.push({
                                 designation: "Dette Antérieure",
@@ -2706,8 +2701,8 @@
                         const promotedStudent = {
                             ...s,
                             id: "student_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
-                            previousStudentId: s.id, // ID du profil précédent conservé en lien de traçabilité
-                            previousClassName: currentClassNameDisplay, // Classe d'origine mémorisée directement
+                            previousStudentId: s.id,
+                            previousClassName: currentClassNameDisplay,
                             grades: {},
                             payments: basePayments
                         };
@@ -2715,7 +2710,6 @@
                         promotedCount++;
                     });
                     
-                    // On vide la classe d'origine (suppression des élèves transférés)
                     currentClsData.students = [];
                     
                     saveToStorage();
@@ -2728,6 +2722,8 @@
             );
         }
 
+        /* Corrected: Solved empty/blank manual grid PDF issue 
+           by appending element to DOM off-screen before exporting */
         function exporterFeuilleSaisie() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key];
@@ -2789,15 +2785,26 @@
             
             printDiv.innerHTML = html;
             
+            printDiv.style.position = 'fixed';
+            printDiv.style.left = '0px';
+            printDiv.style.top = '0px';
+            printDiv.style.width = '800px';
+            printDiv.style.zIndex = '-9999';
+            printDiv.style.backgroundColor = '#ffffff';
+            
+            document.body.appendChild(printDiv);
+            
             const options = {
                 margin: 10,
                 filename: `Grille_Saisie_${appState.selectedClass}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
-            html2pdf().set(options).from(printDiv).save();
+            html2pdf().set(options).from(printDiv).save().then(() => {
+                printDiv.remove();
+            });
         }
 
         function cleanStringForFuzzy(str) {
