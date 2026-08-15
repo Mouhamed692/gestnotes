@@ -513,6 +513,7 @@
                     <select id="wa-template-selector" onchange="onWaTemplateChange()" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none font-medium">
                         <option value="reminder">Rappel de mensualité impayée</option>
                         <option value="bulletin">Notification de bulletin disponible</option>
+                        <option value="receipt">Confirmation de reçu de paiement</option>
                     </select>
                 </div>
             </div>
@@ -680,8 +681,6 @@
         </div>
     </div>
 
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
     <script>
         if (typeof idbKeyval === 'undefined') {
             window.idbKeyval = {
@@ -725,7 +724,8 @@
             currentRole: "admin",
             waTemplates: {
                 reminder: "Bonjour, nous vous rappelons que le paiement de {frais} de {montant} FCFA pour l'élève {eleve} ({classe}) reste attendu pour la période {periode}. Merci de votre confiance ! 🎓",
-                bulletin: "Bonjour, nous vous informons que le bulletin de {eleve} ({classe}) pour la période {periode} est disponible au secrétariat de l'école. Cordialement. 🎓"
+                bulletin: "Bonjour, nous vous informons que le bulletin de {eleve} ({classe}) pour la période {periode} est disponible au secrétariat de l'école. Cordialement. 🎓",
+                receipt: "Bonjour, nous confirmons le règlement pour l'élève {eleve} ({classe}) d'un montant de {montant} FCFA au titre de : {frais} ({methode}) le {date}. Reste à payer global : {solde} FCFA. Merci de votre confiance ! 🎓"
             },
             classes: {}
         };
@@ -828,6 +828,11 @@
                 const tSection = localStorage.getItem("gestnotes_teacher_section");
                 if (tClass) appState.selectedClass = tClass;
                 if (tSection !== null) appState.selectedSection = tSection;
+            }
+
+            // Migration sécurisée de la structure des templates WhatsApp
+            if (appState.waTemplates && !appState.waTemplates.receipt) {
+                appState.waTemplates.receipt = DEFAULT_STATE.waTemplates.receipt;
             }
 
             populateFilters();
@@ -1362,6 +1367,13 @@
                 return;
             }
 
+            // Génération et téléchargement automatique du reçu PDF d'abord (Option 1)
+            try {
+                imprimerRecu(studentId, monthIdx);
+            } catch (err) {
+                console.error("Erreur lors de la génération automatique du reçu :", err);
+            }
+
             const p = student.payments[monthIdx];
             const classNameDisplay = classKey.replace('_', ' ');
             let typeFrais = "";
@@ -1372,21 +1384,36 @@
             } else {
                 typeFrais = `Mensualité de ${p.designation}`;
             }
-            
-            const message = `*GestNotes - Reçu de Paiement* 📄%0A%0A` +
-                            `Bonjour, nous confirmons le règlement pour :%0A` +
-                            `👤 *Élève :* ${student.firstname} ${student.lastname.toUpperCase()}%0A` +
-                            `🏫 *Classe :* ${classNameDisplay}%0A` +
-                            `🧾 *Frais :* ${typeFrais}%0A` +
-                            `💵 *Montant :* *${p.montantPaye.toLocaleString()} FCFA*%0A` +
-                            `💳 *Mode :* ${p.methode}%0A` +
-                            `📅 *Date :* ${p.dateEncaissement.split(' ')[0]}%0A%0A` +
-                            `**La Direction** 🎓`;
-            
-            let purePhone = student.phone.replace(/[\s\+\-]/g, '');
-            if (purePhone.length === 9) purePhone = "221" + purePhone;
 
-            const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${message}`;
+            // Calcul dynamique du solde restant
+            let totalDu = student.payments.reduce((acc, curr) => acc + (curr.montantDu || 0), 0);
+            let totalPaye = student.payments.reduce((acc, curr) => acc + (curr.montantPaye || 0), 0);
+            let resteAPayer = Math.max(0, totalDu - totalPaye);
+
+            // Remplacement des variables à l'aide du template personnalisable
+            const tpl = appState.waTemplates.receipt || "Bonjour, nous confirmons le règlement pour l'élève {eleve} ({classe}) d'un montant de {montant} FCFA au titre de : {frais} ({methode}) le {date}. Reste à payer global : {solde} FCFA. Merci de votre confiance ! 🎓";
+            let msg = tpl
+                .replace(/{eleve}/g, `${student.firstname} ${student.lastname.toUpperCase()}`)
+                .replace(/{classe}/g, classNameDisplay)
+                .replace(/{frais}/g, typeFrais)
+                .replace(/{montant}/g, p.montantPaye.toLocaleString())
+                .replace(/{methode}/g, p.methode)
+                .replace(/{date}/g, p.dateEncaissement.split(' ')[0])
+                .replace(/{solde}/g, resteAPayer.toLocaleString());
+            
+            // Nettoyage robuste du numéro de téléphone (Sénégal)
+            let purePhone = student.phone.replace(/\D/g, ''); 
+            if (purePhone.startsWith('00221')) {
+                purePhone = purePhone.substring(2);
+            } else if (purePhone.length === 9) {
+                purePhone = "221" + purePhone;
+            }
+
+            const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(msg)}`;
+            
+            // Message d'aide (Option 1)
+            alert(`ℹ️ Reçu PDF officiel téléchargé !\n\nLe reçu de paiement a été enregistré sur votre appareil.\n\nVous allez maintenant être redirigé vers WhatsApp. Veuillez joindre ce fichier PDF téléchargé en tant que pièce jointe (ou par glisser-déposer) dans la discussion avec le parent.`);
+
             window.open(url, '_blank');
         }
 
@@ -2784,5 +2811,3 @@
 </body>
 
 </html>
-
-
