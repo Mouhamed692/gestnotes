@@ -291,7 +291,7 @@
             
             <form id="registration-form" class="space-y-4" onsubmit="validerInscriptionOuChangement(event)">
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
+                    <div class="text-[#4c1d95] font-bold">
                         <label class="block text-xs font-bold text-slate-900 mb-1">Prénom</label>
                         <input type="text" id="reg-firstname" required class="text-slate-900 border border-slate-300 rounded-xl p-3 w-full bg-white outline-none focus:ring-2 focus:ring-violet-500/20 font-medium">
                     </div>
@@ -680,6 +680,8 @@
         </div>
     </div>
 
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
     <script>
         if (typeof idbKeyval === 'undefined') {
             window.idbKeyval = {
@@ -706,7 +708,7 @@
         }
 
         const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-        const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin"];
+        const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
         
         let subjectDev3Visible = {};
         let appState = null;
@@ -745,6 +747,11 @@
 
         function getCoefLabel(className) {
             return isPrimary(className) ? "Max" : "Coef";
+        }
+
+        // Configuration dynamique du nombre de mensualités : moisAnnee hors "Inscription"
+        function getMensualitesExpectedCount() {
+            return moisAnnee.length - 1;
         }
 
         function getSectionsForClass(cls) {
@@ -1650,8 +1657,9 @@
 
                         const sId = parts[0].replace(/['"]/g, '').trim();
                         const cleanImportId = sId.replace(/\D/g, '');
-                        const csvLastName = parts[1] ? parts[1].replace(/['"]/g, '').trim() : "";
-                        const csvFirstName = parts[2] ? parts[2].replace(/['"]/g, '').trim() : "";
+                        // On attend des en-têtes ordonnés : Prénom d'abord (colonne 1), puis Nom (colonne 2)
+                        const csvFirstName = parts[1] ? parts[1].replace(/['"]/g, '').trim() : "";
+                        const csvLastName = parts[2] ? parts[2].replace(/['"]/g, '').trim() : "";
 
                         const student = appState.classes[key].students.find(s => {
                             const cleanStId = s.id.replace(/\D/g, '');
@@ -1732,8 +1740,9 @@
                         
                         const sId = parts[0].replace(/['"]/g, '').trim();
                         const cleanImportId = sId.replace(/\D/g, '');
-                        const csvLastName = parts[1] ? parts[1].replace(/['"]/g, '').trim() : "";
-                        const csvFirstName = parts[2] ? parts[2].replace(/['"]/g, '').trim() : "";
+                        // Adaptation de l'importateur individuel à l'ordre Prénom, Nom
+                        const csvFirstName = parts[1] ? parts[1].replace(/['"]/g, '').trim() : "";
+                        const csvLastName = parts[2] ? parts[2].replace(/['"]/g, '').trim() : "";
                         
                         const student = appState.classes[key].students.find(s => {
                             const cleanStId = s.id.replace(/\D/g, '');
@@ -1797,11 +1806,13 @@
                 showToast("Aucun élève dans cette section.", "info");
                 return;
             }
-            let csv = "Nom,Prenom,Date Naissance,Lieu Naissance,Telephone Parent,Moyenne Generale\n";
+            // Changement de l'en-tête pour Prénom, Nom
+            let csv = "Prenom,Nom,Date Naissance,Lieu Naissance,Telephone Parent,Moyenne Generale\n";
             clsData.students.forEach(s => {
                 const mg = calculerMoyenneGeneraleGlobale(s, clsData.subjects || []);
                 const displayMg = mg !== null ? mg.toFixed(2) : "N/A";
-                csv += `"${s.lastname}","${s.firstname}","${s.dob||''}","${s.pob||''}","${s.phone||''}",${displayMg}\n`;
+                // Écriture du Prénom puis du Nom
+                csv += `"${s.firstname}","${s.lastname}","${s.dob||''}","${s.pob||''}","${s.phone||''}",${displayMg}\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
@@ -1893,7 +1904,8 @@
 
             students.forEach(s => {
                 const insExpected = fees.inscription || 0;
-                const monthlyExpected = (fees.mensualite || 0) * 9;
+                // Calcul automatique du coût cumulé attendu selon l'échéancier moisAnnee
+                const monthlyExpected = (fees.mensualite || 0) * getMensualitesExpectedCount();
                 totalExpected += (insExpected + monthlyExpected);
 
                 if (s.payments) {
@@ -2230,8 +2242,8 @@
             tbody.innerHTML = "";
             
             const sorted = [...students].sort((a, b) => {
-                const nameA = `${a.lastname} ${a.firstname}`.toUpperCase();
-                const nameB = `${b.lastname} ${b.firstname}`.toUpperCase();
+                const nameA = `${a.firstname} ${a.lastname}`.toUpperCase();
+                const nameB = `${b.firstname} ${b.lastname}`.toUpperCase();
                 return nameA.localeCompare(nameB);
             });
 
@@ -2280,9 +2292,10 @@
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/50 transition-colors border-b border-slate-100";
+                // Rendu structuré : Prénom en gras, Nom de famille en casse normale
                 tr.innerHTML = `
                     <td class="py-3 px-5 font-bold text-slate-800">
-                        ${s.lastname.toUpperCase()} <span class="font-normal text-slate-600">${s.firstname}</span>
+                        ${s.firstname} <span class="font-normal text-slate-600">${s.lastname.toUpperCase()}</span>
                     </td>
                     <td class="py-3 px-5 text-center ${mgClass}">
                         ${mgStr}
@@ -2366,9 +2379,10 @@
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/50 transition-colors";
+                // Structure Prénom Nom dans la table de saisie des évaluations
                 tr.innerHTML = `
                     <td class="p-3 text-left font-semibold text-slate-700">
-                        ${s.lastname.toUpperCase()} ${s.firstname}
+                        ${s.firstname} ${s.lastname.toUpperCase()}
                     </td>
                     <td class="p-2">
                         <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val1}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev1', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
@@ -2520,8 +2534,9 @@
                     
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 transition-colors";
+                    // Prénom Nom dans les relances
                     tr.innerHTML = `
-                        <td class="px-4 py-3 font-semibold text-slate-800">${s.lastname.toUpperCase()} ${s.firstname}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-800">${s.firstname} ${s.lastname.toUpperCase()}</td>
                         <td class="px-4 py-3 text-slate-600 font-medium">${monthIdx === 0 ? "Frais d'inscription" : p.designation}</td>
                         <td class="px-4 py-3 text-right font-extrabold text-rose-600">${remains.toLocaleString()} F</td>
                         <td class="px-4 py-3 text-center text-slate-500">${s.phone || '-'}</td>
@@ -2714,7 +2729,7 @@
                 <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                     <thead>
                         <tr style="background-color: #f8fafc;">
-                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 12px;">Nom & Prénom</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 12px;">Prénom & Nom</th>
                             <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 100px; font-size: 12px;">Devoir 1</th>
                             <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 100px; font-size: 12px;">Devoir 2</th>
                             <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 100px; font-size: 12px;">Devoir 3</th>
@@ -2724,10 +2739,10 @@
                     <tbody>
             `;
             
-            clsData.students.sort((a,b) => `${a.lastname} ${a.firstname}`.localeCompare(`${b.lastname} ${b.firstname}`)).forEach(s => {
+            clsData.students.sort((a,b) => `${a.firstname} ${a.lastname}`.localeCompare(`${b.firstname} ${b.lastname}`)).forEach(s => {
                 html += `
                     <tr>
-                        <td style="border: 1px solid #cbd5e1; padding: 10px; font-size: 13px; font-weight: bold;">${s.lastname.toUpperCase()} ${s.firstname}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 10px; font-size: 13px; font-weight: bold;">${s.firstname} ${s.lastname.toUpperCase()}</td>
                         <td style="border: 1px solid #cbd5e1; padding: 10px;"></td>
                         <td style="border: 1px solid #cbd5e1; padding: 10px;"></td>
                         <td style="border: 1px solid #cbd5e1; padding: 10px;"></td>
@@ -2769,3 +2784,5 @@
 </body>
 
 </html>
+
+
