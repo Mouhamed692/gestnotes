@@ -219,6 +219,7 @@
                     <th>Moy. Discipline</th>
                     <th id="lbl-th-coef">Coef</th>
                     <th>Total Points</th>
+                    <th>Rang</th>
                     <th>Appréciations & Signatures</th>
                 </tr>
             </thead>
@@ -229,10 +230,11 @@
                     <td id="lbl-total-coef">-</td>
                     <td id="lbl-total-points">-</td>
                     <td style="background: #f8fafc;"></td>
+                    <td style="background: #f8fafc;"></td>
                 </tr>
                 <tr class="summary-row">
                     <td colspan="4" style="text-align: right;">MOYENNE PÉRIODIQUE :</td>
-                    <td colspan="2" id="lbl-general-average" style="font-size:15px; text-align:center;">-</td>
+                    <td colspan="3" id="lbl-general-average" style="font-size:15px; text-align:center;">-</td>
                     <td id="lbl-rank-container" style="text-align: left; padding-left:15px;">Rang : <span id="lbl-rank">-</span></td>
                 </tr>
             </tfoot>
@@ -435,6 +437,36 @@
         return statsMap;
     }
 
+    function computeAllSubjectStats(clsData, periodId, isPrim) {
+        const periodKey = "p_" + periodId;
+        let subjectStatsMap = {}; 
+        
+        if (!clsData || !clsData.subjects || !clsData.students) return {};
+
+        clsData.subjects.forEach(sub => {
+            let list = clsData.students.map(st => {
+                let avg = -1;
+                if (st.grades && st.grades[periodKey] && st.grades[periodKey][sub.id]) {
+                    avg = calculateSubjectAverage(st.grades[periodKey][sub.id], isPrim);
+                }
+                return { id: st.id, avg: avg };
+            });
+
+            let sorted = [...list].filter(x => x.avg !== -1).sort((a, b) => b.avg - a.avg);
+            
+            subjectStatsMap[sub.id] = {};
+            list.forEach(item => {
+                if (item.avg === -1) {
+                    subjectStatsMap[sub.id][item.id] = "-";
+                } else {
+                    let r = sorted.findIndex(x => x.avg === item.avg) + 1;
+                    subjectStatsMap[sub.id][item.id] = r > 0 ? `${r}${r === 1 ? 'er' : 'e'}` : "-";
+                }
+            });
+        });
+        return subjectStatsMap;
+    }
+
    window.onload = async function () {
         try {
             const savedHeader = localStorage.getItem("custom_header_content");
@@ -453,6 +485,7 @@
             const semKey = "p_" + bridge.semester;
 
             const statsCurrent = computePeriodStats(clsData, bridge.semester, isPrim);
+            const subjectRanks = computeAllSubjectStats(clsData, bridge.semester, isPrim);
 
             const templateHTML = document.getElementById('bulletin-content').innerHTML;
 
@@ -481,7 +514,6 @@
                 div.querySelector('#lbl-semester').textContent = isPrim ? `Trimestre ${bridge.semester}` : `Semestre ${bridge.semester}`;
                 div.querySelector('#lbl-th-coef').textContent = isPrim ? "Max" : "Coef";
                 
-                // Modification dynamique de "Moy. Devoirs" en "Moy. Note" pour le niveau primaire
                 div.querySelector('#lbl-th-dev-single').textContent = isPrim ? "Moy. Note" : "Moy. Devoirs";
 
                 const tbody = div.querySelector('#table-grades-rows');
@@ -493,6 +525,11 @@
                 (clsData.subjects || []).forEach(sub => {
                     let moyDevoirsText = "-", noteCompo = "-", moyDiscipline = "-", totalPointsDiscipline = "-";
                     let appreciationCel = `<span style="color:#94a3b8; font-style:italic;">Aucune note</span>`;
+                    let rankText = "-";
+
+                    if (subjectRanks && subjectRanks[sub.id] && subjectRanks[sub.id][student.id]) {
+                        rankText = subjectRanks[sub.id][student.id];
+                    }
 
                     if (currentPeriodGrades && currentPeriodGrades[sub.id]) {
                         const score = currentPeriodGrades[sub.id];
@@ -540,6 +577,7 @@
                         <td style="font-weight:bold; background-color:#fcfcfc;">${moyDiscipline}</td>
                         <td style="font-weight:500;">${sub.coef}</td>
                         <td style="font-weight:bold; background-color:#f5f3ff; color:#4c1d95;">${totalPointsDiscipline}</td>
+                        <td style="font-weight:bold; color:#0f172a;">${rankText}</td>
                         <td style="text-align:left; font-size:11px; padding-left:10px; color:#475569;">${appreciationCel}</td>
                     `;
                     tbody.appendChild(row);
@@ -557,7 +595,6 @@
                     let avgNum = parseFloat(stats.avg.replace(',', '.'));
                     let refAvg = isPrim ? (avgNum * 2) : avgNum;
 
-                    // Attribution automatique des mentions (Tableau des Mentions)
                     const decisions = [
                         { id: 'chk-excellent', cond: refAvg >= 19 },
                         { id: 'chk-tresbien', cond: refAvg >= 16 && refAvg < 19 },
@@ -572,7 +609,6 @@
                         if (el) el.textContent = item.cond ? "X" : "";
                     });
 
-                    // Attribution automatique des décisions du conseil (Décisions du Conseil)
                     const councils = [
                         { id: 'chk-felicitations', cond: refAvg >= 15 },
                         { id: 'chk-encouragement', cond: refAvg >= 13 && refAvg < 15 },
