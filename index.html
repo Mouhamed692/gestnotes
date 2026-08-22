@@ -177,6 +177,9 @@
                 <button id="btn-class-fees" onclick="openClassFeesModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-amber-100">
                     <i class="fa-solid fa-coins text-xs"></i> Tarifs classe
                 </button>
+                <button id="btn-caisse-jour" onclick="openCaisseJourModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-indigo-100" title="Journal de caisse globale">
+                    <i class="fa-solid fa-receipt text-xs"></i> Journal Caisse
+                </button>
                 <button id="btn-add-student" onclick="openRegistrationModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
                     <i class="fa-solid fa-plus text-xs"></i> Ajouter élève
                 </button>
@@ -225,6 +228,26 @@
                             <span>Suivant</span> <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Proposition 1 : Statistiques de la matière active -->
+            <div id="subject-stats-banner" class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+                <div class="text-center md:text-left">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Moyenne Classe</p>
+                    <p class="text-sm font-bold text-slate-700" id="sub-stats-average">N/A</p>
+                </div>
+                <div class="text-center md:text-left">
+                    <p class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Note Maximale</p>
+                    <p class="text-sm font-bold text-emerald-700" id="sub-stats-max">N/A</p>
+                </div>
+                <div class="text-center md:text-left">
+                    <p class="text-[10px] uppercase font-bold text-rose-600 tracking-wider">Note Minimale</p>
+                    <p class="text-sm font-bold text-rose-700" id="sub-stats-min">N/A</p>
+                </div>
+                <div class="text-center md:text-left">
+                    <p class="text-[10px] uppercase font-bold text-violet-600 tracking-wider">Taux de Réussite</p>
+                    <p class="text-sm font-bold text-violet-700" id="sub-stats-rate">N/A</p>
                 </div>
             </div>
 
@@ -490,6 +513,68 @@
             <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeModal('settings-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
                 <button onclick="saveSettings()" class="bg-[#4c1d95] text-white px-4 py-2 rounded-xl text-sm font-semibold">Appliquer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proposition 3 : Modal Journal de Caisse -->
+    <div id="caisse-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 border border-slate-100 flex flex-col max-h-[85vh]">
+            <div class="border-b pb-4 mb-4 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-receipt text-indigo-600 text-2xl"></i> Journal de Caisse
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Historique chronologique de tous les règlements encaissés.</p>
+                </div>
+                <button onclick="closeModal('caisse-modal')" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-4 mb-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Filtrer par date</label>
+                    <input type="date" id="caisse-filter-date" onchange="renderCaisseJour()" class="text-slate-900 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none font-medium">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Méthode de paiement</label>
+                    <select id="caisse-filter-method" onchange="renderCaisseJour()" class="text-slate-900 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none font-medium">
+                        <option value="ALL">Toutes</option>
+                        <option value="Espèces">Espèces</option>
+                        <option value="Wave">Wave</option>
+                        <option value="Orange Money">Orange Money</option>
+                    </select>
+                </div>
+                <div class="ml-auto flex gap-4 bg-indigo-50 border border-indigo-100/50 p-3 rounded-xl">
+                    <div class="text-right">
+                        <span class="block text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Total Encaissé Filtré</span>
+                        <span class="text-lg font-extrabold text-indigo-700" id="caisse-filtered-total">0 F</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto border border-slate-100 rounded-xl">
+                <table class="w-full text-left text-xs min-w-[700px]">
+                    <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px] tracking-wider sticky top-0">
+                        <tr>
+                            <th class="px-4 py-3">Date d'encaissement</th>
+                            <th class="px-4 py-3">Élève</th>
+                            <th class="px-4 py-3">Classe</th>
+                            <th class="px-4 py-3">Type Frais</th>
+                            <th class="px-4 py-3 text-center">Mode</th>
+                            <th class="px-4 py-3 text-right">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody id="caisse-list-tbody" class="divide-y divide-slate-100 text-slate-700">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-100">
+                <button type="button" onclick="closeModal('caisse-modal')" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md">
+                    Fermer
+                </button>
             </div>
         </div>
     </div>
@@ -1938,6 +2023,43 @@
             return totalPoints / totalCoefs;
         }
 
+        // Proposition 2 : Calcul et attribution des rangs de la classe
+        function obtenirRangsClasse(students, subjects) {
+            const studentAverages = students.map(s => {
+                const avg = calculerMoyenneGeneraleGlobale(s, subjects);
+                return { id: s.id, avg: avg !== null ? avg : -1 };
+            });
+            // Tri décroissant
+            studentAverages.sort((a, b) => b.avg - a.avg);
+            
+            const ranks = {};
+            let currentRank = 1;
+            for (let i = 0; i < studentAverages.length; i++) {
+                const item = studentAverages[i];
+                if (item.avg === -1) {
+                    ranks[item.id] = "N/A";
+                    continue;
+                }
+                if (i > 0 && studentAverages[i - 1].avg === item.avg) {
+                    let tieRank = currentRank;
+                    for (let j = i - 1; j >= 0; j--) {
+                        if (studentAverages[j].avg === item.avg) {
+                            if (ranks[studentAverages[j].id] && ranks[studentAverages[j].id].rankNum !== undefined) {
+                                tieRank = ranks[studentAverages[j].id].rankNum;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                    ranks[item.id] = { label: tieRank === 1 ? "1er ex" : `${tieRank}e ex`, rankNum: tieRank };
+                } else {
+                    currentRank = i + 1;
+                    ranks[item.id] = { label: currentRank === 1 ? "1er" : `${currentRank}e`, rankNum: currentRank };
+                }
+            }
+            return ranks;
+        }
+
         function calculateClassStats() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key];
@@ -2083,6 +2205,7 @@
             render();
         }
 
+        // Proposition 3 : Rendre visible et fonctionnel le Journal de Caisse selon le rôle
         function applyRoleRestrictions() {
             const role = localStorage.getItem("gestnotes_local_role") || "admin";
             const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
@@ -2110,6 +2233,7 @@
             const classFeesBtn = document.getElementById('btn-class-fees');
             const subjectsBtn = document.getElementById('btn-manage-subjects');
             const waRemindersBtn = document.getElementById('btn-wa-reminders');
+            const caisseJourBtn = document.getElementById('btn-caisse-jour');
             const gradesSec = document.getElementById('grades-section');
             const addStudentBtn = document.getElementById('btn-add-student');
             const addStudentBtnShortcut = document.getElementById('btn-add-student-shortcut');
@@ -2124,6 +2248,7 @@
             if (classFeesBtn) classFeesBtn.style.display = '';
             if (subjectsBtn) subjectsBtn.style.display = '';
             if (waRemindersBtn) waRemindersBtn.style.display = '';
+            if (caisseJourBtn) caisseJourBtn.style.display = '';
             if (gradesSec) gradesSec.style.display = 'flex';
             if (addStudentBtn) addStudentBtn.style.display = '';
             if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = '';
@@ -2141,6 +2266,7 @@
             if (role === 'enseignant') {
                 if (classFeesBtn) classFeesBtn.style.display = 'none';
                 if (waRemindersBtn) waRemindersBtn.style.display = 'none';
+                if (caisseJourBtn) caisseJourBtn.style.display = 'none';
                 if (addStudentBtn) addStudentBtn.style.display = 'none';
                 if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = 'none';
                 if (statsSection) statsSection.style.display = 'none';
@@ -2261,6 +2387,7 @@
             debouncedRenderList();
         }
 
+        // Proposition 2 : Affichage du rang dans la liste des élèves
         function renderStudentsTable(students, subjects) {
             const tbody = document.getElementById('students-table-body');
             const emptyState = document.getElementById('empty-state');
@@ -2292,6 +2419,9 @@
             });
 
             const isPrim = isPrimary(appState.selectedClass);
+            
+            // Calcul de la carte des rangs de la classe
+            const rankMap = obtenirRangsClasse(students, subjects);
 
             sorted.forEach(s => {
                 const mg = calculerMoyenneGeneraleGlobale(s, subjects);
@@ -2300,6 +2430,11 @@
                 if (mg !== null) {
                     mgStr = mg.toFixed(2) + " / " + (isPrim ? "10" : "20");
                     mgClass = mg >= (isPrim ? 5 : 10) ? "text-emerald-600 font-extrabold" : "text-rose-600 font-extrabold";
+                }
+
+                let rankStr = "";
+                if (mg !== null && rankMap[s.id] && rankMap[s.id] !== "N/A") {
+                    rankStr = `<span class="block text-[10px] text-slate-500 font-semibold mt-0.5 bg-slate-100 py-0.5 px-2 rounded-full inline-block">Rang : ${rankMap[s.id].label}</span>`;
                 }
 
                 const role = localStorage.getItem("gestnotes_local_role") || "admin";
@@ -2340,8 +2475,9 @@
                     <td class="py-3 px-5 font-bold text-slate-800">
                         ${s.firstname} <span class="font-normal text-slate-600">${s.lastname.toUpperCase()}</span>
                     </td>
-                    <td class="py-3 px-5 text-center ${mgClass}">
-                        ${mgStr}
+                    <td class="py-3 px-5 text-center">
+                        <span class="${mgClass}">${mgStr}</span>
+                        ${rankStr}
                     </td>
                     <td class="py-3 px-5 text-right">
                         ${actionsHTML}
@@ -2375,6 +2511,7 @@
             );
         }
 
+        // Proposition 1 : Statistiques temps réel de la matière active
         function renderGradesGrid() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key];
@@ -2384,6 +2521,10 @@
             const subjectId = subSelect.value;
             if (!subjectId) {
                 document.getElementById('grades-table-body').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune discipline configurée</td></tr>`;
+                document.getElementById('sub-stats-average').innerText = "N/A";
+                document.getElementById('sub-stats-max').innerText = "N/A";
+                document.getElementById('sub-stats-min').innerText = "N/A";
+                document.getElementById('sub-stats-rate').innerText = "N/A";
                 return;
             }
 
@@ -2403,6 +2544,37 @@
                 const fullName = `${s.firstname} ${s.lastname}`.toLowerCase();
                 return fullName.includes(searchVal);
             });
+
+            // Calcul statistique temps réel
+            let activeGrades = [];
+            clsData.students.forEach(s => {
+                const m = calculerMoyenneEleveMatiere(s, subjectId);
+                if (m !== null) {
+                    activeGrades.push(m);
+                }
+            });
+
+            if (activeGrades.length > 0) {
+                const sum = activeGrades.reduce((acc, curr) => acc + curr, 0);
+                const avg = sum / activeGrades.length;
+                const max = Math.max(...activeGrades);
+                const min = Math.min(...activeGrades);
+                
+                const threshold = isPrim ? 5 : 10;
+                const successes = activeGrades.filter(g => g >= threshold).length;
+                const rate = (successes / activeGrades.length) * 100;
+
+                const baseScale = isPrim ? "/ 10" : "/ 20";
+                document.getElementById('sub-stats-average').innerText = `${avg.toFixed(2)} ${baseScale}`;
+                document.getElementById('sub-stats-max').innerText = `${max.toFixed(2)} ${baseScale}`;
+                document.getElementById('sub-stats-min').innerText = `${min.toFixed(2)} ${baseScale}`;
+                document.getElementById('sub-stats-rate').innerText = `${rate.toFixed(1)}%`;
+            } else {
+                document.getElementById('sub-stats-average').innerText = "N/A";
+                document.getElementById('sub-stats-max').innerText = "N/A";
+                document.getElementById('sub-stats-min').innerText = "N/A";
+                document.getElementById('sub-stats-rate').innerText = "N/A";
+            }
 
             const tbody = document.getElementById('grades-table-body');
             tbody.innerHTML = "";
@@ -2645,6 +2817,102 @@
                 showToast(`${initiated} relances initiées.`, "success");
             } else {
                 showToast("Aucun compte en retard à relancer.", "info");
+            }
+        }
+
+        // Proposition 3 : Journal de Caisse global
+        function openCaisseJourModal() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            
+            document.getElementById('caisse-filter-date').value = `${year}-${month}-${day}`;
+            document.getElementById('caisse-filter-method').value = "ALL";
+            
+            openModal('caisse-modal');
+            renderCaisseJour();
+        }
+
+        function renderCaisseJour() {
+            const dateVal = document.getElementById('caisse-filter-date').value;
+            const methodVal = document.getElementById('caisse-filter-method').value;
+            
+            let dateToMatch = "";
+            if (dateVal) {
+                const parts = dateVal.split('-');
+                dateToMatch = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+
+            const tbody = document.getElementById('caisse-list-tbody');
+            tbody.innerHTML = "";
+
+            let totalFiltered = 0;
+            let paymentsList = [];
+
+            for (let classKey in appState.classes) {
+                const cls = appState.classes[classKey];
+                const parts = classKey.split('_');
+                const classNameDisplay = parts[0] + " " + (parts[1] || "");
+
+                if (cls.students) {
+                    cls.students.forEach(student => {
+                        if (student.payments) {
+                            student.payments.forEach(p => {
+                                if (p.statut === "Payé" && p.dateEncaissement) {
+                                    paymentsList.push({
+                                        date: p.dateEncaissement,
+                                        studentName: `${student.firstname} ${student.lastname.toUpperCase()}`,
+                                        className: classNameDisplay,
+                                        designation: p.designation === 'Inscription' ? "Frais d'inscription" : p.designation === 'Dette Antérieure' ? "Dette Antérieure" : `Mensualité ${p.designation}`,
+                                        method: p.methode,
+                                        amount: p.montantPaye
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+
+            // Tri chronologique inverse (plus récents en haut)
+            paymentsList.sort((a, b) => {
+                const parseDateStr = (str) => {
+                    const [datePart, timePart] = str.split(' ');
+                    const [d, m, y] = datePart.split('/');
+                    const [h, min] = timePart ? timePart.split(':') : [0, 0];
+                    return new Date(y, m - 1, d, h, min);
+                };
+                return parseDateStr(b.date) - parseDateStr(a.date);
+            });
+
+            paymentsList.forEach(item => {
+                const itemDateOnly = item.date.split(' ')[0];
+                const matchesDate = !dateVal || itemDateOnly === dateToMatch;
+                const matchesMethod = methodVal === "ALL" || item.method === methodVal;
+
+                if (matchesDate && matchesMethod) {
+                    totalFiltered += item.amount;
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 text-slate-500 font-semibold">${item.date}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-800">${item.studentName}</td>
+                        <td class="px-4 py-3 text-slate-600 font-semibold">${item.className}</td>
+                        <td class="px-4 py-3 text-slate-600">${item.designation}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 py-0.5 border text-[10px] rounded-md font-bold uppercase bg-slate-100 text-slate-700">${item.method}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right font-extrabold text-slate-900">${item.amount.toLocaleString()} F</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            document.getElementById('caisse-filtered-total').innerText = totalFiltered.toLocaleString() + " FCFA";
+
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-semibold">Aucun règlement enregistré pour ces critères.</td></tr>`;
             }
         }
 
