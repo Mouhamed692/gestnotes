@@ -3006,8 +3006,7 @@
             );
         }
 
-        /* Corrected: Solved empty/blank manual grid PDF issue 
-           by appending element to DOM off-screen before exporting */
+        // Export de grille de notes au format PDF professionnel avec notes réelles incluses
         function exporterFeuilleSaisie() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key];
@@ -3015,77 +3014,147 @@
                 showToast("Aucun élève enregistré dans cette classe.", "error");
                 return;
             }
-            
+
+            const subSelect = document.getElementById('grade-subject-select');
+            const subjectId = subSelect ? subSelect.value : (clsData.subjects && clsData.subjects[0] ? clsData.subjects[0].id : "");
+            if (!subjectId) {
+                showToast("Veuillez configurer au moins une matière pour exporter la grille.", "error");
+                return;
+            }
+
+            const activeSub = clsData.subjects ? clsData.subjects.find(s => s.id === subjectId) : null;
+            const subjectName = activeSub ? activeSub.name : "Discipline";
+            const teacherName = activeSub && activeSub.teacherName ? activeSub.teacherName : "Non spécifié";
+
+            const isPrim = isPrimary(appState.selectedClass);
+            const dev3Visible = !isPrim && !!(appState.classes[key].dev3Visible && appState.classes[key].dev3Visible[subjectId]);
+            const semLabel = getPeriodLabel(appState.selectedClass, appState.currentSemester);
+
             const printDiv = document.createElement('div');
-            printDiv.style.fontFamily = "'Hanken Grotesk', sans-serif";
-            printDiv.style.padding = "20px";
-            printDiv.style.color = "#334155";
-            
+            printDiv.style.fontFamily = "'Hanken Grotesk', 'Inter', sans-serif";
+            printDiv.style.padding = "30px 40px";
+            printDiv.style.color = "#1e293b";
+            printDiv.style.backgroundColor = "#ffffff";
+
             let html = `
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #4c1d95; padding-bottom: 10px; margin-bottom: 20px;">
+                <!-- En-tête professionnel -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #4c1d95; padding-bottom: 15px; margin-bottom: 25px;">
                     <div>
-                        <h2 style="margin: 0; color: #4c1d95;">GestNotes Academy</h2>
-                        <p style="margin: 5px 0 0; font-size: 12px; color: #64748b;">Grille de saisie manuelle des notes</p>
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #4c1d95; letter-spacing: -0.5px;">GestNotes Academy</h1>
+                        <p style="margin: 4px 0 0; font-size: 12px; color: #64748b; font-weight: 500;">Système d'Information & d'Administration Scolaire</p>
                     </div>
                     <div style="text-align: right;">
-                        <p style="margin: 0; font-weight: bold;">Classe : ${appState.selectedClass} ${appState.selectedSection || ''}</p>
-                        <p style="margin: 3px 0 0; font-size: 11px; color: #64748b;">Année scolaire : ${appState.currentYear}</p>
+                        <span style="background-color: #f3e8ff; color: #4c1d95; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase;">Grille des Notes</span>
+                        <p style="margin: 8px 0 0; font-size: 11px; color: #64748b; font-weight: 500;">Année Scolaire : <strong style="color: #0f172a;">${appState.currentYear}</strong></p>
+                    </div>
+                </div>
+
+                <!-- Fiche Métadonnées -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px 20px; margin-bottom: 25px; font-size: 12px;">
+                    <div>
+                        <p style="margin: 0; color: #64748b; font-weight: 500;">CLASSE : <strong style="color: #0f172a; margin-left: 5px;">${appState.selectedClass} ${appState.selectedSection || ''}</strong></p>
+                        <p style="margin: 6px 0 0; color: #64748b; font-weight: 500;">DISCIPLINE : <strong style="color: #0f172a; margin-left: 5px;">${subjectName}</strong></p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="margin: 0; color: #64748b; font-weight: 500;">PÉRIODE : <strong style="color: #0f172a; margin-left: 5px;">${semLabel}</strong></p>
+                        <p style="margin: 6px 0 0; color: #64748b; font-weight: 500;">ENSEIGNANT : <strong style="color: #0f172a; margin-left: 5px;">${teacherName}</strong></p>
                     </div>
                 </div>
                 
-                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; border: 1px solid #cbd5e1;">
                     <thead>
-                        <tr style="background-color: #f8fafc;">
-                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 12px;">Prénom & Nom</th>
-                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 100px; font-size: 12px;">Devoir 1</th>
-                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 100px; font-size: 12px;">Devoir 2</th>
-                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 100px; font-size: 12px;">Devoir 3</th>
-                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 100px; font-size: 12px;">Composition</th>
+                        <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1; color: #334155;">
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-weight: 700;">Élève (Nom & Prénom)</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 75px; font-weight: 700;">${getDevoirLabel(appState.selectedClass, 1)}</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 75px; font-weight: 700;">${getDevoirLabel(appState.selectedClass, 2)}</th>
+                            ${dev3Visible ? `<th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 75px; font-weight: 700;">Devoir 3</th>` : ''}
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 85px; font-weight: 700;">Composition</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 85px; font-weight: 700; background-color: #e2e8f0;">Moyenne</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
+
+            const semKey = "p_" + appState.currentSemester;
             
-            clsData.students.sort((a,b) => `${a.firstname} ${a.lastname}`.localeCompare(`${b.firstname} ${b.lastname}`)).forEach(s => {
+            // Tri alphabétique des élèves
+            const sortedStudents = [...clsData.students].sort((a, b) => {
+                const nameA = `${a.firstname} ${a.lastname}`.toUpperCase();
+                const nameB = `${b.firstname} ${b.lastname}`.toUpperCase();
+                return nameA.localeCompare(nameB);
+            });
+
+            sortedStudents.forEach((s, idx) => {
+                const g = (s.grades && s.grades[semKey] && s.grades[semKey][subjectId]) ? s.grades[semKey][subjectId] : {};
+                
+                const formatVal = (val) => {
+                    if (val === undefined || val === null || val === "") return "-";
+                    const num = parseFloat(val);
+                    return isNaN(num) ? "-" : num.toFixed(2);
+                };
+
+                const val1 = formatVal(g.dev1);
+                const val2 = formatVal(g.dev2);
+                const val3 = formatVal(g.dev3);
+                const valCompo = formatVal(g.compo);
+
+                const moyVal = calculerMoyenneEleveMatiere(s, subjectId);
+                let moyStr = "-";
+                if (moyVal !== null) {
+                    moyStr = moyVal.toFixed(2);
+                }
+
+                const rowBg = idx % 2 === 0 ? "#ffffff" : "#f8fafc";
+
                 html += `
-                    <tr>
-                        <td style="border: 1px solid #cbd5e1; padding: 10px; font-size: 13px; font-weight: bold;">${s.firstname} ${s.lastname.toUpperCase()}</td>
-                        <td style="border: 1px solid #cbd5e1; padding: 10px;"></td>
-                        <td style="border: 1px solid #cbd5e1; padding: 10px;"></td>
-                        <td style="border: 1px solid #cbd5e1; padding: 10px;"></td>
-                        <td style="border: 1px solid #cbd5e1; padding: 10px;"></td>
+                    <tr style="background-color: ${rowBg}; border-bottom: 1px solid #cbd5e1;">
+                        <td style="border: 1px solid #cbd5e1; padding: 8px 12px; font-weight: bold; color: #1e293b;">
+                            ${s.firstname} <span style="font-weight: 500; color: #475569;">${s.lastname.toUpperCase()}</span>
+                        </td>
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 600;">${val1}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 600;">${val2}</td>
+                        ${dev3Visible ? `<td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 600;">${val3}</td>` : ''}
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 600;">${valCompo}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 700; color: #4c1d95; background-color: #f1f5f9;">${moyStr}</td>
                     </tr>
                 `;
             });
-            
+
             html += `
                     </tbody>
                 </table>
-                <div style="margin-top: 30px; display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8;">
-                    <p>Édité le ${new Date().toLocaleDateString('fr-FR')}</p>
-                    <p>GestNotes &bull; Solution de dématérialisation scolaire</p>
+
+                <!-- Signatures de fin de page -->
+                <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
+                    <div>
+                        <p style="margin: 0;">Rapport généré le ${new Date().toLocaleDateString('fr-FR')} &agrave; ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</p>
+                        <p style="margin: 2px 0 0;">GestNotes &bull; Administration scolaire numérique</p>
+                    </div>
+                    <div style="text-align: center; width: 220px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+                        <p style="margin: 0; font-weight: 700; color: #475569; text-transform: uppercase;">Cachet et Signature Enseignant</p>
+                    </div>
                 </div>
             `;
-            
+
             printDiv.innerHTML = html;
-            
+
             printDiv.style.position = 'fixed';
             printDiv.style.left = '0px';
             printDiv.style.top = '0px';
             printDiv.style.width = '800px';
             printDiv.style.zIndex = '-9999';
             printDiv.style.backgroundColor = '#ffffff';
-            
+
             document.body.appendChild(printDiv);
-            
+
             const options = {
                 margin: 10,
-                filename: `Grille_Saisie_${appState.selectedClass}.pdf`,
+                filename: `Grille_Saisie_${appState.selectedClass}_${subjectName.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, logging: false },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            
+
             html2pdf().set(options).from(printDiv).save().then(() => {
                 printDiv.remove();
             });
