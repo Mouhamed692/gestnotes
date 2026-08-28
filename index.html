@@ -142,11 +142,6 @@
                 <button onclick="exporterFeuilleSaisie()" class="bg-slate-600 hover:bg-slate-700 text-white py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md text-sm">
                     <i class="fa-solid fa-file-pdf"></i> Imprimer Grille PDF
                 </button>
-                
-                <button onclick="document.getElementById('importInput').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md text-sm">
-                    <i class="fa-solid fa-file-import"></i> Importer CSV
-                </button>
-                <input type="file" id="importInput" class="hidden" accept=".csv" onchange="importerNotesAuto(this)">
             </div>
         </div>
 
@@ -1411,8 +1406,6 @@
             );
         }
 
-        /* Corrected: Solved empty/blank PDF issue by duplicating the container 
-           temporarily onto viewport coordinates before processing */
         function imprimerRecu(studentId, monthIdx) {
             let student = null;
             let classKey = "";
@@ -1447,7 +1440,7 @@
             const source = document.getElementById('recu-template-container');
             const clone = source.cloneNode(true);
             
-            clone.style.position = 'fixed';
+            clone.style.position = 'absolute';
             clone.style.left = '0px';
             clone.style.top = '0px';
             clone.style.width = '700px';
@@ -1460,7 +1453,7 @@
                 margin: 10,
                 filename: `Recu_${p.designation}_${student.lastname}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
+                html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0, scrollX: 0 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
@@ -1709,230 +1702,6 @@
             event.target.value = "";
         }
 
-        function importerNotesAuto(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const subSelect = document.getElementById('grade-subject-select');
-            const key = getCurrentClassKey();
-            const semKey = "p_" + appState.currentSemester;
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                const text = e.target.result;
-                const lines = text.split(/\r?\n/);
-                if (lines.length < 2) return;
-
-                const headerLine = lines[0].trim();
-                let headers = [];
-                if (headerLine.includes(';')) {
-                    headers = headerLine.split(';');
-                } else if (headerLine.includes('\t')) {
-                    headers = headerLine.split('\t');
-                } else {
-                    headers = headerLine.split(',');
-                }
-
-                const isGlobal = headers.some(h => {
-                    const cleanH = cleanStringForFuzzy(h);
-                    return cleanH.includes('d1') || cleanH.includes('n1') || cleanH.includes('cp') || cleanH.includes('devoir') || cleanH.includes('note') || cleanH.includes('compo') || cleanH.includes('composition');
-                });
-
-                if (isGlobal) {
-                    const colMap = {};
-                    const subjects = appState.classes[key].subjects || [];
-
-                    headers.forEach((header, idx) => {
-                        if (idx < 3) return;
-                        
-                        const cleanedHeader = cleanStringForFuzzy(header);
-                        let matchedSubject = null;
-                        let matchedField = "";
-
-                        for (let sub of subjects) {
-                            const cleanSub = cleanStringForFuzzy(sub.name);
-                            if (cleanedHeader.includes(cleanSub)) {
-                                matchedSubject = sub;
-                                break;
-                            }
-                        }
-
-                        if (matchedSubject) {
-                            if (cleanedHeader.includes("d1") || cleanedHeader.includes("n1") || cleanedHeader.includes("devoir1") || cleanedHeader.includes("note1")) {
-                                matchedField = "dev1";
-                            } else if (cleanedHeader.includes("d2") || cleanedHeader.includes("n2") || cleanedHeader.includes("devoir2") || cleanedHeader.includes("note2")) {
-                                matchedField = "dev2";
-                            } else if (cleanedHeader.includes("d3") || cleanedHeader.includes("n3") || cleanedHeader.includes("devoir3") || cleanedHeader.includes("note3")) {
-                                matchedField = "dev3";
-                            } else if (cleanedHeader.includes("cp") || cleanedHeader.includes("compo") || cleanedHeader.includes("composition")) {
-                                matchedField = "compo";
-                            }
-                        }
-
-                        if (matchedSubject && matchedField) {
-                            colMap[idx] = { subjectId: matchedSubject.id, field: matchedField };
-                        }
-                    });
-
-                    let count = 0;
-                    let skipped = 0;
-
-                    for (let i = 1; i < lines.length; i++) {
-                        const line = lines[i].trim();
-                        if (!line) continue;
-
-                        let parts = [];
-                        if (line.includes(';')) {
-                            parts = line.split(';');
-                        } else if (line.includes('\t')) {
-                            parts = line.split('\t');
-                        } else {
-                            parts = line.split(',');
-                        }
-
-                        if (parts.length < 3) continue;
-
-                        const sId = parts[0].replace(/['"]/g, '').trim();
-                        const cleanImportId = sId.replace(/\D/g, '');
-                        const csvFirstName = parts[1] ? parts[1].replace(/['"]/g, '').trim() : "";
-                        const csvLastName = parts[2] ? parts[2].replace(/['"]/g, '').trim() : "";
-
-                        const student = appState.classes[key].students.find(s => {
-                            const cleanStId = s.id.replace(/\D/g, '');
-                            const idMatches = s.id === sId || (cleanImportId && cleanStId === cleanImportId);
-                            if (idMatches) return true;
-                            
-                            return cleanStringForFuzzy(s.lastname) === cleanStringForFuzzy(csvLastName) && 
-                                   cleanStringForFuzzy(s.firstname) === cleanStringForFuzzy(csvFirstName);
-                        });
-
-                        if (student) {
-                            if (!student.grades) student.grades = {};
-                            if (!student.grades[semKey]) student.grades[semKey] = {};
-
-                            for (let colIdx in colMap) {
-                                const colInfo = colMap[colIdx];
-                                const valStr = parts[colIdx];
-                                
-                                if (!student.grades[semKey][colInfo.subjectId]) {
-                                    student.grades[semKey][colInfo.subjectId] = {};
-                                }
-                                
-                                const targetField = student.grades[semKey][colInfo.subjectId];
-                                
-                                if (valStr !== undefined && valStr !== null) {
-                                    let cleaned = valStr.replace(/['"]/g, '').trim();
-                                    if (cleaned !== "") {
-                                        cleaned = cleaned.replace(',', '.');
-                                        const parsed = parseFloat(cleaned);
-                                        if (!isNaN(parsed)) {
-                                            targetField[colInfo.field] = parsed;
-                                        } else {
-                                            delete targetField[colInfo.field];
-                                        }
-                                    } else {
-                                        delete targetField[colInfo.field];
-                                    }
-                                }
-                            }
-                            count++;
-                        } else {
-                            skipped++;
-                        }
-                    }
-
-                    saveToStorage();
-                    render();
-                    
-                    if (skipped > 0) {
-                        showToast(`Import Global : ${count} élèves mis à jour (${skipped} ignorés)`, "info");
-                    } else {
-                        showToast(`Import Global : ${count} fiches élèves mises à jour !`, "success");
-                    }
-
-                } else {
-                    if (!subSelect.value) {
-                        alert("Sélectionnez d'abord la discipline active dans le panneau de saisie.");
-                        return;
-                    }
-                    const subjectId = subSelect.value;
-                    let count = 0;
-                    let skipped = 0;
-                    
-                    for (let i = 1; i < lines.length; i++) {
-                        const line = lines[i].trim();
-                        if (!line) continue;
-                        
-                        let parts = [];
-                        if (line.includes(';')) {
-                            parts = line.split(';');
-                        } else if (line.includes('\t')) {
-                            parts = line.split('\t');
-                        } else {
-                            parts = line.split(',');
-                        }
-                        
-                        if (parts.length < 3) continue;
-                        
-                        const sId = parts[0].replace(/['"]/g, '').trim();
-                        const cleanImportId = sId.replace(/\D/g, '');
-                        const csvFirstName = parts[1] ? parts[1].replace(/['"]/g, '').trim() : "";
-                        const csvLastName = parts[2] ? parts[2].replace(/['"]/g, '').trim() : "";
-                        
-                        const student = appState.classes[key].students.find(s => {
-                            const cleanStId = s.id.replace(/\D/g, '');
-                            const idMatches = s.id === sId || (cleanImportId && cleanStId === cleanImportId);
-                            if (idMatches) return true;
-                            
-                            return cleanStringForFuzzy(s.lastname) === cleanStringForFuzzy(csvLastName) && 
-                                   cleanStringForFuzzy(s.firstname) === cleanStringForFuzzy(csvFirstName);
-                        });
-                        
-                        if (student) {
-                            if (!student.grades) student.grades = {};
-                            if (!student.grades[semKey]) student.grades[semKey] = {};
-                            if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
-                            
-                            const targetField = student.grades[semKey][subjectId];
-                            
-                            const cleanVal = (val) => {
-                                if (val === undefined || val === null) return "";
-                                let cleaned = val.replace(/['"]/g, '').trim();
-                                if (cleaned === "") return "";
-                                cleaned = cleaned.replace(',', '.');
-                                const parsed = parseFloat(cleaned);
-                                return isNaN(parsed) ? "" : parsed;
-                            };
-
-                            const val1 = cleanVal(parts[3]);
-                            const val2 = cleanVal(parts[4]);
-                            const val3 = cleanVal(parts[5]);
-                            const valcompo = cleanVal(parts[6]);
-
-                            if (val1 !== "") targetField.dev1 = val1; else delete targetField.dev1;
-                            if (val2 !== "") targetField.dev2 = val2; else delete targetField.dev2;
-                            if (val3 !== "") targetField.dev3 = val3; else delete targetField.dev3;
-                            if (valcompo !== "") targetField.compo = valcompo; else delete targetField.compo;
-                            count++;
-                        } else {
-                            skipped++;
-                        }
-                    }
-                    
-                    saveToStorage();
-                    render();
-                    
-                    if (skipped > 0) {
-                        showToast(`${count} fiches élèves mises à jour (${skipped} ignorés)`, "info");
-                    } else {
-                        showToast(`${count} lignes de notes synchronisées !`, "success");
-                    }
-                }
-            };
-            
-            reader.readAsText(file);
-            input.value = "";
-        }
-
         window.exportAllCSV = function() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key];
@@ -2023,13 +1792,11 @@
             return totalPoints / totalCoefs;
         }
 
-        // Proposition 2 : Calcul et attribution des rangs de la classe
         function obtenirRangsClasse(students, subjects) {
             const studentAverages = students.map(s => {
                 const avg = calculerMoyenneGeneraleGlobale(s, subjects);
                 return { id: s.id, avg: avg !== null ? avg : -1 };
             });
-            // Tri décroissant
             studentAverages.sort((a, b) => b.avg - a.avg);
             
             const ranks = {};
@@ -2205,7 +1972,6 @@
             render();
         }
 
-        // Proposition 3 : Rendre visible et fonctionnel le Journal de Caisse selon le rôle
         function applyRoleRestrictions() {
             const role = localStorage.getItem("gestnotes_local_role") || "admin";
             const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
@@ -2271,7 +2037,7 @@
                 if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = 'none';
                 if (statsSection) statsSection.style.display = 'none';
                 if (regAmountContainer) regAmountContainer.style.display = 'none';
-                if (settingsBtn) settingsBtn.style.display = ''; // Le bouton paramètres reste visible pour l'enseignant
+                if (settingsBtn) settingsBtn.style.display = ''; 
                 
                 if (btnExportBase) btnExportBase.style.display = 'none';
                 if (btnImportBase) btnImportBase.style.display = 'none';
@@ -2387,7 +2153,6 @@
             debouncedRenderList();
         }
 
-        // Proposition 2 : Affichage du rang dans la liste des élèves
         function renderStudentsTable(students, subjects) {
             const tbody = document.getElementById('students-table-body');
             const emptyState = document.getElementById('empty-state');
@@ -2420,7 +2185,6 @@
 
             const isPrim = isPrimary(appState.selectedClass);
             
-            // Calcul de la carte des rangs de la classe
             const rankMap = obtenirRangsClasse(students, subjects);
 
             sorted.forEach(s => {
@@ -2511,7 +2275,6 @@
             );
         }
 
-        // Proposition 1 : Statistiques temps réel de la matière active
         function renderGradesGrid() {
             const key = getCurrentClassKey();
             const clsData = appState.classes[key];
@@ -2545,7 +2308,6 @@
                 return fullName.includes(searchVal);
             });
 
-            // Calcul statistique temps réel
             let activeGrades = [];
             clsData.students.forEach(s => {
                 const m = calculerMoyenneEleveMatiere(s, subjectId);
@@ -2820,7 +2582,6 @@
             }
         }
 
-        // Proposition 3 : Journal de Caisse global
         function openCaisseJourModal() {
             const today = new Date();
             const year = today.getFullYear();
@@ -2875,7 +2636,6 @@
                 }
             }
 
-            // Tri chronologique inverse (plus récents en haut)
             paymentsList.sort((a, b) => {
                 const parseDateStr = (str) => {
                     const [datePart, timePart] = str.split(' ');
@@ -3077,7 +2837,6 @@
 
             const semKey = "p_" + appState.currentSemester;
             
-            // Tri alphabétique des élèves
             const sortedStudents = [...clsData.students].sort((a, b) => {
                 const nameA = `${a.firstname} ${a.lastname}`.toUpperCase();
                 const nameB = `${b.firstname} ${b.lastname}`.toUpperCase();
@@ -3138,7 +2897,7 @@
 
             printDiv.innerHTML = html;
 
-            printDiv.style.position = 'fixed';
+            printDiv.style.position = 'absolute';
             printDiv.style.left = '0px';
             printDiv.style.top = '0px';
             printDiv.style.width = '800px';
@@ -3151,7 +2910,7 @@
                 margin: 10,
                 filename: `Grille_Saisie_${appState.selectedClass}_${subjectName.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
+                html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0, scrollX: 0 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
