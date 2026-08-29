@@ -20,9 +20,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="html2pdf.bundle.min.js"></script>
     <script src="idb-keyval.js"></script>
-    
-    <!-- Script officiel d'Authentification Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -140,7 +137,7 @@
                 
                 <!-- Bouton de connexion Google Drive -->
                 <button id="btn-gdrive-sync" onclick="seConnecterAGoogleDrive()" class="flex items-center justify-center gap-2 bg-violet-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-violet-700 transition-all shadow-md text-sm" title="Synchroniser la base de données directement sur votre Google Drive">
-                    <i class="fa-brands fa-google-drive"></i> <span id="lbl-gdrive-sync">Synchro Google Drive</span>
+                    <i class="fa-brands fa-google-drive"></i> <span id="lbl-gdrive-sync">Synchro Cloud</span>
                 </button>
                 
                 <button id="btn-add-student-shortcut" onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm">
@@ -502,15 +499,10 @@
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Code d'accès rôles (Admin/Comptable)</label>
                     <input type="text" id="settings-access-code" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5" placeholder="Par défaut: 1234">
                 </div>
-                <!-- Configuration de l'ID Client Google OAuth -->
-                <div id="settings-gdrive-client-id-container">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">ID Client Google (OAuth)</label>
-                    <input type="text" id="settings-gdrive-client-id" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium" placeholder="ID Client pour la synchronisation Cloud">
-                </div>
-                <!-- Configuration de l'ID du Dossier Google Drive Partagé -->
-                <div id="settings-gdrive-folder-id-container">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">ID du Dossier Google Drive Partagé</label>
-                    <input type="text" id="settings-gdrive-folder-id" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium" placeholder="Collez l'ID du dossier partagé ici">
+                <!-- Configuration de l'URL Google Apps Script -->
+                <div id="settings-gdrive-sync-url-container">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">URL de Synchronisation (Google Apps Script Web App)</label>
+                    <input type="text" id="settings-gdrive-sync-url" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium" placeholder="https://script.google.com/.../exec">
                 </div>
             </div>
             
@@ -590,8 +582,8 @@
             </div>
 
             <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-100">
-                <button type="button" onclick="closeModal('caisse-modal')" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md">
-                    <i class="fa-solid fa-xmark"></i>
+                <button type="button" onclick="closeModal('caisse-modal')" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md">
+                    Fermer
                 </button>
             </div>
         </div>
@@ -821,12 +813,6 @@
         let currentMonthIdxForFinance = null;
         let editingStudentId = null;
 
-        // Déclarations pour l'API Google Drive
-        let accessToken = null;
-        let tokenClient = null;
-        let fileIdOnDrive = null;
-        const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive";
-
         const DEFAULT_STATE = {
             currentYear: "2025-2026",
             currentSemester: 1,
@@ -834,8 +820,7 @@
             selectedSection: "",
             currentRole: "admin",
             accessCode: "1234",          // Code d'accès modifiable (Admin/Comptable)
-            googleClientId: "",          // ID Client Google OAuth dynamique
-            googleFolderId: "",          // ID du dossier partagé Google Drive
+            googleSyncUrl: "",           // URL de votre application Web Google Apps Script
             waTemplates: {
                 reminder: "Bonjour, nous vous rappelons que le paiement de {frais} de {montant} FCFA pour l'élève {eleve} ({classe}) reste attendu pour la période {periode}. Merci de votre confiance ! 🎓",
                 bulletin: "Bonjour, nous vous informons que le bulletin de {eleve} ({classe}) pour la période {periode} est disponible au secrétariat de l'école. Cordialement. 🎓",
@@ -848,6 +833,7 @@
             return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
         }
 
+        // Les autres fonctions auxiliaires restent identiques
         function getPeriodLabel(className, periodNum) {
             return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
         }
@@ -937,11 +923,8 @@
             if (appState.accessCode === undefined) {
                 appState.accessCode = "1234";
             }
-            if (appState.googleClientId === undefined) {
-                appState.googleClientId = "";
-            }
-            if (appState.googleFolderId === undefined) {
-                appState.googleFolderId = "";
+            if (appState.googleSyncUrl === undefined) {
+                appState.googleSyncUrl = "";
             }
 
             const role = localStorage.getItem("gestnotes_local_role") || "admin";
@@ -963,8 +946,10 @@
             applyRoleRestrictions();
             render();
 
-            // Tenter d'initialiser l'API Google après le chargement complet
-            setTimeout(initGoogleAuth, 1000);
+            // Tenter d'exécuter la synchronisation cloud automatique au démarrage
+            if (appState.googleSyncUrl) {
+                setTimeout(chargerBaseDepuisDrive, 1000);
+            }
         }
 
         window.addEventListener('DOMContentLoaded', initApp);
@@ -972,7 +957,7 @@
         async function saveToStorage() {
             try {
                 await idbKeyval.set("gestnotes_state", appState);
-                if (accessToken) {
+                if (appState.googleSyncUrl) {
                     sauvegarderSurDrive();
                 }
             } catch (err) {
@@ -1023,29 +1008,25 @@
 
                 // Hydrater les nouveaux champs configurables
                 document.getElementById('settings-access-code').value = appState.accessCode || "1234";
-                document.getElementById('settings-gdrive-client-id').value = appState.googleClientId || "";
-                document.getElementById('settings-gdrive-folder-id').value = appState.googleFolderId || "";
+                document.getElementById('settings-gdrive-sync-url').value = appState.googleSyncUrl || "";
 
                 // Filtrage des éléments de configuration visibles pour l'enseignant
                 const role = localStorage.getItem("gestnotes_local_role") || "admin";
                 const yearContainer = document.getElementById('settings-year-container');
                 const rolloverContainer = document.getElementById('settings-rollover-container');
                 const accessCodeContainer = document.getElementById('settings-access-code-container');
-                const googleClientContainer = document.getElementById('settings-gdrive-client-id-container');
-                const googleFolderContainer = document.getElementById('settings-gdrive-folder-id-container');
+                const googleSyncContainer = document.getElementById('settings-gdrive-sync-url-container');
 
                 if (role === 'enseignant') {
                     if (yearContainer) yearContainer.classList.add('hidden');
                     if (rolloverContainer) rolloverContainer.classList.add('hidden');
                     if (accessCodeContainer) accessCodeContainer.classList.add('hidden');
-                    if (googleClientContainer) googleClientContainer.classList.add('hidden');
-                    if (googleFolderContainer) googleFolderContainer.classList.add('hidden');
+                    if (googleSyncContainer) googleSyncContainer.classList.add('hidden');
                 } else {
                     if (yearContainer) yearContainer.classList.remove('hidden');
                     if (rolloverContainer) rolloverContainer.classList.remove('hidden');
                     if (accessCodeContainer) accessCodeContainer.classList.remove('hidden');
-                    if (googleClientContainer) googleClientContainer.classList.remove('hidden');
-                    if (googleFolderContainer) googleFolderContainer.classList.remove('hidden');
+                    if (googleSyncContainer) googleSyncContainer.classList.remove('hidden');
                 }
             }
         }
@@ -1076,15 +1057,7 @@
             if (role !== 'enseignant') {
                 appState.currentYear = document.getElementById('settings-year').value;
                 appState.accessCode = document.getElementById('settings-access-code').value.trim() || "1234";
-                appState.googleFolderId = document.getElementById('settings-gdrive-folder-id').value.trim();
-                
-                const oldClientId = appState.googleClientId;
-                appState.googleClientId = document.getElementById('settings-gdrive-client-id').value.trim();
-                
-                // Si l'ID Client Google change, on réinitialise l'authentification
-                if (oldClientId !== appState.googleClientId && appState.googleClientId) {
-                    initGoogleAuth();
-                }
+                appState.googleSyncUrl = document.getElementById('settings-gdrive-sync-url').value.trim();
             }
             appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
 
@@ -3005,165 +2978,68 @@
         // FONCTIONS D'INTEGRATION GOOGLE DRIVE (API v3)
         // ==========================================
 
-        function initGoogleAuth() {
-            if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
-                console.warn("SDK Google Identity Services non encore disponible.");
-                return;
-            }
-            const clientId = appState.googleClientId;
-            if (!clientId) {
-                console.log("Aucun ID Client Google configuré dans GestNotes.");
-                return;
-            }
-
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: clientId,
-                scope: GOOGLE_DRIVE_SCOPE,
-                callback: (tokenResponse) => {
-                    if (tokenResponse && tokenResponse.access_token) {
-                        accessToken = tokenResponse.access_token;
-                        
-                        // Mettre à jour l'apparence du bouton de synchronisation
-                        const btn = document.getElementById('btn-gdrive-sync');
-                        const lbl = document.getElementById('lbl-gdrive-sync');
-                        if (btn) {
-                            btn.className = "flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm";
-                        }
-                        if (lbl) {
-                            lbl.innerText = "Cloud Sync Actif";
-                        }
-                        showToast("Connecté à Google Drive !", "success");
-                        chargerBaseDepuisDrive();
-                    }
-                },
-            });
-        }
-
         function seConnecterAGoogleDrive() {
-            if (!appState.googleClientId) {
-                alert("Veuillez d'abord configurer votre 'ID Client Google (OAuth)' dans le panneau de configuration (⚙️ en haut à droite) avec votre rôle de Directeur.");
+            if (!appState.googleSyncUrl) {
+                alert("Veuillez d'abord configurer l'URL de votre application Web Google Apps Script dans le panneau de configuration (⚙️).");
                 openModal('settings-modal');
                 return;
             }
-            if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
-                alert("Le script d'authentification Google n'est pas prêt. Vérifiez votre connexion Internet.");
-                return;
-            }
-            if (!tokenClient) {
-                initGoogleAuth();
-            }
-            if (tokenClient) {
-                tokenClient.requestAccessToken({ prompt: 'consent' });
-            }
+            chargerBaseDepuisDrive();
         }
 
         async function chargerBaseDepuisDrive() {
-            if (!accessToken) return;
-            showToast("Recherche de la sauvegarde sur Google Drive...", "info");
+            if (!appState.googleSyncUrl) return;
+            showToast("Synchronisation Cloud en cours...", "info");
             try {
-                let query = "name='gestnotes_data.json'+and+trashed=false";
-                if (appState.googleFolderId) {
-                    query = `name='gestnotes_data.json'+and+'${appState.googleFolderId}'+in+parents+and+trashed=false`;
-                }
-                const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}`;
-                const response = await fetch(searchUrl, {
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
-                });
-                const data = await response.json();
-
-                if (data.files && data.files.length > 0) {
-                    fileIdOnDrive = data.files[0].id;
-                    const contentUrl = `https://www.googleapis.com/drive/v3/files/${fileIdOnDrive}?alt=media`;
-                    const contentResponse = await fetch(contentUrl, {
-                        headers: { 'Authorization': `Bearer ${accessToken}` }
-                    });
-                    const dbState = await contentResponse.json();
+                const response = await fetch(appState.googleSyncUrl);
+                const dbState = await response.json();
+                
+                if (dbState && dbState.classes) {
+                    appState = dbState;
+                    buildEmptyState();
                     
-                    if (dbState && dbState.classes) {
-                        appState = dbState;
-                        buildEmptyState();
-                        
-                        // Conserver les clés de configuration après chargement
-                        if (appState.accessCode === undefined) appState.accessCode = "1234";
-                        if (appState.googleClientId === undefined) {
-                            appState.googleClientId = document.getElementById('settings-gdrive-client-id').value || "";
-                        }
-                        if (appState.googleFolderId === undefined) {
-                            appState.googleFolderId = document.getElementById('settings-gdrive-folder-id').value || "";
-                        }
-                        
-                        await idbKeyval.set("gestnotes_state", appState);
-                        populateFilters();
-                        updateHeaderDisplays();
-                        applyRoleRestrictions();
-                        render();
-                        showToast("Base chargée depuis Google Drive !", "success");
+                    // Migrations locales après récupération
+                    if (appState.accessCode === undefined) appState.accessCode = "1234";
+                    if (appState.googleSyncUrl === undefined) {
+                        appState.googleSyncUrl = document.getElementById('settings-gdrive-sync-url').value || "";
                     }
+                    
+                    await idbKeyval.set("gestnotes_state", appState);
+                    populateFilters();
+                    updateHeaderDisplays();
+                    applyRoleRestrictions();
+                    render();
+                    
+                    // Mettre à jour l'état visuel du bouton
+                    const btn = document.getElementById('btn-gdrive-sync');
+                    const lbl = document.getElementById('lbl-gdrive-sync');
+                    if (btn) btn.className = "flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm";
+                    if (lbl) lbl.innerText = "Cloud Sync Actif";
+                    
+                    showToast("Base synchronisée avec succès !", "success");
                 } else {
-                    showToast("Aucune sauvegarde existante sur Google Drive. Elle sera créée à la première modification.", "info");
+                    showToast("Aucune donnée valide trouvée sur le Cloud.", "info");
                 }
             } catch (error) {
-                console.error("Erreur de synchronisation Google Drive :", error);
-                showToast("Échec de la récupération sur Google Drive.", "error");
+                console.error("Erreur de récupération :", error);
+                showToast("Échec de la synchronisation.", "error");
             }
         }
 
         async function sauvegarderSurDrive() {
-            if (!accessToken) return;
-            const blob = new Blob([JSON.stringify(appState)], { type: 'application/json' });
+            if (!appState.googleSyncUrl) return;
             try {
-                if (fileIdOnDrive) {
-                    const updateUrl = `https://www.googleapis.com/upload/drive/v3/files/${fileIdOnDrive}?uploadType=media`;
-                    const response = await fetch(updateUrl, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: blob
-                    });
-                    if (response.ok) {
-                        console.log("Sauvegarde automatique réussie sur Google Drive.");
-                    } else {
-                        console.warn("Échec de la sauvegarde Google Drive.");
-                    }
+                const response = await fetch(appState.googleSyncUrl, {
+                    method: 'POST',
+                    body: JSON.stringify(appState)
+                });
+                if (response.ok) {
+                    console.log("Sauvegarde cloud automatique réussie.");
                 } else {
-                    // Création de l'entité de fichier sur le Drive si inexistant
-                    const metadata = {
-                        name: 'gestnotes_data.json',
-                        mimeType: 'application/json'
-                    };
-                    if (appState.googleFolderId) {
-                        metadata.parents = [appState.googleFolderId];
-                    }
-                    const createUrl = 'https://www.googleapis.com/drive/v3/files';
-                    const createResponse = await fetch(createUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(metadata)
-                    });
-                    const newFile = await createResponse.json();
-                    
-                    if (newFile && newFile.id) {
-                        fileIdOnDrive = newFile.id;
-                        // Injecter le contenu JSON
-                        const uploadUrl = `https://www.googleapis.com/upload/drive/v3/files/${fileIdOnDrive}?uploadType=media`;
-                        await fetch(uploadUrl, {
-                            method: 'PATCH',
-                            headers: {
-                                'Authorization': `Bearer ${accessToken}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: blob
-                        });
-                        showToast("Fichier de sauvegarde initialisé sur le Drive !", "success");
-                    }
+                    console.warn("Échec de la sauvegarde cloud.");
                 }
             } catch (error) {
-                console.error("Erreur de sauvegarde automatique sur le Drive :", error);
+                console.error("Erreur de sauvegarde automatique :", error);
             }
         }
     </script>
