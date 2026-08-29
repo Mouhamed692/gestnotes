@@ -507,6 +507,11 @@
                     <label class="block text-xs font-semibold text-slate-500 mb-1">ID Client Google (OAuth)</label>
                     <input type="text" id="settings-gdrive-client-id" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium" placeholder="ID Client pour la synchronisation Cloud">
                 </div>
+                <!-- Configuration de l'ID du Dossier Google Drive Partagé -->
+                <div id="settings-gdrive-folder-id-container">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">ID du Dossier Google Drive Partagé</label>
+                    <input type="text" id="settings-gdrive-folder-id" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium" placeholder="Collez l'ID du dossier partagé ici">
+                </div>
             </div>
             
             <div id="settings-rollover-container" class="border-t pt-4 mt-4">
@@ -820,7 +825,7 @@
         let accessToken = null;
         let tokenClient = null;
         let fileIdOnDrive = null;
-        const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+        const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive";
 
         const DEFAULT_STATE = {
             currentYear: "2025-2026",
@@ -830,6 +835,7 @@
             currentRole: "admin",
             accessCode: "1234",          // Code d'accès modifiable (Admin/Comptable)
             googleClientId: "",          // ID Client Google OAuth dynamique
+            googleFolderId: "",          // ID du dossier partagé Google Drive
             waTemplates: {
                 reminder: "Bonjour, nous vous rappelons que le paiement de {frais} de {montant} FCFA pour l'élève {eleve} ({classe}) reste attendu pour la période {periode}. Merci de votre confiance ! 🎓",
                 bulletin: "Bonjour, nous vous informons que le bulletin de {eleve} ({classe}) pour la période {periode} est disponible au secrétariat de l'école. Cordialement. 🎓",
@@ -934,6 +940,9 @@
             if (appState.googleClientId === undefined) {
                 appState.googleClientId = "";
             }
+            if (appState.googleFolderId === undefined) {
+                appState.googleFolderId = "";
+            }
 
             const role = localStorage.getItem("gestnotes_local_role") || "admin";
             appState.currentRole = role;
@@ -1015,6 +1024,7 @@
                 // Hydrater les nouveaux champs configurables
                 document.getElementById('settings-access-code').value = appState.accessCode || "1234";
                 document.getElementById('settings-gdrive-client-id').value = appState.googleClientId || "";
+                document.getElementById('settings-gdrive-folder-id').value = appState.googleFolderId || "";
 
                 // Filtrage des éléments de configuration visibles pour l'enseignant
                 const role = localStorage.getItem("gestnotes_local_role") || "admin";
@@ -1022,17 +1032,20 @@
                 const rolloverContainer = document.getElementById('settings-rollover-container');
                 const accessCodeContainer = document.getElementById('settings-access-code-container');
                 const googleClientContainer = document.getElementById('settings-gdrive-client-id-container');
+                const googleFolderContainer = document.getElementById('settings-gdrive-folder-id-container');
 
                 if (role === 'enseignant') {
                     if (yearContainer) yearContainer.classList.add('hidden');
                     if (rolloverContainer) rolloverContainer.classList.add('hidden');
                     if (accessCodeContainer) accessCodeContainer.classList.add('hidden');
                     if (googleClientContainer) googleClientContainer.classList.add('hidden');
+                    if (googleFolderContainer) googleFolderContainer.classList.add('hidden');
                 } else {
                     if (yearContainer) yearContainer.classList.remove('hidden');
                     if (rolloverContainer) rolloverContainer.classList.remove('hidden');
                     if (accessCodeContainer) accessCodeContainer.classList.remove('hidden');
                     if (googleClientContainer) googleClientContainer.classList.remove('hidden');
+                    if (googleFolderContainer) googleFolderContainer.classList.remove('hidden');
                 }
             }
         }
@@ -1063,6 +1076,7 @@
             if (role !== 'enseignant') {
                 appState.currentYear = document.getElementById('settings-year').value;
                 appState.accessCode = document.getElementById('settings-access-code').value.trim() || "1234";
+                appState.googleFolderId = document.getElementById('settings-gdrive-folder-id').value.trim();
                 
                 const oldClientId = appState.googleClientId;
                 appState.googleClientId = document.getElementById('settings-gdrive-client-id').value.trim();
@@ -3047,7 +3061,11 @@
             if (!accessToken) return;
             showToast("Recherche de la sauvegarde sur Google Drive...", "info");
             try {
-                const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='gestnotes_data.json'+and+trashed=false`;
+                let query = "name='gestnotes_data.json'+and+trashed=false";
+                if (appState.googleFolderId) {
+                    query = `name='gestnotes_data.json'+and+'${appState.googleFolderId}'+in+parents+and+trashed=false`;
+                }
+                const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}`;
                 const response = await fetch(searchUrl, {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
@@ -3069,6 +3087,9 @@
                         if (appState.accessCode === undefined) appState.accessCode = "1234";
                         if (appState.googleClientId === undefined) {
                             appState.googleClientId = document.getElementById('settings-gdrive-client-id').value || "";
+                        }
+                        if (appState.googleFolderId === undefined) {
+                            appState.googleFolderId = document.getElementById('settings-gdrive-folder-id').value || "";
                         }
                         
                         await idbKeyval.set("gestnotes_state", appState);
@@ -3112,6 +3133,9 @@
                         name: 'gestnotes_data.json',
                         mimeType: 'application/json'
                     };
+                    if (appState.googleFolderId) {
+                        metadata.parents = [appState.googleFolderId];
+                    }
                     const createUrl = 'https://www.googleapis.com/drive/v3/files';
                     const createResponse = await fetch(createUrl, {
                         method: 'POST',
