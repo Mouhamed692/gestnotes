@@ -582,8 +582,8 @@
             </div>
 
             <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-100">
-                <button type="button" onclick="closeModal('caisse-modal')" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md">
-                    Fermer
+                <button type="button" onclick="closeModal('caisse-modal')" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
         </div>
@@ -833,7 +833,6 @@
             return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
         }
 
-        // Les autres fonctions auxiliaires restent identiques
         function getPeriodLabel(className, periodNum) {
             return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
         }
@@ -954,10 +953,10 @@
 
         window.addEventListener('DOMContentLoaded', initApp);
 
-        async function saveToStorage() {
+        async function saveToStorage(forceCloud = true) {
             try {
                 await idbKeyval.set("gestnotes_state", appState);
-                if (appState.googleSyncUrl) {
+                if (forceCloud && appState.googleSyncUrl) {
                     sauvegarderSurDrive();
                 }
             } catch (err) {
@@ -1054,6 +1053,7 @@
 
         async function saveSettings() {
             const role = localStorage.getItem("gestnotes_local_role") || "admin";
+            const oldSyncUrl = appState.googleSyncUrl;
             if (role !== 'enseignant') {
                 appState.currentYear = document.getElementById('settings-year').value;
                 appState.accessCode = document.getElementById('settings-access-code').value.trim() || "1234";
@@ -1061,12 +1061,19 @@
             }
             appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
 
-            await saveToStorage();
+            // Sauvegarder uniquement en local (IndexedDB) sans envoyer au cloud immédiatement
+            await saveToStorage(false);
             
             updateHeaderDisplays();
             closeModal('settings-modal');
             render();
-            showToast("Configurations appliquées !", "success");
+            
+            // Si l'URL a changé ou vient d'être configurée, on charge d'abord les données du cloud pour éviter d'écraser
+            if (appState.googleSyncUrl && appState.googleSyncUrl !== oldSyncUrl) {
+                chargerBaseDepuisDrive();
+            } else {
+                showToast("Configurations appliquées !", "success");
+            }
         }
 
         function openClassFeesModal() {
@@ -1319,7 +1326,7 @@
                 let actionsHTML = "";
                 if (p.statut === "Non payé") {
                     actionsHTML = `
-                        <button onclick="openEncaissementModal(${idx})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm">
+                        <button onclick="openEncaissementModal(${idx})" class="bg-[#22c55e] hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm">
                             <i class="fa-solid fa-cash-register mr-1"></i> Encaisser
                         </button>
                     `;
