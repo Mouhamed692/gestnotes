@@ -973,12 +973,13 @@
             classSelect.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass===c?'selected':''}>${c}</option>`).join('');
             updateSectionFilterOptions();
         }
-
-        function updateSectionFilterOptions() {
-            const sectSelect = document.getElementById('filter-section');
-            const sections = getSectionsForClass(appState.selectedClass);
-            sectSelect.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>s || 'Général'</option>`).join('');
-        }
+function updateSectionFilterOptions() {
+    const sectSelect = document.getElementById('filter-section');
+    const sections = getSectionsForClass(appState.selectedClass);
+    // Correction ici : ajout de ${ } autour de l'expression
+    sectSelect.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>${s || 'Général'}</option>`).join('');
+}
+       
 
         function updateHeaderDisplays() {
             document.getElementById('display-year').innerText = appState.currentYear;
