@@ -2240,11 +2240,13 @@ function updateSectionFilterOptions() {
             sorted.forEach(s => {
                 const mg = calculerMoyenneGeneraleGlobale(s, subjects);
                 let mgStr = "N/A";
-                let mgClass = "text-slate-400";
-                if (mg !== null) {
-                    mgStr = mg.toFixed(2) + " / " + (isPrim ? "10" : "20");
-                    mgClass = mg >= (isPrim ? 5 : 10) ? "text-emerald-600 font-extrabold" : "text-rose-600 font-extrabold";
-                }
+                 let mgClass = "text-slate-400";
+             if (mg !== null) {
+        
+            const formattedMg = Number(mg.toFixed(2)).toString().replace('.', ',');
+            mgStr = formattedMg + " / " + (isPrim ? "10" : "20");
+            mgClass = mg >= (isPrim ? 5 : 10) ? "text-emerald-600 font-extrabold" : "text-rose-600 font-extrabold";
+        }
 
                 let rankStr = "";
                 if (mg !== null && rankMap[s.id] && rankMap[s.id] !== "N/A") {
@@ -2374,14 +2376,19 @@ function updateSectionFilterOptions() {
                 
                 const threshold = isPrim ? 5 : 10;
                 const successes = activeGrades.filter(g => g >= threshold).length;
-                const rate = (successes / activeGrades.length) * 100;
-
-                const baseScale = isPrim ? "/ 10" : "/ 20";
-                document.getElementById('sub-stats-average').innerText = `${avg.toFixed(2)} ${baseScale}`;
-                document.getElementById('sub-stats-max').innerText = `${max.toFixed(2)} ${baseScale}`;
-                document.getElementById('sub-stats-min').innerText = `${min.toFixed(2)} ${baseScale}`;
-                document.getElementById('sub-stats-rate').innerText = `${rate.toFixed(1)}%`;
-            } else {
+               const rate = (successes / activeGrades.length) * 100;
+             const baseScale = isPrim ? "/ 10" : "/ 20";
+        
+        // Formatage propre pour les statistiques du bandeau
+        const formattedAvg = Number(avg.toFixed(2)).toString().replace('.', ',');
+        const formattedMax = Number(max.toFixed(2)).toString().replace('.', ',');
+        const formattedMin = Number(min.toFixed(2)).toString().replace('.', ',');
+        
+        document.getElementById('sub-stats-average').innerText = `${formattedAvg} ${baseScale}`;
+        document.getElementById('sub-stats-max').innerText = `${formattedMax} ${baseScale}`;
+        document.getElementById('sub-stats-min').innerText = `${formattedMin} ${baseScale}`;
+        document.getElementById('sub-stats-rate').innerText = `${rate.toFixed(1)}%`;
+        } else {
                 document.getElementById('sub-stats-average').innerText = "N/A";
                 document.getElementById('sub-stats-max').innerText = "N/A";
                 document.getElementById('sub-stats-min').innerText = "N/A";
@@ -2896,22 +2903,24 @@ function updateSectionFilterOptions() {
             sortedStudents.forEach((s, idx) => {
                 const g = (s.grades && s.grades[semKey] && s.grades[semKey][subjectId]) ? s.grades[semKey][subjectId] : {};
                 
-                const formatVal = (val) => {
-                    if (val === undefined || val === null || val === "") return "-";
-                    const num = parseFloat(val);
-                    return isNaN(num) ? "-" : num.toFixed(2);
-                };
+              const formatVal = (val) => {
+    if (val === undefined || val === null || val === "") return "-";
+    const num = parseFloat(val);
+    // Utilise un formatage fluide sans décimales .00
+    return isNaN(num) ? "-" : Number(num.toFixed(2)).toString().replace('.', ',');
+};
 
-                const val1 = formatVal(g.dev1);
-                const val2 = formatVal(g.dev2);
-                const val3 = formatVal(g.dev3);
-                const valCompo = formatVal(g.compo);
+const val1 = formatVal(g.dev1);
+const val2 = formatVal(g.dev2);
+const val3 = formatVal(g.dev3);
+const valCompo = formatVal(g.compo);
 
-                const moyVal = calculerMoyenneEleveMatiere(s, subjectId);
-                let moyStr = "-";
-                if (moyVal !== null) {
-                    moyStr = moyVal.toFixed(2);
-                }
+const moyVal = calculerMoyenneEleveMatiere(s, subjectId);
+let moyStr = "-";
+if (moyVal !== null) {
+    // Utilise un formatage fluide sans décimales .00
+    moyStr = Number(moyVal.toFixed(2)).toString().replace('.', ',');
+}
 
                 const rowBg = idx % 2 === 0 ? "#ffffff" : "#f8fafc";
 
