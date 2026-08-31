@@ -531,30 +531,38 @@
                     if (subjectRanks && subjectRanks[sub.id] && subjectRanks[sub.id][student.id]) {
                         rankText = subjectRanks[sub.id][student.id];
                     }
-
-                    if (currentPeriodGrades && currentPeriodGrades[sub.id]) {
-                        const score = currentPeriodGrades[sub.id];
-                        
-                        let sDev = 0, cDev = 0;
-                        if (score.dev1 !== undefined && score.dev1 !== "") { sDev += parseFloat(score.dev1); cDev++; }
-                        if (score.dev2 !== undefined && score.dev2 !== "") { sDev += parseFloat(score.dev2); cDev++; }
-                        if (!isPrim && score.dev3 !== undefined && score.dev3 !== "") { sDev += parseFloat(score.dev3); cDev++; }
-                        
-                        let moyClass = cDev > 0 ? (sDev / cDev) : -1;
-                        if (moyClass !== -1) moyDevoirsText = moyClass.toFixed(2).replace('.', ',');
-
-                        if (score.compo !== undefined && score.compo !== "") noteCompo = parseFloat(score.compo).toFixed(2).replace('.', ',');
-
-                        let moyCalculated = calculateSubjectAverage(score, isPrim);
-
-                        if (moyCalculated !== -1 && !isNaN(moyCalculated)) {
-                            moyDiscipline = moyCalculated.toFixed(2).replace('.', ',');
-                            let coefSub = parseFloat(sub.coef || 1);
-                            let pts = moyCalculated * coefSub;
-                            
-                            totalPointsDiscipline = pts.toFixed(2).replace('.', ',');
-                            sumTotalPoints += pts;
-                            sumCoefs += coefSub;
+               
+                         
+                 if (currentPeriodGrades && currentPeriodGrades[sub.id]) {
+                   const score = currentPeriodGrades[sub.id];
+                   
+                   let sDev = 0, cDev = 0;
+                   if (score.dev1 !== undefined && score.dev1 !== "") { sDev += parseFloat(score.dev1); cDev++; }
+                   if (score.dev2 !== undefined && score.dev2 !== "") { sDev += parseFloat(score.dev2); cDev++; }
+                   if (!isPrim && score.dev3 !== undefined && score.dev3 !== "") { sDev += parseFloat(score.dev3); cDev++; }
+                   
+                   let moyClass = cDev > 0 ? (sDev / cDev) : -1;
+                   if (moyClass !== -1) {
+                       // Affiche proprement (ex: 15 au lieu de 15,00 ou 15,5 au lieu de 15,50)
+                       moyDevoirsText = Number(moyClass.toFixed(2)).toString().replace('.', ',');
+                   }
+               
+                   if (score.compo !== undefined && score.compo !== "") {
+                       // Correction de l'affichage de la composition à un chiffre après la virgule si nécessaire
+                       noteCompo = Number(parseFloat(score.compo).toFixed(2)).toString().replace('.', ',');
+                   }
+               
+                   let moyCalculated = calculateSubjectAverage(score, isPrim);
+               
+                   if (moyCalculated !== -1 && !isNaN(moyCalculated)) {
+                       moyDiscipline = Number(moyCalculated.toFixed(2)).toString().replace('.', ',');
+                       let coefSub = parseFloat(sub.coef || 1);
+                       let pts = moyCalculated * coefSub;
+                       
+                       totalPointsDiscipline = Number(pts.toFixed(2)).toString().replace('.', ',');
+                       sumTotalPoints += pts;
+                       sumCoefs += coefSub;
+                       
 
                             let refNote = isPrim ? (moyCalculated * 2) : moyCalculated;
                             let autoApp = "";
