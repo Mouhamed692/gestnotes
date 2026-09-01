@@ -121,7 +121,7 @@
     <main class="flex-1 overflow-auto p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
         
        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <button id="btn-export-base" onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md text-sm">
                     <i class="fas fa-file-download"></i> <span>Exporter Base (.txt)</span>
                 </button>
@@ -140,12 +140,8 @@
                     <i class="fa-brands fa-google-drive"></i> <span id="lbl-gdrive-sync">Synchro Cloud</span>
                 </button>
                 
-                <button id="btn-add-student-shortcut" onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm">
+                <button id="btn-add-student-shortcut" onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm w-full">
                     <i class="fa-solid fa-user-plus"></i> Inscription / Élève
-                </button>
-                
-                <button onclick="exporterFeuilleSaisie()" class="bg-slate-600 hover:bg-slate-700 text-white py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md text-sm">
-                    <i class="fa-solid fa-file-pdf"></i> Imprimer Grille PDF
                 </button>
             </div>
         </div>
@@ -206,6 +202,22 @@
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
                 <p class="text-[10px] uppercase font-bold text-violet-600 tracking-wider">Taux de Recouvrement</p>
                 <p class="text-xl font-bold text-violet-700 mt-1" id="stats-taux-recouvrement">0%</p>
+            </div>
+        </section>
+
+        <!-- Fiche d'état des Impayés par écheance (Permanent) -->
+        <section id="unpaid-tracking-section" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex flex-col gap-4">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 class="text-md font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500"></i>
+                    <span>Comptes Non Soldés par Échéance (Classe active)</span>
+                </h3>
+                <span class="text-xs bg-rose-50 text-rose-700 border border-rose-100 px-3 py-1 rounded-full font-bold" id="unpaid-overall-stats">
+                    0 élève(s) avec des retards
+                </span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-y-auto max-h-[380px] pr-1" id="unpaid-grid-container">
+                <!-- Dynamically populated monthly columns -->
             </div>
         </section>
 
@@ -278,11 +290,8 @@
                 </div>
                 
                 <div class="flex items-center gap-2">
-                    <button onclick="ouvrirBulletin('ALL_STUDENTS')" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5">
+                    <button onclick="ouvrirBulletin('ALL_STUDENTS')" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 text-center">
                         <i class="fa-solid fa-print text-[#4c1d95]"></i> Imprimer Bulletins
-                    </button>
-                    <button onclick="window.exportAllCSV()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5">
-                        <i class="fa-solid fa-file-csv text-green-600"></i> Exporter Élèves
                     </button>
                 </div>
             </div>
@@ -835,6 +844,13 @@
 
         function getPeriodLabel(className, periodNum) {
             return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
+        }
+
+        // Configuration robuste de détection des classes primaires pour éviter les bugs
+        function isPrimaryResilient(className) {
+            const parts = (className || "").split('_');
+            const mainClass = parts[0].toLowerCase();
+            return mainClass.includes("primaire") || ["ci", "cp", "ce1", "ce2", "cm1", "cm2"].includes(mainClass);
         }
 
         function getDevoirLabel(className, num) {
@@ -1751,28 +1767,6 @@ function updateSectionFilterOptions() {
             event.target.value = "";
         }
 
-        window.exportAllCSV = function() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            if (!clsData || clsData.students.length === 0) {
-                showToast("Aucun élève dans cette section.", "info");
-                return;
-            }
-            let csv = "Prenom,Nom,Date Naissance,Lieu Naissance,Telephone Parent,Moyenne Generale\n";
-            clsData.students.forEach(s => {
-                const mg = calculerMoyenneGeneraleGlobale(s, clsData.subjects || []);
-                const displayMg = mg !== null ? mg.toFixed(2) : "N/A";
-                csv += `"${s.firstname}","${s.lastname}","${s.dob||''}","${s.pob||''}","${s.phone||''}",${displayMg}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Liste_Eleves_${key}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        };
-
         window.ouvrirBulletin = function(studentId) {
             const key = getCurrentClassKey();
             const bridge = {
@@ -1906,6 +1900,119 @@ function updateSectionFilterOptions() {
             document.getElementById('stats-total-encaisse').innerText = totalCollected.toLocaleString() + " F";
             document.getElementById('stats-reste-recouvrer').innerText = totalRemaining.toLocaleString() + " F";
             document.getElementById('stats-taux-recouvrement').innerText = recoveryRate + "%";
+        }
+
+        // Rendu en temps réel et permanent du suivi des impayés par échéance
+        function renderUnpaidGrid() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            const container = document.getElementById('unpaid-grid-container');
+            const statsEl = document.getElementById('unpaid-overall-stats');
+            
+            if (!container) return;
+            container.innerHTML = "";
+
+            if (!clsData || !clsData.students || clsData.students.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-8 text-slate-400">
+                        <i class="fa-solid fa-circle-check text-emerald-500 text-3xl mb-2"></i>
+                        <p class="text-sm font-semibold">Aucun élève enregistré dans cette classe</p>
+                    </div>
+                `;
+                if (statsEl) statsEl.innerText = "0 retardataire détecté";
+                return;
+            }
+
+            const students = clsData.students;
+            let totalUnpaidUniqueStudents = new Set();
+
+            moisAnnee.forEach((m, monthIdx) => {
+                const unpaidStudentsForMonth = [];
+
+                students.forEach(s => {
+                    const p = s.payments ? s.payments[monthIdx] : null;
+                    if (p && p.statut === "Non payé" && p.montantDu > 0) {
+                        unpaidStudentsForMonth.push({
+                            id: s.id,
+                            name: `${s.firstname} ${s.lastname.toUpperCase()}`,
+                            phone: s.phone || "",
+                            amount: p.montantDu
+                        });
+                        totalUnpaidUniqueStudents.add(s.id);
+                    }
+                });
+
+                // Création d'une fiche mensuelle
+                const card = document.createElement('div');
+                card.className = "bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex flex-col gap-2.5 h-[240px]";
+                
+                let monthLabel = m === "Inscription" ? "Frais Inscription" : m;
+                let headerBg = unpaidStudentsForMonth.length > 0 ? "bg-rose-50 border-rose-100 text-rose-700" : "bg-emerald-50 border-emerald-100 text-emerald-700";
+                let headerIcon = unpaidStudentsForMonth.length > 0 ? "fa-circle-exclamation" : "fa-circle-check";
+
+                let listHtml = "";
+                if (unpaidStudentsForMonth.length === 0) {
+                    listHtml = `
+                        <div class="flex-1 flex flex-col items-center justify-center text-slate-400 text-xs">
+                            <i class="fa-regular fa-face-smile text-emerald-500 text-lg mb-1"></i>
+                            <p class="font-medium text-emerald-600">À jour</p>
+                        </div>
+                    `;
+                } else {
+                    listHtml = `
+                        <div class="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
+                            ${unpaidStudentsForMonth.map(st => {
+                                const typeFrais = monthIdx === 0 ? "Frais d'inscription" : `Mensualité de ${m}`;
+                                const tpl = appState.waTemplates.reminder || "Bonjour, nous vous rappelons que le paiement de {frais} de {montant} FCFA pour l'élève {eleve} ({classe}) reste attendu pour la période {periode}.";
+                                const classNameDisplay = `${appState.selectedClass} ${appState.selectedSection || ''}`;
+                                const msg = tpl
+                                    .replace(/{eleve}/g, st.name)
+                                    .replace(/{classe}/g, classNameDisplay)
+                                    .replace(/{frais}/g, typeFrais)
+                                    .replace(/{montant}/g, st.amount.toLocaleString())
+                                    .replace(/{periode}/g, m);
+
+                                let waActionHtml = "";
+                                if (st.phone) {
+                                    let purePhone = st.phone.replace(/[\s\+\-]/g, '');
+                                    if (purePhone.length === 9) purePhone = "221" + purePhone;
+                                    waActionHtml = `
+                                        <a href="https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(msg)}" target="_blank" class="text-emerald-600 hover:text-emerald-700 p-1 rounded-md hover:bg-emerald-50 transition-all ml-auto shrink-0" title="Relancer via WhatsApp">
+                                            <i class="fa-brands fa-whatsapp font-bold text-sm"></i>
+                                        </a>
+                                    `;
+                                }
+
+                                return `
+                                    <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-slate-200/60 shadow-xs hover:border-rose-200/80 transition-colors">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="font-semibold text-[11px] text-slate-800 truncate">${st.name}</p>
+                                            <p class="text-[10px] font-bold text-rose-600">${st.amount.toLocaleString()} F</p>
+                                        </div>
+                                        ${waActionHtml}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b pb-2 ${headerBg} px-2.5 py-1.5 rounded-lg border">
+                        <span class="text-xs font-bold truncate">${monthLabel}</span>
+                        <div class="flex items-center gap-1 text-[10px] font-extrabold">
+                            <i class="fa-solid ${headerIcon}"></i>
+                            <span>${unpaidStudentsForMonth.length}</span>
+                        </div>
+                    </div>
+                    ${listHtml}
+                `;
+                container.appendChild(card);
+            });
+
+            if (statsEl) {
+                statsEl.innerText = `${totalUnpaidUniqueStudents.size} élève(s) avec des impayés sur ce niveau`;
+            }
         }
 
         function onRoleChange() {
@@ -2054,6 +2161,7 @@ function updateSectionFilterOptions() {
             const addStudentBtn = document.getElementById('btn-add-student');
             const addStudentBtnShortcut = document.getElementById('btn-add-student-shortcut');
             const statsSection = document.getElementById('class-stats-section');
+            const unpaidTrackingSec = document.getElementById('unpaid-tracking-section');
             const regAmountContainer = document.getElementById('reg-amount-container');
             const settingsBtn = document.getElementById('btn-settings');
             
@@ -2069,6 +2177,7 @@ function updateSectionFilterOptions() {
             if (addStudentBtn) addStudentBtn.style.display = '';
             if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = '';
             if (statsSection) statsSection.style.display = 'grid';
+            if (unpaidTrackingSec) unpaidTrackingSec.style.display = 'flex';
             if (regAmountContainer) regAmountContainer.style.display = '';
             if (settingsBtn) settingsBtn.style.display = '';
             
@@ -2086,6 +2195,7 @@ function updateSectionFilterOptions() {
                 if (addStudentBtn) addStudentBtn.style.display = 'none';
                 if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = 'none';
                 if (statsSection) statsSection.style.display = 'none';
+                if (unpaidTrackingSec) unpaidTrackingSec.style.display = 'none';
                 if (regAmountContainer) regAmountContainer.style.display = 'none';
                 if (settingsBtn) settingsBtn.style.display = ''; 
                 
@@ -2121,6 +2231,7 @@ function updateSectionFilterOptions() {
             updateDev3Checkbox();
             renderStudentsTable(clsData.students, clsData.subjects);
             renderGradesGrid();
+            renderUnpaidGrid();
         }
 
         function populateSubjectSelector() {
