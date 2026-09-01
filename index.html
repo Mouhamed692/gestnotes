@@ -205,22 +205,6 @@
             </div>
         </section>
 
-        <!-- Fiche d'état des Impayés par écheance (Permanent) -->
-        <section id="unpaid-tracking-section" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex flex-col gap-4">
-            <div class="flex items-center justify-between border-b pb-3">
-                <h3 class="text-md font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-triangle-exclamation text-rose-500"></i>
-                    <span>Comptes Non Soldés par Échéance (Classe active)</span>
-                </h3>
-                <span class="text-xs bg-rose-50 text-rose-700 border border-rose-100 px-3 py-1 rounded-full font-bold" id="unpaid-overall-stats">
-                    0 élève(s) avec des retards
-                </span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-y-auto max-h-[380px] pr-1" id="unpaid-grid-container">
-                <!-- Dynamically populated monthly columns -->
-            </div>
-        </section>
-
         <section id="grades-section" style="display: none;" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col gap-4">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
                 <h3 class="text-md font-bold text-slate-700 flex items-center gap-2 w-full lg:w-auto">
@@ -989,13 +973,12 @@
             classSelect.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass===c?'selected':''}>${c}</option>`).join('');
             updateSectionFilterOptions();
         }
-function updateSectionFilterOptions() {
-    const sectSelect = document.getElementById('filter-section');
-    const sections = getSectionsForClass(appState.selectedClass);
-    // Correction ici : ajout de ${ } autour de l'expression
-    sectSelect.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>${s || 'Général'}</option>`).join('');
-}
-       
+
+        function updateSectionFilterOptions() {
+            const sectSelect = document.getElementById('filter-section');
+            const sections = getSectionsForClass(appState.selectedClass);
+            sectSelect.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>${s || 'Général'}</option>`).join('');
+        }
 
         function updateHeaderDisplays() {
             document.getElementById('display-year').innerText = appState.currentYear;
@@ -1246,7 +1229,7 @@ function updateSectionFilterOptions() {
             openModal('registration-modal');
         }
 
-        function redirigerVersMensualites() {
+        function Bronx_redirigerVersMensualites() {
             if (!editingStudentId) return;
             closeModal('registration-modal');
             openMensualitesModal(editingStudentId);
@@ -1902,119 +1885,6 @@ function updateSectionFilterOptions() {
             document.getElementById('stats-taux-recouvrement').innerText = recoveryRate + "%";
         }
 
-        // Rendu en temps réel et permanent du suivi des impayés par échéance
-        function renderUnpaidGrid() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            const container = document.getElementById('unpaid-grid-container');
-            const statsEl = document.getElementById('unpaid-overall-stats');
-            
-            if (!container) return;
-            container.innerHTML = "";
-
-            if (!clsData || !clsData.students || clsData.students.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center py-8 text-slate-400">
-                        <i class="fa-solid fa-circle-check text-emerald-500 text-3xl mb-2"></i>
-                        <p class="text-sm font-semibold">Aucun élève enregistré dans cette classe</p>
-                    </div>
-                `;
-                if (statsEl) statsEl.innerText = "0 retardataire détecté";
-                return;
-            }
-
-            const students = clsData.students;
-            let totalUnpaidUniqueStudents = new Set();
-
-            moisAnnee.forEach((m, monthIdx) => {
-                const unpaidStudentsForMonth = [];
-
-                students.forEach(s => {
-                    const p = s.payments ? s.payments[monthIdx] : null;
-                    if (p && p.statut === "Non payé" && p.montantDu > 0) {
-                        unpaidStudentsForMonth.push({
-                            id: s.id,
-                            name: `${s.firstname} ${s.lastname.toUpperCase()}`,
-                            phone: s.phone || "",
-                            amount: p.montantDu
-                        });
-                        totalUnpaidUniqueStudents.add(s.id);
-                    }
-                });
-
-                // Création d'une fiche mensuelle
-                const card = document.createElement('div');
-                card.className = "bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex flex-col gap-2.5 h-[240px]";
-                
-                let monthLabel = m === "Inscription" ? "Frais Inscription" : m;
-                let headerBg = unpaidStudentsForMonth.length > 0 ? "bg-rose-50 border-rose-100 text-rose-700" : "bg-emerald-50 border-emerald-100 text-emerald-700";
-                let headerIcon = unpaidStudentsForMonth.length > 0 ? "fa-circle-exclamation" : "fa-circle-check";
-
-                let listHtml = "";
-                if (unpaidStudentsForMonth.length === 0) {
-                    listHtml = `
-                        <div class="flex-1 flex flex-col items-center justify-center text-slate-400 text-xs">
-                            <i class="fa-regular fa-face-smile text-emerald-500 text-lg mb-1"></i>
-                            <p class="font-medium text-emerald-600">À jour</p>
-                        </div>
-                    `;
-                } else {
-                    listHtml = `
-                        <div class="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
-                            ${unpaidStudentsForMonth.map(st => {
-                                const typeFrais = monthIdx === 0 ? "Frais d'inscription" : `Mensualité de ${m}`;
-                                const tpl = appState.waTemplates.reminder || "Bonjour, nous vous rappelons que le paiement de {frais} de {montant} FCFA pour l'élève {eleve} ({classe}) reste attendu pour la période {periode}.";
-                                const classNameDisplay = `${appState.selectedClass} ${appState.selectedSection || ''}`;
-                                const msg = tpl
-                                    .replace(/{eleve}/g, st.name)
-                                    .replace(/{classe}/g, classNameDisplay)
-                                    .replace(/{frais}/g, typeFrais)
-                                    .replace(/{montant}/g, st.amount.toLocaleString())
-                                    .replace(/{periode}/g, m);
-
-                                let waActionHtml = "";
-                                if (st.phone) {
-                                    let purePhone = st.phone.replace(/[\s\+\-]/g, '');
-                                    if (purePhone.length === 9) purePhone = "221" + purePhone;
-                                    waActionHtml = `
-                                        <a href="https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(msg)}" target="_blank" class="text-emerald-600 hover:text-emerald-700 p-1 rounded-md hover:bg-emerald-50 transition-all ml-auto shrink-0" title="Relancer via WhatsApp">
-                                            <i class="fa-brands fa-whatsapp font-bold text-sm"></i>
-                                        </a>
-                                    `;
-                                }
-
-                                return `
-                                    <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-slate-200/60 shadow-xs hover:border-rose-200/80 transition-colors">
-                                        <div class="min-w-0 flex-1">
-                                            <p class="font-semibold text-[11px] text-slate-800 truncate">${st.name}</p>
-                                            <p class="text-[10px] font-bold text-rose-600">${st.amount.toLocaleString()} F</p>
-                                        </div>
-                                        ${waActionHtml}
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    `;
-                }
-
-                card.innerHTML = `
-                    <div class="flex items-center justify-between border-b pb-2 ${headerBg} px-2.5 py-1.5 rounded-lg border">
-                        <span class="text-xs font-bold truncate">${monthLabel}</span>
-                        <div class="flex items-center gap-1 text-[10px] font-extrabold">
-                            <i class="fa-solid ${headerIcon}"></i>
-                            <span>${unpaidStudentsForMonth.length}</span>
-                        </div>
-                    </div>
-                    ${listHtml}
-                `;
-                container.appendChild(card);
-            });
-
-            if (statsEl) {
-                statsEl.innerText = `${totalUnpaidUniqueStudents.size} élève(s) avec des impayés sur ce niveau`;
-            }
-        }
-
         function onRoleChange() {
             const select = document.getElementById('role-selector');
             const targetRole = select.value;
@@ -2161,7 +2031,6 @@ function updateSectionFilterOptions() {
             const addStudentBtn = document.getElementById('btn-add-student');
             const addStudentBtnShortcut = document.getElementById('btn-add-student-shortcut');
             const statsSection = document.getElementById('class-stats-section');
-            const unpaidTrackingSec = document.getElementById('unpaid-tracking-section');
             const regAmountContainer = document.getElementById('reg-amount-container');
             const settingsBtn = document.getElementById('btn-settings');
             
@@ -2177,7 +2046,6 @@ function updateSectionFilterOptions() {
             if (addStudentBtn) addStudentBtn.style.display = '';
             if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = '';
             if (statsSection) statsSection.style.display = 'grid';
-            if (unpaidTrackingSec) unpaidTrackingSec.style.display = 'flex';
             if (regAmountContainer) regAmountContainer.style.display = '';
             if (settingsBtn) settingsBtn.style.display = '';
             
@@ -2195,7 +2063,6 @@ function updateSectionFilterOptions() {
                 if (addStudentBtn) addStudentBtn.style.display = 'none';
                 if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = 'none';
                 if (statsSection) statsSection.style.display = 'none';
-                if (unpaidTrackingSec) unpaidTrackingSec.style.display = 'none';
                 if (regAmountContainer) regAmountContainer.style.display = 'none';
                 if (settingsBtn) settingsBtn.style.display = ''; 
                 
@@ -2231,7 +2098,6 @@ function updateSectionFilterOptions() {
             updateDev3Checkbox();
             renderStudentsTable(clsData.students, clsData.subjects);
             renderGradesGrid();
-            renderUnpaidGrid();
         }
 
         function populateSubjectSelector() {
@@ -2351,13 +2217,12 @@ function updateSectionFilterOptions() {
             sorted.forEach(s => {
                 const mg = calculerMoyenneGeneraleGlobale(s, subjects);
                 let mgStr = "N/A";
-                 let mgClass = "text-slate-400";
-             if (mg !== null) {
-        
-            const formattedMg = Number(mg.toFixed(2)).toString().replace('.', ',');
-            mgStr = formattedMg + " / " + (isPrim ? "10" : "20");
-            mgClass = mg >= (isPrim ? 5 : 10) ? "text-emerald-600 font-extrabold" : "text-rose-600 font-extrabold";
-        }
+                let mgClass = "text-slate-400";
+                if (mg !== null) {
+                    const formattedMg = Number(mg.toFixed(2)).toString().replace('.', ',');
+                    mgStr = formattedMg + " / " + (isPrim ? "10" : "20");
+                    mgClass = mg >= (isPrim ? 5 : 10) ? "text-emerald-600 font-extrabold" : "text-rose-600 font-extrabold";
+                }
 
                 let rankStr = "";
                 if (mg !== null && rankMap[s.id] && rankMap[s.id] !== "N/A") {
@@ -2487,19 +2352,19 @@ function updateSectionFilterOptions() {
                 
                 const threshold = isPrim ? 5 : 10;
                 const successes = activeGrades.filter(g => g >= threshold).length;
-               const rate = (successes / activeGrades.length) * 100;
-             const baseScale = isPrim ? "/ 10" : "/ 20";
+                const rate = (successes / activeGrades.length) * 100;
+                const baseScale = isPrim ? "/ 10" : "/ 20";
         
-        // Formatage propre pour les statistiques du bandeau
-        const formattedAvg = Number(avg.toFixed(2)).toString().replace('.', ',');
-        const formattedMax = Number(max.toFixed(2)).toString().replace('.', ',');
-        const formattedMin = Number(min.toFixed(2)).toString().replace('.', ',');
-        
-        document.getElementById('sub-stats-average').innerText = `${formattedAvg} ${baseScale}`;
-        document.getElementById('sub-stats-max').innerText = `${formattedMax} ${baseScale}`;
-        document.getElementById('sub-stats-min').innerText = `${formattedMin} ${baseScale}`;
-        document.getElementById('sub-stats-rate').innerText = `${rate.toFixed(1)}%`;
-        } else {
+                // Formatage propre pour les statistiques du bandeau
+                const formattedAvg = Number(avg.toFixed(2)).toString().replace('.', ',');
+                const formattedMax = Number(max.toFixed(2)).toString().replace('.', ',');
+                const formattedMin = Number(min.toFixed(2)).toString().replace('.', ',');
+                
+                document.getElementById('sub-stats-average').innerText = `${formattedAvg} ${baseScale}`;
+                document.getElementById('sub-stats-max').innerText = `${formattedMax} ${baseScale}`;
+                document.getElementById('sub-stats-min').innerText = `${formattedMin} ${baseScale}`;
+                document.getElementById('sub-stats-rate').innerText = `${rate.toFixed(1)}%`;
+            } else {
                 document.getElementById('sub-stats-average').innerText = "N/A";
                 document.getElementById('sub-stats-max').innerText = "N/A";
                 document.getElementById('sub-stats-min').innerText = "N/A";
@@ -3014,24 +2879,22 @@ function updateSectionFilterOptions() {
             sortedStudents.forEach((s, idx) => {
                 const g = (s.grades && s.grades[semKey] && s.grades[semKey][subjectId]) ? s.grades[semKey][subjectId] : {};
                 
-              const formatVal = (val) => {
-    if (val === undefined || val === null || val === "") return "-";
-    const num = parseFloat(val);
-    // Utilise un formatage fluide sans décimales .00
-    return isNaN(num) ? "-" : Number(num.toFixed(2)).toString().replace('.', ',');
-};
+                const formatVal = (val) => {
+                    if (val === undefined || val === null || val === "") return "-";
+                    const num = parseFloat(val);
+                    return isNaN(num) ? "-" : Number(num.toFixed(2)).toString().replace('.', ',');
+                };
 
-const val1 = formatVal(g.dev1);
-const val2 = formatVal(g.dev2);
-const val3 = formatVal(g.dev3);
-const valCompo = formatVal(g.compo);
+                const val1 = formatVal(g.dev1);
+                const val2 = formatVal(g.dev2);
+                const val3 = formatVal(g.dev3);
+                const valCompo = formatVal(g.compo);
 
-const moyVal = calculerMoyenneEleveMatiere(s, subjectId);
-let moyStr = "-";
-if (moyVal !== null) {
-    // Utilise un formatage fluide sans décimales .00
-    moyStr = Number(moyVal.toFixed(2)).toString().replace('.', ',');
-}
+                const moyVal = calculerMoyenneEleveMatiere(s, subjectId);
+                let moyStr = "-";
+                if (moyVal !== null) {
+                    moyStr = Number(moyVal.toFixed(2)).toString().replace('.', ',');
+                }
 
                 const rowBg = idx % 2 === 0 ? "#ffffff" : "#f8fafc";
 
