@@ -504,13 +504,21 @@
                     <i class="fa-solid fa-angles-up text-amber-600"></i> Transition académique
                 </h4>
                 <p class="text-[10px] text-slate-500 mb-3">Promouvoir les profils de cette classe vers la classe supérieure en reportant l'historique de profil et les soldes impayés.</p>
-                <div class="grid grid-cols-1 gap-2">
-                    <select id="rollover-target-class" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
-                    </select>
-                    <button onclick="executeRollover()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-bolt"></i> Exécuter la promotion
-                    </button>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Classe cible</label>
+                        <select id="rollover-target-class" onchange="updateRolloverSections()" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Série / Option</label>
+                        <select id="rollover-target-section" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
+                        </select>
+                    </div>
                 </div>
+                <button onclick="executeRollover()" class="w-full bg-amber-600 hover:bg-amber-700 text-white px-3 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-bolt"></i> Exécuter la promotion
+                </button>
             </div>
 
             <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
@@ -1229,7 +1237,7 @@
             openModal('registration-modal');
         }
 
-        function Bronx_redirigerVersMensualites() {
+        function redirigerVersMensualites() {
             if (!editingStudentId) return;
             closeModal('registration-modal');
             openMensualitesModal(editingStudentId);
@@ -2713,10 +2721,21 @@
             const select = document.getElementById('rollover-target-class');
             if (!select) return;
             select.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
+            updateRolloverSections(); // Peupler dynamiquement la série correspondante à l'ouverture
+        }
+
+        function updateRolloverSections() {
+            const targetClass = document.getElementById('rollover-target-class').value;
+            const selectSection = document.getElementById('rollover-target-section');
+            if (!selectSection) return;
+            
+            const sections = getSectionsForClass(targetClass);
+            selectSection.innerHTML = sections.map(s => `<option value="${s}">${s || 'Général'}</option>`).join('');
         }
 
         function executeRollover() {
             const targetClass = document.getElementById('rollover-target-class').value;
+            const targetSection = document.getElementById('rollover-target-section').value;
             const key = getCurrentClassKey();
             const currentClsData = appState.classes[key];
             
@@ -2726,12 +2745,13 @@
             }
             
             const currentClassNameDisplay = appState.selectedClass + " " + (appState.selectedSection || "");
+            const targetClassNameDisplay = targetClass + " " + (targetSection || "Général");
             
             askConfirmation(
-                `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClass}) ? <br><br>⚠️ Les élèves seront déplacés vers la classe supérieure et retirés de leur classe d'origine (${currentClassNameDisplay}). Leurs éventuelles dettes financières non soldées seront reportées sur la nouvelle fiche.`,
+                `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClassNameDisplay}) ? <br><br>⚠️ Les élèves seront déplacés vers la classe supérieure et retirés de leur classe d'origine (${currentClassNameDisplay}). Leurs éventuelles dettes financières non soldées seront reportées sur la nouvelle fiche.`,
                 `<i class="fa-solid fa-angles-up text-amber-600"></i> Valider la promotion`,
                 function() {
-                    const targetKey = `${targetClass}_${appState.selectedSection}`;
+                    const targetKey = `${targetClass}_${targetSection}`;
                     if (!appState.classes[targetKey]) {
                         appState.classes[targetKey] = {
                             students: [],
@@ -2791,9 +2811,10 @@
                     
                     saveToStorage();
                     appState.selectedClass = targetClass;
+                    appState.selectedSection = targetSection;
                     populateFilters();
                     closeModal('settings-modal');
-                    showToast(`${promotedCount} élèves déplacés avec succès en ${targetClass} !`, "success");
+                    showToast(`${promotedCount} élèves déplacés avec succès en ${targetClassNameDisplay} !`, "success");
                     render();
                 }
             );
