@@ -830,26 +830,30 @@
             classes: {}
         };
 
-        // Détection résiliente et robuste des classes du primaire
-        function isPrimaryResilient(className) {
-            if (!className) return false;
-            const mainClass = className.toLowerCase().trim();
-            return ["cp", "ce1", "ce2", "cm1", "cm2"].includes(mainClass) || mainClass.includes("primaire");
+        function isPrimary(className) {
+            return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
         }
 
         function getPeriodLabel(className, periodNum) {
-            return isPrimaryResilient(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
+            return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
+        }
+
+        // Configuration robuste de détection des classes primaires pour éviter les bugs
+        function isPrimaryResilient(className) {
+            const parts = (className || "").split('_');
+            const mainClass = parts[0].toLowerCase();
+            return mainClass.includes("primaire") || ["ci", "cp", "ce1", "ce2", "cm1", "cm2"].includes(mainClass);
         }
 
         function getDevoirLabel(className, num) {
-            if (isPrimaryResilient(className)) {
+            if (isPrimary(className)) {
                 return `Note ${num}`;
             }
             return `Devoir ${num}`;
         }
 
         function getCoefLabel(className) {
-            return isPrimaryResilient(className) ? "Max" : "Coef";
+            return isPrimary(className) ? "Max" : "Coef";
         }
 
         function getMensualitesExpectedCount() {
@@ -867,7 +871,7 @@
         }
 
         function getDefaultSubjects(className) {
-            if (isPrimaryResilient(className)) {
+            if (isPrimary(className)) {
                 return [
                     { id: "sub_lang", name: "Langue & Communication", coef: 10, teacherName: "", accessCode: "" },
                     { id: "sub_math", name: "Mathématiques", coef: 10, teacherName: "", accessCode: "" },
@@ -972,16 +976,73 @@
             return `${appState.selectedClass}_${appState.selectedSection}`;
         }
 
+        // Renvoie la liste de toutes les classes associées à l'enseignant connecté
+        function getTeacherAssignedClasses() {
+            const teacherName = (localStorage.getItem("gestnotes_teacher_name") || "").trim().toLowerCase();
+            if (!teacherName) return [];
+            
+            const assigned = [];
+            for (let key in appState.classes) {
+                const clsData = appState.classes[key];
+                const parts = key.split('_');
+                const cls = parts[0];
+                const sect = parts[1] || "";
+                
+                if (clsData.subjects) {
+                    const hasSubject = clsData.subjects.some(sub => (sub.teacherName || "").trim().toLowerCase() === teacherName);
+                    if (hasSubject) {
+                        assigned.push({ class: cls, section: sect, key: key });
+                    }
+                }
+            }
+            return assigned;
+        }
+
         function populateFilters() {
             const classSelect = document.getElementById('filter-class');
-            classSelect.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass===c?'selected':''}>${c}</option>`).join('');
+            if (!classSelect) return;
+            const role = localStorage.getItem("gestnotes_local_role") || "admin";
+
+            if (role === 'enseignant') {
+                const assigned = getTeacherAssignedClasses();
+                if (assigned.length > 0) {
+                    // Récupérer les classes uniques assignées au professeur
+                    const uniqueClasses = [...new Set(assigned.map(item => item.class))];
+                    classSelect.innerHTML = uniqueClasses.map(c => `<option value="${c}" ${appState.selectedClass===c?'selected':''}>${c}</option>`).join('');
+                    
+                    if (!uniqueClasses.includes(appState.selectedClass)) {
+                        appState.selectedClass = uniqueClasses[0];
+                    }
+                } else {
+                    classSelect.innerHTML = `<option value="${appState.selectedClass}">${appState.selectedClass}</option>`;
+                }
+            } else {
+                classSelect.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass===c?'selected':''}>${c}</option>`).join('');
+            }
             updateSectionFilterOptions();
         }
 
         function updateSectionFilterOptions() {
             const sectSelect = document.getElementById('filter-section');
-            const sections = getSectionsForClass(appState.selectedClass);
-            sectSelect.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>${s || 'Général'}</option>`).join('');
+            if (!sectSelect) return;
+            const role = localStorage.getItem("gestnotes_local_role") || "admin";
+
+            if (role === 'enseignant') {
+                const assigned = getTeacherAssignedClasses();
+                // Garde uniquement les sections affectées à cet enseignant pour la classe sélectionnée
+                const filteredSections = assigned
+                    .filter(item => item.class === appState.selectedClass)
+                    .map(item => item.section);
+
+                sectSelect.innerHTML = filteredSections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>${s || 'Général'}</option>`).join('');
+                
+                if (filteredSections.length > 0 && !filteredSections.includes(appState.selectedSection)) {
+                    appState.selectedSection = filteredSections[0];
+                }
+            } else {
+                const sections = getSectionsForClass(appState.selectedClass);
+                sectSelect.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>${s || 'Général'}</option>`).join('');
+            }
         }
 
         function updateHeaderDisplays() {
@@ -993,6 +1054,13 @@
             appState.selectedClass = document.getElementById('filter-class').value;
             appState.selectedSection = "";
             updateSectionFilterOptions();
+            
+            // Corriger l'état pour que la section s'actualise correctement avec la première disponible pour le professeur
+            const sectSelect = document.getElementById('filter-section');
+            if (sectSelect) {
+                appState.selectedSection = sectSelect.value;
+            }
+            
             updateHeaderDisplays();
             render();
         }
@@ -1040,7 +1108,7 @@
 
         function updateSettingsPeriodSelect() {
             const select = document.getElementById('settings-semester');
-            const primary = isPrimaryResilient(appState.selectedClass);
+            const primary = isPrimary(appState.selectedClass);
             if (primary) {
                 select.innerHTML = `
                     <option value="1" ${appState.currentSemester==1?'selected':''}>Trimestre 1</option>
@@ -1774,7 +1842,7 @@
             const d2 = parseFloat(g.dev2);
             const d3 = parseFloat(g.dev3);
             const compo = parseFloat(g.compo);
-            const isPrim = isPrimaryResilient(appState.selectedClass);
+            const isPrim = isPrimary(appState.selectedClass);
 
             let hasDev = false;
             let sumDev = 0;
@@ -2075,8 +2143,9 @@
                 
                 if (btnExportTeacherGrades) btnExportTeacherGrades.classList.remove('hidden');
                 
-                if (filterClass) filterClass.disabled = true;
-                if (filterSection) filterSection.disabled = true;
+                // Très important : les filtres restent utilisables pour permettre à l'enseignant de naviguer
+                if (filterClass) filterClass.disabled = false;
+                if (filterSection) filterSection.disabled = false;
             } else {
                 if (filterClass) filterClass.disabled = false;
                 if (filterSection) filterSection.disabled = false;
@@ -2117,12 +2186,16 @@
             let filteredSubjects = clsData.subjects || [];
             
             if (role === 'enseignant') {
-                // Pour simplifier la vie d'un enseignant multi-matières (ex: 10 matières au primaire),
-                // on affiche toutes les matières dont le nom de l'enseignant ou le code correspond à sa session.
+                // Affiche toutes les matières de cette classe associées au professeur connecté
                 filteredSubjects = (clsData.subjects || []).filter(sub => {
                     const subTeacher = (sub.teacherName || "").trim().toLowerCase();
-                    return sub.id === teacherSubjectId || (teacherName !== "" && subTeacher === teacherName);
+                    return teacherName !== "" && subTeacher === teacherName;
                 });
+                
+                // Fallback de secours sur l'identifiant s'il n'y a pas encore de nom configuré
+                if (filteredSubjects.length === 0) {
+                    filteredSubjects = (clsData.subjects || []).filter(sub => sub.id === teacherSubjectId);
+                }
             }
 
             const previouslySelected = select.value;
@@ -2405,16 +2478,16 @@
                         ${s.firstname} ${s.lastname.toUpperCase()}
                     </td>
                     <td class="p-2">
-                        <input type="number" step="any" min="0" value="${val1}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev1', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val1}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev1', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
                     </td>
                     <td class="p-2">
-                        <input type="number" step="any" min="0" value="${val2}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev2', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val2}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev2', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
                     </td>
                     <td class="p-2" style="display: ${dev3Visible ? '' : 'none'}">
-                        <input type="number" step="any" min="0" value="${val3}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev3', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val3}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev3', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
                     </td>
                     <td class="p-2">
-                        <input type="number" step="any" min="0" value="${valCompo}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'compo', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${valCompo}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'compo', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -2436,17 +2509,7 @@
             } else {
                 const num = parseFloat(value);
                 if (!isNaN(num)) {
-                    const isPrim = isPrimaryResilient(appState.selectedClass);
-                    const maxScale = isPrim ? 10 : 20;
-
-                    // Si l'enseignant saisit par mégarde une note supérieure au barème de la classe, 
-                    // on le notifie mais on plafonne la valeur pour préserver la cohérence des moyennes.
-                    if (num > maxScale || num < 0) {
-                        showToast(`Note ajustée automatiquement (max ${maxScale} pour cette classe)`, "error");
-                        student.grades[semKey][subjectId][field] = Math.min(maxScale, Math.max(0, num));
-                    } else {
-                        student.grades[semKey][subjectId][field] = num;
-                    }
+                    student.grades[semKey][subjectId][field] = num;
                 }
             }
             saveToStorage();
@@ -2758,7 +2821,7 @@
             }
             
             const currentClassNameDisplay = appState.selectedClass + " " + (appState.selectedSection || "");
-            const targetClassNameDisplay = targetClass + " " + (targetSection || "Général");
+            const targetClassNameDisplay = targetClass + " " + (targetSection || "");
             
             askConfirmation(
                 `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClassNameDisplay}) ? <br><br>⚠️ Les élèves seront déplacés vers la classe supérieure et retirés de leur classe d'origine (${currentClassNameDisplay}). Leurs éventuelles dettes financières non soldées seront reportées sur la nouvelle fiche.`,
