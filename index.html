@@ -856,6 +856,17 @@
             return isPrimary(className) ? "Max" : "Coef";
         }
 
+        // Fonction pour comparer de façon tolérante les noms (insensible à la casse, espaces, accents)
+        function fuzzyMatch(str1, str2) {
+            if (!str1 || !str2) return false;
+            const clean = (s) => s.toLowerCase()
+                                  .normalize("NFD")
+                                  .replace(/[\u0300-\u036f]/g, "") // Enlever les accents
+                                  .replace(/[^a-z0-9]/g, "")      // Enlever ponctuation & espaces
+                                  .trim();
+            return clean(str1) === clean(str2);
+        }
+
         function getMensualitesExpectedCount() {
             return moisAnnee.length - 1;
         }
@@ -989,7 +1000,7 @@
                 const sect = parts[1] || "";
                 
                 if (clsData.subjects) {
-                    const hasSubject = clsData.subjects.some(sub => (sub.teacherName || "").trim().toLowerCase() === teacherName);
+                    const hasSubject = clsData.subjects.some(sub => fuzzyMatch(sub.teacherName, teacherName));
                     if (hasSubject) {
                         assigned.push({ class: cls, section: sect, key: key });
                     }
@@ -1842,7 +1853,7 @@
             const d2 = parseFloat(g.dev2);
             const d3 = parseFloat(g.dev3);
             const compo = parseFloat(g.compo);
-            const isPrim = isPrimary(appState.selectedClass);
+            const isPrim = isPrimaryResilient(appState.selectedClass);
 
             let hasDev = false;
             let sumDev = 0;
@@ -2189,7 +2200,7 @@
                 // Affiche toutes les matières de cette classe associées au professeur connecté
                 filteredSubjects = (clsData.subjects || []).filter(sub => {
                     const subTeacher = (sub.teacherName || "").trim().toLowerCase();
-                    return teacherName !== "" && subTeacher === teacherName;
+                    return teacherName !== "" && fuzzyMatch(subTeacher, teacherName);
                 });
                 
                 // Fallback de secours sur l'identifiant s'il n'y a pas encore de nom configuré
@@ -2509,7 +2520,17 @@
             } else {
                 const num = parseFloat(value);
                 if (!isNaN(num)) {
-                    student.grades[semKey][subjectId][field] = num;
+                    const isPrim = isPrimaryResilient(appState.selectedClass);
+                    const maxScale = isPrim ? 10 : 20;
+
+                    // Si l'enseignant saisit par mégarde une note supérieure au barème de la classe, 
+                    // on le notifie mais on plafonne la valeur pour préserver la cohérence des moyennes.
+                    if (num > maxScale || num < 0) {
+                        showToast(`Note ajustée automatiquement (max ${maxScale} pour cette classe)`, "error");
+                        student.grades[semKey][subjectId][field] = Math.min(maxScale, Math.max(0, num));
+                    } else {
+                        student.grades[semKey][subjectId][field] = num;
+                    }
                 }
             }
             saveToStorage();
