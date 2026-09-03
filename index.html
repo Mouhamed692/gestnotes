@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr"> 
 
@@ -925,6 +924,19 @@
             });
         }
 
+        // Nettoyage et formatage robuste des téléphones pour l'API WhatsApp
+        function formatPhoneForWhatsApp(phone) {
+            if (!phone) return "";
+            let pure = phone.replace(/\D/g, ''); // Conserve uniquement les chiffres
+            if (pure.startsWith('00221')) {
+                pure = pure.substring(2);
+            }
+            if (pure.length === 9) {
+                pure = "221" + pure;
+            }
+            return pure;
+        }
+
         // Initialisation de l'application
         async function initApp() {
             const savedState = await idbKeyval.get("gestnotes_state");
@@ -962,14 +974,14 @@
                 setTimeout(chargerBaseDepuisDrive, 1000);
             }
 
-            // --- NOUVEAUTÉ : Synchro automatique au retour sur l'application ---
+            // Synchro automatique au retour sur l'application
             document.addEventListener("visibilitychange", () => {
                 if (document.visibilityState === "visible" && appState.googleSyncUrl) {
                     chargerBaseDepuisDrive();
                 }
             });
 
-            // --- NOUVEAUTÉ : Synchro automatique toutes les 60 secondes ---
+            // Synchro automatique toutes les 60 secondes
             setInterval(() => {
                 if (appState.googleSyncUrl) {
                     chargerBaseDepuisDrive();
@@ -1039,7 +1051,7 @@
                 const response = await fetch(appState.googleSyncUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'text/plain;charset=utf-8' // Évite la requête préliminaire OPTIONS et fonctionne de pair avec e.postData.contents
+                        'Content-Type': 'text/plain;charset=utf-8' // Évite la requête préliminaire OPTIONS
                     },
                     body: JSON.stringify(appState)
                 });
@@ -1053,7 +1065,6 @@
             }
         }
 
-        // Renommer la fonction de clic pour correspondre aux réalités techniques
         function seConnecterAGoogleDrive() {
             if (!appState.googleSyncUrl) {
                 alert("Veuillez configurer l'URL Web App de votre Google Apps Script dans les paramètres (⚙️).");
@@ -1104,7 +1115,7 @@
                 updateSettingsPeriodSelect();
                 populateRolloverSelector();
 
-                // Hydrater les nouveaux champs configurables
+                // Hydrater les champs configurables
                 document.getElementById('settings-access-code').value = appState.accessCode || "1234";
                 document.getElementById('settings-gdrive-sync-url').value = appState.googleSyncUrl || "";
 
@@ -1496,7 +1507,6 @@
             openModal('encaissement-modal');
         }
 
-        // CORRECTION DU BUG D'ENCAISSEMENT DES FRAIS
         function validerEncaissement() {
             let student = null;
             for (let k in appState.classes) {
@@ -1653,12 +1663,7 @@
                 .replace(/{date}/g, p.dateEncaissement.split(' ')[0])
                 .replace(/{solde}/g, resteAPayer.toLocaleString());
             
-            let purePhone = student.phone.replace(/\D/g, ''); 
-            if (purePhone.startsWith('00221')) {
-                purePhone = purePhone.substring(2);
-            } else if (purePhone.length === 9) {
-                purePhone = "221" + purePhone;
-            }
+            let purePhone = formatPhoneForWhatsApp(student.phone);
 
             const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(msg)}`;
             
@@ -1907,7 +1912,6 @@
             let totalCoefs = 0;
 
             subjects.forEach(sub => {
-                const m = "./" + calculerMoyenneEleveMatiere(student, sub.id); // CORRECTION ICI : Remplacement de "./" si c'est une erreur de concaténation de chemin, sinon on garde la formule propre
                 let calcul = calculerMoyenneEleveMatiere(student, sub.id);
                 if (calcul !== null) {
                     totalPoints += calcul * (sub.coef || 1);
@@ -2431,9 +2435,9 @@
             document.getElementById('lbl-th-dev1').innerText = getDevoirLabel(appState.selectedClass, 1);
             document.getElementById('lbl-th-dev2').innerText = getDevoirLabel(appState.selectedClass, 2);
 
-            const searchVal = document.getElementById('grade-search').value.toLowerCase().trim();
+            const searchVal = cleanStringForFuzzy(document.getElementById('grade-search').value);
             const filteredStudents = clsData.students.filter(s => {
-                const fullName = `${s.firstname} ${s.lastname}`.toLowerCase();
+                const fullName = cleanStringForFuzzy(`${s.firstname} ${s.lastname}`);
                 return fullName.includes(searchVal);
             });
 
@@ -2456,7 +2460,7 @@
                 const rate = (successes / activeGrades.length) * 100;
                 const baseScale = isPrim ? "/ 10" : "/ 20";
         
-                // Formatage propre pour les statistiques du bandeau
+                // Formatage propre pour les statistiques
                 const formattedAvg = Number(avg.toFixed(2)).toString().replace('.', ',');
                 const formattedMax = Number(max.toFixed(2)).toString().replace('.', ',');
                 const formattedMin = Number(min.toFixed(2)).toString().replace('.', ',');
@@ -2674,8 +2678,7 @@
                 showToast("Aucun numéro configuré pour cet élève.", "error");
                 return;
             }
-            let purePhone = student.phone.replace(/[\s\+\-]/g, '');
-            if (purePhone.length === 9) purePhone = "221" + purePhone;
+            let purePhone = formatPhoneForWhatsApp(student.phone);
             
             const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodedMsg}`;
             window.open(url, '_blank');
@@ -2701,8 +2704,7 @@
                         .replace(/{montant}/g, p.montantDu.toLocaleString())
                         .replace(/{periode}/g, p.designation);
                     
-                    let purePhone = s.phone.replace(/[\s\+\-]/g, '');
-                    if (purePhone.length === 9) purePhone = "221" + purePhone;
+                    let purePhone = formatPhoneForWhatsApp(s.phone);
                     
                     const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(msg)}`;
                     window.open(url, '_blank');
@@ -2832,7 +2834,14 @@
                 `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClass}) ? <br><br>⚠️ Les élèves seront déplacés vers la classe supérieure et retirés de leur classe d'origine (${currentClassNameDisplay}). Leurs éventuelles dettes financières non soldées seront reportées sur la nouvelle fiche.`,
                 `<i class="fa-solid fa-angles-up text-amber-600"></i> Valider la promotion`,
                 function() {
-                    const targetKey = `${targetClass}_${appState.selectedSection}`;
+                    // Repli automatique si la section courante n'est pas supportée dans la classe de destination
+                    const validSections = getSectionsForClass(targetClass);
+                    let targetSection = appState.selectedSection;
+                    if (!validSections.includes(targetSection)) {
+                        targetSection = validSections[0] || "";
+                    }
+
+                    const targetKey = `${targetClass}_${targetSection}`;
                     if (!appState.classes[targetKey]) {
                         appState.classes[targetKey] = {
                             students: [],
@@ -2892,6 +2901,7 @@
                     
                     saveToStorage();
                     appState.selectedClass = targetClass;
+                    appState.selectedSection = targetSection;
                     populateFilters();
                     closeModal('settings-modal');
                     showToast(`${promotedCount} élèves déplacés avec succès en ${targetClass} !`, "success");
@@ -2931,7 +2941,6 @@
             printDiv.style.backgroundColor = "#ffffff";
 
             let html = `
-                <!-- En-tête professionnel -->
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #4c1d95; padding-bottom: 15px; margin-bottom: 25px;">
                     <div>
                         <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #4c1d95; letter-spacing: -0.5px;">GestNotes Academy</h1>
@@ -2943,7 +2952,6 @@
                     </div>
                 </div>
 
-                <!-- Fiche Métadonnées -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px 20px; margin-bottom: 25px; font-size: 12px;">
                     <div>
                         <p style="margin: 0; color: #64748b; font-weight: 500;">CLASSE : <strong style="color: #0f172a; margin-left: 5px;">${appState.selectedClass} ${appState.selectedSection || ''}</strong></p>
@@ -3017,7 +3025,6 @@
                     </tbody>
                 </table>
 
-                <!-- Signatures de fin de page -->
                 <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
                     <div>
                         <p style="margin: 0;">Rapport généré le ${new Date().toLocaleDateString('fr-FR')} &agrave; ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</p>
@@ -3060,8 +3067,10 @@
                 .replace(/[\u0300-\u036f]/g, "")
                 .replace(/[^a-z0-9]/g, "");
         }
+
+        // Ecouteur d'initialisation de l'application au chargement du DOM
+        window.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 
 </html>
-
