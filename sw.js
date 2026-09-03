@@ -4,7 +4,7 @@ const CACHE_NAME = 'gestnotes-v2'; // Passage à la v2 pour forcer la mise à jo
 const ASSETS = [
   './',
   './index.html',
-  './bulletin.html', // Note : assurez-vous que ce fichier existe également en local
+  './bulletin.html', 
   './manifest.json',
   './tailwind.min.js',
   './html2pdf.bundle.min.js', 
@@ -51,6 +51,12 @@ self.addEventListener('fetch', (e) => {
   // Ignorer les protocoles non-HTTP/HTTPS (par exemple chrome-extension:// ou data:)
   if (!e.request.url.startsWith('http')) return;
 
+  // CORRECTION MAJEURE : Ignorer et ne pas intercepter les requêtes vers Google Apps Script et Google Drive
+  // Cela permet au navigateur de gérer la redirection 302 nativement sans interférence ni blocage du Service Worker
+  if (e.request.url.includes('script.google.com') || e.request.url.includes('script.googleusercontent.com')) {
+    return; // Sortie immédiate, le navigateur prend le relais directement sur le réseau
+  }
+
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
       if (cachedResponse) {
@@ -58,7 +64,7 @@ self.addEventListener('fetch', (e) => {
       }
 
       return fetch(e.request).then((networkResponse) => {
-        // Ajout de 'cors' pour permettre la sauvegarde en cache des scripts et styles externes de confiance (Google Fonts / CDN FontAwesome)
+        // Ajout de 'cors' pour permettre la sauvegarde en cache des scripts et styles externes de confiance
         const isAcceptableType = networkResponse.type === 'basic' || networkResponse.type === 'cors';
         if (networkResponse && networkResponse.status === 200 && isAcceptableType) {
           const responseToCache = networkResponse.clone();
