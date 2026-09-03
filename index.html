@@ -511,16 +511,36 @@
             
             <div id="settings-rollover-container" class="border-t pt-4 mt-4">
                 <h4 class="text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider flex items-center gap-1">
-                    <i class="fa-solid fa-angles-up text-amber-600"></i> Transition académique
+                    <i class="fa-solid fa-angles-up text-amber-600"></i> Transition académique (Promotion)
                 </h4>
-                <p class="text-[10px] text-slate-500 mb-3">Promouvoir les profils de cette classe vers la classe supérieure en reportant l'historique de profil et les soldes impayés.</p>
-                <div class="grid grid-cols-1 gap-2">
-                    <select id="rollover-target-class" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
-                    </select>
-                    <button onclick="executeRollover()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-bolt"></i> Exécuter la promotion
-                    </button>
+                <p class="text-[10px] text-slate-500 mb-3">Promouvoir les élèves vers la classe supérieure avec des options personnalisables.</p>
+                
+                <div class="space-y-3 mb-4">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Classe de destination</label>
+                        <select id="rollover-target-class" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
+                        </select>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs">
+                        <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+                            <input type="checkbox" id="rollover-keep-debt" checked class="rounded text-[#4c1d95] focus:ring-violet-500 w-3.5 h-3.5">
+                            <span>Reporter les dettes impayées</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+                            <input type="checkbox" id="rollover-duplicate-profile" class="rounded text-[#4c1d95] focus:ring-violet-500 w-3.5 h-3.5">
+                            <span>Dupliquer (conserver dans la classe d'origine)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+                            <input type="checkbox" id="rollover-waive-inscription" class="rounded text-[#4c1d95] focus:ring-violet-500 w-3.5 h-3.5">
+                            <span>Exonérer des nouveaux frais d'inscription</span>
+                        </label>
+                    </div>
                 </div>
+
+                <button onclick="executeRollover()" class="w-full bg-amber-600 hover:bg-amber-700 text-white px-3 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-bolt"></i> Exécuter la promotion
+                </button>
             </div>
 
             <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
@@ -1667,7 +1687,7 @@
 
             const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(msg)}`;
             
-            alert(`ℹ️ Reçu PDF officiel téléchargé !\n\nLe reçu de paiement a été enregistré sur votre appareil.\n\nVous allez maintenant être redirigé vers WhatsApp. Veuillez joindre ce fichier PDF téléchargé en tant que pièce jointe (ou par glisser-déposer) dans la discussion avec le parent.`);
+            alert(`ℹ️ Reçu PDF officiel téléchargé !\n\nLe reçu de paiement a été enregistré sur votre appareil.\n\nVous allez maintenant être redirigé vers WhatsApp. Veuillez joindre ce fichier PDF téléchargé en tant que pièce jointe (or par glisser-déposer) dans la discussion avec le parent.`);
 
             window.open(url, '_blank');
         }
@@ -2820,6 +2840,10 @@
 
         function executeRollover() {
             const targetClass = document.getElementById('rollover-target-class').value;
+            const keepDebt = document.getElementById('rollover-keep-debt').checked;
+            const duplicateProfile = document.getElementById('rollover-duplicate-profile').checked;
+            const waiveInscription = document.getElementById('rollover-waive-inscription').checked;
+
             const key = getCurrentClassKey();
             const currentClsData = appState.classes[key];
             
@@ -2830,8 +2854,20 @@
             
             const currentClassNameDisplay = appState.selectedClass + " " + (appState.selectedSection || "");
             
+            // Construction des détails de l'alerte de confirmation en fonction des options cochées
+            let optionsDetails = [];
+            if (keepDebt) optionsDetails.push("report des dettes impayées");
+            if (duplicateProfile) {
+                optionsDetails.push("duplication (profils conservés en " + currentClassNameDisplay + ")");
+            } else {
+                optionsDetails.push("déplacement (profils retirés de " + currentClassNameDisplay + ")");
+            }
+            if (waiveInscription) optionsDetails.push("exonération des nouveaux frais d'inscription");
+
+            const detailsText = optionsDetails.length > 0 ? `<br><span class="text-xs text-amber-700 font-semibold">Options actives : ${optionsDetails.join(', ')}.</span>` : "";
+
             askConfirmation(
-                `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClass}) ? <br><br>⚠️ Les élèves seront déplacés vers la classe supérieure et retirés de leur classe d'origine (${currentClassNameDisplay}). Leurs éventuelles dettes financières non soldées seront reportées sur la nouvelle fiche.`,
+                `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClass}) ? ${detailsText}<br><br>⚠️ Confirmez-vous le lancement de cette procédure académique ?`,
                 `<i class="fa-solid fa-angles-up text-amber-600"></i> Valider la promotion`,
                 function() {
                     // Repli automatique si la section courante n'est pas supportée dans la classe de destination
@@ -2853,25 +2889,29 @@
                     
                     let promotedCount = 0;
                     currentClsData.students.forEach(s => {
-                        let totalDue = 0;
-                        let totalPaid = 0;
-                        if (s.payments) {
+                        let remainingDebt = 0;
+                        if (keepDebt && s.payments) {
+                            let totalDue = 0;
+                            let totalPaid = 0;
                             s.payments.forEach(p => {
                                 totalDue += (p.montantDu || 0);
                                 totalPaid += (p.montantPaye || 0);
                             });
+                            remainingDebt = Math.max(0, totalDue - totalPaid);
                         }
-                        const remainingDebt = Math.max(0, totalDue - totalPaid);
 
                         const targetFees = appState.classes[targetKey].fees || { inscription: 0, mensualite: 0 };
+                        
+                        // Frais d'inscription de destination (0 si exonération active)
+                        const finalInscriptionFee = waiveInscription ? 0 : (targetFees.inscription || 0);
 
                         const basePayments = moisAnnee.map((m, idx) => ({
                             designation: m,
-                            statut: "Non payé",
-                            montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
-                            montantPaye: 0,
-                            methode: "",
-                            dateEncaissement: ""
+                            statut: idx === 0 && waiveInscription ? "Payé" : "Non payé",
+                            montantDu: idx === 0 ? finalInscriptionFee : (targetFees.mensualite || 0),
+                            montantPaye: idx === 0 && waiveInscription ? 0 : 0,
+                            methode: idx === 0 && waiveInscription ? "Exonération" : "",
+                            dateEncaissement: idx === 0 && waiveInscription ? new Date().toLocaleDateString('fr-FR') : ""
                         }));
 
                         if (remainingDebt > 0) {
@@ -2897,7 +2937,10 @@
                         promotedCount++;
                     });
                     
-                    currentClsData.students = [];
+                    // Si l'archivage ou duplication n'est pas cochée, on vide la classe d'origine
+                    if (!duplicateProfile) {
+                        currentClsData.students = [];
+                    }
                     
                     saveToStorage();
                     appState.selectedClass = targetClass;
