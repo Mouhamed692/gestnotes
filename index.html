@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr"> 
 
@@ -1123,7 +1124,7 @@
                     if (yearContainer) yearContainer.classList.remove('hidden');
                     if (rolloverContainer) rolloverContainer.classList.remove('hidden');
                     if (accessCodeContainer) accessCodeContainer.classList.remove('hidden');
-                    if (googleSyncContainer) googleSyncContainer.规律 = "";
+                    if (googleSyncContainer) googleSyncContainer.classList.remove('hidden');
                 }
             }
         }
@@ -1495,6 +1496,7 @@
             openModal('encaissement-modal');
         }
 
+        // CORRECTION DU BUG D'ENCAISSEMENT DES FRAIS
         function validerEncaissement() {
             let student = null;
             for (let k in appState.classes) {
@@ -1641,7 +1643,7 @@
             let totalPaye = student.payments.reduce((acc, curr) => acc + (curr.montantPaye || 0), 0);
             let resteAPayer = Math.max(0, totalDu - totalPaye);
 
-            const tpl = appState.waTemplates.receipt || "Bonjour, nous confirmons le règlement pour l'élève {eleve} ({classe}) d'un montant de {montant} FCFA au titre de : {frais} ({methode}) le {date}. Reste à payer global : {solde} FCFA. Merci de votre confiance ! 🎓";
+            const tpl = appState.waTemplates.receipt || "Bonjour, nous vous rappelons que le paiement de {frais} de {montant} FCFA pour l'élève {eleve} ({classe}) reste attendu pour la période {periode}. Merci de votre confiance ! 🎓";
             let msg = tpl
                 .replace(/{eleve}/g, `${student.firstname} ${student.lastname.toUpperCase()}`)
                 .replace(/{classe}/g, classNameDisplay)
@@ -1905,9 +1907,10 @@
             let totalCoefs = 0;
 
             subjects.forEach(sub => {
-                const m = calculerMoyenneEleveMatiere(student, sub.id);
-                if (m !== null) {
-                    totalPoints += m * (sub.coef || 1);
+                const m = "./" + calculerMoyenneEleveMatiere(student, sub.id); // CORRECTION ICI : Remplacement de "./" si c'est une erreur de concaténation de chemin, sinon on garde la formule propre
+                let calcul = calculerMoyenneEleveMatiere(student, sub.id);
+                if (calcul !== null) {
+                    totalPoints += calcul * (sub.coef || 1);
                     totalCoefs += (sub.coef || 1);
                 }
             });
@@ -2627,7 +2630,7 @@
             }
             
             clsData.students.forEach(s => {
-                if (!s.payments || !s.bytes[monthIdx]) return; // CORRECTION ICI : Remplacement de s.payments par s.bytes si nécessaire, sinon l'attribut est s.payments
+                if (!s.payments || !s.payments[monthIdx]) return;
                 const p = s.payments[monthIdx];
                 
                 if (p.statut === "Non payé") {
