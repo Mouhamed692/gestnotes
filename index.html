@@ -913,13 +913,12 @@
                 });
             });
         }
-
+// Initialisation de l'application
         async function initApp() {
             const savedState = await idbKeyval.get("gestnotes_state");
             appState = savedState || DEFAULT_STATE;
             buildEmptyState();
 
-            // Migrations pour s'assurer que les nouveaux champs configurables existent
             if (appState.accessCode === undefined) {
                 appState.accessCode = "1234";
             }
@@ -946,23 +945,105 @@
             applyRoleRestrictions();
             render();
 
-            // Tenter d'exécuter la synchronisation cloud automatique au démarrage
+            // Lancement de la synchronisation au démarrage
             if (appState.googleSyncUrl) {
                 setTimeout(chargerBaseDepuisDrive, 1000);
             }
+
+            // --- NOUVEAUTÉ : Synchro automatique au retour sur l'application ---
+            document.addEventListener("visibilitychange", () => {
+                if (document.visibilityState === "visible" && appState.googleSyncUrl) {
+                    chargerBaseDepuisDrive();
+                }
+            });
+
+            // --- NOUVEAUTÉ : Synchro automatique toutes les 60 secondes ---
+            setInterval(() => {
+                if (appState.googleSyncUrl) {
+                    chargerBaseDepuisDrive();
+                }
+            }, 60000);
         }
 
-        window.addEventListener('DOMContentLoaded', initApp);
-
+        // Sauvegarde locale et cloud
         async function saveToStorage(forceCloud = true) {
             try {
                 await idbKeyval.set("gestnotes_state", appState);
                 if (forceCloud && appState.googleSyncUrl) {
-                    sauvegarderSurDrive();
+                    await sauvegarderSurDrive();
                 }
             } catch (err) {
                 console.error("Erreur de sauvegarde locale :", err);
             }
+        }
+
+        // Récupération des données depuis le cloud (GET)
+        async function chargerBaseDepuisDrive() {
+            if (!appState.googleSyncUrl) return;
+            
+            const btn = document.getElementById('btn-gdrive-sync');
+            const lbl = document.getElementById('lbl-gdrive-sync');
+            if (lbl) lbl.innerText = "Chargement...";
+
+            try {
+                const response = await fetch(appState.googleSyncUrl);
+                if (!response.ok) throw new Error("Réponse réseau non conforme");
+                
+                const dbState = await response.json();
+                
+                if (dbState && dbState.classes) {
+                    // Conservation de l'URL locale de synchronisation et du code d'accès
+                    const localUrl = appState.googleSyncUrl;
+                    const localAccessCode = appState.accessCode;
+                    
+                    appState = dbState;
+                    appState.googleSyncUrl = localUrl;
+                    if (appState.accessCode === undefined) appState.accessCode = localAccessCode;
+                    
+                    buildEmptyState();
+                    await idbKeyval.set("gestnotes_state", appState);
+                    
+                    populateFilters();
+                    updateHeaderDisplays();
+                    applyRoleRestrictions();
+                    render();
+                    
+                    if (btn) btn.className = "flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm";
+                    if (lbl) lbl.innerText = "Cloud Synced";
+                }
+            } catch (error) {
+                console.error("Erreur lors du chargement cloud :", error);
+                if (lbl) lbl.innerText = "Erreur Synchro";
+                if (btn) btn.className = "flex items-center justify-center gap-2 bg-rose-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-rose-700 transition-all shadow-md text-sm";
+            }
+        }
+
+        // Envoi des données vers le cloud (POST)
+        async function sauvegarderSurDrive() {
+            if (!appState.googleSyncUrl) return;
+            try {
+                const response = await fetch(appState.googleSyncUrl, {
+                    method: 'POST',
+                    mode: 'no-cors', // Évite les blocages CORS classiques avec Apps Script
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(appState)
+                });
+                console.log("Données envoyées au cloud (requête effectuée).");
+            } catch (error) {
+                console.error("Erreur de sauvegarde automatique sur le Drive :", error);
+            }
+        }
+
+        // Renommer la fonction de clic pour correspondre aux réalités techniques
+        function seConnecterAGoogleDrive() {
+            if (!appState.googleSyncUrl) {
+                alert("Veuillez configurer l'URL Web App de votre Google Apps Script dans les paramètres (⚙️).");
+                openModal('settings-modal');
+                return;
+            }
+            chargerBaseDepuisDrive();
         }
 
         function getCurrentClassKey() {
