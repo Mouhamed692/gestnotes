@@ -10,7 +10,7 @@ const ASSETS = [
   './html2pdf.bundle.min.js', 
   './idb-keyval.js',           
   './icon-192.png',
-  './all.min.css',   // CORRECTION : Utilisation de votre fichier CSS Font Awesome local
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap'
 ];
 
@@ -48,7 +48,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
 
-  // CORRECTION : Ignorer les protocoles non-HTTP/HTTPS (par exemple chrome-extension:// ou data:)
+  // Ignorer les protocoles non-HTTP/HTTPS (par exemple chrome-extension:// ou data:)
   if (!e.request.url.startsWith('http')) return;
 
   e.respondWith(
@@ -58,7 +58,7 @@ self.addEventListener('fetch', (e) => {
       }
 
       return fetch(e.request).then((networkResponse) => {
-        // Ajout de 'cors' pour permettre la sauvegarde en cache des scripts et styles externes de confiance (Google Fonts)
+        // Ajout de 'cors' pour permettre la sauvegarde en cache des scripts et styles externes de confiance (Google Fonts / CDN FontAwesome)
         const isAcceptableType = networkResponse.type === 'basic' || networkResponse.type === 'cors';
         if (networkResponse && networkResponse.status === 200 && isAcceptableType) {
           const responseToCache = networkResponse.clone();
