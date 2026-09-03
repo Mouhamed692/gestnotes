@@ -223,11 +223,15 @@
                         <button id="btn-next-subject" onclick="goToNextSubject()" class="bg-[#4c1d95] hover:bg-violet-800 text-white text-sm px-3.5 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap">
                             <span>Suivant</span> <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
+                        <!-- Bouton d'exportation PDF inséré de manière visible pour l'enseignant ou l'admin -->
+                        <button id="btn-export-pdf-grid" onclick="exporterFeuilleSaisie()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-3.5 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap" title="Exporter la grille de notes courante en PDF">
+                            <i class="fa-solid fa-file-pdf"></i> <span class="hidden md:inline">Exporter PDF</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Proposition 1 : Statistiques de la matière active -->
+            <!-- Statistiques de la matière active -->
             <div id="subject-stats-banner" class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/60">
                 <div class="text-center md:text-left">
                     <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Moyenne Classe</p>
@@ -469,7 +473,7 @@
                 </div>
                 <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
                     <button type="button" onclick="closeModal('class-fees-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
-                    <button type="submit" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
+                    <button type="submit" class="bg-[#4c1d95] text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -705,7 +709,8 @@
         </div>
     </div>
 
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <!-- Niveau de superposition élevé pour que les toasts soient visibles sur tous les modals -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
     <div style="position: absolute; left: -9999px; top: -9999px; width: 700px; height: auto; overflow: hidden; pointer-events: none;">
         <div id="recu-template-container" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; background-color: #fff; width: 100%; box-sizing: border-box;">
@@ -893,7 +898,7 @@
                         appState.classes[key] = {
                             subjects: getDefaultSubjects(c),
                             students: [],
-                            fees: { inscription: 0, mensualite: 0 },
+                            fees: { inscription: 0, mensualite: 0 }, 
                             dev3Visible: {}
                         };
                     }
@@ -912,7 +917,8 @@
                 });
             });
         }
-// Initialisation de l'application
+
+        // Initialisation de l'application
         async function initApp() {
             const savedState = await idbKeyval.get("gestnotes_state");
             appState = savedState || DEFAULT_STATE;
@@ -1008,12 +1014,14 @@
                     render();
                     
                     if (btn) btn.className = "flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm";
-                    if (lbl) lbl.innerText = "Cloud Synced";
+                    if (lbl) lbl.innerText = "Cloud Sync Actif";
+                    showToast("Base synchronisée avec succès !", "success");
                 }
             } catch (error) {
                 console.error("Erreur lors du chargement cloud :", error);
                 if (lbl) lbl.innerText = "Erreur Synchro";
                 if (btn) btn.className = "flex items-center justify-center gap-2 bg-rose-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-rose-700 transition-all shadow-md text-sm";
+                showToast("Échec de la synchronisation cloud.", "error");
             }
         }
 
@@ -1023,13 +1031,16 @@
             try {
                 const response = await fetch(appState.googleSyncUrl, {
                     method: 'POST',
-                    mode: 'no-cors', // Évite les blocages CORS classiques avec Apps Script
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'text/plain;charset=utf-8' // Évite la requête préliminaire OPTIONS et fonctionne de pair avec e.postData.contents
                     },
                     body: JSON.stringify(appState)
                 });
-                console.log("Données envoyées au cloud (requête effectuée).");
+                if (response.ok) {
+                    console.log("Sauvegarde cloud automatique réussie.");
+                } else {
+                    console.warn("Échec de la sauvegarde cloud.");
+                }
             } catch (error) {
                 console.error("Erreur de sauvegarde automatique sur le Drive :", error);
             }
@@ -1310,7 +1321,7 @@
             openModal('registration-modal');
         }
 
-        function Bronx_redirigerVersMensualites() {
+        function redirigerVersMensualites() {
             if (!editingStudentId) return;
             closeModal('registration-modal');
             openMensualitesModal(editingStudentId);
@@ -3039,75 +3050,6 @@
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "")
                 .replace(/[^a-z0-9]/g, "");
-        }
-
-        // ==========================================
-        // FONCTIONS D'INTEGRATION GOOGLE DRIVE (API v3)
-        // ==========================================
-
-        function seConnecterAGoogleDrive() {
-            if (!appState.googleSyncUrl) {
-                alert("Veuillez d'abord configurer l'URL de votre application Web Google Apps Script dans le panneau de configuration (⚙️).");
-                openModal('settings-modal');
-                return;
-            }
-            chargerBaseDepuisDrive();
-        }
-
-        async function chargerBaseDepuisDrive() {
-            if (!appState.googleSyncUrl) return;
-            showToast("Synchronisation Cloud en cours...", "info");
-            try {
-                const response = await fetch(appState.googleSyncUrl);
-                const dbState = await response.json();
-                
-                if (dbState && dbState.classes) {
-                    appState = dbState;
-                    buildEmptyState();
-                    
-                    // Migrations locales après récupération
-                    if (appState.accessCode === undefined) appState.accessCode = "1234";
-                    if (appState.googleSyncUrl === undefined) {
-                        appState.googleSyncUrl = document.getElementById('settings-gdrive-sync-url').value || "";
-                    }
-                    
-                    await idbKeyval.set("gestnotes_state", appState);
-                    populateFilters();
-                    updateHeaderDisplays();
-                    applyRoleRestrictions();
-                    render();
-                    
-                    // Mettre à jour l'état visuel du bouton
-                    const btn = document.getElementById('btn-gdrive-sync');
-                    const lbl = document.getElementById('lbl-gdrive-sync');
-                    if (btn) btn.className = "flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm";
-                    if (lbl) lbl.innerText = "Cloud Sync Actif";
-                    
-                    showToast("Base synchronisée avec succès !", "success");
-                } else {
-                    showToast("Aucune donnée valide trouvée sur le Cloud.", "info");
-                }
-            } catch (error) {
-                console.error("Erreur de récupération :", error);
-                showToast("Échec de la synchronisation.", "error");
-            }
-        }
-
-        async function sauvegarderSurDrive() {
-            if (!appState.googleSyncUrl) return;
-            try {
-                const response = await fetch(appState.googleSyncUrl, {
-                    method: 'POST',
-                    body: JSON.stringify(appState)
-                });
-                if (response.ok) {
-                    console.log("Sauvegarde cloud automatique réussie.");
-                } else {
-                    console.warn("Échec de la sauvegarde cloud.");
-                }
-            } catch (error) {
-                console.error("Erreur de sauvegarde automatique :", error);
-            }
         }
     </script>
 </body>
