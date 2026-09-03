@@ -1,6 +1,6 @@
 const CACHE_NAME = 'gestnotes-v2'; // Passage à la v2 pour forcer la mise à jour des navigateurs
 
-// Liste des ressources indispensables à mettre en cache au démarrage
+// Liste des ressources indispensables à mettre en cache au démarrage (100% local/PWA)
 const ASSETS = [
   './',
   './index.html',
@@ -10,8 +10,7 @@ const ASSETS = [
   './html2pdf.bundle.min.js', 
   './idb-keyval.js',           
   './icon-192.png',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+  './all.min.css',   // CORRECTION : Utilisation de votre fichier CSS Font Awesome local
   'https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap'
 ];
 
@@ -56,7 +55,7 @@ self.addEventListener('fetch', (e) => {
       }
 
       return fetch(e.request).then((networkResponse) => {
-        // Ajout de 'cors' pour permettre la sauvegarde en cache des scripts et styles externes de confiance
+        // Ajout de 'cors' pour permettre la sauvegarde en cache des scripts et styles externes de confiance (Google Fonts)
         const isAcceptableType = networkResponse.type === 'basic' || networkResponse.type === 'cors';
         if (networkResponse && networkResponse.status === 200 && isAcceptableType) {
           const responseToCache = networkResponse.clone();
