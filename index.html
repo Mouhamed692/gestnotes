@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -23,7 +24,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght=400;500;600;700;800&family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         body {
@@ -135,7 +136,7 @@
                     <i class="fas fa-file-upload"></i> <span>Importer Fichier (.txt)</span>
                 </button>
                 
-                <!-- Bouton de synchronisation Cloud (Google Apps Script) -->
+                <!-- Bouton de synchronisation Cloud -->
                 <button id="btn-gdrive-sync" onclick="seConnecterAGoogleDrive()" class="flex items-center justify-center gap-2 bg-violet-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-violet-700 transition-all shadow-md text-sm" title="Synchroniser la base de données directement sur votre Google Drive">
                     <i class="fa-brands fa-google-drive"></i> <span id="lbl-gdrive-sync">Synchro Cloud</span>
                 </button>
@@ -227,7 +228,7 @@
                 </div>
             </div>
 
-            <!-- Statistiques de la matière active -->
+            <!-- Proposition 1 : Statistiques de la matière active -->
             <div id="subject-stats-banner" class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/60">
                 <div class="text-center md:text-left">
                     <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Moyenne Classe</p>
@@ -248,10 +249,10 @@
             </div>
 
             <div class="overflow-x-auto w-full border border-slate-300 rounded-lg shadow-sm">
-                <table class="w-full text-xs border-collapse min-w-[800px]">
+                <table class="w-full text-xs border-collapse table-fixed min-w-[800px]">
                     <thead class="bg-slate-100">
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider sticky top-0 z-10">
-                            <th class="p-3 text-left w-2/5">Élève</th>
+                            <th class="p-3 text-left">Élève</th>
                             <th class="p-3 text-center" id="lbl-th-dev1">Devoir 1</th>
                             <th class="p-3 text-center" id="lbl-th-dev2">Devoir 2</th>
                             <th class="p-3 text-center" id="lbl-th-dev3" style="display: none;">Devoir 3</th>
@@ -422,6 +423,7 @@
         </div>
     </div>
 
+    <!-- Corrected: z-55 replaced with z-[60] to show properly on top of z-50 modal -->
     <div id="encaissement-modal" class="hidden fixed inset-0 bg-slate-900/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
             <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2 border-b pb-2">
@@ -486,12 +488,14 @@
                     <label id="lbl-settings-period" class="block text-xs font-semibold text-slate-500 mb-1">Période courante</label>
                     <select id="settings-semester" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5"></select>
                 </div>
+                <!-- Saisie du code d'accès par l'administrateur -->
                 <div id="settings-access-code-container">
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Code d'accès rôles (Admin/Comptable)</label>
                     <input type="text" id="settings-access-code" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5" placeholder="Par défaut: 1234">
                 </div>
+                <!-- Configuration de l'URL Google Apps Script -->
                 <div id="settings-gdrive-sync-url-container">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">URL Google Apps Script</label>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">URL de Synchronisation (Google Apps Script Web App)</label>
                     <input type="text" id="settings-gdrive-sync-url" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium" placeholder="https://script.google.com/.../exec">
                 </div>
             </div>
@@ -501,21 +505,13 @@
                     <i class="fa-solid fa-angles-up text-amber-600"></i> Transition académique
                 </h4>
                 <p class="text-[10px] text-slate-500 mb-3">Promouvoir les profils de cette classe vers la classe supérieure en reportant l'historique de profil et les soldes impayés.</p>
-                <div class="grid grid-cols-2 gap-2 mb-2">
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Classe cible</label>
-                        <select id="rollover-target-class" onchange="updateRolloverSections()" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Série / Option</label>
-                        <select id="rollover-target-section" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
-                        </select>
-                    </div>
+                <div class="grid grid-cols-1 gap-2">
+                    <select id="rollover-target-class" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
+                    </select>
+                    <button onclick="executeRollover()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-bolt"></i> Exécuter la promotion
+                    </button>
                 </div>
-                <button onclick="executeRollover()" class="w-full bg-amber-600 hover:bg-amber-700 text-white px-3 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-bolt"></i> Exécuter la promotion
-                </button>
             </div>
 
             <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
@@ -525,6 +521,7 @@
         </div>
     </div>
 
+    <!-- Proposition 3 : Modal Journal de Caisse -->
     <div id="caisse-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 border border-slate-100 flex flex-col max-h-[85vh]">
             <div class="border-b pb-4 mb-4 flex justify-between items-center">
@@ -612,7 +609,7 @@
             </div>
 
             <div class="mb-4">
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Message personnalisé</label>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Message personnalisé (Variables : {eleve}, {classe}, {frais}, {montant}, {periode})</label>
                 <textarea id="wa-reminder-text" rows="3" oninput="renderWhatsAppReminders()" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs outline-none focus:ring-2 focus:ring-violet-500/20 font-medium resize-none"></textarea>
             </div>
 
@@ -695,6 +692,7 @@
         </div>
     </div>
 
+    <!-- Corrected: z-55 replaced with z-[70] to stack atop all elements reliably -->
     <div id="confirm-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
             <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2 border-b pb-2" id="confirm-modal-title">
@@ -710,38 +708,32 @@
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- Modèle HTML robuste et compatible avec html2pdf (sans CSS Grid) -->
     <div style="position: absolute; left: -9999px; top: -9999px; width: 700px; height: auto; overflow: hidden; pointer-events: none;">
         <div id="recu-template-container" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; background-color: #fff; width: 100%; box-sizing: border-box;">
-            
-            <table style="width: 100%; border-bottom: 2px solid #4c1d95; padding-bottom: 20px; border-collapse: collapse;">
-                <tr>
-                    <td style="text-align: left; border: none;">
-                        <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #4c1d95; text-transform: uppercase; letter-spacing: 1px;">GestNotes Academy</h1>
-                        <p style="margin: 5px 0 0; font-size: 13px; color: #64748b; font-weight: 500;">Système Numérique d'Administration Scolaire</p>
-                        <p style="margin: 3px 0 0; font-size: 11px; color: #94a3b8;">Dakar, Sénégal &bull; support@gestnotes.sn</p>
-                    </td>
-                    <td style="text-align: right; border: none; vertical-align: top;">
-                        <div style="background-color: #f3e8ff; color: #4c1d95; font-weight: 700; font-size: 12px; padding: 6px 14px; border-radius: 5px; display: inline-block; text-transform: uppercase;">REÇU DE PAIEMENT</div>
-                        <p style="margin: 8px 0 0; font-size: 12px; color: #475569; font-weight: 600;">N&deg; : <span id="recu-id" style="color: #0f172a;"></span></p>
-                        <p style="margin: 3px 0 0; font-size: 12px; color: #64748b;">Date : <span id="recu-date" style="font-weight: 500;"></span></p>
-                    </td>
-                </tr>
-            </table>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #4c1d95; padding-bottom: 20px;">
+                <div>
+                    <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #4c1d95; text-transform: uppercase; letter-spacing: 1px;">GestNotes Academy</h1>
+                    <p style="margin: 5px 0 0; font-size: 13px; color: #64748b; font-weight: 500;">Système Numérique d'Administration Scolaire</p>
+                    <p style="margin: 3px 0 0; font-size: 11px; color: #94a3b8;">Dakar, Sénégal &bull; support@gestnotes.sn</p>
+                </div>
+                <div style="text-align: right;">
+                    <div style="background-color: #f3e8ff; color: #4c1d95; font-weight: 700; font-size: 12px; padding: 6px 14px; border-radius: 5px; display: inline-block; text-transform: uppercase;">REÇU DE PAIEMENT</div>
+                    <p style="margin: 8px 0 0; font-size: 12px; color: #475569; font-weight: 600;">N&deg; : <span id="recu-id" style="color: #0f172a;"></span></p>
+                    <p style="margin: 3px 0 0; font-size: 12px; color: #64748b;">Date : <span id="recu-date" style="font-weight: 500;"></span></p>
+                </div>
+            </div>
 
-            <table style="width: 100%; margin: 25px 0; background-color: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9; border-collapse: collapse;">
-                <tr>
-                    <td style="padding: 15px 20px; text-align: left; vertical-align: top; border: none; width: 50%;">
-                        <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Élève concerné</p>
-                        <p style="margin: 5px 0 0; font-size: 16px; font-weight: 700; color: #0f172a;" id="recu-eleve-nom"></p>
-                        <p style="margin: 3px 0 0; font-size: 13px; color: #475569;" id="recu-eleve-classe"></p>
-                    </td>
-                    <td style="padding: 15px 20px; text-align: right; vertical-align: top; border: none; width: 50%;">
-                        <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Année Académique</p>
-                        <p style="margin: 5px 0 0; font-size: 15px; font-weight: 700; color: #0f172a;" id="recu-annee-scolaire"></p>
-                    </td>
-                </tr>
-            </table>
+            <div style="margin: 25px 0; background-color: #f8fafc; border-radius: 8px; padding: 15px 20px; border: 1px solid #f1f5f9; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Élève concerné</p>
+                    <p style="margin: 5px 0 0; font-size: 16px; font-weight: 700; color: #0f172a;" id="recu-eleve-nom"></p>
+                    <p style="margin: 3px 0 0; font-size: 13px; color: #475569;" id="recu-eleve-classe"></p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Année Académique</p>
+                    <p style="margin: 5px 0 0; font-size: 15px; font-weight: 700; color: #0f172a;" id="recu-annee-scolaire"></p>
+                </div>
+            </div>
 
             <table style="width: 100%; border-collapse: collapse; margin-top: 25px; text-align: left;">
                 <thead>
@@ -760,33 +752,27 @@
                 </tbody>
             </table>
 
-            <div style="margin-top: 30px; text-align: right;">
-                <div style="background-color: #f8fafc; padding: 15px 25px; border-radius: 8px; border: 1px solid #e2e8f0; display: inline-block; min-width: 220px; text-align: right;">
+            <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
+                <div style="background-color: #f8fafc; padding: 15px 25px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: right; min-width: 220px;">
                     <p style="margin: 0; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Total Payé</p>
                     <p style="margin: 5px 0 0; font-size: 24px; font-weight: 700; color: #4c1d95;" id="recu-total"></p>
                 </div>
             </div>
 
-            <table style="width: 100%; margin-top: 60px; border-collapse: collapse;">
-                <tr>
-                    <td style="width: 60%; color: #94a3b8; font-size: 11px; text-align: left; border: none; padding: 0;">
-                        <p style="margin: 0; font-weight: 500;">Ce document officiel fait office de preuve de versement électronique.</p>
-                        <p style="margin: 2px 0 0;">GestNotes &bull; Solution de dématérialisation scolaire.</p>
-                    </td>
-                    <td style="width: 40%; text-align: center; border: none; padding: 0;">
-                        <div style="border-top: 1px dashed #cbd5e1; padding-top: 10px; width: 180px; margin-left: auto;">
-                            <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Le Comptable</p>
-                            <div style="margin-top: 15px; color: #cbd5e1; font-style: italic; font-size: 12px;">Signature électronique</div>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-
+            <div style="margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div style="color: #94a3b8; font-size: 11px; max-width: 60%;">
+                    <p style="margin: 0; font-weight: 500;">Ce document officiel fait office de preuve de versement électronique.</p>
+                    <p style="margin: 2px 0 0;">GestNotes &bull; Solution de dématérialisation scolaire.</p>
+                </div>
+                <div style="text-align: center; border-top: 1px dashed #cbd5e1; padding-top: 10px; width: 180px;">
+                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Le Comptable</p>
+                    <div style="margin-top: 15px; color: #cbd5e1; font-style: italic; font-size: 12px;">Signature électronique</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Implémentation de idbKeyval si absent
         if (typeof idbKeyval === 'undefined') {
             window.idbKeyval = {
                 get: async (key) => {
@@ -803,10 +789,20 @@
             };
         }
 
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker enregistré avec succès sur le scope :', reg.scope))
+                    .catch(err => console.warn('Échec d\'enregistrement du Service Worker :', err));
+            });
+        }
+
         const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
         const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
         
+        let subjectDev3Visible = {};
         let appState = null;
+        
         let currentStudentIdForFinance = null;
         let currentMonthIdxForFinance = null;
         let editingStudentId = null;
@@ -817,8 +813,8 @@
             selectedClass: "6ème",
             selectedSection: "",
             currentRole: "admin",
-            accessCode: "1234",          
-            googleSyncUrl: "",           
+            accessCode: "1234",          // Code d'accès modifiable (Admin/Comptable)
+            googleSyncUrl: "",           // URL de votre application Web Google Apps Script
             waTemplates: {
                 reminder: "Bonjour, nous vous rappelons que le paiement de {frais} de {montant} FCFA pour l'élève {eleve} ({classe}) reste attendu pour la période {periode}. Merci de votre confiance ! 🎓",
                 bulletin: "Bonjour, nous vous informons que le bulletin de {eleve} ({classe}) pour la période {periode} est disponible au secrétariat de l'école. Cordialement. 🎓",
@@ -827,33 +823,34 @@
             classes: {}
         };
 
-        // Unification de la vérification de classe primaire
         function isPrimary(className) {
-            if (!className) return false;
-            const mainClass = className.split('_')[0].toLowerCase();
-            return ["ci", "cp", "ce1", "ce2", "cm1", "cm2"].includes(mainClass) || mainClass.includes("primaire");
+            return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
         }
 
         function getPeriodLabel(className, periodNum) {
             return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
         }
 
+        // Configuration robuste de détection des classes primaires pour éviter les bugs
+        function isPrimaryResilient(className) {
+            const parts = (className || "").split('_');
+            const mainClass = parts[0].toLowerCase();
+            return mainClass.includes("primaire") || ["ci", "cp", "ce1", "ce2", "cm1", "cm2"].includes(mainClass);
+        }
+
         function getDevoirLabel(className, num) {
-            return isPrimary(className) ? `Note ${num}` : `Devoir ${num}`;
+            if (isPrimary(className)) {
+                return `Note ${num}`;
+            }
+            return `Devoir ${num}`;
         }
 
         function getCoefLabel(className) {
             return isPrimary(className) ? "Max" : "Coef";
         }
 
-        function fuzzyMatch(str1, str2) {
-            if (!str1 || !str2) return false;
-            const clean = (s) => s.toLowerCase()
-                                  .normalize("NFD")
-                                  .replace(/[\u0300-\u036f]/g, "")
-                                  .replace(/[^a-z0-9]/g, "")
-                                  .trim();
-            return clean(str1) === clean(str2);
+        function getMensualitesExpectedCount() {
+            return moisAnnee.length - 1;
         }
 
         function getSectionsForClass(cls) {
@@ -901,12 +898,18 @@
                             dev3Visible: {}
                         };
                     }
-                    if (!appState.classes[key].fees) appState.classes[key].fees = { inscription: 0, mensualite: 0 };
-                    if (!appState.classes[key].students) appState.classes[key].students = [];
+                    if (!appState.classes[key].fees) {
+                        appState.classes[key].fees = { inscription: 0, mensualite: 0 };
+                    }
+                    if (!appState.classes[key].students) {
+                        appState.classes[key].students = [];
+                    }
                     if (!appState.classes[key].subjects || appState.classes[key].subjects.length === 0) {
                         appState.classes[key].subjects = getDefaultSubjects(c);
                     }
-                    if (!appState.classes[key].dev3Visible) appState.classes[key].dev3Visible = {};
+                    if (!appState.classes[key].dev3Visible) {
+                        appState.classes[key].dev3Visible = {};
+                    }
                 });
             });
         }
@@ -916,8 +919,13 @@
             appState = savedState || DEFAULT_STATE;
             buildEmptyState();
 
-            if (appState.accessCode === undefined) appState.accessCode = "1234";
-            if (appState.googleSyncUrl === undefined) appState.googleSyncUrl = "";
+            // Migrations pour s'assurer que les nouveaux champs configurables existent
+            if (appState.accessCode === undefined) {
+                appState.accessCode = "1234";
+            }
+            if (appState.googleSyncUrl === undefined) {
+                appState.googleSyncUrl = "";
+            }
 
             const role = localStorage.getItem("gestnotes_local_role") || "admin";
             appState.currentRole = role;
@@ -929,20 +937,23 @@
                 if (tSection !== null) appState.selectedSection = tSection;
             }
 
+            if (appState.waTemplates && !appState.waTemplates.receipt) {
+                appState.waTemplates.receipt = DEFAULT_STATE.waTemplates.receipt;
+            }
+
             populateFilters();
             updateHeaderDisplays();
             applyRoleRestrictions();
             render();
 
-            // Lancement du téléchargement initial sécurisé si connecté
+            // Tenter d'exécuter la synchronisation cloud automatique au démarrage
             if (appState.googleSyncUrl) {
-                setTimeout(chargerBaseDepuisDrive, 800);
+                setTimeout(chargerBaseDepuisDrive, 1000);
             }
         }
 
         window.addEventListener('DOMContentLoaded', initApp);
 
-        // Sauvegarde locale fiable et sans récurrence asynchrone infinie
         async function saveToStorage(forceCloud = true) {
             try {
                 await idbKeyval.set("gestnotes_state", appState);
@@ -950,372 +961,24 @@
                     sauvegarderSurDrive();
                 }
             } catch (err) {
-                console.error("Erreur d'écriture locale :", err);
+                console.error("Erreur de sauvegarde locale :", err);
             }
         }
-
-
-async function sauvegarderSurDrive() {
-    if (!appState.googleSyncUrl) return;
-    const labelBtn = document.getElementById('lbl-gdrive-sync');
-    const originalText = labelBtn.innerText;
-    labelBtn.innerText = "Synchro...";
-    
-    try {
-        const response = await fetch(appState.googleSyncUrl, {
-            method: 'POST',
-            mode: 'cors',
-            redirect: 'follow', // Gère la redirection d'Apps Script
-            body: JSON.stringify(appState) // Envoi direct de l'état brut à votre doPost
-        });
-        const result = await response.json();
-        
-        if (result.status === 'success') {
-            showToast("Données synchronisées sur Google Drive !", "success");
-        } else if (result.error) {
-            showToast("Erreur de sauvegarde : " + result.error, "error");
-        } else {
-            showToast("Réponse inattendue du serveur cloud", "error");
-        }
-    } catch (err) {
-        console.error("Erreur de connexion :", err);
-        showToast("Échec de connexion au cloud", "error");
-    } finally {
-        labelBtn.innerText = originalText;
-    }
-}
-
-async function chargerBaseDepuisDrive() {
-    if (!appState.googleSyncUrl) return;
-    const labelBtn = document.getElementById('lbl-gdrive-sync');
-    const originalText = labelBtn.innerText;
-    labelBtn.innerText = "Téléchargement...";
-
-    try {
-        const response = await fetch(appState.googleSyncUrl, {
-            method: 'GET',
-            mode: 'cors',
-            redirect: 'follow'
-        });
-        const result = await response.json();
-        
-        if (result.error) {
-            showToast("Erreur lors du chargement : " + result.error, "error");
-            return;
-        }
-
-        // Si la réponse contient la structure de notre base (classes)
-        if (result && result.classes) {
-            if (Object.keys(result.classes).length === 0) {
-                showToast("Fichier cloud initialisé ou vide.", "info");
-            } else {
-                appState = result;
-                // Sauvegarde locale sans boucle de retour vers le cloud
-                await saveToStorage(false); 
-                
-                // Rafraîchissement des menus de l'interface
-                populateFilters();
-                updateHeaderDisplays();
-                applyRoleRestrictions();
-                render();
-                showToast("Base locale synchronisée depuis Drive !", "success");
-            }
-        }
-    } catch (err) {
-        console.error("Erreur de récupération cloud :", err);
-        showToast("Erreur lors de la récupération cloud", "error");
-    } finally {
-        labelBtn.innerText = originalText;
-    }
-}
-
-// Fonction appelée lors du clic sur le bouton "Synchro Cloud"
-function seConnecterAGoogleDrive() {
-    if (!appState.googleSyncUrl) {
-        showToast("Veuillez d'abord configurer l'URL Apps Script dans les réglages.", "error");
-        openModal('settings-modal');
-        return;
-    }
-    sauvegarderSurDrive();
-}
-
-
-        // ==========================================
-        // GESTION DES RÔLES & SÉCURITÉ
-        // ==========================================
-
-        function applyRoleRestrictions() {
-            const role = appState.currentRole;
-            const adminOnly = document.querySelectorAll('#btn-settings, #btn-export-base, #btn-import-base, #btn-class-fees, #btn-manage-subjects, #btn-add-student-shortcut, #btn-add-student');
-            const comptableOnly = document.querySelectorAll('#btn-wa-reminders, #btn-caisse-jour');
-            
-            // Masquer ou afficher selon les profils
-            if (role === 'admin') {
-                adminOnly.forEach(el => el.classList.remove('hidden'));
-                comptableOnly.forEach(el => el.classList.remove('hidden'));
-                document.getElementById('grades-section').style.display = 'none';
-                document.getElementById('active-teacher-indicator').classList.add('hidden');
-            } else if (role === 'comptable') {
-                adminOnly.forEach(el => el.classList.add('hidden'));
-                comptableOnly.forEach(el => el.classList.remove('hidden'));
-                document.getElementById('grades-section').style.display = 'none';
-                document.getElementById('active-teacher-indicator').classList.add('hidden');
-            } else if (role === 'enseignant') {
-                adminOnly.forEach(el => el.classList.add('hidden'));
-                comptableOnly.forEach(el => el.classList.add('hidden'));
-                document.getElementById('grades-section').style.display = 'block';
-                
-                const activeTeacher = localStorage.getItem("gestnotes_teacher_name") || "Enseignant";
-                const activeSub = localStorage.getItem("gestnotes_teacher_subject_name") || "Matière";
-                const indicator = document.getElementById('active-teacher-indicator');
-                indicator.innerText = `👨‍🏫 ${activeTeacher} (${activeSub})`;
-                indicator.classList.remove('hidden');
-            }
-            document.getElementById('role-selector').value = role;
-        }
-
-        function onRoleChange() {
-            const requestedRole = document.getElementById('role-selector').value;
-            
-            if (requestedRole === 'admin' || requestedRole === 'comptable') {
-                const code = prompt("Veuillez saisir votre code d'accès de sécurité :");
-                if (code !== appState.accessCode) {
-                    alert("Code d'accès incorrect !");
-                    document.getElementById('role-selector').value = appState.currentRole;
-                    return;
-                }
-                appState.currentRole = requestedRole;
-                localStorage.setItem("gestnotes_local_role", requestedRole);
-                applyRoleRestrictions();
-                render();
-            } else if (requestedRole === 'enseignant') {
-                openTeacherLogin();
-            }
-        }
-
-        function openTeacherLogin() {
-            const classSel = document.getElementById('t-login-class');
-            classSel.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
-            onTeacherLoginClassChange();
-            openModal('teacher-login-modal');
-        }
-
-        function onTeacherLoginClassChange() {
-            const cls = document.getElementById('t-login-class').value;
-            const sectSel = document.getElementById('t-login-section');
-            const sections = getSectionsForClass(cls);
-            sectSel.innerHTML = sections.map(s => `<option value="${s}">${s || 'Général'}</option>`).join('');
-            onTeacherLoginSectionChange();
-        }
-
-        function onTeacherLoginSectionChange() {
-            const cls = document.getElementById('t-login-class').value;
-            const sect = document.getElementById('t-login-section').value;
-            const key = `${cls}_${sect}`;
-            const subSel = document.getElementById('t-login-subject');
-            const classData = appState.classes[key];
-            
-            if (classData && classData.subjects) {
-                subSel.innerHTML = classData.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-            } else {
-                subSel.innerHTML = `<option value="">Aucune matière définie</option>`;
-            }
-        }
-
-        function submitTeacherLogin() {
-            const name = document.getElementById('t-login-name').value.trim();
-            if (!name) {
-                alert("Le nom de l'enseignant est obligatoire.");
-                return;
-            }
-            const cls = document.getElementById('t-login-class').value;
-            const sect = document.getElementById('t-login-section').value;
-            const subId = document.getElementById('t-login-subject').value;
-            
-            const key = `${cls}_${sect}`;
-            const subjectObj = appState.classes[key].subjects.find(s => s.id === subId);
-            const subName = subjectObj ? subjectObj.name : "Inconnu";
-
-            localStorage.setItem("gestnotes_teacher_name", name);
-            localStorage.setItem("gestnotes_teacher_class", cls);
-            localStorage.setItem("gestnotes_teacher_section", sect);
-            localStorage.setItem("gestnotes_teacher_subject", subId);
-            localStorage.setItem("gestnotes_teacher_subject_name", subName);
-
-            appState.currentRole = 'enseignant';
-            appState.selectedClass = cls;
-            appState.selectedSection = sect;
-            localStorage.setItem("gestnotes_local_role", "enseignant");
-
-            closeModal('teacher-login-modal');
-            populateFilters();
-            updateHeaderDisplays();
-            applyRoleRestrictions();
-            render();
-            showToast(`Connexion validée : ${name}`, "success");
-        }
-
-        function cancelTeacherLogin() {
-            closeModal('teacher-login-modal');
-            document.getElementById('role-selector').value = appState.currentRole;
-        }
-
-        // ==========================================
-        // GESTION DU SYSTÈME ACADÉMIQUE / CALCULS
-        // ==========================================
 
         function getCurrentClassKey() {
             return `${appState.selectedClass}_${appState.selectedSection}`;
         }
 
-        function calculateAverage(grades, subjects) {
-            let totalWeightedPoints = 0;
-            let totalCoefficients = 0;
-            let hasAtLeastOneGrade = false;
-
-            subjects.forEach(sub => {
-                const g = grades[sub.id];
-                if (g) {
-                    let totalNotes = 0;
-                    let countNotes = 0;
-
-                    if (g.dev1 !== undefined && g.dev1 !== null && g.dev1 !== "") { totalNotes += Number(g.dev1); countNotes++; }
-                    if (g.dev2 !== undefined && g.dev2 !== null && g.dev2 !== "") { totalNotes += Number(g.dev2); countNotes++; }
-                    if (g.dev3 !== undefined && g.dev3 !== null && g.dev3 !== "") { totalNotes += Number(g.dev3); countNotes++; }
-
-                    let averageClasswork = countNotes > 0 ? (totalNotes / countNotes) : null;
-                    let compo = (g.compo !== undefined && g.compo !== null && g.compo !== "") ? Number(g.compo) : null;
-
-                    let finalSubGrade = null;
-                    if (averageClasswork !== null && compo !== null) {
-                        finalSubGrade = (averageClasswork + compo) / 2;
-                    } else if (averageClasswork !== null) {
-                        finalSubGrade = averageClasswork;
-                    } else if (compo !== null) {
-                        finalSubGrade = compo;
-                    }
-
-                    if (finalSubGrade !== null) {
-                        totalWeightedPoints += (finalSubGrade * Number(sub.coef));
-                        totalCoefficients += Number(sub.coef);
-                        hasAtLeastOneGrade = true;
-                    }
-                }
-            });
-
-            return hasAtLeastOneGrade ? (totalWeightedPoints / totalCoefficients).toFixed(2) : "N/A";
-        }
-
-        function render() {
-            const key = getCurrentClassKey();
-            const classData = appState.classes[key] || { students: [], fees: { inscription: 0, mensualite: 0 } };
-            
-            document.getElementById('class-badge').innerText = `${appState.selectedClass} ${appState.selectedSection || 'Général'}`;
-            document.getElementById('filter-effectif').value = classData.students.length;
-            document.getElementById('student-count').innerText = `${classData.students.length} élève(s) inscrit(s)`;
-
-            // Remplissage finances
-            let totalExpected = 0;
-            let totalCollected = 0;
-
-            classData.students.forEach(st => {
-                st.payments.forEach(p => {
-                    totalExpected += Number(p.montantDu || 0);
-                    totalCollected += Number(p.montantPaye || 0);
-                });
-            });
-
-            const remaining = totalExpected - totalCollected;
-            const rate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
-
-            document.getElementById('stats-total-attendu').innerText = totalExpected.toLocaleString() + " F";
-            document.getElementById('stats-total-encaisse').innerText = totalCollected.toLocaleString() + " F";
-            document.getElementById('stats-reste-recouvrer').innerText = remaining.toLocaleString() + " F";
-            document.getElementById('stats-taux-recouvrement').innerText = rate + "%";
-
-            renderStudentsList(classData.students, classData.subjects);
-            
-            if (appState.currentRole === 'enseignant') {
-                renderGradesGrid();
-            }
-        }
-
-        function renderStudentsList(students, subjects) {
-            const tbody = document.getElementById('students-table-body');
-            const emptyState = document.getElementById('empty-state');
-            tbody.innerHTML = "";
-
-            if (students.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
-            }
-            emptyState.classList.add('hidden');
-
-            students.forEach(st => {
-                const avg = calculateAverage(st.grades, subjects);
-                const avgStyle = avg === "N/A" ? 'text-slate-400' : (Number(avg) >= 10 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold');
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-colors";
-                tr.innerHTML = `
-                    <td class="py-3.5 px-5 font-semibold text-slate-900">${st.firstname} ${st.lastname}</td>
-                    <td class="py-3.5 px-5 text-center ${avgStyle}">${avg}</td>
-                    <td class="py-3.5 px-5 text-right flex justify-end gap-2">
-                        <button onclick="ouvrirSuiviFinancier('${st.id}')" class="p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold flex items-center gap-1">
-                            <i class="fa-solid fa-wallet"></i> Paiements
-                        </button>
-                        <button onclick="ouvrirBulletin('${st.id}')" class="p-2 bg-violet-50 hover:bg-violet-100 text-[#4c1d95] rounded-lg text-xs font-semibold flex items-center gap-1">
-                            <i class="fa-solid fa-file-invoice"></i> Bulletin
-                        </button>
-                        <button onclick="openEditStudent('${st.id}')" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs" title="Modifier fiche élève">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button onclick="demanderSupprimerEleve('${st.id}')" class="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs" title="Supprimer">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // ==========================================
-        // CONFIGURATIONS ET INSCRIPTIONS
-        // ==========================================
-
         function populateFilters() {
             const classSelect = document.getElementById('filter-class');
-            if (!classSelect) return;
-            const role = appState.currentRole;
-
-            if (role === 'enseignant') {
-                const assigned = getTeacherAssignedClasses();
-                if (assigned.length > 0) {
-                    const uniqueClasses = [...new Set(assigned.map(item => item.class))];
-                    classSelect.innerHTML = uniqueClasses.map(c => `<option value="${c}" ${appState.selectedClass===c?'selected':''}>${c}</option>`).join('');
-                }
-            } else {
-                classSelect.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass===c?'selected':''}>${c}</option>`).join('');
-            }
+            classSelect.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass===c?'selected':''}>${c}</option>`).join('');
             updateSectionFilterOptions();
         }
 
         function updateSectionFilterOptions() {
             const sectSelect = document.getElementById('filter-section');
-            if (!sectSelect) return;
-            const role = appState.currentRole;
-
-            if (role === 'enseignant') {
-                const assigned = getTeacherAssignedClasses();
-                const filteredSections = assigned
-                    .filter(item => item.class === appState.selectedClass)
-                    .map(item => item.section);
-
-                sectSelect.innerHTML = filteredSections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>${s || 'Général'}</option>`).join('');
-            } else {
-                const sections = getSectionsForClass(appState.selectedClass);
-                sectSelect.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>${s || 'Général'}</option>`).join('');
-            }
+            const sections = getSectionsForClass(appState.selectedClass);
+            sectSelect.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection===s?'selected':''}>${s || 'Général'}</option>`).join('');
         }
 
         function updateHeaderDisplays() {
@@ -1327,12 +990,6 @@ function seConnecterAGoogleDrive() {
             appState.selectedClass = document.getElementById('filter-class').value;
             appState.selectedSection = "";
             updateSectionFilterOptions();
-            
-            const sectSelect = document.getElementById('filter-section');
-            if (sectSelect) {
-                appState.selectedSection = sectSelect.value;
-            }
-            
             updateHeaderDisplays();
             render();
         }
@@ -1348,8 +1005,29 @@ function seConnecterAGoogleDrive() {
                 document.getElementById('settings-year').value = appState.currentYear;
                 updateSettingsPeriodSelect();
                 populateRolloverSelector();
+
+                // Hydrater les nouveaux champs configurables
                 document.getElementById('settings-access-code').value = appState.accessCode || "1234";
                 document.getElementById('settings-gdrive-sync-url').value = appState.googleSyncUrl || "";
+
+                // Filtrage des éléments de configuration visibles pour l'enseignant
+                const role = localStorage.getItem("gestnotes_local_role") || "admin";
+                const yearContainer = document.getElementById('settings-year-container');
+                const rolloverContainer = document.getElementById('settings-rollover-container');
+                const accessCodeContainer = document.getElementById('settings-access-code-container');
+                const googleSyncContainer = document.getElementById('settings-gdrive-sync-url-container');
+
+                if (role === 'enseignant') {
+                    if (yearContainer) yearContainer.classList.add('hidden');
+                    if (rolloverContainer) rolloverContainer.classList.add('hidden');
+                    if (accessCodeContainer) accessCodeContainer.classList.add('hidden');
+                    if (googleSyncContainer) googleSyncContainer.classList.add('hidden');
+                } else {
+                    if (yearContainer) yearContainer.classList.remove('hidden');
+                    if (rolloverContainer) rolloverContainer.classList.remove('hidden');
+                    if (accessCodeContainer) accessCodeContainer.classList.remove('hidden');
+                    if (googleSyncContainer) googleSyncContainer.classList.remove('hidden');
+                }
             }
         }
 
@@ -1375,7 +1053,8 @@ function seConnecterAGoogleDrive() {
         }
 
         async function saveSettings() {
-            const role = appState.currentRole;
+            const role = localStorage.getItem("gestnotes_local_role") || "admin";
+            const oldSyncUrl = appState.googleSyncUrl;
             if (role !== 'enseignant') {
                 appState.currentYear = document.getElementById('settings-year').value;
                 appState.accessCode = document.getElementById('settings-access-code').value.trim() || "1234";
@@ -1383,11 +1062,17 @@ function seConnecterAGoogleDrive() {
             }
             appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
 
-            await saveToStorage(true);
+            await saveToStorage(false);
+            
             updateHeaderDisplays();
             closeModal('settings-modal');
             render();
-            showToast("Configurations enregistrées !", "success");
+            
+            if (appState.googleSyncUrl && appState.googleSyncUrl !== oldSyncUrl) {
+                chargerBaseDepuisDrive();
+            } else {
+                showToast("Configurations appliquées !", "success");
+            }
         }
 
         function openClassFeesModal() {
@@ -1406,7 +1091,7 @@ function seConnecterAGoogleDrive() {
                 inscription: parseInt(document.getElementById('class-fee-inscription').value) || 0,
                 mensualite: parseInt(document.getElementById('class-fee-mensualite').value) || 0
             };
-            saveToStorage(true);
+            saveToStorage();
             closeModal('class-fees-modal');
             showToast("Tarifs mis à jour !", "success");
             render();
@@ -1506,9 +1191,10 @@ function seConnecterAGoogleDrive() {
                 appState.classes[newKey].students.push(newStudent);
             }
             
-            saveToStorage(true);
+            saveToStorage();
             closeModal('registration-modal');
-            showToast("Élève enregistré !", "success");
+            showToast("Élève enregistré avec succès !", "success");
+            
             populateFilters();
             updateHeaderDisplays();
             render();
@@ -1544,124 +1230,152 @@ function seConnecterAGoogleDrive() {
             openModal('registration-modal');
         }
 
-        function demanderSupprimerEleve(studentId) {
-            document.getElementById('confirm-modal-title').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Suppression`;
-            document.getElementById('confirm-modal-message').innerText = "Voulez-vous supprimer définitivement la fiche de cet élève ainsi que l'ensemble de ses notes ?";
-            
-            const btn = document.getElementById('confirm-modal-btn');
-            btn.className = "bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm";
-            btn.onclick = function() {
-                for (let k in appState.classes) {
-                    let idx = appState.classes[k].students.findIndex(s => s.id === studentId);
-                    if (idx !== -1) {
-                        appState.classes[k].students.splice(idx, 1);
-                        break;
-                    }
-                }
-                saveToStorage(true);
-                closeModal('confirm-modal');
-                render();
-                showToast("Élève supprimé.", "info");
-            };
-            openModal('confirm-modal');
+        function Bronx_redirigerVersMensualites() {
+            if (!editingStudentId) return;
+            closeModal('registration-modal');
+            openMensualitesModal(editingStudentId);
         }
 
-        function getTeacherAssignedClasses() {
-            const name = (localStorage.getItem("gestnotes_teacher_name") || "").trim();
-            if (!name) return [];
-            const list = [];
-            for (let key in appState.classes) {
-                const parts = key.split('_');
-                const hasSub = appState.classes[key].subjects.some(s => fuzzyMatch(s.teacherName, name));
-                if (hasSub) {
-                    list.push({ class: parts[0], section: parts[1] || "" });
-                }
-            }
-            return list;
-        }
-
-        // ==========================================
-        // GESTION COMPTABLE ET JOURNAL DE CAISSE
-        // ==========================================
-
-        function ouvrirSuiviFinancier(studentId) {
+        function openMensualitesModal(studentId) {
             currentStudentIdForFinance = studentId;
             let student = null;
-            let currentKey = "";
+            let classKey = "";
+            
             for (let k in appState.classes) {
                 student = appState.classes[k].students.find(s => s.id === studentId);
-                if (student) { currentKey = k; break; }
+                if (student) { classKey = k; break; }
             }
             if (!student) return;
 
+            const parts = classKey.split('_');
             document.getElementById('mens-student-name').innerText = `${student.firstname} ${student.lastname}`;
-            const parts = currentKey.split('_');
-            document.getElementById('mens-student-class').innerText = `${parts[0]} ${parts[1] || ''}`;
+            document.getElementById('mens-student-class').innerText = parts[0] + " " + (parts[1] || "");
+
+            const previousIndicator = document.getElementById('mens-student-previous');
+            if (student.previousClassName) {
+                if (previousIndicator) {
+                    previousIndicator.innerHTML = `<span class="bg-violet-100 text-[#4c1d95] text-[10px] px-2.5 py-1 rounded-lg font-bold border border-violet-200">Profil promu de : ${student.previousClassName}</span>`;
+                    previousIndicator.classList.remove('hidden');
+                }
+            } else if (student.previousStudentId) {
+                let prevClassKey = "";
+                let prevStudent = null;
+                for (let k in appState.classes) {
+                    prevStudent = appState.classes[k].students.find(oldS => oldS.id === student.previousStudentId);
+                    if (prevStudent) { prevClassKey = k; break; }
+                }
+                if (prevStudent) {
+                    const prevParts = prevClassKey.split('_');
+                    const prevClassDisplayName = prevParts[0] + " " + (prevParts[1] || "");
+                    if (previousIndicator) {
+                        previousIndicator.innerHTML = `<span class="bg-violet-100 text-[#4c1d95] text-[10px] px-2.5 py-1 rounded-lg font-bold border border-violet-200">Profil promu de : ${prevClassDisplayName}</span>`;
+                        previousIndicator.classList.remove('hidden');
+                    }
+                } else {
+                    if (previousIndicator) previousIndicator.classList.add('hidden');
+                }
+            } else {
+                if (previousIndicator) previousIndicator.classList.add('hidden');
+            }
+
+            const targetFees = appState.classes[classKey].fees || { inscription: 0, mensualite: 0 };
+            if (!student.payments || student.payments.length === 0) {
+                student.payments = moisAnnee.map((m, idx) => ({
+                    designation: m,
+                    statut: "Non payé",
+                    montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
+                    montantPaye: 0,
+                    methode: "",
+                    dateEncaissement: ""
+                }));
+            } else {
+                student.payments.forEach((p, idx) => {
+                    if (p.statut === "Non payé") {
+                        if (idx === 0) {
+                            p.montantDu = targetFees.inscription || 0;
+                        } else if (p.designation !== 'Dette Antérieure') {
+                            p.montantDu = targetFees.mensualite || 0;
+                        }
+                    }
+                });
+            }
 
             renderMensualitesList(student);
-            closeModal('registration-modal');
             openModal('mensualites-modal');
         }
 
-        function redirigerVersMensualites() {
-            if (editingStudentId) {
-                ouvrirSuiviFinancier(editingStudentId);
-            }
-        }
-
         function renderMensualitesList(student) {
+            let totalDueScolarite = 0;
+            let totalPaye = 0;
+            let insFee = student.payments[0].montantDu || 0;
+
             const tbody = document.getElementById('mensualites-list-tbody');
             tbody.innerHTML = "";
 
-            let totalAttendu = 0;
-            let totalEncaiss = 0;
-            let insPay = 0;
-            let insDue = 0;
-
             student.payments.forEach((p, idx) => {
-                totalAttendu += Number(p.montantDu || 0);
-                totalEncaiss += Number(p.montantPaye || 0);
+                if (idx > 0) totalDueScolarite += p.montantDu;
+                totalPaye += p.montantPaye;
 
-                if (idx === 0) {
-                    insPay = Number(p.montantPaye || 0);
-                    insDue = Number(p.montantDu || 0);
+                let badgeColor = "bg-rose-100 text-rose-800 border-rose-200";
+                if (p.statut === "Payé") badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-200";
+                
+                let actionsHTML = "";
+                if (p.statut === "Non payé") {
+                    actionsHTML = `
+                        <button onclick="openEncaissementModal(${idx})" class="bg-[#22c55e] hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm">
+                            <i class="fa-solid fa-cash-register mr-1"></i> Encaisser
+                        </button>
+                    `;
+                } else {
+                    actionsHTML = `
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="imprimerRecu('${student.id}', ${idx})" class="text-indigo-600 hover:bg-indigo-50 border border-slate-200 p-1.5 rounded-lg transition-all" title="Imprimer le Reçu PDF">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
+                            <button onclick="partagerWhatsApp('${student.id}', ${idx})" class="text-emerald-600 hover:bg-emerald-50 border border-slate-200 p-1.5 rounded-lg transition-all" title="Notifier par WhatsApp">
+                                <i class="fa-brands fa-whatsapp font-bold"></i>
+                            </button>
+                            <button onclick="annulerPaiementMois('${student.id}', ${idx})" class="text-rose-600 hover:bg-rose-50 border border-slate-200 p-1.5 rounded-lg transition-all" title="Annuler le règlement">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                        </div>
+                    `;
                 }
 
-                const remains = Number(p.montantDu || 0) - Number(p.montantPaye || 0);
-                const isPaid = remains <= 0;
-                const statusClass = isPaid ? 'bg-emerald-100 text-emerald-800' : (Number(p.montantPaye) > 0 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800');
-                const statusLabel = isPaid ? 'Réglé' : (Number(p.montantPaye) > 0 ? 'Partiel' : 'Non payé');
+                let designationLabel = '';
+                if (p.designation === 'Inscription') {
+                    designationLabel = 'Frais d\'inscription';
+                } else if (p.designation === 'Dette Antérieure') {
+                    designationLabel = 'Dette de l\'année précédente';
+                } else {
+                    designationLabel = 'Mensualité ' + p.designation;
+                }
 
                 const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 transition-colors";
                 tr.innerHTML = `
-                    <td class="px-4 py-3 font-semibold">${p.designation}</td>
+                    <td class="px-4 py-3 text-left font-bold text-slate-700">${designationLabel}</td>
                     <td class="px-4 py-3 text-center">
-                        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${statusClass}">${statusLabel}</span>
+                        <span class="px-2.5 py-1 border text-xs rounded-full font-bold uppercase tracking-wider ${badgeColor}">${p.statut}</span>
                     </td>
-                    <td class="px-4 py-3 text-right font-mono">${p.montantPaye.toLocaleString()} / ${p.montantDu.toLocaleString()} F</td>
-                    <td class="px-4 py-3 text-center text-xs font-medium text-slate-500">${p.methode || '-'}</td>
-                    <td class="px-4 py-3 text-center text-xs font-mono text-slate-500">${p.dateEncaissement || '-'}</td>
-                    <td class="px-4 py-3 text-center flex justify-center gap-1.5">
-                        <button onclick="ouvrirPayerModal(${idx})" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1">
-                            Encaisser
-                        </button>
-                        ${Number(p.montantPaye) > 0 ? `
-                            <button onclick="genererRecuPDF('${student.id}', ${idx})" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs" title="Générer le reçu">
-                                <i class="fa-solid fa-receipt"></i> Recu
-                            </button>
-                        ` : ''}
-                    </td>
+                    <td class="px-4 py-3 text-right font-extrabold ${p.montantPaye > 0 ? 'text-slate-900' : 'text-slate-400'}">${p.montantPaye.toLocaleString()} F</td>
+                    <td class="px-4 py-3 text-center text-xs font-semibold text-slate-600">${p.methode || '-'}</td>
+                    <td class="px-4 py-3 text-center text-xs text-slate-500">${p.dateEncaissement || '-'}</td>
+                    <td class="px-4 py-3 text-center">${actionsHTML}</td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            document.getElementById('bilan-inscription').innerText = `${insPay.toLocaleString()} / ${insDue.toLocaleString()} F`;
-            document.getElementById('bilan-scolarite-fixee').innerText = (totalAttendu - insDue).toLocaleString() + " F";
-            document.getElementById('bilan-total-paye').innerText = totalCollected = totalEncaiss.toLocaleString() + " F";
-            document.getElementById('bilan-reste-payer').innerText = (totalAttendu - totalEncaiss).toLocaleString() + " F";
+            document.getElementById('bilan-inscription').innerText = insFee.toLocaleString() + " F";
+            document.getElementById('bilan-scolarite-fixee').innerText = totalDueScolarite.toLocaleString() + " F";
+            document.getElementById('bilan-total-paye').innerText = totalPaye.toLocaleString() + " F";
+            
+            let totalGlobalDu = insFee + totalDueScolarite;
+            let resteAPayer = totalGlobalDu - totalPaye;
+            document.getElementById('bilan-reste-payer').innerText = resteAPayer.toLocaleString() + " F";
         }
 
-        function ouvrirPayerModal(monthIdx) {
+        function openEncaissementModal(monthIdx) {
             currentMonthIdxForFinance = monthIdx;
             let student = null;
             for (let k in appState.classes) {
@@ -1671,539 +1385,1651 @@ function seConnecterAGoogleDrive() {
             if (!student) return;
 
             const p = student.payments[monthIdx];
-            const remains = Number(p.montantDu || 0) - Number(p.montantPaye || 0);
-
-            document.getElementById('encaissement-mois-titre').innerText = p.designation;
-            document.getElementById('encaissement-montant-input').value = remains;
+            let titleText = "";
+            if (p.designation === 'Inscription') {
+                titleText = 'Frais d\'Inscription';
+            } else if (p.designation === 'Dette Antérieure') {
+                titleText = 'Dette de l\'année précédente';
+            } else {
+                titleText = 'Mensualité de ' + p.designation;
+            }
+            document.getElementById('encaissement-mois-titre').innerText = titleText;
+            document.getElementById('encaissement-montant-input').value = p.montantDu;
             openModal('encaissement-modal');
         }
 
         function validerEncaissement() {
             let student = null;
-            let currentKey = "";
             for (let k in appState.classes) {
                 student = appState.classes[k].students.find(s => s.id === currentStudentIdForFinance);
-                if (student) { currentKey = k; break; }
+                if (student) break;
             }
             if (!student) return;
 
             const amt = parseInt(document.getElementById('encaissement-montant-input').value) || 0;
             const method = document.getElementById('encaissement-methode-select').value;
-            const p = student.payments[currentMonthIdxForFinance];
-
-            const totalNew = Number(p.montantPaye || 0) + amt;
-            if (totalNew > Number(p.montantDu)) {
-                alert("Le montant encaissé dépasse le reste dû.");
+            
+            if (amt <= 0) {
+                showToast("Le montant doit être supérieur à 0 F.", "info");
                 return;
             }
 
-            p.montantPaye = totalNew;
+            const p = student.payments[currentMonthIdxForFinance];
+            p.montantPaye = amt;
+            p.statut = "Payé";
             p.methode = method;
             
             const today = new Date();
-            p.dateEncaissement = today.toLocaleDateString('fr-FR');
-            p.statut = (p.montantPaye >= p.montantDu) ? "Payé" : "Partiel";
+            p.dateEncaissement = today.toLocaleDateString('fr-FR') + " " + today.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
 
-            saveToStorage(true);
+            saveToStorage();
             closeModal('encaissement-modal');
+            showToast(`Encaissement validé (${method}) !`, "success");
             renderMensualitesList(student);
             render();
-            showToast("Paiement enregistré !", "success");
         }
 
-        function genererRecuPDF(studentId, paymentIdx) {
+        function annulerPaiementMois(studentId, monthIdx) {
             let student = null;
-            let currentKey = "";
             for (let k in appState.classes) {
                 student = appState.classes[k].students.find(s => s.id === studentId);
-                if (student) { currentKey = k; break; }
+                if (student) break;
             }
             if (!student) return;
 
-            const p = student.payments[paymentIdx];
-            const parts = currentKey.split('_');
+            const p = student.payments[monthIdx];
+            
+            askConfirmation(
+                `Annuler ce versement ? Les informations de règlement pour la période "${p.designation}" seront définitivement effacées.`,
+                `<i class="fa-solid fa-rotate-left text-amber-600"></i> Annuler le versement`,
+                function() {
+                    p.montantPaye = 0;
+                    p.statut = "Non payé";
+                    p.methode = "";
+                    p.dateEncaissement = "";
 
-            document.getElementById('recu-id').innerText = `REC-${Date.now().toString().substring(7)}`;
-            document.getElementById('recu-date').innerText = p.dateEncaissement || new Date().toLocaleDateString('fr-FR');
+                    saveToStorage();
+                    showToast("Règlement réinitialisé.", "info");
+                    renderMensualitesList(student);
+                }
+            );
+        }
+
+        function imprimerRecu(studentId, monthIdx) {
+            let student = null;
+            let classKey = "";
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === studentId);
+                if (student) { classKey = k; break; }
+            }
+            if (!student) return;
+
+            const p = student.payments[monthIdx];
+            const parts = classKey.split('_');
+
+            document.getElementById('recu-id').innerText = `GN-${Date.now().toString().slice(-6)}`;
+            document.getElementById('recu-date').innerText = p.dateEncaissement.split(' ')[0];
             document.getElementById('recu-eleve-nom').innerText = `${student.firstname} ${student.lastname}`;
-            document.getElementById('recu-eleve-classe').innerText = `Classe: ${parts[0]} ${parts[1] || ''}`;
+            document.getElementById('recu-eleve-classe').innerText = `Classe : ${parts[0]} ${parts[1] || ''}`;
             document.getElementById('recu-annee-scolaire').innerText = appState.currentYear;
-            document.getElementById('recu-designation').innerText = p.designation === "Inscription" ? "Frais d'inscription de rentrée" : `Mensualité de scolarité - ${p.designation}`;
-            document.getElementById('recu-methode').innerText = p.methode || "Espèces";
+            
+            let designationText = "";
+            if (p.designation === 'Inscription') {
+                designationText = 'Frais d\'inscription scolaire';
+            } else if (p.designation === 'Dette Antérieure') {
+                designationText = 'Règlement dette de l\'année précédente';
+            } else {
+                designationText = `Frais de scolarité - Mois de ${p.designation}`;
+            }
+            document.getElementById('recu-designation').innerText = designationText;
+            document.getElementById('recu-methode').innerText = p.methode;
             document.getElementById('recu-montant').innerText = `${p.montantPaye.toLocaleString()} FCFA`;
             document.getElementById('recu-total').innerText = `${p.montantPaye.toLocaleString()} FCFA`;
 
-            const element = document.getElementById('recu-template-container');
-            const opt = {
+            const source = document.getElementById('recu-template-container');
+            const clone = source.cloneNode(true);
+            
+            clone.style.position = 'absolute';
+            clone.style.left = '0px';
+            clone.style.top = '0px';
+            clone.style.width = '700px';
+            clone.style.zIndex = '-9999';
+            clone.style.backgroundColor = '#ffffff';
+            
+            document.body.appendChild(clone);
+
+            const options = {
                 margin: 10,
-                filename: `Recu_${student.lastname}_${p.designation}.pdf`,
+                filename: `Recu_${p.designation}_${student.lastname}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0, scrollX: 0 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().from(element).save();
-        }
-
-        function openCaisseJourModal() {
-            document.getElementById('caisse-filter-date').value = new Date().toISOString().substring(0, 10);
-            renderCaisseJour();
-            openModal('caisse-modal');
-        }
-
-        function renderCaisseJour() {
-            const filterDate = document.getElementById('caisse-filter-date').value;
-            const filterMethod = document.getElementById('caisse-filter-method').value;
-            const tbody = document.getElementById('caisse-list-tbody');
-            tbody.innerHTML = "";
-
-            let globalTotal = 0;
-            const formattedDate = filterDate ? new Date(filterDate).toLocaleDateString('fr-FR') : "";
-
-            for (let k in appState.classes) {
-                const parts = k.split('_');
-                appState.classes[k].students.forEach(st => {
-                    st.payments.forEach(p => {
-                        if (p.dateEncaissement) {
-                            const matchDate = !formattedDate || p.dateEncaissement === formattedDate;
-                            const matchMethod = filterMethod === 'ALL' || p.methode === filterMethod;
-
-                            if (matchDate && matchMethod) {
-                                globalTotal += Number(p.montantPaye || 0);
-                                const tr = document.createElement('tr');
-                                tr.innerHTML = `
-                                    <td class="px-4 py-2 font-mono">${p.dateEncaissement}</td>
-                                    <td class="px-4 py-2 font-semibold">${st.firstname} ${st.lastname}</td>
-                                    <td class="px-4 py-2">${parts[0]} ${parts[1] || ''}</td>
-                                    <td class="px-4 py-2 font-semibold text-slate-600">${p.designation}</td>
-                                    <td class="px-4 py-2 text-center"><span class="px-2 py-0.5 rounded bg-slate-100 font-bold">${p.methode}</span></td>
-                                    <td class="px-4 py-2 text-right font-bold text-indigo-700">${p.montantPaye.toLocaleString()} F</td>
-                                `;
-                                tbody.appendChild(tr);
-                            }
-                        }
-                    });
-                });
-            }
-            document.getElementById('caisse-filtered-total').innerText = globalTotal.toLocaleString() + " F";
-        }
-
-        // ==========================================
-        // GESTION DES NOTES ET DISCIPLINES
-        // ==========================================
-
-        function renderGradesGrid() {
-            const key = getCurrentClassKey();
-            const classData = appState.classes[key];
-            const tbody = document.getElementById('grades-table-body');
-            tbody.innerHTML = "";
-
-            const activeSubId = localStorage.getItem("gestnotes_teacher_subject");
-            if (!activeSubId || !classData) return;
-
-            // Remplissage du selecteur de disciplines de l'enseignant
-            const subSelect = document.getElementById('grade-subject-select');
-            const teacherName = localStorage.getItem("gestnotes_teacher_name");
-            const teacherSubjects = classData.subjects.filter(s => fuzzyMatch(s.teacherName, teacherName));
-            
-            subSelect.innerHTML = teacherSubjects.map(s => `<option value="${s.id}" ${s.id===activeSubId?'selected':''}>${s.name}</option>`).join('');
-
-            // Contrôle Devoir 3
-            const showDev3 = classData.dev3Visible && classData.dev3Visible[activeSubId];
-            document.getElementById('lbl-th-dev3').style.display = showDev3 ? 'table-cell' : 'none';
-
-            // Affichage des libellés selon type classe
-            document.getElementById('lbl-th-dev1').innerText = getDevoirLabel(appState.selectedClass, 1);
-            document.getElementById('lbl-th-dev2').innerText = getDevoirLabel(appState.selectedClass, 2);
-            document.getElementById('lbl-th-compo').innerText = isPrimary(appState.selectedClass) ? "Composition" : "Composition";
-
-            let sumGrades = 0, countGrades = 0, maxGrade = -1, minGrade = 21, countPass = 0, totalEligible = 0;
-
-            classData.students.forEach(st => {
-                const gr = st.grades[activeSubId] || { dev1: "", dev2: "", dev3: "", compo: "" };
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-3 text-left font-semibold text-slate-800">${st.firstname} ${st.lastname}</td>
-                    <td class="p-3 text-center"><input type="number" step="0.25" min="0" max="20" value="${gr.dev1}" onchange="saveStudentGrade('${st.id}', 'dev1', this.value)" class="text-center font-bold w-16 border rounded p-1"></td>
-                    <td class="p-3 text-center"><input type="number" step="0.25" min="0" max="20" value="${gr.dev2}" onchange="saveStudentGrade('${st.id}', 'dev2', this.value)" class="text-center font-bold w-16 border rounded p-1"></td>
-                    <td class="p-3 text-center" style="display: ${showDev3 ? 'table-cell' : 'none'};"><input type="number" step="0.25" min="0" max="20" value="${gr.dev3||''}" onchange="saveStudentGrade('${st.id}', 'dev3', this.value)" class="text-center font-bold w-16 border rounded p-1"></td>
-                    <td class="p-3 text-center"><input type="number" step="0.25" min="0" max="20" value="${gr.compo}" onchange="saveStudentGrade('${st.id}', 'compo', this.value)" class="text-center font-bold w-16 border rounded p-1 bg-violet-50"></td>
-                `;
-                tbody.appendChild(tr);
-
-                // Statistiques globales de discipline
-                let notes = [];
-                if (gr.dev1 !== "") notes.push(Number(gr.dev1));
-                if (gr.dev2 !== "") notes.push(Number(gr.dev2));
-                if (showDev3 && gr.dev3 !== "") notes.push(Number(gr.dev3));
-
-                let classworkAvg = notes.length > 0 ? (notes.reduce((a,b)=>a+b, 0) / notes.length) : null;
-                let compVal = gr.compo !== "" ? Number(gr.compo) : null;
-
-                let disciplineAvg = null;
-                if (classworkAvg !== null && compVal !== null) {
-                    disciplineAvg = (classworkAvg + compVal) / 2;
-                } else if (classworkAvg !== null) {
-                    disciplineAvg = classworkAvg;
-                } else if (compVal !== null) {
-                    disciplineAvg = compVal;
-                }
-
-                if (disciplineAvg !== null) {
-                    sumGrades += disciplineAvg;
-                    countGrades++;
-                    if (disciplineAvg > maxGrade) maxGrade = disciplineAvg;
-                    if (disciplineAvg < minGrade) minGrade = disciplineAvg;
-                    if (disciplineAvg >= 10) countPass++;
-                    totalEligible++;
-                }
+            html2pdf().set(options).from(clone).save().then(() => {
+                clone.remove();
             });
-
-            document.getElementById('sub-stats-average').innerText = countGrades > 0 ? (sumGrades / countGrades).toFixed(2) + " /20" : "N/A";
-            document.getElementById('sub-stats-max').innerText = maxGrade !== -1 ? maxGrade.toFixed(2) + " /20" : "N/A";
-            document.getElementById('sub-stats-min').innerText = minGrade !== 21 ? minGrade.toFixed(2) + " /20" : "N/A";
-            document.getElementById('sub-stats-rate').innerText = totalEligible > 0 ? Math.round((countPass / totalEligible) * 100) + "%" : "N/A";
         }
 
-        function saveStudentGrade(studentId, field, value) {
-            const key = getCurrentClassKey();
-            const activeSubId = localStorage.getItem("gestnotes_teacher_subject");
-            const student = appState.classes[key].students.find(s => s.id === studentId);
-            
-            if (student) {
-                if (!student.grades[activeSubId]) {
-                    student.grades[activeSubId] = { dev1: "", dev2: "", dev3: "", compo: "" };
-                }
-                student.grades[activeSubId][field] = value !== "" ? Number(value) : "";
-                saveToStorage(true);
-                renderGradesGrid();
+        function partagerWhatsApp(studentId, monthIdx) {
+            let student = null;
+            let classKey = "";
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === studentId);
+                if (student) { classKey = k; break; }
             }
-        }
+            if (!student || !student.phone) {
+                showToast("Aucun numéro parent configuré sur la fiche de cet élève.", "info");
+                return;
+            }
 
-        function goToNextSubject() {
-            const key = getCurrentClassKey();
-            const classData = appState.classes[key];
-            const activeSubId = localStorage.getItem("gestnotes_teacher_subject");
-            const teacherName = localStorage.getItem("gestnotes_teacher_name");
-            const teacherSubjects = classData.subjects.filter(s => fuzzyMatch(s.teacherName, teacherName));
+            try {
+                imprimerRecu(studentId, monthIdx);
+            } catch (err) {
+                console.error("Erreur lors de la génération automatique du reçu :", err);
+            }
 
-            const currentIdx = teacherSubjects.findIndex(s => s.id === activeSubId);
-            if (currentIdx !== -1 && currentIdx < teacherSubjects.length - 1) {
-                const nextSub = teacherSubjects[currentIdx + 1];
-                localStorage.setItem("gestnotes_teacher_subject", nextSub.id);
-                localStorage.setItem("gestnotes_teacher_subject_name", nextSub.name);
-                renderGradesGrid();
+            const p = student.payments[monthIdx];
+            const classNameDisplay = classKey.replace('_', ' ');
+            let typeFrais = "";
+            if (p.designation === 'Inscription') {
+                typeFrais = "Frais d'inscription";
+            } else if (p.designation === 'Dette Antérieure') {
+                typeFrais = "Dette de l'année précédente";
             } else {
-                showToast("Dernière matière assignée atteinte.", "info");
+                typeFrais = `Mensualité de ${p.designation}`;
             }
+
+            let totalDu = student.payments.reduce((acc, curr) => acc + (curr.montantDu || 0), 0);
+            let totalPaye = student.payments.reduce((acc, curr) => acc + (curr.montantPaye || 0), 0);
+            let resteAPayer = Math.max(0, totalDu - totalPaye);
+
+            const tpl = appState.waTemplates.receipt || "Bonjour, nous confirmons le règlement pour l'élève {eleve} ({classe}) d'un montant de {montant} FCFA au titre de : {frais} ({methode}) le {date}. Reste à payer global : {solde} FCFA. Merci de votre confiance ! 🎓";
+            let msg = tpl
+                .replace(/{eleve}/g, `${student.firstname} ${student.lastname.toUpperCase()}`)
+                .replace(/{classe}/g, classNameDisplay)
+                .replace(/{frais}/g, typeFrais)
+                .replace(/{montant}/g, p.montantPaye.toLocaleString())
+                .replace(/{methode}/g, p.methode)
+                .replace(/{date}/g, p.dateEncaissement.split(' ')[0])
+                .replace(/{solde}/g, resteAPayer.toLocaleString());
+            
+            let purePhone = student.phone.replace(/\D/g, ''); 
+            if (purePhone.startsWith('00221')) {
+                purePhone = purePhone.substring(2);
+            } else if (purePhone.length === 9) {
+                purePhone = "221" + purePhone;
+            }
+
+            const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(msg)}`;
+            
+            alert(`ℹ️ Reçu PDF officiel téléchargé !\n\nLe reçu de paiement a été enregistré sur votre appareil.\n\nVous allez maintenant être redirigé vers WhatsApp. Veuillez joindre ce fichier PDF téléchargé en tant que pièce jointe (ou par glisser-déposer) dans la discussion avec le parent.`);
+
+            window.open(url, '_blank');
         }
 
         function openSubjectsModal() {
             const key = getCurrentClassKey();
-            const classData = appState.classes[key];
-            document.getElementById('lbl-subjects-title').innerText = `Disciplines - ${appState.selectedClass} ${appState.selectedSection}`;
-            
+            document.getElementById('lbl-subjects-title').innerText = `Disciplines : ${appState.selectedClass} ${appState.selectedSection||''}`;
             const container = document.getElementById('subjects-container');
             container.innerHTML = "";
-
-            classData.subjects.forEach((sub, idx) => {
-                const div = document.createElement('div');
-                div.className = "flex gap-2 items-center bg-slate-50 p-2 rounded-xl border";
-                div.innerHTML = `
-                    <input type="text" value="${sub.name}" placeholder="Matière" class="text-slate-900 flex-1 border rounded p-1.5 text-xs font-semibold" onchange="updateClassSubjectField(${idx}, 'name', this.value)">
-                    <input type="number" value="${sub.coef}" placeholder="Coef" class="text-slate-900 w-16 border rounded p-1.5 text-xs font-bold text-center" onchange="updateClassSubjectField(${idx}, 'coef', this.value)">
-                    <input type="text" value="${sub.teacherName||''}" placeholder="Professeur" class="text-slate-900 flex-1 border rounded p-1.5 text-xs" onchange="updateClassSubjectField(${idx}, 'teacherName', this.value)">
-                `;
-                container.appendChild(div);
-            });
+            
+            const subjects = appState.classes[key].subjects || [];
+            subjects.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef, sub.teacherName || "", sub.accessCode || ""));
+            if(subjects.length === 0) addNewSubjectRow();
             openModal('subjects-modal');
         }
 
-        function updateClassSubjectField(idx, field, val) {
-            const key = getCurrentClassKey();
-            appState.classes[key].subjects[idx][field] = field === 'coef' ? Number(val) : val;
+        function createSubjectRow(id, name, coef, teacherName = "", accessCode = "") {
+            const container = document.getElementById('subjects-container');
+            const row = document.createElement('div');
+            row.className = "flex flex-col sm:flex-row sm:items-center gap-2 bg-slate-50 p-3 sm:p-2 rounded-xl border border-slate-200 subject-row-item";
+            row.dataset.id = id || "sub_" + Date.now() + Math.random().toString(36).substr(2, 5);
+            row.innerHTML = `
+                <div class="flex-1 flex flex-col gap-1 w-full">
+                    <input type="text" value="${name||''}" placeholder="Nom de la matière" class="text-slate-900 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none font-medium w-full">
+                    <div class="grid grid-cols-2 gap-1.5 w-full">
+                        <input type="text" value="${teacherName||''}" placeholder="Nom du Prof" class="text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none w-full" title="Nom de l'enseignant">
+                        <input type="text" value="${accessCode||''}" placeholder="Code d'accès" class="text-slate-700 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none w-full" title="Code d'accès secret de l'enseignant pour restreindre sa vue">
+                    </div>
+                </div>
+                <div class="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                    <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 flex-1 sm:flex-initial">
+                        <span class="text-xs text-slate-400 font-bold whitespace-nowrap">${getCoefLabel(appState.selectedClass)}</span>
+                        <input type="number" step="any" value="${coef||1}" class="text-slate-900 w-12 bg-transparent text-center font-bold outline-none text-sm">
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-all" title="Supprimer la matière">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(row);
         }
 
         function addNewSubjectRow() {
-            const key = getCurrentClassKey();
-            appState.classes[key].subjects.push({
-                id: "sub_" + Date.now() + Math.random().toString(36).substring(7),
-                name: "",
-                coef: 2,
-                teacherName: "",
-                accessCode: ""
-            });
-            openSubjectsModal();
+            createSubjectRow("", "", 1, "", "");
         }
 
         function loadStandardSubjects() {
-            const key = getCurrentClassKey();
-            appState.classes[key].subjects = getDefaultSubjects(appState.selectedClass);
-            openSubjectsModal();
+            askConfirmation(
+                "Remplacer les disciplines actuelles de cette classe par la liste standard ? Toutes les matières non standards seront retirées.",
+                `<i class="fa-solid fa-book-open text-violet-600"></i> Grille standard`,
+                function() {
+                    const container = document.getElementById('subjects-container');
+                    container.innerHTML = "";
+                    const standards = getDefaultSubjects(appState.selectedClass);
+                    standards.forEach(sub => createSubjectRow(sub.id, sub.name, sub.coef, "", ""));
+                }
+            );
         }
 
         function saveSubjects() {
-            saveToStorage(true);
+            const key = getCurrentClassKey();
+            const rows = document.querySelectorAll('.subject-row-item');
+            const arr = [];
+            rows.forEach(r => {
+                const nameInput = r.querySelector('input[placeholder="Nom de la matière"]');
+                const coefInput = r.querySelector('input[type="number"]');
+                const teacherInput = r.querySelector('input[placeholder="Nom du Prof"]');
+                const codeInput = r.querySelector('input[placeholder="Code d\'accès"]');
+                
+                const name = nameInput.value.trim();
+                const coef = parseFloat(coefInput.value) || 1;
+                const teacherName = teacherInput ? teacherInput.value.trim() : "";
+                const accessCode = codeInput ? codeInput.value.trim() : "";
+                
+                if (name) {
+                    arr.push({ id: r.dataset.id, name, coef, teacherName, accessCode });
+                }
+            });
+            appState.classes[key].subjects = arr;
+            saveToStorage();
             closeModal('subjects-modal');
+            showToast("Liste des disciplines enregistrée.", "success");
             render();
-            showToast("Liste des matières mise à jour !", "success");
         }
 
-        // ==========================================
-        // RELANCES WHATSAPP ET BULLETINS PDF
-        // ==========================================
+        function exportData() {
+            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `Backup_GestNotes_${appState.currentYear}.txt`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("Sauvegarde exportée avec succès !");
+        }
+
+        function exportTeacherGradesOnly() {
+            const role = localStorage.getItem("gestnotes_local_role") || "admin";
+            const teacherSubjectId = localStorage.getItem("gestnotes_teacher_subject") || "";
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            const semKey = "p_" + appState.currentSemester;
+            
+            if (role !== 'enseignant' || !teacherSubjectId || !clsData) {
+                showToast("Action réservée aux enseignants connectés.", "info");
+                return;
+            }
+            
+            const gradesExport = {
+                type: "teacher_grades_export",
+                classKey: key,
+                semesterKey: semKey,
+                subjectId: teacherSubjectId,
+                grades: {}
+            };
+            
+            clsData.students.forEach(s => {
+                if (s.grades && s.grades[semKey] && s.grades[semKey][teacherSubjectId]) {
+                    gradesExport.grades[s.id] = s.grades[semKey][teacherSubjectId];
+                }
+            });
+            
+            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(gradesExport));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `Notes_${appState.selectedClass}_${teacherSubjectId}.txt`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("Fichier de notes exporté !");
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const importedState = JSON.parse(e.target.result);
+                    
+                    if (importedState && importedState.type === "teacher_grades_export") {
+                        const classKey = importedState.classKey;
+                        const semKey = importedState.semesterKey;
+                        const subjectId = importedState.subjectId;
+                        
+                        if (!appState.classes[classKey]) {
+                            showToast("La classe correspondante n'existe pas dans votre base locale.", "info");
+                            return;
+                        }
+                        
+                        let updateCount = 0;
+                        const students = appState.classes[classKey].students || [];
+                        
+                        students.forEach(s => {
+                            if (importedState.grades[s.id]) {
+                                if (!s.grades) s.grades = {};
+                                if (!s.grades[semKey]) s.grades[semKey] = {};
+                                
+                                s.grades[semKey][subjectId] = importedState.grades[s.id];
+                                updateCount++;
+                            }
+                        });
+                        
+                        await saveToStorage();
+                        render();
+                        showToast(`${updateCount} notes d'élèves importées et fusionnées !`, "success");
+                        
+                    } else if (importedState && importedState.classes) {
+                        appState = importedState;
+                        buildEmptyState();
+                        await saveToStorage();
+                        populateFilters();
+                        updateHeaderDisplays();
+                        applyRoleRestrictions();
+                        render();
+                        showToast("Base de données importée !", "success");
+                    } else {
+                        alert("Le fichier texte n'est pas reconnu par GestNotes.");
+                    }
+                } catch (err) {
+                    alert("Échec de la lecture du fichier.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = "";
+        }
+
+        window.ouvrirBulletin = function(studentId) {
+            const key = getCurrentClassKey();
+            const bridge = {
+                classKey: key,
+                semester: appState.currentSemester,
+                studentId: studentId,
+                year: appState.currentYear
+            };
+            localStorage.setItem("gestnotes_bulletin_bridge", JSON.stringify(bridge));
+            window.location.href = "bulletin.html";
+        };
+
+        function calculerMoyenneEleveMatiere(student, subjectId) {
+            const semKey = "p_" + appState.currentSemester;
+            if (!student.grades || !student.grades[semKey] || !student.grades[semKey][subjectId]) return null;
+            const g = student.grades[semKey][subjectId];
+            const d1 = parseFloat(g.dev1);
+            const d2 = parseFloat(g.dev2);
+            const d3 = parseFloat(g.dev3);
+            const compo = parseFloat(g.compo);
+            const isPrim = isPrimary(appState.selectedClass);
+
+            let hasDev = false;
+            let sumDev = 0;
+            let countDev = 0;
+
+            if (!isNaN(d1)) { sumDev += d1; countDev++; hasDev = true; }
+            
+            if (isPrim) {
+                if (!isNaN(d2)) { sumDev += d2; countDev++; hasDev = true; }
+            } else {
+                if (!isNaN(d2)) { sumDev += d2; countDev++; hasDev = true; }
+                const key = getCurrentClassKey();
+                const dev3Active = !!(appState.classes[key] && appState.classes[key].dev3Visible && appState.classes[key].dev3Visible[subjectId]);
+                if (dev3Active && !isNaN(d3)) { sumDev += d3; countDev++; hasDev = true; }
+            }
+
+            let moyDev = hasDev ? (sumDev / countDev) : 0;
+
+            if (isPrim) {
+                if (hasDev && !isNaN(compo)) return (moyDev + compo) / 2;
+                if (!isNaN(compo)) return compo;
+                if (hasDev) return moyDev;
+                return null;
+            } else {
+                if (hasDev && !isNaN(compo)) return (moyDev + (compo * 2)) / 3;
+                if (!isNaN(compo)) return compo;
+                if (hasDev) return moyDev;
+                return null;
+            }
+        }
+
+        function calculerMoyenneGeneraleGlobale(student, subjects) {
+            let totalPoints = 0;
+            let totalCoefs = 0;
+
+            subjects.forEach(sub => {
+                const m = calculerMoyenneEleveMatiere(student, sub.id);
+                if (m !== null) {
+                    totalPoints += m * (sub.coef || 1);
+                    totalCoefs += (sub.coef || 1);
+                }
+            });
+
+            if (totalCoefs === 0) return null;
+            return totalPoints / totalCoefs;
+        }
+
+        function obtenirRangsClasse(students, subjects) {
+            const studentAverages = students.map(s => {
+                const avg = calculerMoyenneGeneraleGlobale(s, subjects);
+                return { id: s.id, avg: avg !== null ? avg : -1 };
+            });
+            studentAverages.sort((a, b) => b.avg - a.avg);
+            
+            const ranks = {};
+            let currentRank = 1;
+            for (let i = 0; i < studentAverages.length; i++) {
+                const item = studentAverages[i];
+                if (item.avg === -1) {
+                    ranks[item.id] = "N/A";
+                    continue;
+                }
+                if (i > 0 && studentAverages[i - 1].avg === item.avg) {
+                    let tieRank = currentRank;
+                    for (let j = i - 1; j >= 0; j--) {
+                        if (studentAverages[j].avg === item.avg) {
+                            if (ranks[studentAverages[j].id] && ranks[studentAverages[j].id].rankNum !== undefined) {
+                                tieRank = ranks[studentAverages[j].id].rankNum;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                    ranks[item.id] = { label: tieRank === 1 ? "1er ex" : `${tieRank}e ex`, rankNum: tieRank };
+                } else {
+                    currentRank = i + 1;
+                    ranks[item.id] = { label: currentRank === 1 ? "1er" : `${currentRank}e`, rankNum: currentRank };
+                }
+            }
+            return ranks;
+        }
+
+        function calculateClassStats() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            if (!clsData) return;
+
+            const students = clsData.students || [];
+            const fees = clsData.fees || { inscription: 0, mensualite: 0 };
+            
+            let totalExpected = 0;
+            let totalCollected = 0;
+
+            students.forEach(s => {
+                const insExpected = fees.inscription || 0;
+                const monthlyExpected = (fees.mensualite || 0) * getMensualitesExpectedCount();
+                totalExpected += (insExpected + monthlyExpected);
+
+                if (s.payments) {
+                    s.payments.forEach(p => {
+                        totalCollected += (p.montantPaye || 0);
+                    });
+                }
+            });
+
+            const totalRemaining = totalExpected - totalCollected;
+            const recoveryRate = totalExpected > 0 ? ((totalCollected / totalExpected) * 100).toFixed(1) : 0;
+
+            document.getElementById('stats-total-attendu').innerText = totalExpected.toLocaleString() + " F";
+            document.getElementById('stats-total-encaisse').innerText = totalCollected.toLocaleString() + " F";
+            document.getElementById('stats-reste-recouvrer').innerText = totalRemaining.toLocaleString() + " F";
+            document.getElementById('stats-taux-recouvrement').innerText = recoveryRate + "%";
+        }
+
+        function onRoleChange() {
+            const select = document.getElementById('role-selector');
+            const targetRole = select.value;
+            const currentLocalRole = localStorage.getItem("gestnotes_local_role") || "admin";
+
+            if (targetRole === 'admin' || targetRole === 'comptable') {
+                const password = prompt("Saisissez le code d'accès pour activer ce rôle :");
+                const requiredCode = appState.accessCode || "1234";
+                if (password !== requiredCode) { 
+                    alert("Code d'accès incorrect ! Accès refusé.");
+                    select.value = currentLocalRole;
+                    return;
+                }
+                localStorage.removeItem("gestnotes_teacher_name");
+                localStorage.removeItem("gestnotes_teacher_class");
+                localStorage.removeItem("gestnotes_teacher_section");
+                localStorage.removeItem("gestnotes_teacher_subject");
+                
+                localStorage.setItem("gestnotes_local_role", targetRole);
+                applyRoleRestrictions();
+                render();
+            } else if (targetRole === 'enseignant') {
+                openTeacherLoginModal();
+            }
+        }
+
+        function openTeacherLoginModal() {
+            const classSel = document.getElementById('t-login-class');
+            classSel.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
+            
+            const savedName = localStorage.getItem("gestnotes_teacher_name") || "";
+            document.getElementById('t-login-name').value = savedName;
+            
+            const savedClass = localStorage.getItem("gestnotes_teacher_class") || appState.selectedClass;
+            classSel.value = savedClass;
+
+            onTeacherLoginClassChange();
+            
+            const savedSection = localStorage.getItem("gestnotes_teacher_section") || appState.selectedSection;
+            document.getElementById('t-login-section').value = savedSection;
+            
+            onTeacherLoginSectionChange();
+
+            const savedSubject = localStorage.getItem("gestnotes_teacher_subject") || "";
+            if (savedSubject) {
+                document.getElementById('t-login-subject').value = savedSubject;
+            }
+
+            openModal('teacher-login-modal');
+        }
+
+        function onTeacherLoginClassChange() {
+            const cls = document.getElementById('t-login-class').value;
+            const sectSel = document.getElementById('t-login-section');
+            const sections = getSectionsForClass(cls);
+            sectSel.innerHTML = sections.map(s => `<option value="${s}">${s||'Général'}</option>`).join('');
+            onTeacherLoginSectionChange();
+        }
+
+        function onTeacherLoginSectionChange() {
+            const cls = document.getElementById('t-login-class').value;
+            const sect = document.getElementById('t-login-section').value;
+            const key = `${cls}_${sect}`;
+            const clsData = appState.classes[key] || { subjects: [] };
+            
+            const subSel = document.getElementById('t-login-subject');
+            const subjects = clsData.subjects || [];
+            if (subjects.length === 0) {
+                subSel.innerHTML = `<option value="">Aucune matière configurée</option>`;
+            } else {
+                subSel.innerHTML = subjects.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
+            }
+        }
+
+        function cancelTeacherLogin() {
+            closeModal('teacher-login-modal');
+            const select = document.getElementById('role-selector');
+            select.value = localStorage.getItem("gestnotes_local_role") || "admin";
+        }
+
+        function submitTeacherLogin() {
+            const name = document.getElementById('t-login-name').value.trim();
+            const cls = document.getElementById('t-login-class').value;
+            const sect = document.getElementById('t-login-section').value;
+            const subId = document.getElementById('t-login-subject').value;
+
+            if (!name) {
+                alert("Veuillez saisir votre nom.");
+                return;
+            }
+            if (!subId || subId === "") {
+                alert("Veuillez choisir une matière. Si aucune n'est disponible, demandez d'abord au Directeur de configurer les matières pour cette classe.");
+                return;
+            }
+
+            localStorage.setItem("gestnotes_local_role", "enseignant");
+            localStorage.setItem("gestnotes_teacher_name", name);
+            localStorage.setItem("gestnotes_teacher_class", cls);
+            localStorage.setItem("gestnotes_teacher_section", sect);
+            localStorage.setItem("gestnotes_teacher_subject", subId);
+
+            appState.selectedClass = cls;
+            appState.selectedSection = sect;
+            
+            populateFilters();
+            updateHeaderDisplays();
+            
+            closeModal('teacher-login-modal');
+            showToast(`Session enseignant démarrée pour ${name} !`, "success");
+            
+            applyRoleRestrictions();
+            render();
+        }
+
+        function applyRoleRestrictions() {
+            const role = localStorage.getItem("gestnotes_local_role") || "admin";
+            const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
+            const teacherSubjectId = localStorage.getItem("gestnotes_teacher_subject") || "";
+            
+            document.getElementById('role-selector').value = role;
+
+            const indicator = document.getElementById('active-teacher-indicator');
+            const classKey = getCurrentClassKey();
+            const clsDataForSubject = appState.classes[classKey] || { subjects: [] };
+            const subObj = clsDataForSubject.subjects ? clsDataForSubject.subjects.find(s => s.id === teacherSubjectId) : null;
+            const subName = subObj ? subObj.name : "Discipline";
+
+            if (role === 'enseignant' && teacherName !== "") {
+                if (indicator) {
+                    indicator.innerText = `Prof : ${teacherName} (${subName})`;
+                    indicator.classList.remove('hidden');
+                }
+            } else {
+                if (indicator) {
+                    indicator.classList.add('hidden');
+                }
+            }
+
+            const classFeesBtn = document.getElementById('btn-class-fees');
+            const subjectsBtn = document.getElementById('btn-manage-subjects');
+            const waRemindersBtn = document.getElementById('btn-wa-reminders');
+            const caisseJourBtn = document.getElementById('btn-caisse-jour');
+            const gradesSec = document.getElementById('grades-section');
+            const addStudentBtn = document.getElementById('btn-add-student');
+            const addStudentBtnShortcut = document.getElementById('btn-add-student-shortcut');
+            const statsSection = document.getElementById('class-stats-section');
+            const regAmountContainer = document.getElementById('reg-amount-container');
+            const settingsBtn = document.getElementById('btn-settings');
+            
+            const btnExportBase = document.getElementById('btn-export-base');
+            const btnImportBase = document.getElementById('btn-import-base');
+            const btnExportTeacherGrades = document.getElementById('btn-export-teacher-grades');
+
+            if (classFeesBtn) classFeesBtn.style.display = '';
+            if (subjectsBtn) subjectsBtn.style.display = '';
+            if (waRemindersBtn) waRemindersBtn.style.display = '';
+            if (caisseJourBtn) caisseJourBtn.style.display = '';
+            if (gradesSec) gradesSec.style.display = 'flex';
+            if (addStudentBtn) addStudentBtn.style.display = '';
+            if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = '';
+            if (statsSection) statsSection.style.display = 'grid';
+            if (regAmountContainer) regAmountContainer.style.display = '';
+            if (settingsBtn) settingsBtn.style.display = '';
+            
+            if (btnExportBase) btnExportBase.style.display = '';
+            if (btnImportBase) btnImportBase.style.display = '';
+            if (btnExportTeacherGrades) btnExportTeacherGrades.classList.add('hidden');
+
+            const filterClass = document.getElementById('filter-class');
+            const filterSection = document.getElementById('filter-section');
+
+            if (role === 'enseignant') {
+                if (classFeesBtn) classFeesBtn.style.display = 'none';
+                if (waRemindersBtn) waRemindersBtn.style.display = 'none';
+                if (caisseJourBtn) caisseJourBtn.style.display = 'none';
+                if (addStudentBtn) addStudentBtn.style.display = 'none';
+                if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = 'none';
+                if (statsSection) statsSection.style.display = 'none';
+                if (regAmountContainer) regAmountContainer.style.display = 'none';
+                if (settingsBtn) settingsBtn.style.display = ''; 
+                
+                if (btnExportBase) btnExportBase.style.display = 'none';
+                if (btnImportBase) btnImportBase.style.display = 'none';
+                
+                if (btnExportTeacherGrades) btnExportTeacherGrades.classList.remove('hidden');
+                
+                if (filterClass) filterClass.disabled = true;
+                if (filterSection) filterSection.disabled = true;
+            } else {
+                if (filterClass) filterClass.disabled = false;
+                if (filterSection) filterSection.disabled = false;
+
+                if (role === 'comptable') {
+                    if (subjectsBtn) subjectsBtn.style.display = 'none';
+                    if (gradesSec) gradesSec.style.display = 'none';
+                    if (settingsBtn) settingsBtn.style.display = 'none';
+                }
+            }
+
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key] || { subjects: [], students: [] };
+            renderStudentsTable(clsData.students, clsData.subjects);
+        }
+
+        function render() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key] || { students: [], subjects: [] };
+            
+            calculateClassStats();
+            populateSubjectSelector();
+            updateDev3Checkbox();
+            renderStudentsTable(clsData.students, clsData.subjects);
+            renderGradesGrid();
+        }
+
+        function populateSubjectSelector() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key] || { subjects: [] };
+            const select = document.getElementById('grade-subject-select');
+            if (!select) return;
+
+            const role = localStorage.getItem("gestnotes_local_role") || "admin";
+            const teacherSubjectId = localStorage.getItem("gestnotes_teacher_subject") || "";
+
+            let filteredSubjects = clsData.subjects || [];
+            if (role === 'enseignant' && teacherSubjectId) {
+                filteredSubjects = (clsData.subjects || []).filter(sub => sub.id === teacherSubjectId);
+            }
+
+            const previouslySelected = select.value;
+            select.innerHTML = filteredSubjects.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
+            
+            if (previouslySelected && filteredSubjects.some(s => s.id === previouslySelected)) {
+                select.value = previouslySelected;
+            } else if (filteredSubjects.length > 0) {
+                select.value = filteredSubjects[0].id;
+            }
+        }
+
+        function updateDev3Checkbox() {
+            const isPrim = isPrimary(appState.selectedClass);
+            const subSelect = document.getElementById('grade-subject-select');
+            const subjectId = subSelect ? subSelect.value : "";
+            
+            let dev3Wrapper = document.getElementById('dev3-toggle-wrapper');
+            if (!dev3Wrapper) {
+                const parent = document.querySelector('#grades-section .flex.w-full.sm\\:w-auto.items-center.gap-2');
+                if (parent) {
+                    dev3Wrapper = document.createElement('div');
+                    dev3Wrapper.id = 'dev3-toggle-wrapper';
+                    dev3Wrapper.className = 'flex items-center gap-1.5 ml-2';
+                    parent.insertBefore(dev3Wrapper, parent.firstChild);
+                }
+            }
+            
+            if (dev3Wrapper) {
+                if (isPrim || !subjectId) {
+                    dev3Wrapper.style.display = 'none';
+                } else {
+                    dev3Wrapper.style.display = 'flex';
+                    const key = getCurrentClassKey();
+                    if (!appState.classes[key].dev3Visible) {
+                        appState.classes[key].dev3Visible = {};
+                    }
+                    const isChecked = !!appState.classes[key].dev3Visible[subjectId];
+                    subjectDev3Visible[subjectId] = isChecked;
+
+                    dev3Wrapper.innerHTML = `
+                        <label class="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-2 rounded-lg cursor-pointer">
+                            <input type="checkbox" id="chk-dev3" onchange="toggleDevoir3()" ${isChecked ? 'checked' : ''} class="rounded text-[#4c1d95] focus:ring-violet-500 w-3.5 h-3.5">
+                            <span>Devoir 3</span>
+                        </label>
+                    `;
+                }
+            }
+        }
+
+        function toggleDevoir3() {
+            const subSelect = document.getElementById('grade-subject-select');
+            const subjectId = subSelect.value;
+            if (!subjectId) return;
+            
+            const isChecked = document.getElementById('chk-dev3').checked;
+            const key = getCurrentClassKey();
+            if (!appState.classes[key].dev3Visible) {
+                appState.classes[key].dev3Visible = {};
+            }
+            appState.classes[key].dev3Visible[subjectId] = isChecked;
+            subjectDev3Visible[subjectId] = isChecked;
+            
+            saveToStorage();
+            renderGradesGrid();
+            debouncedRenderList();
+        }
+
+        function renderStudentsTable(students, subjects) {
+            const tbody = document.getElementById('students-table-body');
+            const emptyState = document.getElementById('empty-state');
+            const countEl = document.getElementById('student-count');
+            const badgeEl = document.getElementById('class-badge');
+
+            if (badgeEl) {
+                badgeEl.innerText = `${appState.selectedClass} ${appState.selectedSection || ''}`;
+            }
+
+            if (!students || students.length === 0) {
+                tbody.innerHTML = "";
+                if (emptyState) emptyState.classList.remove('hidden');
+                if (countEl) countEl.innerText = "0 élève enregistré";
+                document.getElementById('filter-effectif').value = "0";
+                return;
+            }
+
+            if (emptyState) emptyState.classList.add('hidden');
+            if (countEl) countEl.innerText = `${students.length} élève${students.length > 1 ? 's' : ''} enregistré${students.length > 1 ? 's' : ''}`;
+            document.getElementById('filter-effectif').value = students.length;
+
+            tbody.innerHTML = "";
+            
+            const sorted = [...students].sort((a, b) => {
+                const nameA = `${a.firstname} ${a.lastname}`.toUpperCase();
+                const nameB = `${b.firstname} ${b.lastname}`.toUpperCase();
+                return nameA.localeCompare(nameB);
+            });
+
+            const isPrim = isPrimary(appState.selectedClass);
+            
+            const rankMap = obtenirRangsClasse(students, subjects);
+
+            sorted.forEach(s => {
+                const mg = calculerMoyenneGeneraleGlobale(s, subjects);
+                let mgStr = "N/A";
+                let mgClass = "text-slate-400";
+                if (mg !== null) {
+                    const formattedMg = Number(mg.toFixed(2)).toString().replace('.', ',');
+                    mgStr = formattedMg + " / " + (isPrim ? "10" : "20");
+                    mgClass = mg >= (isPrim ? 5 : 10) ? "text-emerald-600 font-extrabold" : "text-rose-600 font-extrabold";
+                }
+
+                let rankStr = "";
+                if (mg !== null && rankMap[s.id] && rankMap[s.id] !== "N/A") {
+                    rankStr = `<span class="block text-[10px] text-slate-500 font-semibold mt-0.5 bg-slate-100 py-0.5 px-2 rounded-full inline-block">Rang : ${rankMap[s.id].label}</span>`;
+                }
+
+                const role = localStorage.getItem("gestnotes_local_role") || "admin";
+                let actionsHTML = "";
+                
+                if (role === "admin") {
+                    actionsHTML = `
+                        <div class="flex items-center justify-end gap-1.5">
+                            <button onclick="openEditStudent('${s.id}')" class="text-violet-600 hover:bg-violet-50 border border-slate-200 px-2 py-1 rounded-lg transition-all text-xs font-semibold">
+                                <i class="fa-solid fa-user-pen"></i> Modifier
+                            </button>
+                            <button onclick="openMensualitesModal('${s.id}')" class="text-emerald-700 hover:bg-emerald-50 border border-slate-200 px-2 py-1 rounded-lg transition-all text-xs font-semibold">
+                                <i class="fa-solid fa-coins"></i> Paiements
+                            </button>
+                            <button onclick="ouvrirBulletin('${s.id}')" class="text-indigo-600 hover:bg-indigo-50 border border-slate-200 px-2 py-1 rounded-lg transition-all text-xs font-semibold">
+                                <i class="fa-solid fa-print"></i> Bulletin
+                            </button>
+                            <button onclick="supprimerEleve('${s.id}')" class="text-rose-600 hover:bg-rose-50 border border-slate-200 p-1.5 rounded-lg transition-all" title="Supprimer l'élève">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                } else if (role === "comptable") {
+                    actionsHTML = `
+                        <div class="flex items-center justify-end gap-1.5">
+                            <button onclick="openMensualitesModal('${s.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-lg transition-all text-xs font-bold shadow-sm">
+                                <i class="fa-solid fa-wallet mr-1"></i> Gérer Paiements
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    actionsHTML = `<span class="text-xs text-slate-400 font-medium italic">Saisie active</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 transition-colors border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3 px-5 font-bold text-slate-800">
+                        ${s.firstname} <span class="font-normal text-slate-600">${s.lastname.toUpperCase()}</span>
+                    </td>
+                    <td class="py-3 px-5 text-center">
+                        <span class="${mgClass}">${mgStr}</span>
+                        ${rankStr}
+                    </td>
+                    <td class="py-3 px-5 text-right">
+                        ${actionsHTML}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function supprimerEleve(studentId) {
+            let student = null;
+            let key = "";
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === studentId);
+                if (student) { key = k; break; }
+            }
+            if (!student) return;
+
+            askConfirmation(
+                `Supprimer définitivement l'élève <strong>${student.firstname} ${student.lastname.toUpperCase()}</strong> ? Ses bulletins et échéanciers financiers seront supprimés de la base locale.`,
+                `<i class="fa-solid fa-trash text-rose-600"></i> Supprimer l'élève`,
+                function() {
+                    const idx = appState.classes[key].students.findIndex(s => s.id === studentId);
+                    if (idx !== -1) {
+                        appState.classes[key].students.splice(idx, 1);
+                        saveToStorage();
+                        showToast("Élève supprimé de la base.", "info");
+                        render();
+                    }
+                }
+            );
+        }
+
+        function renderGradesGrid() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            if (!clsData) return;
+
+            const subSelect = document.getElementById('grade-subject-select');
+            const subjectId = subSelect.value;
+            if (!subjectId) {
+                document.getElementById('grades-table-body').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune discipline configurée</td></tr>`;
+                document.getElementById('sub-stats-average').innerText = "N/A";
+                document.getElementById('sub-stats-max').innerText = "N/A";
+                document.getElementById('sub-stats-min').innerText = "N/A";
+                document.getElementById('sub-stats-rate').innerText = "N/A";
+                return;
+            }
+
+            const isPrim = isPrimary(appState.selectedClass);
+            const dev3Visible = !isPrim && !!(appState.classes[key].dev3Visible && appState.classes[key].dev3Visible[subjectId]);
+
+            const dev3Th = document.getElementById('lbl-th-dev3');
+            if (dev3Th) {
+                dev3Th.style.display = dev3Visible ? '' : 'none';
+            }
+
+            document.getElementById('lbl-th-dev1').innerText = getDevoirLabel(appState.selectedClass, 1);
+            document.getElementById('lbl-th-dev2').innerText = getDevoirLabel(appState.selectedClass, 2);
+
+            const searchVal = document.getElementById('grade-search').value.toLowerCase().trim();
+            const filteredStudents = clsData.students.filter(s => {
+                const fullName = `${s.firstname} ${s.lastname}`.toLowerCase();
+                return fullName.includes(searchVal);
+            });
+
+            let activeGrades = [];
+            clsData.students.forEach(s => {
+                const m = calculerMoyenneEleveMatiere(s, subjectId);
+                if (m !== null) {
+                    activeGrades.push(m);
+                }
+            });
+
+            if (activeGrades.length > 0) {
+                const sum = activeGrades.reduce((acc, curr) => acc + curr, 0);
+                const avg = sum / activeGrades.length;
+                const max = Math.max(...activeGrades);
+                const min = Math.min(...activeGrades);
+                
+                const threshold = isPrim ? 5 : 10;
+                const successes = activeGrades.filter(g => g >= threshold).length;
+                const rate = (successes / activeGrades.length) * 100;
+                const baseScale = isPrim ? "/ 10" : "/ 20";
+        
+                // Formatage propre pour les statistiques du bandeau
+                const formattedAvg = Number(avg.toFixed(2)).toString().replace('.', ',');
+                const formattedMax = Number(max.toFixed(2)).toString().replace('.', ',');
+                const formattedMin = Number(min.toFixed(2)).toString().replace('.', ',');
+                
+                document.getElementById('sub-stats-average').innerText = `${formattedAvg} ${baseScale}`;
+                document.getElementById('sub-stats-max').innerText = `${formattedMax} ${baseScale}`;
+                document.getElementById('sub-stats-min').innerText = `${formattedMin} ${baseScale}`;
+                document.getElementById('sub-stats-rate').innerText = `${rate.toFixed(1)}%`;
+            } else {
+                document.getElementById('sub-stats-average').innerText = "N/A";
+                document.getElementById('sub-stats-max').innerText = "N/A";
+                document.getElementById('sub-stats-min').innerText = "N/A";
+                document.getElementById('sub-stats-rate').innerText = "N/A";
+            }
+
+            const tbody = document.getElementById('grades-table-body');
+            tbody.innerHTML = "";
+
+            const semKey = "p_" + appState.currentSemester;
+
+            filteredStudents.forEach(s => {
+                if (!s.grades) s.grades = {};
+                if (!s.grades[semKey]) s.grades[semKey] = {};
+                if (!s.grades[semKey][subjectId]) s.grades[semKey][subjectId] = {};
+
+                const g = s.grades[semKey][subjectId];
+                const val1 = g.dev1 !== undefined ? g.dev1 : "";
+                const val2 = g.dev2 !== undefined ? g.dev2 : "";
+                const val3 = g.dev3 !== undefined ? g.dev3 : "";
+                const valCompo = g.compo !== undefined ? g.compo : "";
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 text-left font-semibold text-slate-700">
+                        ${s.firstname} ${s.lastname.toUpperCase()}
+                    </td>
+                    <td class="p-2">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val1}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev1', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                    </td>
+                    <td class="p-2">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val2}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev2', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                    </td>
+                    <td class="p-2" style="display: ${dev3Visible ? '' : 'none'}">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val3}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev3', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                    </td>
+                    <td class="p-2">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${valCompo}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'compo', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateStudentGrade(studentId, subjectId, field, value) {
+            const key = getCurrentClassKey();
+            const student = appState.classes[key].students.find(s => s.id === studentId);
+            if (!student) return;
+
+            const semKey = "p_" + appState.currentSemester;
+            if (!student.grades) student.grades = {};
+            if (!student.grades[semKey]) student.grades[semKey] = {};
+            if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
+
+            if (value.trim() === "") {
+                delete student.grades[semKey][subjectId][field];
+            } else {
+                const num = parseFloat(value);
+                if (!isNaN(num)) {
+                    student.grades[semKey][subjectId][field] = num;
+                }
+            }
+            saveToStorage();
+            debouncedRenderList();
+        }
+
+        let renderTimeout;
+        function debouncedRenderList() {
+            clearTimeout(renderTimeout);
+            renderTimeout = setTimeout(() => {
+                const key = getCurrentClassKey();
+                const clsData = appState.classes[key] || { students: [], subjects: [] };
+                renderStudentsTable(clsData.students, clsData.subjects);
+                calculateClassStats();
+            }, 500);
+        }
+
+        function goToNextSubject() {
+            const select = document.getElementById('grade-subject-select');
+            if (!select || select.options.length <= 1) return;
+            let nextIdx = select.selectedIndex + 1;
+            if (nextIdx >= select.options.length) nextIdx = 0;
+            select.selectedIndex = nextIdx;
+            renderGradesGrid();
+            updateDev3Checkbox();
+        }
+
+        function filterStudentsGlobal() {
+            renderGradesGrid();
+        }
+
+        function showToast(msg, type = "info") {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            
+            let bgColor = "bg-slate-900";
+            let icon = "fa-info-circle";
+            
+            if (type === "success") {
+                bgColor = "bg-emerald-600";
+                icon = "fa-circle-check";
+            } else if (type === "error") {
+                bgColor = "bg-rose-600";
+                icon = "fa-triangle-exclamation";
+            }
+            
+            toast.className = `toast-animate flex items-center gap-2.5 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg ${bgColor} pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${msg}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3300);
+        }
+
+        let currentConfirmCallback = null;
+        function askConfirmation(message, titleHTML, callback) {
+            document.getElementById('confirm-modal-title').innerHTML = titleHTML || `<i class="fa-solid fa-circle-question text-violet-600"></i> Confirmation`;
+            document.getElementById('confirm-modal-message').innerHTML = message;
+            currentConfirmCallback = callback;
+            
+            const btn = document.getElementById('confirm-modal-btn');
+            btn.onclick = function() {
+                if (currentConfirmCallback) currentConfirmCallback();
+                closeModal('confirm-modal');
+            };
+            
+            openModal('confirm-modal');
+        }
 
         function openWhatsAppRemindersModal() {
             const select = document.getElementById('wa-reminder-month');
-            select.innerHTML = moisAnnee.map((m, idx) => `<option value="${idx}">${m}</option>`).join('');
-            select.value = 1; // Octobre par défaut
-
+            select.innerHTML = moisAnnee.map((m, idx) => `<option value="${idx}">${m === 'Inscription' ? 'Frais d\'inscription' : m}</option>`).join('');
+            
             document.getElementById('wa-template-selector').value = "reminder";
             onWaTemplateChange();
+            
             openModal('wa-reminders-modal');
         }
 
         function onWaTemplateChange() {
             const type = document.getElementById('wa-template-selector').value;
-            document.getElementById('wa-reminder-text').value = appState.waTemplates[type] || "";
+            const tpl = appState.waTemplates[type] || "";
+            document.getElementById('wa-reminder-text').value = tpl;
             renderWhatsAppReminders();
         }
 
         function renderWhatsAppReminders() {
-            const monthIdx = parseInt(document.getElementById('wa-reminder-month').value);
-            const template = document.getElementById('wa-reminder-text').value;
+            const monthIdx = parseInt(document.getElementById('wa-reminder-month').value) || 0;
+            const textTpl = document.getElementById('wa-reminder-text').value;
+            
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
             const tbody = document.getElementById('wa-reminders-list-tbody');
             tbody.innerHTML = "";
-
-            const key = getCurrentClassKey();
-            const classData = appState.classes[key];
-            if (!classData) return;
-
-            classData.students.forEach(st => {
-                const p = st.payments[monthIdx];
-                const remains = Number(p.montantDu || 0) - Number(p.montantPaye || 0);
-
-                if (remains > 0) {
-                    let msg = template
-                        .replace("{eleve}", `${st.firstname} ${st.lastname}`)
-                        .replace("{classe}", `${appState.selectedClass} ${appState.selectedSection}`)
-                        .replace("{frais}", p.designation)
-                        .replace("{montant}", remains)
-                        .replace("{periode}", appState.currentYear);
-
+            
+            if (!clsData || !clsData.students || clsData.students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun élève enregistré dans cette section</td></tr>`;
+                return;
+            }
+            
+            clsData.students.forEach(s => {
+                if (!s.payments || !s.payments[monthIdx]) return;
+                const p = s.payments[monthIdx];
+                
+                if (p.statut === "Non payé") {
+                    const remains = p.montantDu;
+                    let msg = textTpl
+                        .replace(/{eleve}/g, `${s.firstname} ${s.lastname.toUpperCase()}`)
+                        .replace(/{classe}/g, `${appState.selectedClass} ${appState.selectedSection || ''}`)
+                        .replace(/{frais}/g, monthIdx === 0 ? "Frais d'inscription" : `Mensualité de ${p.designation}`)
+                        .replace(/{montant}/g, remains.toLocaleString())
+                        .replace(/{periode}/g, p.designation);
+                    
                     const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition-colors";
                     tr.innerHTML = `
-                        <td class="px-4 py-2.5 font-semibold text-slate-800">${st.firstname} ${st.lastname}</td>
-                        <td class="px-4 py-2.5 font-bold">${p.designation}</td>
-                        <td class="px-4 py-2.5 text-right text-rose-600 font-bold font-mono">${remains.toLocaleString()} F</td>
-                        <td class="px-4 py-2.5 text-center font-mono">${st.phone || '-'}</td>
-                        <td class="px-4 py-2.5 text-center">
-                            <button onclick="envoyerMessageWhatsApp('${st.phone}', \`${encodeURIComponent(msg)}\`)" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 mx-auto">
-                                <i class="fa-brands fa-whatsapp text-xs"></i> Envoyer
+                        <td class="px-4 py-3 font-semibold text-slate-800">${s.firstname} ${s.lastname.toUpperCase()}</td>
+                        <td class="px-4 py-3 text-slate-600 font-medium">${monthIdx === 0 ? "Frais d'inscription" : p.designation}</td>
+                        <td class="px-4 py-3 text-right font-extrabold text-rose-600">${remains.toLocaleString()} F</td>
+                        <td class="px-4 py-3 text-center text-slate-500">${s.phone || '-'}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="sendSingleWaReminder('${s.id}', ${monthIdx}, \`${encodeURIComponent(msg)}\`)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2.5 py-1.5 rounded-lg border border-emerald-200 transition-all text-xs font-bold flex items-center justify-center gap-1 mx-auto">
+                                <i class="fa-brands fa-whatsapp font-bold"></i> Relancer
                             </button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 }
             });
+            
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-emerald-600 font-bold">Tous les comptes sont à jour pour cette échéance ! 🎉</td></tr>`;
+            }
         }
 
-        function envoyerMessageWhatsApp(phone, encodedMsg) {
-            if (!phone) {
-                alert("Numéro de téléphone absent pour cet élève.");
+        function sendSingleWaReminder(studentId, monthIdx, encodedMsg) {
+            let student = null;
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === studentId);
+                if (student) break;
+            }
+            if (!student || !student.phone) {
+                showToast("Aucun numéro configuré pour cet élève.", "error");
                 return;
             }
-            // Code indicatif Sénégal par défaut (221) si non spécifié
-            let cleanedPhone = phone.replace(/[^0-9]/g, "");
-            if (cleanedPhone.length === 9) {
-                cleanedPhone = "221" + cleanedPhone;
-            }
-            window.open(`https://api.whatsapp.com/send?phone=${cleanedPhone}&text=${encodedMsg}`, '_blank');
+            let purePhone = student.phone.replace(/[\s\+\-]/g, '');
+            if (purePhone.length === 9) purePhone = "221" + purePhone;
+            
+            const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodedMsg}`;
+            window.open(url, '_blank');
         }
 
         function sendAllWaReminders() {
-            showToast("Relance groupée démarrée !", "info");
+            const monthIdx = parseInt(document.getElementById('wa-reminder-month').value) || 0;
+            const textTpl = document.getElementById('wa-reminder-text').value;
+            
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            if (!clsData || !clsData.students) return;
+            
+            let initiated = 0;
+            clsData.students.forEach(s => {
+                if (!s.payments || !s.payments[monthIdx]) return;
+                const p = s.payments[monthIdx];
+                if (p.statut === "Non payé" && s.phone) {
+                    let msg = textTpl
+                        .replace(/{eleve}/g, `${s.firstname} ${s.lastname.toUpperCase()}`)
+                        .replace(/{classe}/g, `${appState.selectedClass} ${appState.selectedSection || ''}`)
+                        .replace(/{frais}/g, monthIdx === 0 ? "Frais d'inscription" : `Mensualité de ${p.designation}`)
+                        .replace(/{montant}/g, p.montantDu.toLocaleString())
+                        .replace(/{periode}/g, p.designation);
+                    
+                    let purePhone = s.phone.replace(/[\s\+\-]/g, '');
+                    if (purePhone.length === 9) purePhone = "221" + purePhone;
+                    
+                    const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(msg)}`;
+                    window.open(url, '_blank');
+                    initiated++;
+                }
+            });
+            if (initiated > 0) {
+                showToast(`${initiated} relances initiées.`, "success");
+            } else {
+                showToast("Aucun compte en retard à relancer.", "info");
+            }
         }
 
-        function ouvrirBulletin(studentId) {
-            alert("Génération du bulletin au format PDF... (Veuillez autoriser les popups si nécessaire).");
-            // Ici s'intègrera votre fonction de rendu html2pdf pour les bulletins trimestriels/semestriels complets.
+        function openCaisseJourModal() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            
+            document.getElementById('caisse-filter-date').value = `${year}-${month}-${day}`;
+            document.getElementById('caisse-filter-method').value = "ALL";
+            
+            openModal('caisse-modal');
+            renderCaisseJour();
         }
 
-        // ==========================================
-        // PROMOTION DE CLASSE (ROLLOVER)
-        // ==========================================
+        function renderCaisseJour() {
+            const dateVal = document.getElementById('caisse-filter-date').value;
+            const methodVal = document.getElementById('caisse-filter-method').value;
+            
+            let dateToMatch = "";
+            if (dateVal) {
+                const parts = dateVal.split('-');
+                dateToMatch = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+
+            const tbody = document.getElementById('caisse-list-tbody');
+            tbody.innerHTML = "";
+
+            let totalFiltered = 0;
+            let paymentsList = [];
+
+            for (let classKey in appState.classes) {
+                const cls = appState.classes[classKey];
+                const parts = classKey.split('_');
+                const classNameDisplay = parts[0] + " " + (parts[1] || "");
+
+                if (cls.students) {
+                    cls.students.forEach(student => {
+                        if (student.payments) {
+                            student.payments.forEach(p => {
+                                if (p.statut === "Payé" && p.dateEncaissement) {
+                                    paymentsList.push({
+                                        date: p.dateEncaissement,
+                                        studentName: `${student.firstname} ${student.lastname.toUpperCase()}`,
+                                        className: classNameDisplay,
+                                        designation: p.designation === 'Inscription' ? "Frais d'inscription" : p.designation === 'Dette Antérieure' ? "Dette Antérieure" : `Mensualité ${p.designation}`,
+                                        method: p.methode,
+                                        amount: p.montantPaye
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+
+            paymentsList.sort((a, b) => {
+                const parseDateStr = (str) => {
+                    const [datePart, timePart] = str.split(' ');
+                    const [d, m, y] = datePart.split('/');
+                    const [h, min] = timePart ? timePart.split(':') : [0, 0];
+                    return new Date(y, m - 1, d, h, min);
+                };
+                return parseDateStr(b.date) - parseDateStr(a.date);
+            });
+
+            paymentsList.forEach(item => {
+                const itemDateOnly = item.date.split(' ')[0];
+                const matchesDate = !dateVal || itemDateOnly === dateToMatch;
+                const matchesMethod = methodVal === "ALL" || item.method === methodVal;
+
+                if (matchesDate && matchesMethod) {
+                    totalFiltered += item.amount;
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 text-slate-500 font-semibold">${item.date}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-800">${item.studentName}</td>
+                        <td class="px-4 py-3 text-slate-600 font-semibold">${item.className}</td>
+                        <td class="px-4 py-3 text-slate-600">${item.designation}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2.5 py-0.5 border text-[10px] rounded-md font-bold uppercase bg-slate-100 text-slate-700">${item.method}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right font-extrabold text-slate-900">${item.amount.toLocaleString()} F</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            document.getElementById('caisse-filtered-total').innerText = totalFiltered.toLocaleString() + " FCFA";
+
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-semibold">Aucun règlement enregistré pour ces critères.</td></tr>`;
+            }
+        }
 
         function populateRolloverSelector() {
-            const selectClass = document.getElementById('rollover-target-class');
-            selectClass.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
-            updateRolloverSections();
-        }
-
-        function updateRolloverSections() {
-            const cls = document.getElementById('rollover-target-class').value;
-            const selectSect = document.getElementById('rollover-target-section');
-            const sections = getSectionsForClass(cls);
-            selectSect.innerHTML = sections.map(s => `<option value="${s}">${s||'Général'}</option>`).join('');
+            const select = document.getElementById('rollover-target-class');
+            if (!select) return;
+            select.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
         }
 
         function executeRollover() {
-            const targetCls = document.getElementById('rollover-target-class').value;
-            const targetSect = document.getElementById('rollover-target-section').value;
-            const currentKey = getCurrentClassKey();
-            const targetKey = `${targetCls}_${targetSect}`;
-
-            if (currentKey === targetKey) {
-                alert("La classe cible doit être différente de la classe actuelle.");
-                return;
-            }
-
-            if (!confirm("Voulez-vous valider le passage de classe global des élèves vers la classe cible ? (Les reliquats financiers impayés seront conservés dans leur fiche)")) {
-                return;
-            }
-
-            const currentClassData = appState.classes[currentKey];
-            if (!appState.classes[targetKey]) {
-                appState.classes[targetKey] = { students: [], subjects: getDefaultSubjects(targetCls), fees: { inscription: 0, mensualite: 0 } };
-            }
-
-            currentClassData.students.forEach(st => {
-                // Calcul du reste à payer à injecter comme dette de report
-                let restDue = 0;
-                st.payments.forEach(p => restDue += (Number(p.montantDu) - Number(p.montantPaye)));
-
-                const newPayments = moisAnnee.map((m, idx) => ({
-                    designation: m,
-                    statut: "Non payé",
-                    montantDu: idx === 0 ? (appState.classes[targetKey].fees.inscription || 0) : (appState.classes[targetKey].fees.mensualite || 0),
-                    montantPaye: 0,
-                    methode: "",
-                    dateEncaissement: ""
-                }));
-
-                if (restDue > 0) {
-                    newPayments.push({
-                        designation: "Reliquat Année Précédente",
-                        statut: "Non payé",
-                        montantDu: restDue,
-                        montantPaye: 0,
-                        methode: "",
-                        dateEncaissement: ""
-                    });
-                }
-
-                st.payments = newPayments;
-                st.grades = {}; // Reset des notes pour le nouveau niveau
-
-                appState.classes[targetKey].students.push(st);
-            });
-
-            // Vider l'ancienne classe
-            currentClassData.students = [];
-            saveToStorage(true);
-            closeModal('settings-modal');
-            render();
-            showToast("Transition académique exécutée !", "success");
-        }
-
-        // ==========================================
-        // EXPORT / IMPORT ET TOAST SYSTEM
-        // ==========================================
-
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `GestNotes_Backup_${appState.currentYear}.txt`);
-            dlAnchorElem.click();
-        }
-
-        function exportTeacherGradesOnly() {
+            const targetClass = document.getElementById('rollover-target-class').value;
             const key = getCurrentClassKey();
-            const teacherName = localStorage.getItem("gestnotes_teacher_name");
-            const subId = localStorage.getItem("gestnotes_teacher_subject");
-            const exportObj = {
-                teacher: teacherName,
-                classKey: key,
-                subject: subId,
-                grades: {}
-            };
-
-            appState.classes[key].students.forEach(st => {
-                if (st.grades[subId]) {
-                    exportObj.grades[st.id] = st.grades[subId];
-                }
-            });
-
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `Grades_${teacherName}_${subId}.txt`);
-            dlAnchorElem.click();
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    if (parsed.classes) {
-                        appState = parsed;
-                        await saveToStorage(true);
-                        populateFilters();
-                        updateHeaderDisplays();
-                        render();
-                        showToast("Restauration complète réussie !", "success");
-                    } else if (parsed.teacher && parsed.grades) {
-                        // Import partiel des notes d'un enseignant
-                        const key = parsed.classKey;
-                        const subId = parsed.subject;
-                        for (let stId in parsed.grades) {
-                            const st = appState.classes[key].students.find(s => s.id === stId);
-                            if (st) {
-                                st.grades[subId] = parsed.grades[stId];
-                            }
-                        }
-                        await saveToStorage(true);
-                        render();
-                        showToast("Notes importées avec succès !", "success");
-                    } else {
-                        showToast("Format de fichier d'import non reconnu.", "error");
+            const currentClsData = appState.classes[key];
+            
+            if (!currentClsData || !currentClsData.students || currentClsData.students.length === 0) {
+                showToast("Aucun élève à promouvoir dans cette classe.", "error");
+                return;
+            }
+            
+            const currentClassNameDisplay = appState.selectedClass + " " + (appState.selectedSection || "");
+            
+            askConfirmation(
+                `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClass}) ? <br><br>⚠️ Les élèves seront déplacés vers la classe supérieure et retirés de leur classe d'origine (${currentClassNameDisplay}). Leurs éventuelles dettes financières non soldées seront reportées sur la nouvelle fiche.`,
+                `<i class="fa-solid fa-angles-up text-amber-600"></i> Valider la promotion`,
+                function() {
+                    const targetKey = `${targetClass}_${appState.selectedSection}`;
+                    if (!appState.classes[targetKey]) {
+                        appState.classes[targetKey] = {
+                            students: [],
+                            subjects: getDefaultSubjects(targetClass),
+                            fees: { inscription: 0, mensualite: 0 },
+                            dev3Visible: {}
+                        };
                     }
-                } catch (err) {
-                    showToast("Erreur lors de la lecture du fichier.", "error");
+                    
+                    let promotedCount = 0;
+                    currentClsData.students.forEach(s => {
+                        let totalDue = 0;
+                        let totalPaid = 0;
+                        if (s.payments) {
+                            s.payments.forEach(p => {
+                                totalDue += (p.montantDu || 0);
+                                totalPaid += (p.montantPaye || 0);
+                            });
+                        }
+                        const remainingDebt = Math.max(0, totalDue - totalPaid);
+
+                        const targetFees = appState.classes[targetKey].fees || { inscription: 0, mensualite: 0 };
+
+                        const basePayments = moisAnnee.map((m, idx) => ({
+                            designation: m,
+                            statut: "Non payé",
+                            montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
+                            montantPaye: 0,
+                            methode: "",
+                            dateEncaissement: ""
+                        }));
+
+                        if (remainingDebt > 0) {
+                            basePayments.push({
+                                designation: "Dette Antérieure",
+                                statut: "Non payé",
+                                montantDu: remainingDebt,
+                                montantPaye: 0,
+                                methode: "",
+                                dateEncaissement: ""
+                            });
+                        }
+
+                        const promotedStudent = {
+                            ...s,
+                            id: "student_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+                            previousStudentId: s.id,
+                            previousClassName: currentClassNameDisplay,
+                            grades: {},
+                            payments: basePayments
+                        };
+                        appState.classes[targetKey].students.push(promotedStudent);
+                        promotedCount++;
+                    });
+                    
+                    currentClsData.students = [];
+                    
+                    saveToStorage();
+                    appState.selectedClass = targetClass;
+                    populateFilters();
+                    closeModal('settings-modal');
+                    showToast(`${promotedCount} élèves déplacés avec succès en ${targetClass} !`, "success");
+                    render();
                 }
-            };
-            reader.readAsText(file);
+            );
         }
 
-        function showToast(message, type = "info") {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            const bgColor = type === "success" ? "bg-emerald-600" : (type === "error" ? "bg-rose-600" : "bg-slate-800");
-            toast.className = `${bgColor} text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 pointer-events-auto toast-animate text-xs font-bold`;
-            
-            const icon = type === "success" ? "fa-circle-check" : (type === "error" ? "fa-circle-exclamation" : "fa-circle-info");
-            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
-            
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
+        // Export de grille de notes au format PDF professionnel avec notes réelles incluses
+        function exporterFeuilleSaisie() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            if (!clsData || !clsData.students || clsData.students.length === 0) {
+                showToast("Aucun élève enregistré dans cette classe.", "error");
+                return;
+            }
 
-        function filterStudentsGlobal() {
-            const q = document.getElementById('grade-search').value.toLowerCase();
-            const rows = document.querySelectorAll('#grades-table-body tr');
-            rows.forEach(r => {
-                const name = r.querySelector('td').innerText.toLowerCase();
-                r.style.display = name.includes(q) ? 'table-row' : 'none';
+            const subSelect = document.getElementById('grade-subject-select');
+            const subjectId = subSelect ? subSelect.value : (clsData.subjects && clsData.subjects[0] ? clsData.subjects[0].id : "");
+            if (!subjectId) {
+                showToast("Veuillez configurer au moins une matière pour exporter la grille.", "error");
+                return;
+            }
+
+            const activeSub = clsData.subjects ? clsData.subjects.find(s => s.id === subjectId) : null;
+            const subjectName = activeSub ? activeSub.name : "Discipline";
+            const teacherName = activeSub && activeSub.teacherName ? activeSub.teacherName : "Non spécifié";
+
+            const isPrim = isPrimary(appState.selectedClass);
+            const dev3Visible = !isPrim && !!(appState.classes[key].dev3Visible && appState.classes[key].dev3Visible[subjectId]);
+            const semLabel = getPeriodLabel(appState.selectedClass, appState.currentSemester);
+
+            const printDiv = document.createElement('div');
+            printDiv.style.fontFamily = "'Hanken Grotesk', 'Inter', sans-serif";
+            printDiv.style.padding = "30px 40px";
+            printDiv.style.color = "#1e293b";
+            printDiv.style.backgroundColor = "#ffffff";
+
+            let html = `
+                <!-- En-tête professionnel -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #4c1d95; padding-bottom: 15px; margin-bottom: 25px;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #4c1d95; letter-spacing: -0.5px;">GestNotes Academy</h1>
+                        <p style="margin: 4px 0 0; font-size: 12px; color: #64748b; font-weight: 500;">Système d'Information & d'Administration Scolaire</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="background-color: #f3e8ff; color: #4c1d95; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase;">Grille des Notes</span>
+                        <p style="margin: 8px 0 0; font-size: 11px; color: #64748b; font-weight: 500;">Année Scolaire : <strong style="color: #0f172a;">${appState.currentYear}</strong></p>
+                    </div>
+                </div>
+
+                <!-- Fiche Métadonnées -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px 20px; margin-bottom: 25px; font-size: 12px;">
+                    <div>
+                        <p style="margin: 0; color: #64748b; font-weight: 500;">CLASSE : <strong style="color: #0f172a; margin-left: 5px;">${appState.selectedClass} ${appState.selectedSection || ''}</strong></p>
+                        <p style="margin: 6px 0 0; color: #64748b; font-weight: 500;">DISCIPLINE : <strong style="color: #0f172a; margin-left: 5px;">${subjectName}</strong></p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="margin: 0; color: #64748b; font-weight: 500;">PÉRIODE : <strong style="color: #0f172a; margin-left: 5px;">${semLabel}</strong></p>
+                        <p style="margin: 6px 0 0; color: #64748b; font-weight: 500;">ENSEIGNANT : <strong style="color: #0f172a; margin-left: 5px;">${teacherName}</strong></p>
+                    </div>
+                </div>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; border: 1px solid #cbd5e1;">
+                    <thead>
+                        <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1; color: #334155;">
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-weight: 700;">Élève (Nom & Prénom)</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 75px; font-weight: 700;">${getDevoirLabel(appState.selectedClass, 1)}</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 75px; font-weight: 700;">${getDevoirLabel(appState.selectedClass, 2)}</th>
+                            ${dev3Visible ? `<th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 75px; font-weight: 700;">Devoir 3</th>` : ''}
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 85px; font-weight: 700;">Composition</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 85px; font-weight: 700; background-color: #e2e8f0;">Moyenne</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            const semKey = "p_" + appState.currentSemester;
+            
+            const sortedStudents = [...clsData.students].sort((a, b) => {
+                const nameA = `${a.firstname} ${a.lastname}`.toUpperCase();
+                const nameB = `${b.firstname} ${b.lastname}`.toUpperCase();
+                return nameA.localeCompare(nameB);
             });
+
+            sortedStudents.forEach((s, idx) => {
+                const g = (s.grades && s.grades[semKey] && s.grades[semKey][subjectId]) ? s.grades[semKey][subjectId] : {};
+                
+                const formatVal = (val) => {
+                    if (val === undefined || val === null || val === "") return "-";
+                    const num = parseFloat(val);
+                    return isNaN(num) ? "-" : Number(num.toFixed(2)).toString().replace('.', ',');
+                };
+
+                const val1 = formatVal(g.dev1);
+                const val2 = formatVal(g.dev2);
+                const val3 = formatVal(g.dev3);
+                const valCompo = formatVal(g.compo);
+
+                const moyVal = calculerMoyenneEleveMatiere(s, subjectId);
+                let moyStr = "-";
+                if (moyVal !== null) {
+                    moyStr = Number(moyVal.toFixed(2)).toString().replace('.', ',');
+                }
+
+                const rowBg = idx % 2 === 0 ? "#ffffff" : "#f8fafc";
+
+                html += `
+                    <tr style="background-color: ${rowBg}; border-bottom: 1px solid #cbd5e1;">
+                        <td style="border: 1px solid #cbd5e1; padding: 8px 12px; font-weight: bold; color: #1e293b;">
+                            ${s.firstname} <span style="font-weight: 500; color: #475569;">${s.lastname.toUpperCase()}</span>
+                        </td>
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 600;">${val1}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 600;">${val2}</td>
+                        ${dev3Visible ? `<td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 600;">${val3}</td>` : ''}
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 600;">${valCompo}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 700; color: #4c1d95; background-color: #f1f5f9;">${moyStr}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+
+                <!-- Signatures de fin de page -->
+                <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
+                    <div>
+                        <p style="margin: 0;">Rapport généré le ${new Date().toLocaleDateString('fr-FR')} &agrave; ${new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</p>
+                        <p style="margin: 2px 0 0;">GestNotes &bull; Administration scolaire numérique</p>
+                    </div>
+                    <div style="text-align: center; width: 220px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+                        <p style="margin: 0; font-weight: 700; color: #475569; text-transform: uppercase;">Cachet et Signature Enseignant</p>
+                    </div>
+                </div>
+            `;
+
+            printDiv.innerHTML = html;
+
+            printDiv.style.position = 'absolute';
+            printDiv.style.left = '0px';
+            printDiv.style.top = '0px';
+            printDiv.style.width = '800px';
+            printDiv.style.zIndex = '-9999';
+            printDiv.style.backgroundColor = '#ffffff';
+
+            document.body.appendChild(printDiv);
+
+            const options = {
+                margin: 10,
+                filename: `Grille_Saisie_${appState.selectedClass}_${subjectName.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0, scrollX: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(options).from(printDiv).save().then(() => {
+                printDiv.remove();
+            });
+        }
+
+        function cleanStringForFuzzy(str) {
+            if (!str) return "";
+            return str.toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]/g, "");
+        }
+
+        // ==========================================
+        // FONCTIONS D'INTEGRATION GOOGLE DRIVE (API v3)
+        // ==========================================
+
+        function seConnecterAGoogleDrive() {
+            if (!appState.googleSyncUrl) {
+                alert("Veuillez d'abord configurer l'URL de votre application Web Google Apps Script dans le panneau de configuration (⚙️).");
+                openModal('settings-modal');
+                return;
+            }
+            chargerBaseDepuisDrive();
+        }
+
+        async function chargerBaseDepuisDrive() {
+            if (!appState.googleSyncUrl) return;
+            showToast("Synchronisation Cloud en cours...", "info");
+            try {
+                const response = await fetch(appState.googleSyncUrl);
+                const dbState = await response.json();
+                
+                if (dbState && dbState.classes) {
+                    appState = dbState;
+                    buildEmptyState();
+                    
+                    // Migrations locales après récupération
+                    if (appState.accessCode === undefined) appState.accessCode = "1234";
+                    if (appState.googleSyncUrl === undefined) {
+                        appState.googleSyncUrl = document.getElementById('settings-gdrive-sync-url').value || "";
+                    }
+                    
+                    await idbKeyval.set("gestnotes_state", appState);
+                    populateFilters();
+                    updateHeaderDisplays();
+                    applyRoleRestrictions();
+                    render();
+                    
+                    // Mettre à jour l'état visuel du bouton
+                    const btn = document.getElementById('btn-gdrive-sync');
+                    const lbl = document.getElementById('lbl-gdrive-sync');
+                    if (btn) btn.className = "flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm";
+                    if (lbl) lbl.innerText = "Cloud Sync Actif";
+                    
+                    showToast("Base synchronisée avec succès !", "success");
+                } else {
+                    showToast("Aucune donnée valide trouvée sur le Cloud.", "info");
+                }
+            } catch (error) {
+                console.error("Erreur de récupération :", error);
+                showToast("Échec de la synchronisation.", "error");
+            }
+        }
+
+        async function sauvegarderSurDrive() {
+            if (!appState.googleSyncUrl) return;
+            try {
+                const response = await fetch(appState.googleSyncUrl, {
+                    method: 'POST',
+                    body: JSON.stringify(appState)
+                });
+                if (response.ok) {
+                    console.log("Sauvegarde cloud automatique réussie.");
+                } else {
+                    console.warn("Échec de la sauvegarde cloud.");
+                }
+            } catch (error) {
+                console.error("Erreur de sauvegarde automatique :", error);
+            }
         }
     </script>
 </body>
-</html>
 
+</html>
