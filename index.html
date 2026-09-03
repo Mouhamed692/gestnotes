@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr"> 
 
@@ -17,14 +16,9 @@
     
     <title>GestNotes – Administration scolaire</title>
     
-    <!-- Références aux fichiers locaux présents dans votre dossier -->
+    <!-- Références locales et CDN FontAwesome (Rétrocompatible v5/v6) -->
     <script src="tailwind.min.js"></script>
-    
-    <!-- NOTE : Si votre fichier local all.min.css ou votre dossier webfonts pose problème, -->
-    <!-- vous pouvez remplacer la ligne suivante par le CDN en ligne : -->
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
-    <link rel="stylesheet" href="all.min.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="html2pdf.bundle.min.js"></script>
     <script src="idb-keyval.js"></script>
 
@@ -93,7 +87,6 @@
     <header class="bg-[#4c1d95] text-white shadow-md px-4 py-3 md:px-6 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
         <div class="flex items-center gap-3">
             <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
-                <!-- CORRECTION : Sélecteur d'icône d'application universel (graduation-cap) -->
                 <i class="fas fa-graduation-cap text-2xl text-violet-200"></i>
             </div>
             <div>
@@ -126,7 +119,6 @@
                 </div>
             </div>
 
-            <!-- CORRECTION : Sélecteur d'icône de paramètre universel (cog au lieu de gear) -->
             <button onclick="openModal('settings-modal')" id="btn-settings" class="p-2 md:p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10" title="Configuration de l'année/période">
                 <i class="fas fa-cog text-lg"></i>
             </button>
@@ -1742,7 +1734,6 @@
             createSubjectRow("", "", 1, "", "");
         }
 
-        // CORRECTION : Utilisation de "fas fa-trash" rétrocompatible sur toutes les versions de FontAwesome
         function supprimerEleve(studentId) {
             let student = null;
             let key = "";
@@ -2437,6 +2428,113 @@
             });
         }
 
+        function renderGradesGrid() {
+            const key = getCurrentClassKey();
+            const clsData = appState.classes[key];
+            if (!clsData) return;
+
+            const subSelect = document.getElementById('grade-subject-select');
+            const subjectId = subSelect.value;
+            if (!subjectId) {
+                document.getElementById('grades-table-body').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune discipline configurée</td></tr>`;
+                document.getElementById('sub-stats-average').innerText = "N/A";
+                document.getElementById('sub-stats-max').innerText = "N/A";
+                document.getElementById('sub-stats-min').innerText = "N/A";
+                document.getElementById('sub-stats-rate').innerText = "N/A";
+                return;
+            }
+
+            const isPrim = isPrimary(appState.selectedClass);
+            const dev3Visible = !isPrim && !!(appState.classes[key].dev3Visible && appState.classes[key].dev3Visible[subjectId]);
+
+            const dev3Th = document.getElementById('lbl-th-dev3');
+            if (dev3Th) {
+                dev3Th.style.display = dev3Visible ? '' : 'none';
+            }
+
+            document.getElementById('lbl-th-dev1').innerText = getDevoirLabel(appState.selectedClass, 1);
+            document.getElementById('lbl-th-dev2').innerText = getDevoirLabel(appState.selectedClass, 2);
+
+            const searchVal = cleanStringForFuzzy(document.getElementById('grade-search').value);
+            const filteredStudents = clsData.students.filter(s => {
+                const fullName = cleanStringForFuzzy(`${s.firstname} ${s.lastname}`);
+                return fullName.includes(searchVal);
+            });
+
+            let activeGrades = [];
+            clsData.students.forEach(s => {
+                const m = calculerMoyenneEleveMatiere(s, subjectId);
+                if (m !== null) {
+                    activeGrades.push(m);
+                }
+            });
+
+            if (activeGrades.length > 0) {
+                const sum = activeGrades.reduce((acc, curr) => acc + curr, 0);
+                const avg = sum / activeGrades.length;
+                const max = Math.max(...activeGrades);
+                const min = Math.min(...activeGrades);
+                
+                const threshold = isPrim ? 5 : 10;
+                const successes = activeGrades.filter(g => g >= threshold).length;
+                const rate = (successes / activeGrades.length) * 100;
+                const baseScale = isPrim ? "/ 10" : "/ 20";
+        
+                // Formatage propre pour les statistiques
+                const formattedAvg = Number(avg.toFixed(2)).toString().replace('.', ',');
+                const formattedMax = Number(max.toFixed(2)).toString().replace('.', ',');
+                const formattedMin = Number(min.toFixed(2)).toString().replace('.', ',');
+                
+                document.getElementById('sub-stats-average').innerText = `${formattedAvg} ${baseScale}`;
+                document.getElementById('sub-stats-max').innerText = `${formattedMax} ${baseScale}`;
+                document.getElementById('sub-stats-min').innerText = `${formattedMin} ${baseScale}`;
+                document.getElementById('sub-stats-rate').innerText = `${rate.toFixed(1)}%`;
+            } else {
+                document.getElementById('sub-stats-average').innerText = "N/A";
+                document.getElementById('sub-stats-max').innerText = "N/A";
+                document.getElementById('sub-stats-min').innerText = "N/A";
+                document.getElementById('sub-stats-rate').innerText = "N/A";
+            }
+
+            const tbody = document.getElementById('grades-table-body');
+            tbody.innerHTML = "";
+
+            const semKey = "p_" + appState.currentSemester;
+
+            filteredStudents.forEach(s => {
+                if (!s.grades) s.grades = {};
+                if (!s.grades[semKey]) s.grades[semKey] = {};
+                if (!s.grades[semKey][subjectId]) s.grades[semKey][subjectId] = {};
+
+                const g = s.grades[semKey][subjectId];
+                const val1 = g.dev1 !== undefined ? g.dev1 : "";
+                const val2 = g.dev2 !== undefined ? g.dev2 : "";
+                const val3 = g.dev3 !== undefined ? g.dev3 : "";
+                const valCompo = g.compo !== undefined ? g.compo : "";
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 text-left font-semibold text-slate-700">
+                        ${s.firstname} ${s.lastname.toUpperCase()}
+                    </td>
+                    <td class="p-2">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val1}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev1', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                    </td>
+                    <td class="p-2">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val2}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev2', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                    </td>
+                    <td class="p-2" style="display: ${dev3Visible ? '' : 'none'}">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val3}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev3', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                    </td>
+                    <td class="p-2">
+                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${valCompo}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'compo', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
         function updateStudentGrade(studentId, subjectId, field, value) {
             const key = getCurrentClassKey();
             const student = appState.classes[key].students.find(s => s.id === studentId);
@@ -2734,6 +2832,37 @@
             }
         }
 
+        function validerEncaissement() {
+            let student = null;
+            for (let k in appState.classes) {
+                student = appState.classes[k].students.find(s => s.id === currentStudentIdForFinance);
+                if (student) break;
+            }
+            if (!student) return;
+
+            const amt = parseInt(document.getElementById('encaissement-montant-input').value) || 0;
+            const method = document.getElementById('encaissement-methode-select').value;
+            
+            if (amt <= 0) {
+                showToast("Le montant doit être supérieur à 0 F.", "info");
+                return;
+            }
+
+            const p = student.payments[currentMonthIdxForFinance];
+            p.montantPaye = amt;
+            p.statut = "Payé";
+            p.methode = method;
+            
+            const today = new Date();
+            p.dateEncaissement = today.toLocaleDateString('fr-FR') + " " + today.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+
+            saveToStorage();
+            closeModal('encaissement-modal');
+            showToast(`Encaissement validé (${method}) !`, "success");
+            renderMensualitesList(student);
+            render();
+        }
+
         function populateRolloverSelector() {
             const select = document.getElementById('rollover-target-class');
             if (!select) return;
@@ -3019,6 +3148,7 @@
 </body>
 
 </html>
+
 
 
 
