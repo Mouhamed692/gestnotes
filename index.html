@@ -954,80 +954,91 @@
             }
         }
 
-        // ==========================================
-        // SYNCHRONISATION VIA GOOGLE APPS SCRIPT
-        // ==========================================
+
+async function sauvegarderSurDrive() {
+    if (!appState.googleSyncUrl) return;
+    const labelBtn = document.getElementById('lbl-gdrive-sync');
+    const originalText = labelBtn.innerText;
+    labelBtn.innerText = "Synchro...";
+    
+    try {
+        const response = await fetch(appState.googleSyncUrl, {
+            method: 'POST',
+            mode: 'cors',
+            redirect: 'follow', // Gère la redirection d'Apps Script
+            body: JSON.stringify(appState) // Envoi direct de l'état brut à votre doPost
+        });
+        const result = await response.json();
         
-        async function sauvegarderSurDrive() {
-            if (!appState.googleSyncUrl) return;
-            const labelBtn = document.getElementById('lbl-gdrive-sync');
-            const originalText = labelBtn.innerText;
-            labelBtn.innerText = "Synchro...";
-            
-            try {
-                const response = await fetch(appState.googleSyncUrl, {
-                    method: 'POST',
-                    mode: 'cors',
-                    redirect: 'follow', // Gestion transparente des redirections 302 d'Apps Script
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'save', data: appState })
-                });
-                const result = await response.json();
-                if (result.status === 'success') {
-                    showToast("Synchronisé sur Google Drive !", "success");
-                } else {
-                    showToast("Erreur synchro : " + result.message, "error");
-                }
-            } catch (err) {
-                console.error(err);
-                showToast("Échec de connexion cloud", "error");
-            } finally {
-                labelBtn.innerText = originalText;
-            }
+        if (result.status === 'success') {
+            showToast("Données synchronisées sur Google Drive !", "success");
+        } else if (result.error) {
+            showToast("Erreur de sauvegarde : " + result.error, "error");
+        } else {
+            showToast("Réponse inattendue du serveur cloud", "error");
+        }
+    } catch (err) {
+        console.error("Erreur de connexion :", err);
+        showToast("Échec de connexion au cloud", "error");
+    } finally {
+        labelBtn.innerText = originalText;
+    }
+}
+
+async function chargerBaseDepuisDrive() {
+    if (!appState.googleSyncUrl) return;
+    const labelBtn = document.getElementById('lbl-gdrive-sync');
+    const originalText = labelBtn.innerText;
+    labelBtn.innerText = "Téléchargement...";
+
+    try {
+        const response = await fetch(appState.googleSyncUrl, {
+            method: 'GET',
+            mode: 'cors',
+            redirect: 'follow'
+        });
+        const result = await response.json();
+        
+        if (result.error) {
+            showToast("Erreur lors du chargement : " + result.error, "error");
+            return;
         }
 
-        async function chargerBaseDepuisDrive() {
-            if (!appState.googleSyncUrl) return;
-            const labelBtn = document.getElementById('lbl-gdrive-sync');
-            const originalText = labelBtn.innerText;
-            labelBtn.innerText = "Téléchargement...";
-
-            try {
-                const response = await fetch(`${appState.googleSyncUrl}?action=load`, {
-                    method: 'GET',
-                    mode: 'cors',
-                    redirect: 'follow'
-                });
-                const result = await response.json();
-                if (result.status === 'success' && result.data) {
-                    // Validation structurelle minimale avant application
-                    if (result.data.classes) {
-                        appState = result.data;
-                        // On évite la boucle infinie en sauvant uniquement en local
-                        await saveToStorage(false); 
-                        populateFilters();
-                        updateHeaderDisplays();
-                        applyRoleRestrictions();
-                        render();
-                        showToast("Base synchronisée depuis Drive !", "success");
-                    }
-                }
-            } catch (err) {
-                console.error("Erreur de récupération cloud :", err);
-                showToast("Erreur lors du chargement cloud", "error");
-            } finally {
-                labelBtn.innerText = originalText;
+        // Si la réponse contient la structure de notre base (classes)
+        if (result && result.classes) {
+            if (Object.keys(result.classes).length === 0) {
+                showToast("Fichier cloud initialisé ou vide.", "info");
+            } else {
+                appState = result;
+                // Sauvegarde locale sans boucle de retour vers le cloud
+                await saveToStorage(false); 
+                
+                // Rafraîchissement des menus de l'interface
+                populateFilters();
+                updateHeaderDisplays();
+                applyRoleRestrictions();
+                render();
+                showToast("Base locale synchronisée depuis Drive !", "success");
             }
         }
+    } catch (err) {
+        console.error("Erreur de récupération cloud :", err);
+        showToast("Erreur lors de la récupération cloud", "error");
+    } finally {
+        labelBtn.innerText = originalText;
+    }
+}
 
-        function seConnecterAGoogleDrive() {
-            if (!appState.googleSyncUrl) {
-                showToast("Veuillez d'abord configurer l'URL Apps Script.", "error");
-                openModal('settings-modal');
-                return;
-            }
-            sauvegarderSurDrive();
-        }
+// Fonction appelée lors du clic sur le bouton "Synchro Cloud"
+function seConnecterAGoogleDrive() {
+    if (!appState.googleSyncUrl) {
+        showToast("Veuillez d'abord configurer l'URL Apps Script dans les réglages.", "error");
+        openModal('settings-modal');
+        return;
+    }
+    sauvegarderSurDrive();
+}
+
 
         // ==========================================
         // GESTION DES RÔLES & SÉCURITÉ
