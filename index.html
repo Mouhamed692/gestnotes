@@ -16,10 +16,11 @@
     
     <title>GestNotes – Administration scolaire</title>
     
-    <script src="tailwind.min.js"></script>
+    <!-- CDNs officiels pour garantir l'affichage correct sur n'importe quel support -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="html2pdf.bundle.min.js"></script>
-    <script src="idb-keyval.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd/idb-keyval-iife.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -67,10 +68,16 @@
             border-collapse: collapse;
         }
 
+        /* Remplace l'ancienne règle globale pour permettre l'alignement naturel des textes */
         td, th {
-            padding: 8px 6px;
-            text-align: center;
+            padding: 10px 12px;
+        }
+
+        /* Style strict de type tableur réservé uniquement à la grille de notes */
+        .grid-table td, .grid-table th {
             border: 1px solid #e2e8f0;
+            text-align: center;
+            padding: 8px 6px;
         }
     </style>
 </head>
@@ -252,7 +259,8 @@
             </div>
 
             <div class="overflow-x-auto w-full border border-slate-300 rounded-lg shadow-sm">
-                <table class="w-full text-xs border-collapse table-fixed min-w-[800px]">
+                <!-- Ajout de la classe .grid-table pour restreindre le style "tableur" centré uniquement aux notes -->
+                <table class="w-full text-xs border-collapse table-fixed min-w-[800px] grid-table">
                     <thead class="bg-slate-100">
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider sticky top-0 z-10">
                             <th class="p-3 text-left">Élève</th>
@@ -285,10 +293,11 @@
             </div>
 
             <div class="overflow-x-auto flex-1">
+                <!-- Cette table ne porte plus la classe globale forcée et retrouve un affichage aéré et ses alignements -->
                 <table class="w-full text-left border-collapse min-w-[600px]">
                     <thead>
                         <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/70">
-                            <th class="py-3.5 px-5">Élève</th>
+                            <th class="py-3.5 px-5 text-left">Élève</th>
                             <th class="py-3.5 px-5 text-center w-36">Moyenne Générale</th>
                             <th class="py-3.5 px-5 text-right w-80">Actions</th>
                         </tr>
@@ -303,8 +312,9 @@
         </section>
     </main>
 
+    <!-- Ajout de max-h et overflow-y pour ne pas être coupé en bas sur les petits écrans de smartphones -->
     <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100 max-h-[92vh] overflow-y-auto">
             <h3 class="text-2xl font-bold mb-6 text-slate-800 border-b pb-4 flex items-center gap-2">
                 <i class="fa-solid fa-file-signature text-[#4c1d95]"></i> Fiche d'Inscription Scolaire
             </h3>
@@ -402,6 +412,7 @@
             </div>
 
             <div class="flex-1 overflow-y-auto border border-slate-100 rounded-xl">
+                <!-- Rétablissement de l'alignement standard du tableau financier -->
                 <table class="w-full text-left text-sm min-w-[700px]">
                     <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[11px] tracking-wider sticky top-0">
                         <tr>
@@ -562,6 +573,7 @@
             </div>
 
             <div class="flex-1 overflow-y-auto border border-slate-100 rounded-xl">
+                <!-- Tableau de caisse avec ses alignements d'origine -->
                 <table class="w-full text-left text-xs min-w-[700px]">
                     <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px] tracking-wider sticky top-0">
                         <tr>
@@ -617,6 +629,7 @@
             </div>
 
             <div class="flex-1 overflow-y-auto border border-slate-100 rounded-xl mb-4">
+                <!-- Rétablissement de l'alignement naturel du tableau de relance -->
                 <table class="w-full text-left text-xs min-w-[550px]">
                     <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px] tracking-wider sticky top-0">
                         <tr>
@@ -709,7 +722,7 @@
         </div>
     </div>
 
-    <!-- Niveau de superposition élevé pour que les toasts soient visibles sur tous les modals -->
+    <!-- Niveau de superposition élevé (z-[100]) pour que les toasts soient toujours visibles, même au-dessus des modals -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
     <div style="position: absolute; left: -9999px; top: -9999px; width: 700px; height: auto; overflow: hidden; pointer-events: none;">
@@ -898,7 +911,7 @@
                         appState.classes[key] = {
                             subjects: getDefaultSubjects(c),
                             students: [],
-                            fees: { inscription: 0, mensualite: 0 }, 
+                            fees: { inscription: 0, mensualite: 0 },
                             dev3Visible: {}
                         };
                     }
@@ -1014,7 +1027,7 @@
                     render();
                     
                     if (btn) btn.className = "flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm";
-                    if (lbl) lbl.innerText = "Cloud Sync Actif";
+                    if (lbl) lbl.innerText = "Cloud Synced";
                     showToast("Base synchronisée avec succès !", "success");
                 }
             } catch (error) {
@@ -1257,6 +1270,7 @@
                 if (!appState.classes[newKey]) {
                     appState.classes[newKey] = { students: [], subjects: getDefaultSubjects(targetClass), fees: { inscription: 0, mensualite: 0 } };
                 }
+                if (!appState.classes[newKey].students) idbKeyval = [];
                 if (!appState.classes[newKey].students) appState.classes[newKey].students = [];
 
                 const targetFees = appState.classes[newKey].fees || { inscription: 0, mensualite: 0 };
@@ -2356,7 +2370,7 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/50 transition-colors border-b border-slate-100";
                 tr.innerHTML = `
-                    <td class="py-3 px-5 font-bold text-slate-800">
+                    <td class="py-3 px-5 font-bold text-slate-800 text-left">
                         ${s.firstname} <span class="font-normal text-slate-600">${s.lastname.toUpperCase()}</span>
                     </td>
                     <td class="py-3 px-5 text-center">
@@ -2636,8 +2650,8 @@
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 transition-colors";
                     tr.innerHTML = `
-                        <td class="px-4 py-3 font-semibold text-slate-800">${s.firstname} ${s.lastname.toUpperCase()}</td>
-                        <td class="px-4 py-3 text-slate-600 font-medium">${monthIdx === 0 ? "Frais d'inscription" : p.designation}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-800 text-left">${s.firstname} ${s.lastname.toUpperCase()}</td>
+                        <td class="px-4 py-3 text-slate-600 font-medium text-left">${monthIdx === 0 ? "Frais d'inscription" : p.designation}</td>
                         <td class="px-4 py-3 text-right font-extrabold text-rose-600">${remains.toLocaleString()} F</td>
                         <td class="px-4 py-3 text-center text-slate-500">${s.phone || '-'}</td>
                         <td class="px-4 py-3 text-center">
@@ -2781,10 +2795,10 @@
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 transition-colors";
                     tr.innerHTML = `
-                        <td class="px-4 py-3 text-slate-500 font-semibold">${item.date}</td>
-                        <td class="px-4 py-3 font-semibold text-slate-800">${item.studentName}</td>
-                        <td class="px-4 py-3 text-slate-600 font-semibold">${item.className}</td>
-                        <td class="px-4 py-3 text-slate-600">${item.designation}</td>
+                        <td class="px-4 py-3 text-slate-500 font-semibold text-left">${item.date}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-800 text-left">${item.studentName}</td>
+                        <td class="px-4 py-3 text-slate-600 font-semibold text-left">${item.className}</td>
+                        <td class="px-4 py-3 text-slate-600 text-left">${item.designation}</td>
                         <td class="px-4 py-3 text-center">
                             <span class="px-2.5 py-0.5 border text-[10px] rounded-md font-bold uppercase bg-slate-100 text-slate-700">${item.method}</span>
                         </td>
