@@ -271,199 +271,250 @@
         </div>
     </div>
 
-    <!-- ... (Autres Modals : Inscription, Paiements, etc. restent identiques) ... -->
+<script>
+    // 1. Constantes et État initial
+    const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+    const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
+    
+    const DEFAULT_STATE = {
+        currentYear: "2025-2026",
+        currentSemester: 1,
+        selectedClass: "6ème",
+        selectedSection: "",
+        currentRole: "admin",
+        accessCode: "1234",
+        googleSyncUrl: "",
+        waTemplates: {
+            reminder: "Bonjour, le paiement de {frais} pour {eleve} est attendu. Merci. 🎓",
+            bulletin: "Le bulletin de {eleve} est disponible. 🎓",
+            receipt: "Paiement reçu pour {eleve} : {montant} F. Merci. 🎓"
+        },
+        classes: {}
+    };
 
-    <script>
-        // Logique de base et constantes
-        const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-        const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
-        let appState = null;
-        let driveSyncTimeout = null;
+    let appState = null;
+    let driveSyncTimeout = null;
 
-        // INITIALISATION
-        async function initApp() {
-            const savedState = await idbKeyval.get("gestnotes_state");
-            appState = savedState || DEFAULT_STATE;
-            buildEmptyState();
+    // 2. Fonctions utilitaires (Obligatoires pour l'affichage)
+    function isPrimary(className) {
+        return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className);
+    }
 
-            const role = localStorage.getItem("gestnotes_local_role") || "admin";
-            appState.currentRole = role;
+    function getPeriodLabel(className, periodNum) {
+        return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`;
+    }
 
-            populateFilters();
-            updateHeaderDisplays();
-            applyRoleRestrictions();
-            
-            if (appState.googleSyncUrl) chargerBaseDepuisDrive();
+    function getSectionsForClass(cls) {
+        if (["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"].includes(cls)) {
+            return ["", "A", "B", "C"];
         }
+        if (["Seconde", "Première", "Terminale"].includes(cls)) {
+            return ["L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S2", "S2A", "S2B"];
+        }
+        return [""];
+    }
 
-        // --- GESTION DES RÔLES ET FILTRES PROFESSEURS ---
+    function getCurrentClassKey() {
+        return `${appState.selectedClass}_${appState.selectedSection}`;
+    }
 
-        function onRoleChange() {
-            const select = document.getElementById('role-selector');
-            const targetRole = select.value;
-            const requiredCode = appState.accessCode || "1234";
-
-            if (targetRole === 'admin' || targetRole === 'comptable') {
-                const password = prompt("Code d'accès :");
-                if (password !== requiredCode) {
-                    alert("Accès refusé.");
-                    select.value = localStorage.getItem("gestnotes_local_role") || "admin";
-                    return;
-                }
-                localStorage.setItem("gestnotes_local_role", targetRole);
-                localStorage.removeItem("gestnotes_teacher_name");
-                applyRoleRestrictions();
-            } else {
-                openTeacherLoginModal();
+    // 3. Gestion de l'interface (Modals et Listes)
+    function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.classList.remove('hidden');
+            if (id === 'settings-modal') {
+                document.getElementById('settings-year').value = appState.currentYear;
+                document.getElementById('settings-access-code').value = appState.accessCode;
+                document.getElementById('settings-gdrive-sync-url').value = appState.googleSyncUrl;
+                updateSettingsPeriodSelect();
+                populateRolloverSelector();
             }
         }
+    }
 
-        function openTeacherLoginModal() {
-            const savedName = localStorage.getItem("gestnotes_teacher_name") || "";
-            document.getElementById('t-login-name').value = savedName;
-            openModal('teacher-login-modal');
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function populateFilters() {
+        const classSelect = document.getElementById('filter-class');
+        if (!classSelect) return;
+        classSelect.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass === c ? 'selected' : ''}>${c}</option>`).join('');
+        updateSectionFilterOptions();
+    }
+
+    function updateSectionFilterOptions() {
+        const sectSelect = document.getElementById('filter-section');
+        if (!sectSelect) return;
+        const sections = getSectionsForClass(appState.selectedClass);
+        sectSelect.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection === s ? 'selected' : ''}>${s || 'Général'}</option>`).join('');
+    }
+
+    function updateHeaderDisplays() {
+        document.getElementById('display-year').innerText = appState.currentYear;
+        document.getElementById('display-semester').innerText = getPeriodLabel(appState.selectedClass, appState.currentSemester);
+    }
+
+    function updateSettingsPeriodSelect() {
+        const select = document.getElementById('settings-semester');
+        const primary = isPrimary(appState.selectedClass);
+        select.innerHTML = primary 
+            ? `<option value="1">Trimestre 1</option><option value="2">Trimestre 2</option><option value="3">Trimestre 3</option>`
+            : `<option value="1">Semestre 1</option><option value="2">Semestre 2</option>`;
+        select.value = appState.currentSemester;
+    }
+
+    // 4. Initialisation
+    async function initApp() {
+        const savedState = await idbKeyval.get("gestnotes_state");
+        appState = savedState || JSON.parse(JSON.stringify(DEFAULT_STATE));
+        buildEmptyState();
+
+        const role = localStorage.getItem("gestnotes_local_role") || "admin";
+        appState.currentRole = role;
+
+        populateFilters();
+        updateHeaderDisplays();
+        applyRoleRestrictions();
+        
+        if (appState.googleSyncUrl) chargerBaseDepuisDrive();
+    }
+
+    // 5. Actions Utilisateur
+    function onClassChange() {
+        appState.selectedClass = document.getElementById('filter-class').value;
+        appState.selectedSection = "";
+        updateSectionFilterOptions();
+        updateHeaderDisplays();
+        render();
+    }
+
+    function onSectionChange() {
+        appState.selectedSection = document.getElementById('filter-section').value;
+        render();
+    }
+
+    async function saveSettings() {
+        const role = localStorage.getItem("gestnotes_local_role") || "admin";
+        if (role !== 'enseignant') {
+            appState.currentYear = document.getElementById('settings-year').value;
+            appState.accessCode = document.getElementById('settings-access-code').value || "1234";
+            appState.googleSyncUrl = document.getElementById('settings-gdrive-sync-url').value;
         }
+        appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
+        await saveToStorage();
+        closeModal('settings-modal');
+        location.reload(); // Recharge pour appliquer tous les changements
+    }
 
-        function submitTeacherLogin() {
-            const name = document.getElementById('t-login-name').value.trim();
-            if (!name) return alert("Nom requis.");
-            localStorage.setItem("gestnotes_local_role", "enseignant");
-            localStorage.setItem("gestnotes_teacher_name", name);
-            closeModal('teacher-login-modal');
+    function onRoleChange() {
+        const select = document.getElementById('role-selector');
+        const targetRole = select.value;
+        const requiredCode = appState.accessCode || "1234";
+
+        if (targetRole === 'admin' || targetRole === 'comptable') {
+            const password = prompt("Code d'accès :");
+            if (password !== requiredCode) {
+                alert("Accès refusé.");
+                select.value = localStorage.getItem("gestnotes_local_role") || "admin";
+                return;
+            }
+            localStorage.setItem("gestnotes_local_role", targetRole);
+            localStorage.removeItem("gestnotes_teacher_name");
             applyRoleRestrictions();
-            showToast(`Session active : ${name}`, "success");
+        } else {
+            openTeacherLoginModal();
         }
+    }
 
-        function applyRoleRestrictions() {
-            const role = localStorage.getItem("gestnotes_local_role") || "admin";
-            const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
-            document.getElementById('role-selector').value = role;
+    function openTeacherLoginModal() {
+        const savedName = localStorage.getItem("gestnotes_teacher_name") || "";
+        document.getElementById('t-login-name').value = savedName;
+        openModal('teacher-login-modal');
+    }
 
-            const indicator = document.getElementById('active-teacher-indicator');
-            if (role === 'enseignant' && teacherName) {
-                indicator.innerText = `Enseignant : ${teacherName}`;
-                indicator.classList.remove('hidden');
-            } else { indicator.classList.add('hidden'); }
+    function submitTeacherLogin() {
+        const name = document.getElementById('t-login-name').value.trim();
+        if (!name) return alert("Nom requis.");
+        localStorage.setItem("gestnotes_local_role", "enseignant");
+        localStorage.setItem("gestnotes_teacher_name", name);
+        closeModal('teacher-login-modal');
+        applyRoleRestrictions();
+        showToast(`Session active : ${name}`, "success");
+    }
 
-            // Filtres : Toujours actifs pour permettre la navigation multi-classe
-            document.getElementById('filter-class').disabled = false;
-            document.getElementById('filter-section').disabled = false;
+    function applyRoleRestrictions() {
+        const role = localStorage.getItem("gestnotes_local_role") || "admin";
+        const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
+        document.getElementById('role-selector').value = role;
 
-            const adminElements = ['btn-class-fees', 'btn-manage-subjects', 'btn-wa-reminders', 'btn-caisse-jour', 'btn-add-student', 'btn-add-student-shortcut', 'class-stats-section', 'btn-export-base', 'btn-import-base'];
-            
-            adminElements.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = (role === 'enseignant') ? 'none' : (id === 'class-stats-section' ? 'grid' : '');
+        const indicator = document.getElementById('active-teacher-indicator');
+        if (role === 'enseignant' && teacherName) {
+            indicator.innerText = `Enseignant : ${teacherName}`;
+            indicator.classList.remove('hidden');
+        } else { indicator.classList.add('hidden'); }
+
+        document.getElementById('filter-class').disabled = false;
+        document.getElementById('filter-section').disabled = false;
+
+        const adminOnly = ['btn-class-fees', 'btn-manage-subjects', 'btn-wa-reminders', 'btn-caisse-jour', 'btn-add-student', 'btn-add-student-shortcut', 'class-stats-section'];
+        adminOnly.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = (role === 'enseignant') ? 'none' : (id === 'class-stats-section' ? 'grid' : '');
+        });
+        render();
+    }
+
+    function populateRolloverSelector() {
+        const select = document.getElementById('rollover-target-class');
+        if (select) select.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    // 6. Rendu et Données
+    function render() {
+        const key = getCurrentClassKey();
+        const clsData = appState.classes[key] || { students: [], subjects: [] };
+        
+        calculateClassStats();
+        populateSubjectSelector();
+        renderStudentsTable(clsData.students, clsData.subjects);
+        renderGradesGrid();
+    }
+
+    function buildEmptyState() {
+        classNames.forEach(c => {
+            getSectionsForClass(c).forEach(s => {
+                const key = `${c}_${s}`;
+                if (!appState.classes[key]) {
+                    appState.classes[key] = { students: [], subjects: getDefaultSubjects(c), fees: { inscription: 0, mensualite: 0 } };
+                }
             });
+        });
+    }
 
-            if (role === 'comptable') {
-                document.getElementById('btn-manage-subjects').style.display = 'none';
-                document.getElementById('grades-section').style.display = 'none';
-            }
-            render();
+    function getDefaultSubjects(className) {
+        return isPrimary(className) 
+            ? [{ id: "sub_1", name: "Mathématiques", coef: 10, teacherName: "" }, { id: "sub_2", name: "Français", coef: 10, teacherName: "" }]
+            : [{ id: "sub_1", name: "Mathématiques", coef: 4, teacherName: "" }, { id: "sub_2", name: "Français", coef: 5, teacherName: "" }];
+    }
+
+    async function saveToStorage() {
+        await idbKeyval.set("gestnotes_state", appState);
+        if (appState.googleSyncUrl) {
+            document.getElementById('lbl-gdrive-sync').innerText = "Sync...";
+            clearTimeout(driveSyncTimeout);
+            driveSyncTimeout = setTimeout(sauvegarderSurDrive, 3000);
         }
+    }
 
-        function populateSubjectSelector() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key] || { subjects: [] };
-            const select = document.getElementById('grade-subject-select');
-            if (!select) return;
+    // Lancement
+    window.addEventListener('DOMContentLoaded', initApp);
+</script>
 
-            const role = localStorage.getItem("gestnotes_local_role") || "admin";
-            const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
 
-            let filtered = clsData.subjects || [];
-            if (role === 'enseignant' && teacherName) {
-                const search = teacherName.toLowerCase().trim();
-                filtered = filtered.filter(sub => sub.teacherName && sub.teacherName.toLowerCase().trim() === search);
-            }
 
-            select.innerHTML = filtered.length > 0 
-                ? filtered.map(s => `<option value="${s.id}">${s.name}</option>`).join('')
-                : `<option value="">Aucune matière assignée</option>`;
-            
-            renderGradesGrid();
-        }
-
-        // --- TRANSITION SIMPLIFIÉE (ROLLOVER) ---
-
-        function executeRollover() {
-            const targetClass = document.getElementById('rollover-target-class').value;
-            const key = getCurrentClassKey();
-            const currentClsData = appState.classes[key];
-
-            if (!currentClsData || currentClsData.students.length === 0) return showToast("Classe vide.", "error");
-
-            askConfirmation(
-                `Transférer les ${currentClsData.students.length} élèves vers ${targetClass} ?\nLes notes seront réinitialisées.`,
-                `<i class="fas fa-random text-amber-600"></i> Transition de niveau`,
-                function() {
-                    const validSections = getSectionsForClass(targetClass);
-                    let targetSection = appState.selectedSection;
-                    if (!validSections.includes(targetSection)) targetSection = validSections[0] || "";
-
-                    const targetKey = `${targetClass}_${targetSection}`;
-                    if (!appState.classes[targetKey]) {
-                        appState.classes[targetKey] = { students: [], subjects: getDefaultSubjects(targetClass), fees: { inscription: 0, mensualite: 0 }, dev3Visible: {} };
-                    }
-                    
-                    const targetFees = appState.classes[targetKey].fees || { inscription: 0, mensualite: 0 };
-
-                    currentClsData.students.forEach(s => {
-                        const newPayments = moisAnnee.map((m, idx) => ({
-                            designation: m, statut: "Non payé",
-                            montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
-                            montantPaye: 0, methode: "", dateEncaissement: ""
-                        }));
-
-                        appState.classes[targetKey].students.push({
-                            ...s, id: "student_" + Date.now() + Math.random().toString(36).substr(2,5),
-                            grades: {}, payments: newPayments
-                        });
-                    });
-
-                    currentClsData.students = []; // On vide l'ancienne classe
-                    saveToStorage();
-                    appState.selectedClass = targetClass;
-                    appState.selectedSection = targetSection;
-                    populateFilters();
-                    closeModal('settings-modal');
-                    showToast("Transition réussie !", "success");
-                    render();
-                }
-            );
-        }
-
-        // --- FONCTIONS DE SAUVEGARDE ET SYNC ---
-
-        async function saveToStorage(forceCloud = true) {
-            try {
-                await idbKeyval.set("gestnotes_state", appState);
-                if (forceCloud && appState.googleSyncUrl) {
-                    const lbl = document.getElementById('lbl-gdrive-sync');
-                    if (lbl) lbl.innerText = "Attente Cloud...";
-                    clearTimeout(driveSyncTimeout);
-                    driveSyncTimeout = setTimeout(sauvegarderSurDrive, 3000);
-                }
-            } catch (e) { console.error(e); }
-        }
-
-        async function sauvegarderSurDrive() {
-            if (!appState.googleSyncUrl) return;
-            try {
-                const res = await fetch(appState.googleSyncUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(appState)
-                });
-                if (res.ok) document.getElementById('lbl-gdrive-sync').innerText = "Cloud Synced";
-            } catch (e) { console.error(e); }
-        }
-
-        // ... (Reste des fonctions techniques : buildEmptyState, renderGradesGrid, etc. sont conservées) ...
-
-        window.addEventListener('DOMContentLoaded', initApp);
-    </script>
 </body>
 </html>
 
