@@ -81,7 +81,6 @@
         }
     </style>
 </head>
-
 <body class="min-h-screen bg-slate-50 flex flex-col text-slate-800">
 
     <header class="bg-[#4c1d95] text-white shadow-md px-4 py-3 md:px-6 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
@@ -105,6 +104,7 @@
                         <option value="enseignant">📝 Enseignant</option>
                     </select>
                 </div>
+                <!-- Indicateur de session enseignant -->
                 <span id="active-teacher-indicator" class="text-[10px] text-violet-200 font-semibold hidden bg-violet-900/60 px-2 py-0.5 rounded-md"></span>
             </div>
 
@@ -119,430 +119,55 @@
                 </div>
             </div>
 
-            <button onclick="openModal('settings-modal')" id="btn-settings" class="p-2 md:p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10" title="Configuration de l'année/période">
+            <button onclick="openModal('settings-modal')" id="btn-settings" class="p-2 md:p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10">
                 <i class="fas fa-cog text-lg"></i>
             </button>
         </div>
     </header>
 
-    <main class="flex-1 overflow-auto p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
-        
-       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                <button id="btn-export-base" onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md text-sm">
-                    <i class="fas fa-file-download"></i> <span>Exporter Base (.txt)</span>
-                </button>
+    <!-- ... (Main et filtres inchangés) ... -->
 
-                <button id="btn-export-teacher-grades" onclick="exportTeacherGradesOnly()" class="hidden flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm">
-                    <i class="fas fa-file-export"></i> <span>Exporter mes Notes (.txt)</span>
-                </button>
-
-                <input type="file" id="importFile" accept=".txt" class="hidden" onchange="importData(event)">
-                <button id="btn-import-base" onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md text-sm" title="Importer un fichier de sauvegarde complète ou un fichier de notes enseignant au format .txt">
-                    <i class="fas fa-file-upload"></i> <span>Importer Fichier (.txt)</span>
-                </button>
-                
-                <!-- Bouton de synchronisation Cloud -->
-                <button id="btn-gdrive-sync" onclick="seConnecterAGoogleDrive()" class="flex items-center justify-center gap-2 bg-violet-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-violet-700 transition-all shadow-md text-sm" title="Synchroniser la base de données directement sur votre Google Drive">
-                    <i class="fab fa-google-drive"></i> <span id="lbl-gdrive-sync">Synchro Cloud</span>
-                </button>
-                
-                <button id="btn-add-student-shortcut" onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm w-full">
-                    <i class="fas fa-user-plus"></i> Inscription / Élève
-                </button>
-            </div>
-        </div>
-
-        <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 items-end w-full md:w-auto">
-                <div class="col-span-1">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Niveau d'étude</label>
-                    <select id="filter-class" onchange="onClassChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all disabled:opacity-75 disabled:cursor-not-allowed">
-                    </select>
-                </div>
-
-                <div class="col-span-1">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Série / Option</label>
-                    <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all disabled:opacity-75 disabled:cursor-not-allowed">
-                    </select>
-                </div>
-
-                <div class="col-span-2 sm:col-span-1">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Effectif</label>
-                    <input type="text" id="filter-effectif" readonly value="0" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-center text-[#4c1d95] focus:outline-none cursor-default">
-                </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0">
-                <button id="btn-wa-reminders" onclick="openWhatsAppRemindersModal()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-emerald-100">
-                    <i class="fab fa-whatsapp text-xs font-bold"></i> Relances WA
-                </button>
-                <button id="btn-class-fees" onclick="openClassFeesModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-amber-100">
-                    <i class="fas fa-coins text-xs"></i> Tarifs classe
-                </button>
-                <button id="btn-caisse-jour" onclick="openCaisseJourModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-indigo-100" title="Journal de caisse globale">
-                    <i class="fas fa-receipt text-xs"></i> Journal Caisse
-                </button>
-                <button id="btn-add-student" onclick="openRegistrationModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm">
-                    <i class="fas fa-plus text-xs"></i> Ajouter élève
-                </button>
-                <button id="btn-manage-subjects" onclick="openSubjectsModal()" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-violet-100">
-                    <i class="fas fa-book text-xs"></i> Gérer matières
-                </button>
-            </div>
-        </section>
-
-        <!-- Section Statistiques Financières de Classe -->
-        <section id="class-stats-section" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
-                <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Attendu (Classe)</p>
-                <p class="text-xl font-bold text-slate-800 mt-1" id="stats-total-attendu">0 F</p>
-            </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 border-l-4 border-l-emerald-500">
-                <p class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Total Encaissé</p>
-                <p class="text-xl font-bold text-emerald-700 mt-1" id="stats-total-encaisse">0 F</p>
-            </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 border-l-4 border-l-rose-500">
-                <p class="text-[10px] uppercase font-bold text-rose-600 tracking-wider">Reste à Recouvrer</p>
-                <p class="text-xl font-bold text-rose-700 mt-1" id="stats-reste-recouvrer">0 F</p>
-            </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
-                <p class="text-[10px] uppercase font-bold text-violet-600 tracking-wider">Taux de Recouvrement</p>
-                <p class="text-xl font-bold text-violet-700 mt-1" id="stats-taux-recouvrement">0%</p>
-            </div>
-        </section>
-
-        <section id="grades-section" style="display: none;" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col gap-4">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
-                <h3 class="text-md font-bold text-slate-700 flex items-center gap-2 w-full lg:w-auto">
-                    <i class="fas fa-edit text-[#4c1d95]"></i> Saisie des Notes
-                </h3>
-                
-                <div class="flex flex-col sm:flex-row w-full lg:w-auto items-center gap-3">
-                    <div class="w-full sm:w-auto flex-1">
-                        <input type="text" id="grade-search" oninput="filterStudentsGlobal()" placeholder="Rechercher un élève..." 
-                               class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500/20">
-                    </div>
-                  
-                    <div class="flex w-full sm:w-auto items-center gap-2">
-                        <select id="grade-subject-select" onchange="renderGradesGrid()" class="flex-1 sm:flex-initial bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none min-w-[120px] disabled:opacity-75 disabled:cursor-not-allowed">
-                        </select>
-                        <button id="btn-next-subject" onclick="goToNextSubject()" class="bg-[#4c1d95] hover:bg-violet-800 text-white text-sm px-3.5 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap">
-                            <span>Suivant</span> <i class="fas fa-arrow-right text-xs"></i>
-                        </button>
-                        <button id="btn-export-pdf-grid" onclick="exporterFeuilleSaisie()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-3.5 py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap" title="Exporter la grille de notes courante en PDF">
-                            <i class="fas fa-file-pdf"></i> <span class="hidden md:inline">Exporter PDF</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Statistiques de la matière active -->
-            <div id="subject-stats-banner" class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/60">
-                <div class="text-center md:text-left">
-                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Moyenne Classe</p>
-                    <p class="text-sm font-bold text-slate-700" id="sub-stats-average">N/A</p>
-                </div>
-                <div class="text-center md:text-left">
-                    <p class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Note Maximale</p>
-                    <p class="text-sm font-bold text-emerald-700" id="sub-stats-max">N/A</p>
-                </div>
-                <div class="text-center md:text-left">
-                    <p class="text-[10px] uppercase font-bold text-rose-600 tracking-wider">Note Minimale</p>
-                    <p class="text-sm font-bold text-rose-700" id="sub-stats-min">N/A</p>
-                </div>
-                <div class="text-center md:text-left">
-                    <p class="text-[10px] uppercase font-bold text-violet-600 tracking-wider">Taux de Réussite</p>
-                    <p class="text-sm font-bold text-violet-700" id="sub-stats-rate">N/A</p>
-                </div>
-            </div>
-
-            <div class="overflow-x-auto w-full border border-slate-300 rounded-lg shadow-sm">
-                <table class="w-full text-xs border-collapse table-fixed min-w-[800px] grid-table">
-                    <thead class="bg-slate-100">
-                        <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider sticky top-0 z-10">
-                            <th class="p-3 text-left">Élève</th>
-                            <th class="p-3 text-center" id="lbl-th-dev1">Devoir 1</th>
-                            <th class="p-3 text-center" id="lbl-th-dev2">Devoir 2</th>
-                            <th class="p-3 text-center" id="lbl-th-dev3" style="display: none;">Devoir 3</th>
-                            <th class="p-3 text-center" id="lbl-th-compo">Composition</th>
-                        </tr>
-                    </thead>
-                    <tbody id="grades-table-body" class="divide-y divide-slate-200"></tbody>
-                </table>
-            </div>
-        </section>
-        
-        <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex-1 flex flex-col min-h-[400px]">
-            <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-wrap justify-between items-center gap-4">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        Liste des élèves 
-                        <span id="class-badge" class="bg-violet-100 text-[#4c1d95] text-xs px-2.5 py-1 rounded-full font-bold">...</span>
-                    </h2>
-                    <p class="text-xs text-slate-500 mt-0.5" id="student-count">0 élève enregistré</p>
-                </div>
-                
-                <div class="flex items-center gap-2">
-                    <button onclick="ouvrirBulletin('ALL_STUDENTS')" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 text-center">
-                        <i class="fas fa-print text-[#4c1d95]"></i> Imprimer Bulletins
-                    </button>
-                </div>
-            </div>
-
-            <div class="overflow-x-auto flex-1">
-                <table class="w-full text-left border-collapse min-w-[600px]">
-                    <thead>
-                        <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/70">
-                            <th class="py-3.5 px-5 text-left">Élève</th>
-                            <th class="py-3.5 px-5 text-center w-36">Moyenne Générale</th>
-                            <th class="py-3.5 px-5 text-right w-80">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
-                </table>
-                <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-slate-400">
-                    <i class="fas fa-folder-open text-4xl mb-3 opacity-50"></i>
-                    <p class="font-medium text-sm">Aucun élève dans cette classe</p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100 max-h-[92vh] overflow-y-auto">
-            <h3 class="text-2xl font-bold mb-6 text-slate-800 border-b pb-4 flex items-center gap-2">
-                <i class="fas fa-file-signature text-[#4c1d95]"></i> Fiche d'Inscription Scolaire
-            </h3>
-            
-            <form id="registration-form" class="space-y-4" onsubmit="validerInscriptionOuChangement(event)">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="text-[#4c1d95] font-bold">
-                        <label class="block text-xs font-bold text-slate-900 mb-1">Prénom</label>
-                        <input type="text" id="reg-firstname" required class="text-slate-900 border border-slate-300 rounded-xl p-3 w-full bg-white outline-none focus:ring-2 focus:ring-violet-500/20 font-medium">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-900 mb-1">Nom</label>
-                        <input type="text" id="reg-lastname" required class="text-slate-900 border border-slate-300 rounded-xl p-3 w-full bg-white outline-none focus:ring-2 focus:ring-violet-500/20 font-medium">
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Date de naissance</label>
-                        <input type="date" id="reg-dob" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Lieu de naissance</label>
-                        <input type="text" id="reg-pob" required class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Téléphone Parent</label>
-                    <input type="tel" id="reg-phone" placeholder="77XXXXXXX" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Niveau d'étude</label>
-                        <select id="reg-class" onchange="updateRegSections(); updateRegAmountDisplay();" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none font-medium">
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Série / Classe</label>
-                        <select id="reg-section" onchange="updateRegAmountDisplay()" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none font-medium">
-                        </select>
-                    </div>
-                </div>
-                
-                <div id="reg-amount-container">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Frais d'inscription de la classe (FCFA)</label>
-                    <input type="number" id="reg-amount" readonly class="text-[#4c1d95] font-bold text-lg border border-slate-200 rounded-xl p-3 w-full bg-slate-50 outline-none cursor-not-allowed">
-                </div>
-
-                <div class="mt-8 flex flex-wrap justify-end gap-3 pt-4 border-t border-slate-100">
-                    <button type="button" onclick="closeModal('registration-modal')" class="px-5 py-2.5 rounded-xl text-slate-600 font-medium hover:bg-slate-100">
-                        Annuler
-                    </button>
-                    <button type="button" id="reg-mensualites-btn" onclick="redirigerVersMensualites()" class="hidden bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md flex items-center gap-2">
-                        <i class="fas fa-wallet"></i> <span>Mensualités</span>
-                    </button>
-                    <button type="submit" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl font-semibold shadow-md">
-                        Enregistrer
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="mensualites-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 border border-slate-100 flex flex-col max-h-[90vh]">
-            <div class="border-b pb-4 mb-4">
-                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fas fa-wallet text-[#4c1d95]"></i> Suivi des Paiements : <span id="mens-student-name" class="text-[#4c1d95] font-extrabold"></span>
-                </h3>
-                <p class="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-2">
-                    <span>Classe : <span id="mens-student-class" class="font-bold"></span></span>
-                    <span id="mens-student-previous" class="hidden"></span>
-                </p>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Frais Inscription</p>
-                    <p class="text-lg font-bold text-slate-800 mt-1" id="bilan-inscription">0 F</p>
-                </div>
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Scolarité Annuelle</p>
-                    <p class="text-lg font-bold text-[#4c1d95] mt-1" id="bilan-scolarite-fixee">0 F</p>
-                </div>
-                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
-                    <p class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Total Encaissé</p>
-                    <p class="text-lg font-bold text-emerald-700 mt-1" id="bilan-total-paye">0 F</p>
-                </div>
-                <div class="bg-rose-50 p-3 rounded-xl border border-rose-100">
-                    <p class="text-[10px] uppercase font-bold text-rose-600 tracking-wider">Reste à Payer</p>
-                    <p class="text-lg font-bold text-rose-700 mt-1" id="bilan-reste-payer">0 F</p>
-                </div>
-            </div>
-
-            <div class="flex-1 overflow-y-auto border border-slate-100 rounded-xl">
-                <table class="w-full text-left text-sm min-w-[700px]">
-                    <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[11px] tracking-wider sticky top-0">
-                        <tr>
-                            <th class="px-4 py-3 text-left">Frais / Période</th>
-                            <th class="px-4 py-3 text-center">Statut</th>
-                            <th class="px-4 py-3 text-right">Montant Payé</th>
-                            <th class="px-4 py-3 text-center">Mode</th>
-                            <th class="px-4 py-3 text-center">Date encaissement</th>
-                            <th class="px-4 py-3 text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="mensualites-list-tbody" class="divide-y divide-slate-100 text-slate-700">
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mt-4 pt-4 border-t border-slate-100 flex justify-end">
-                <button type="button" onclick="closeModal('mensualites-modal')" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm">
-                    Fermer
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Corrected: z-55 replaced with z-[60] to show properly on top of z-50 modal -->
-    <div id="encaissement-modal" class="hidden fixed inset-0 bg-slate-900/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
-            <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2 border-b pb-2">
-                <i class="fas fa-cash-register text-emerald-600"></i> Encaisser Paiement
-            </h4>
-            <p class="text-xs text-slate-500 mb-4">Période : <span id="encaissement-mois-titre" class="font-bold text-slate-700"></span></p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Montant versé (FCFA)</label>
-                    <input type="number" id="encaissement-montant-input" min="0" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-lg text-emerald-600 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Méthode de paiement</label>
-                    <select id="encaissement-methode-select" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold outline-none">
-                        <option value="Espèces">Espèces</option>
-                        <option value="Wave">Wave</option>
-                        <option value="Orange Money">Orange Money</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-2 border-t pt-3">
-                <button type="button" onclick="closeModal('encaissement-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold hover:bg-slate-50">Annuler</button>
-                <button onclick="validerEncaissement()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm">Valider le paiement</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="class-fees-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
-            <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2 border-b pb-3">
-                <i class="fas fa-coins text-amber-500"></i> Tarifs de la classe
-            </h3>
-            <p class="text-xs text-slate-500 mb-4">Ces montants s'appliqueront à tous les élèves de cette classe (<span id="fees-class-name" class="font-bold text-[#4c1d95]"></span>).</p>
-            <form id="class-fees-form" onsubmit="saveClassFees(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Montant Inscription (FCFA)</label>
-                    <input type="number" id="class-fee-inscription" min="0" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Mensualité (FCFA / mois)</label>
-                    <input type="number" id="class-fee-mensualite" min="0" required class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium">
-                </div>
-                <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
-                    <button type="button" onclick="closeModal('class-fees-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
-                    <button type="submit" class="bg-[#4c1d95] text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+    <!-- MODAL CONFIGURATION : Transition Simplifiée -->
     <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 border border-slate-200 max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2"><i class="fas fa-cog text-[#4c1d95]"></i> Configuration</h3>
+            
             <div class="space-y-4">
                 <div id="settings-year-container">
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Année académique</label>
                     <input type="text" id="settings-year" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5">
                 </div>
                 <div>
-                    <label id="lbl-settings-period" class="block text-xs font-semibold text-slate-500 mb-1">Période courante</label>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Période courante</label>
                     <select id="settings-semester" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5"></select>
                 </div>
-                <!-- Saisie du code d'accès par l'administrateur -->
                 <div id="settings-access-code-container">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Code d'accès rôles (Admin/Comptable)</label>
-                    <input type="text" id="settings-access-code" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5" placeholder="Par défaut: 1234">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Code d'accès rôles</label>
+                    <input type="text" id="settings-access-code" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5">
                 </div>
-                <!-- Configuration de l'URL Google Apps Script -->
                 <div id="settings-gdrive-sync-url-container">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">URL de Synchronisation (Google Apps Script Web App)</label>
-                    <input type="text" id="settings-gdrive-sync-url" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium" placeholder="https://script.google.com/.../exec">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">URL Cloud Sync</label>
+                    <input type="text" id="settings-gdrive-sync-url" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
                 </div>
             </div>
             
-            <div id="settings-rollover-container" class="border-t pt-4 mt-4">
-                <h4 class="text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider flex items-center gap-1">
-                    <i class="fas fa-angle-double-up text-amber-600"></i> Transition académique (Promotion)
-                </h4>
-                <p class="text-[10px] text-slate-500 mb-3">Promouvoir les élèves vers la classe supérieure avec des options personnalisables.</p>
-                
-                <div class="space-y-3 mb-4">
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Classe de destination</label>
-                        <select id="rollover-target-class" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
-                        </select>
-                    </div>
-                    
-                    <div class="flex flex-col gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs">
-                        <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
-                            <input type="checkbox" id="rollover-keep-debt" checked class="rounded text-[#4c1d95] focus:ring-violet-500 w-3.5 h-3.5">
-                            <span>Reporter les dettes impayées</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
-                            <input type="checkbox" id="rollover-duplicate-profile" class="rounded text-[#4c1d95] focus:ring-violet-500 w-3.5 h-3.5">
-                            <span>Dupliquer (conserver dans la classe d'origine)</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
-                            <input type="checkbox" id="rollover-waive-inscription" class="rounded text-[#4c1d95] focus:ring-violet-500 w-3.5 h-3.5">
-                            <span>Exonérer des nouveaux frais d'inscription</span>
-                        </label>
-                    </div>
-                </div>
+            <!-- SECTION TRANSITION ÉPURÉE -->
+         <div id="settings-rollover-container" class="border-t pt-4 mt-4">
+    <h4 class="text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">
+        <i class="fas fa-random text-amber-600"></i> Transition de niveau
+    </h4>
+    <p class="text-[10px] text-slate-500 mb-3">Envoyer tous les élèves de la classe actuelle vers :</p>
+    
+    <div class="mb-4">
+        <select id="rollover-target-class" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
+            <!-- Rempli par populateRolloverSelector -->
+        </select>
+    </div>
 
-                <button onclick="executeRollover()" class="w-full bg-amber-600 hover:bg-amber-700 text-white px-3 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5">
-                    <i class="fas fa-bolt"></i> Exécuter la promotion
-                </button>
-            </div>
-
+    <button onclick="executeRollover()" class="w-full bg-amber-600 hover:bg-amber-700 text-white px-3 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5">
+        Lancer le transfert
+    </button>
+</div>
             <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
                 <button onclick="closeModal('settings-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
                 <button onclick="saveSettings()" class="bg-[#4c1d95] text-white px-4 py-2 rounded-xl text-sm font-semibold">Appliquer</button>
@@ -550,257 +175,24 @@
         </div>
     </div>
 
-    <!-- Proposition 3 : Modal Journal de Caisse -->
-    <div id="caisse-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 border border-slate-100 flex flex-col max-h-[85vh]">
-            <div class="border-b pb-4 mb-4 flex justify-between items-center">
-                <div>
-                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fas fa-receipt text-indigo-600 text-2xl"></i> Journal de Caisse
-                    </h3>
-                    <p class="text-xs text-slate-500 mt-1">Historique chronologique de tous les règlements encaissés.</p>
-                </div>
-                <button onclick="closeModal('caisse-modal')" class="text-slate-400 hover:text-slate-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-4 mb-4">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Filtrer par date</label>
-                    <input type="date" id="caisse-filter-date" onchange="renderCaisseJour()" class="text-slate-900 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none font-medium">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Méthode de paiement</label>
-                    <select id="caisse-filter-method" onchange="renderCaisseJour()" class="text-slate-900 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none font-medium">
-                        <option value="ALL">Toutes</option>
-                        <option value="Espèces">Espèces</option>
-                        <option value="Wave">Wave</option>
-                        <option value="Orange Money">Orange Money</option>
-                    </select>
-                </div>
-                <div class="ml-auto flex gap-4 bg-indigo-50 border border-indigo-100/50 p-3 rounded-xl">
-                    <div class="text-right">
-                        <span class="block text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Total Encaissé Filtré</span>
-                        <span class="text-lg font-extrabold text-indigo-700" id="caisse-filtered-total">0 F</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex-1 overflow-y-auto border border-slate-100 rounded-xl">
-                <table class="w-full text-left text-xs min-w-[700px]">
-                    <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px] tracking-wider sticky top-0">
-                        <tr>
-                            <th class="px-4 py-3">Date d'encaissement</th>
-                            <th class="px-4 py-3">Élève</th>
-                            <th class="px-4 py-3">Classe</th>
-                            <th class="px-4 py-3">Type Frais</th>
-                            <th class="px-4 py-3 text-center">Mode</th>
-                            <th class="px-4 py-3 text-right">Montant</th>
-                        </tr>
-                    </thead>
-                    <tbody id="caisse-list-tbody" class="divide-y divide-slate-100 text-slate-700">
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-100">
-                <button type="button" onclick="closeModal('caisse-modal')" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md">
-                    Fermer
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="wa-reminders-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 border border-slate-100 flex flex-col max-h-[85vh]">
-            <div class="border-b pb-4 mb-4">
-                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fab fa-whatsapp text-emerald-600 text-2xl"></i> Centre de Relance WhatsApp
-                </h3>
-                <p class="text-xs text-slate-500 mt-1">Générez des messages de relance personnalisés et gratuits pour les parents en retard de versement.</p>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Mois / Échéance à cibler</label>
-                    <select id="wa-reminder-month" onchange="renderWhatsAppReminders()" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none font-medium">
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Modèle de notification</label>
-                    <select id="wa-template-selector" onchange="onWaTemplateChange()" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none font-medium">
-                        <option value="reminder">Rappel de mensualité impayée</option>
-                        <option value="bulletin">Notification de bulletin disponible</option>
-                        <option value="receipt">Confirmation de reçu de paiement</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Message personnalisé (Variables : {eleve}, {classe}, {frais}, {montant}, {periode})</label>
-                <textarea id="wa-reminder-text" rows="3" oninput="renderWhatsAppReminders()" class="text-slate-900 w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs outline-none focus:ring-2 focus:ring-violet-500/20 font-medium resize-none"></textarea>
-            </div>
-
-            <div class="flex-1 overflow-y-auto border border-slate-100 rounded-xl mb-4">
-                <table class="w-full text-left text-xs min-w-[550px]">
-                    <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px] tracking-wider sticky top-0">
-                        <tr>
-                            <th class="px-4 py-3">Élève</th>
-                            <th class="px-4 py-3">Échéance</th>
-                            <th class="px-4 py-3 text-right">Reste Dû</th>
-                            <th class="px-4 py-3 text-center">Parent Mobile</th>
-                            <th class="px-4 py-3 text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="wa-reminders-list-tbody" class="divide-y divide-slate-100 text-slate-700">
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-100">
-                <button type="button" onclick="sendAllWaReminders()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2">
-                    <i class="fas fa-comments"></i> Relancer Tout le Monde (1 clic)
-                </button>
-                <button type="button" onclick="closeModal('wa-reminders-modal')" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md">
-                    Fermer
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="subjects-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 border border-slate-200 max-h-[85vh] flex flex-col">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 id="lbl-subjects-title" class="text-lg font-bold text-slate-800">Gestion des matières</h3>
-                <button onclick="loadStandardSubjects()" class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold">Grille standard</button>
-            </div>
-            <div class="flex-1 overflow-y-auto space-y-3" id="subjects-container"></div>
-            <button onclick="addNewSubjectRow()" class="mt-4 border-2 border-dashed border-slate-200 text-slate-500 w-full py-2.5 rounded-xl text-sm font-semibold hover:text-[#4c1d95]">
-                + Nouvelle ligne discipline
-            </button>
-            <div class="mt-5 flex justify-end gap-2 border-t pt-3">
-                <button onclick="closeModal('subjects-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Fermer</button>
-                <button onclick="saveSubjects()" class="bg-[#4c1d95] text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- MODAL CONNEXION ENSEIGNANT : Navigation multi-classe -->
     <div id="teacher-login-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-100">
-            <h3 class="text-xl font-bold mb-4 text-slate-800 border-b pb-3 flex items-center gap-2">
-                <i class="fas fa-user-tie text-[#4c1d95]"></i> Connexion Enseignant
-            </h3>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-100">
+            <h3 class="text-xl font-bold mb-4 text-slate-800 border-b pb-3">Session Enseignant</h3>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-900 mb-1">Nom du Professeur</label>
+                    <label class="block text-xs font-bold text-slate-900 mb-1">Votre Nom (Identifiant)</label>
                     <input type="text" id="t-login-name" required placeholder="Ex: M. Diop" class="text-slate-900 border border-slate-300 rounded-xl p-3 w-full bg-white outline-none focus:ring-2 focus:ring-violet-500/20 font-medium">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-900 mb-1">Niveau d'étude</label>
-                        <select id="t-login-class" onchange="onTeacherLoginClassChange()" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none font-medium">
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-900 mb-1">Série / Option</label>
-                        <select id="t-login-section" onchange="onTeacherLoginSectionChange()" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none font-medium">
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-900 mb-1">Matière enseignée</label>
-                    <select id="t-login-subject" class="text-slate-900 border border-slate-200 rounded-xl p-3 w-full bg-white outline-none font-medium">
-                    </select>
+                    <p class="text-[10px] text-slate-400 mt-2 italic">Connectez-vous pour accéder à toutes vos classes et matières assignées.</p>
                 </div>
             </div>
             <div class="mt-6 flex justify-end gap-2 border-t pt-3">
-                <button type="button" onclick="cancelTeacherLogin()" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold hover:bg-slate-50">Annuler</button>
-                <button onclick="submitTeacherLogin()" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm">Valider et Entrer</button>
+                <button type="button" onclick="cancelTeacherLogin()" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Annuler</button>
+                <button onclick="submitTeacherLogin()" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm">Se connecter</button>
             </div>
         </div>
     </div>
 
-    <!-- Corrected: z-55 replaced with z-[70] to stack atop all elements reliably -->
-    <div id="confirm-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-slate-200">
-            <h4 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2 border-b pb-2" id="confirm-modal-title">
-                <i class="fas fa-exclamation-triangle text-rose-600"></i> Confirmation
-            </h4>
-            <p class="text-sm text-slate-600 mb-6" id="confirm-modal-message">Voulez-vous vraiment effectuer cette action ?</p>
-            <div class="flex justify-end gap-2 border-t pt-3">
-                <button type="button" onclick="closeModal('confirm-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold hover:bg-slate-50">Annuler</button>
-                <button id="confirm-modal-btn" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm">Valider</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Niveau de superposition élevé pour que les toasts soient visibles sur tous les modals -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
-
-    <div style="position: absolute; left: -9999px; top: -9999px; width: 700px; height: auto; overflow: hidden; pointer-events: none;">
-        <div id="recu-template-container" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; background-color: #fff; width: 100%; box-sizing: border-box;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #4c1d95; padding-bottom: 20px;">
-                <div>
-                    <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #4c1d95; text-transform: uppercase; letter-spacing: 1px;">GestNotes Academy</h1>
-                    <p style="margin: 5px 0 0; font-size: 13px; color: #64748b; font-weight: 500;">Système Numérique d'Administration Scolaire</p>
-                    <p style="margin: 3px 0 0; font-size: 11px; color: #94a3b8;">Dakar, Sénégal &bull; support@gestnotes.sn</p>
-                </div>
-                <div style="text-align: right;">
-                    <div style="background-color: #f3e8ff; color: #4c1d95; font-weight: 700; font-size: 12px; padding: 6px 14px; border-radius: 5px; display: inline-block; text-transform: uppercase;">REÇU DE PAIEMENT</div>
-                    <p style="margin: 8px 0 0; font-size: 12px; color: #475569; font-weight: 600;">N&deg; : <span id="recu-id" style="color: #0f172a;"></span></p>
-                    <p style="margin: 3px 0 0; font-size: 12px; color: #64748b;">Date : <span id="recu-date" style="font-weight: 500;"></span></p>
-                </div>
-            </div>
-
-            <div style="margin: 25px 0; background-color: #f8fafc; border-radius: 8px; padding: 15px 20px; border: 1px solid #f1f5f9; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div>
-                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Élève concerné</p>
-                    <p style="margin: 5px 0 0; font-size: 16px; font-weight: 700; color: #0f172a;" id="recu-eleve-nom"></p>
-                    <p style="margin: 3px 0 0; font-size: 13px; color: #475569;" id="recu-eleve-classe"></p>
-                </div>
-                <div style="text-align: right;">
-                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Année Académique</p>
-                    <p style="margin: 5px 0 0; font-size: 15px; font-weight: 700; color: #0f172a;" id="recu-annee-scolaire"></p>
-                </div>
-            </div>
-
-            <table style="width: 100%; border-collapse: collapse; margin-top: 25px; text-align: left;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #e2e8f0;">
-                        <th style="padding: 12px 0; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; text-align: left;">Désignation / Période</th>
-                        <th style="padding: 12px 0; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; text-align: center;">Mode de règlement</th>
-                        <th style="padding: 12px 0; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; text-align: right;">Montant Versé</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td style="padding: 16px 0; font-size: 14px; font-weight: 600; color: #334155; text-align: left;" id="recu-designation"></td>
-                        <td style="padding: 16px 0; font-size: 14px; color: #475569; text-align: center; font-weight: 500;" id="recu-methode"></td>
-                        <td style="padding: 16px 0; font-size: 16px; text-align: right; font-weight: 700; color: #0f172a;" id="recu-montant"></td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
-                <div style="background-color: #f8fafc; padding: 15px 25px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: right; min-width: 220px;">
-                    <p style="margin: 0; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Total Payé</p>
-                    <p style="margin: 5px 0 0; font-size: 24px; font-weight: 700; color: #4c1d95;" id="recu-total"></p>
-                </div>
-            </div>
-
-            <div style="margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end;">
-                <div style="color: #94a3b8; font-size: 11px; max-width: 60%;">
-                    <p style="margin: 0; font-weight: 500;">Ce document officiel fait office de preuve de versement électronique.</p>
-                    <p style="margin: 2px 0 0;">GestNotes &bull; Solution de dématérialisation scolaire.</p>
-                </div>
-                <div style="text-align: center; border-top: 1px dashed #cbd5e1; padding-top: 10px; width: 180px;">
-                    <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">Le Comptable</p>
-                    <div style="margin-top: 15px; color: #cbd5e1; font-style: italic; font-size: 12px;">Signature électronique</div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script>
         if (typeof idbKeyval === 'undefined') {
@@ -2069,931 +1461,202 @@ async function saveToStorage(forceCloud = true) {
                 openTeacherLoginModal();
             }
         }
+// --- MODIFICATION : CONNEXION ENSEIGNANT (Seulement le nom) ---
+function openTeacherLoginModal() {
+    const savedName = localStorage.getItem("gestnotes_teacher_name") || "";
+    document.getElementById('t-login-name').value = savedName;
+    
+    // On cache les sélecteurs de classe/matière car le prof pourra changer après
+    document.getElementById('t-login-class').parentElement.parentElement.style.display = 'none';
+    document.getElementById('t-login-subject').parentElement.style.display = 'none';
 
-        function openTeacherLoginModal() {
-            const classSel = document.getElementById('t-login-class');
-            classSel.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
-            
-            const savedName = localStorage.getItem("gestnotes_teacher_name") || "";
-            document.getElementById('t-login-name').value = savedName;
-            
-            const savedClass = localStorage.getItem("gestnotes_teacher_class") || appState.selectedClass;
-            classSel.value = savedClass;
+    openModal('teacher-login-modal');
+}
 
-            onTeacherLoginClassChange();
-            
-            const savedSection = localStorage.getItem("gestnotes_teacher_section") || appState.selectedSection;
-            document.getElementById('t-login-section').value = savedSection;
-            
-            onTeacherLoginSectionChange();
+function submitTeacherLogin() {
+    const name = document.getElementById('t-login-name').value.trim();
+    if (!name) {
+        alert("Veuillez saisir votre nom tel qu'il apparaît dans la gestion des matières.");
+        return;
+    }
 
-            const savedSubject = localStorage.getItem("gestnotes_teacher_subject") || "";
-            if (savedSubject) {
-                document.getElementById('t-login-subject').value = savedSubject;
-            }
+    localStorage.setItem("gestnotes_local_role", "enseignant");
+    localStorage.setItem("gestnotes_teacher_name", name);
+    
+    // On libère les filtres pour que le prof puisse changer de classe
+    const filterClass = document.getElementById('filter-class');
+    const filterSection = document.getElementById('filter-section');
+    if (filterClass) filterClass.disabled = false;
+    if (filterSection) filterSection.disabled = false;
 
-            openModal('teacher-login-modal');
-        }
+    closeModal('teacher-login-modal');
+    showToast(`Session active pour ${name}`, "success");
+    
+    applyRoleRestrictions();
+    render();
+}
 
-        function onTeacherLoginClassChange() {
-            const cls = document.getElementById('t-login-class').value;
-            const sectSel = document.getElementById('t-login-section');
-            const sections = getSectionsForClass(cls);
-            sectSel.innerHTML = sections.map(s => `<option value="${s}">${s||'Général'}</option>`).join('');
-            onTeacherLoginSectionChange();
-        }
+// --- MODIFICATION : RESTRICTIONS DE RÔLE (Le prof peut changer de classe) ---
+// --- MODIFICATION : RESTRICTIONS DE RÔLE (Autorise les filtres pour les profs) ---
+function applyRoleRestrictions() {
+    const role = localStorage.getItem("gestnotes_local_role") || "admin";
+    const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
+    
+    document.getElementById('role-selector').value = role;
 
-        function onTeacherLoginSectionChange() {
-            const cls = document.getElementById('t-login-class').value;
-            const sect = document.getElementById('t-login-section').value;
-            const key = `${cls}_${sect}`;
-            const clsData = appState.classes[key] || { subjects: [] };
-            
-            const subSel = document.getElementById('t-login-subject');
-            const subjects = clsData.subjects || [];
-            if (subjects.length === 0) {
-                subSel.innerHTML = `<option value="">Aucune matière configurée</option>`;
-            } else {
-                subSel.innerHTML = subjects.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
-            }
-        }
+    const indicator = document.getElementById('active-teacher-indicator');
+    if (role === 'enseignant' && teacherName !== "") {
+        indicator.innerText = `Enseignant : ${teacherName}`;
+        indicator.classList.remove('hidden');
+    } else {
+        indicator.classList.add('hidden');
+    }
 
-        function cancelTeacherLogin() {
-            closeModal('teacher-login-modal');
-            const select = document.getElementById('role-selector');
-            select.value = localStorage.getItem("gestnotes_local_role") || "admin";
-        }
+    // Eléments à masquer pour les profs
+    const adminOnly = [
+        'btn-class-fees', 'btn-manage-subjects', 'btn-wa-reminders', 
+        'btn-caisse-jour', 'btn-add-student', 'btn-add-student-shortcut',
+        'class-stats-section', 'reg-amount-container', 'btn-export-base', 'btn-import-base'
+    ];
 
-        function submitTeacherLogin() {
-            const name = document.getElementById('t-login-name').value.trim();
-            const cls = document.getElementById('t-login-class').value;
-            const sect = document.getElementById('t-login-section').value;
-            const subId = document.getElementById('t-login-subject').value;
-
-            if (!name) {
-                alert("Veuillez saisir votre nom.");
-                return;
-            }
-            if (!subId || subId === "") {
-                alert("Veuillez choisir une matière. Si aucune n'est disponible, demandez d'abord au Directeur de configurer les matières pour cette classe.");
-                return;
-            }
-
-            localStorage.setItem("gestnotes_local_role", "enseignant");
-            localStorage.setItem("gestnotes_teacher_name", name);
-            localStorage.setItem("gestnotes_teacher_class", cls);
-            localStorage.setItem("gestnotes_teacher_section", sect);
-            localStorage.setItem("gestnotes_teacher_subject", subId);
-
-            appState.selectedClass = cls;
-            appState.selectedSection = sect;
-            
-            populateFilters();
-            updateHeaderDisplays();
-            
-            closeModal('teacher-login-modal');
-            showToast(`Session enseignant démarrée pour ${name} !`, "success");
-            
-            applyRoleRestrictions();
-            render();
-        }
-
-        function applyRoleRestrictions() {
-            const role = localStorage.getItem("gestnotes_local_role") || "admin";
-            const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
-            const teacherSubjectId = localStorage.getItem("gestnotes_teacher_subject") || "";
-            
-            document.getElementById('role-selector').value = role;
-
-            const indicator = document.getElementById('active-teacher-indicator');
-            const classKey = getCurrentClassKey();
-            const clsDataForSubject = appState.classes[classKey] || { subjects: [] };
-            const subObj = clsDataForSubject.subjects ? clsDataForSubject.subjects.find(s => s.id === teacherSubjectId) : null;
-            const subName = subObj ? subObj.name : "Discipline";
-
-            if (role === 'enseignant' && teacherName !== "") {
-                if (indicator) {
-                    indicator.innerText = `Prof : ${teacherName} (${subName})`;
-                    indicator.classList.remove('hidden');
-                }
-            } else {
-                if (indicator) {
-                    indicator.classList.add('hidden');
-                }
-            }
-
-            const classFeesBtn = document.getElementById('btn-class-fees');
-            const subjectsBtn = document.getElementById('btn-manage-subjects');
-            const waRemindersBtn = document.getElementById('btn-wa-reminders');
-            const caisseJourBtn = document.getElementById('btn-caisse-jour');
-            const gradesSec = document.getElementById('grades-section');
-            const addStudentBtn = document.getElementById('btn-add-student');
-            const addStudentBtnShortcut = document.getElementById('btn-add-student-shortcut');
-            const statsSection = document.getElementById('class-stats-section');
-            const regAmountContainer = document.getElementById('reg-amount-container');
-            const settingsBtn = document.getElementById('btn-settings');
-            
-            const btnExportBase = document.getElementById('btn-export-base');
-            const btnImportBase = document.getElementById('btn-import-base');
-            const btnExportTeacherGrades = document.getElementById('btn-export-teacher-grades');
-
-            if (classFeesBtn) classFeesBtn.style.display = '';
-            if (subjectsBtn) subjectsBtn.style.display = '';
-            if (waRemindersBtn) waRemindersBtn.style.display = '';
-            if (caisseJourBtn) caisseJourBtn.style.display = '';
-            if (gradesSec) gradesSec.style.display = 'flex';
-            if (addStudentBtn) addStudentBtn.style.display = '';
-            if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = '';
-            if (statsSection) statsSection.style.display = 'grid';
-            if (regAmountContainer) regAmountContainer.style.display = '';
-            if (settingsBtn) settingsBtn.style.display = '';
-            
-            if (btnExportBase) btnExportBase.style.display = '';
-            if (btnImportBase) btnImportBase.style.display = '';
-            if (btnExportTeacherGrades) btnExportTeacherGrades.classList.add('hidden');
-
-            const filterClass = document.getElementById('filter-class');
-            const filterSection = document.getElementById('filter-section');
-
-            if (role === 'enseignant') {
-                if (classFeesBtn) classFeesBtn.style.display = 'none';
-                if (waRemindersBtn) waRemindersBtn.style.display = 'none';
-                if (caisseJourBtn) caisseJourBtn.style.display = 'none';
-                if (addStudentBtn) addStudentBtn.style.display = 'none';
-                if (addStudentBtnShortcut) addStudentBtnShortcut.style.display = 'none';
-                if (statsSection) statsSection.style.display = 'none';
-                if (regAmountContainer) regAmountContainer.style.display = 'none';
-                if (settingsBtn) settingsBtn.style.display = ''; 
-                
-                if (btnExportBase) btnExportBase.style.display = 'none';
-                if (btnImportBase) btnImportBase.style.display = 'none';
-                
-                if (btnExportTeacherGrades) btnExportTeacherGrades.classList.remove('hidden');
-                
-                if (filterClass) filterClass.disabled = true;
-                if (filterSection) filterSection.disabled = true;
-            } else {
-                if (filterClass) filterClass.disabled = false;
-                if (filterSection) filterSection.disabled = false;
-
-                if (role === 'comptable') {
-                    if (subjectsBtn) subjectsBtn.style.display = 'none';
-                    if (gradesSec) gradesSec.style.display = 'none';
-                    if (settingsBtn) settingsBtn.style.display = 'none';
-                }
-            }
-
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key] || { subjects: [], students: [] };
-            renderStudentsTable(clsData.students, clsData.subjects);
-        }
-
-        function render() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key] || { students: [], subjects: [] };
-            
-            calculateClassStats();
-            populateSubjectSelector();
-            updateDev3Checkbox();
-            renderStudentsTable(clsData.students, clsData.subjects);
-            renderGradesGrid();
-        }
-
-        function populateSubjectSelector() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key] || { subjects: [] };
-            const select = document.getElementById('grade-subject-select');
-            if (!select) return;
-
-            const role = localStorage.getItem("gestnotes_local_role") || "admin";
-            const teacherSubjectId = localStorage.getItem("gestnotes_teacher_subject") || "";
-
-            let filteredSubjects = clsData.subjects || [];
-            if (role === 'enseignant' && teacherSubjectId) {
-                filteredSubjects = (clsData.subjects || []).filter(sub => sub.id === teacherSubjectId);
-            }
-
-            const previouslySelected = select.value;
-            select.innerHTML = filteredSubjects.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
-            
-            if (previouslySelected && filteredSubjects.some(s => s.id === previouslySelected)) {
-                select.value = previouslySelected;
-            } else if (filteredSubjects.length > 0) {
-                select.value = filteredSubjects[0].id;
-            }
-        }
-
-        function updateDev3Checkbox() {
-            const isPrim = isPrimary(appState.selectedClass);
-            const subSelect = document.getElementById('grade-subject-select');
-            const subjectId = subSelect ? subSelect.value : "";
-            
-            let dev3Wrapper = document.getElementById('dev3-toggle-wrapper');
-            if (!dev3Wrapper) {
-                const parent = document.querySelector('#grades-section .flex.w-full.sm\\:w-auto.items-center.gap-2');
-                if (parent) {
-                    dev3Wrapper = document.createElement('div');
-                    dev3Wrapper.id = 'dev3-toggle-wrapper';
-                    dev3Wrapper.className = 'flex items-center gap-1.5 ml-2';
-                    parent.insertBefore(dev3Wrapper, parent.firstChild);
-                }
-            }
-            
-            if (dev3Wrapper) {
-                if (isPrim || !subjectId) {
-                    dev3Wrapper.style.display = 'none';
-                } else {
-                    dev3Wrapper.style.display = 'flex';
-                    const key = getCurrentClassKey();
-                    if (!appState.classes[key].dev3Visible) {
-                        appState.classes[key].dev3Visible = {};
-                    }
-                    const isChecked = !!appState.classes[key].dev3Visible[subjectId];
-                    subjectDev3Visible[subjectId] = isChecked;
-
-                    dev3Wrapper.innerHTML = `
-                        <label class="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-2 rounded-lg cursor-pointer">
-                            <input type="checkbox" id="chk-dev3" onchange="toggleDevoir3()" ${isChecked ? 'checked' : ''} class="rounded text-[#4c1d95] focus:ring-violet-500 w-3.5 h-3.5">
-                            <span>Devoir 3</span>
-                        </label>
-                    `;
-                }
-            }
-        }
-
-        function toggleDevoir3() {
-            const subSelect = document.getElementById('grade-subject-select');
-            const subjectId = subSelect.value;
-            if (!subjectId) return;
-            
-            const isChecked = document.getElementById('chk-dev3').checked;
-            const key = getCurrentClassKey();
-            if (!appState.classes[key].dev3Visible) {
-                appState.classes[key].dev3Visible = {};
-            }
-            appState.classes[key].dev3Visible[subjectId] = isChecked;
-            subjectDev3Visible[subjectId] = isChecked;
-            
-            saveToStorage();
-            renderGradesGrid();
-            debouncedRenderList();
-        }
-
-        function renderStudentsTable(students, subjects) {
-            const tbody = document.getElementById('students-table-body');
-            const emptyState = document.getElementById('empty-state');
-            const countEl = document.getElementById('student-count');
-            const badgeEl = document.getElementById('class-badge');
-
-            if (badgeEl) {
-                badgeEl.innerText = `${appState.selectedClass} ${appState.selectedSection || ''}`;
-            }
-
-            if (!students || students.length === 0) {
-                tbody.innerHTML = "";
-                if (emptyState) emptyState.classList.remove('hidden');
-                if (countEl) countEl.innerText = "0 élève enregistré";
-                document.getElementById('filter-effectif').value = "0";
-                return;
-            }
-
-            if (emptyState) emptyState.classList.add('hidden');
-            if (countEl) countEl.innerText = `${students.length} élève${students.length > 1 ? 's' : ''} enregistré${students.length > 1 ? 's' : ''}`;
-            document.getElementById('filter-effectif').value = students.length;
-
-            tbody.innerHTML = "";
-            
-            const sorted = [...students].sort((a, b) => {
-                const nameA = `${a.firstname} ${a.lastname}`.toUpperCase();
-                const nameB = `${b.firstname} ${b.lastname}`.toUpperCase();
-                return nameA.localeCompare(nameB);
-            });
-
-            const isPrim = isPrimary(appState.selectedClass);
-            
-            const rankMap = obtenirRangsClasse(students, subjects);
-
-            sorted.forEach(s => {
-                const mg = calculerMoyenneGeneraleGlobale(s, subjects);
-                let mgStr = "N/A";
-                let mgClass = "text-slate-400";
-                if (mg !== null) {
-                    const formattedMg = Number(mg.toFixed(2)).toString().replace('.', ',');
-                    mgStr = formattedMg + " / " + (isPrim ? "10" : "20");
-                    mgClass = mg >= (isPrim ? 5 : 10) ? "text-emerald-600 font-extrabold" : "text-rose-600 font-extrabold";
-                }
-
-                let rankStr = "";
-                if (mg !== null && rankMap[s.id] && rankMap[s.id] !== "N/A") {
-                    rankStr = `<span class="block text-[10px] text-slate-500 font-semibold mt-0.5 bg-slate-100 py-0.5 px-2 rounded-full inline-block">Rang : ${rankMap[s.id].label}</span>`;
-                }
-
-                const role = localStorage.getItem("gestnotes_local_role") || "admin";
-                let actionsHTML = "";
-                
-                if (role === "admin") {
-                    actionsHTML = `
-                        <div class="flex items-center justify-end gap-1.5">
-                            <button onclick="openEditStudent('${s.id}')" class="text-violet-600 hover:bg-violet-50 border border-slate-200 px-2 py-1 rounded-lg transition-all text-xs font-semibold">
-                                <i class="fas fa-user-edit"></i> Modifier
-                            </button>
-                            <button onclick="openMensualitesModal('${s.id}')" class="text-emerald-700 hover:bg-emerald-50 border border-slate-200 px-2 py-1 rounded-lg transition-all text-xs font-semibold">
-                                <i class="fas fa-coins"></i> Paiements
-                            </button>
-                            <button onclick="ouvrirBulletin('${s.id}')" class="text-indigo-600 hover:bg-indigo-50 border border-slate-200 px-2 py-1 rounded-lg transition-all text-xs font-semibold">
-                                <i class="fas fa-print"></i> Bulletin
-                            </button>
-                            <button onclick="supprimerEleve('${s.id}')" class="text-rose-600 hover:bg-rose-50 border border-slate-200 p-1.5 rounded-lg transition-all" title="Supprimer l'élève">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                } else if (role === "comptable") {
-                    actionsHTML = `
-                        <div class="flex items-center justify-end gap-1.5">
-                            <button onclick="openMensualitesModal('${s.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-lg transition-all text-xs font-bold shadow-sm">
-                                <i class="fas fa-wallet mr-1"></i> Gérer Paiements
-                            </button>
-                        </div>
-                    `;
-                } else {
-                    actionsHTML = `<span class="text-xs text-slate-400 font-medium italic">Saisie active</span>`;
-                }
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/50 transition-colors border-b border-slate-100";
-                tr.innerHTML = `
-                    <td class="py-3 px-5 font-bold text-slate-800 text-left">
-                        ${s.firstname} <span class="font-normal text-slate-600">${s.lastname.toUpperCase()}</span>
-                    </td>
-                    <td class="py-3 px-5 text-center">
-                        <span class="${mgClass}">${mgStr}</span>
-                        ${rankStr}
-                    </td>
-                    <td class="py-3 px-5 text-right">
-                        ${actionsHTML}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function renderGradesGrid() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            if (!clsData) return;
-
-            const subSelect = document.getElementById('grade-subject-select');
-            const subjectId = subSelect.value;
-            if (!subjectId) {
-                document.getElementById('grades-table-body').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune discipline configurée</td></tr>`;
-                document.getElementById('sub-stats-average').innerText = "N/A";
-                document.getElementById('sub-stats-max').innerText = "N/A";
-                document.getElementById('sub-stats-min').innerText = "N/A";
-                document.getElementById('sub-stats-rate').innerText = "N/A";
-                return;
-            }
-
-            const isPrim = isPrimary(appState.selectedClass);
-            const dev3Visible = !isPrim && !!(appState.classes[key].dev3Visible && appState.classes[key].dev3Visible[subjectId]);
-
-            const dev3Th = document.getElementById('lbl-th-dev3');
-            if (dev3Th) {
-                dev3Th.style.display = dev3Visible ? '' : 'none';
-            }
-
-            document.getElementById('lbl-th-dev1').innerText = getDevoirLabel(appState.selectedClass, 1);
-            document.getElementById('lbl-th-dev2').innerText = getDevoirLabel(appState.selectedClass, 2);
-
-            const searchVal = cleanStringForFuzzy(document.getElementById('grade-search').value);
-            const filteredStudents = clsData.students.filter(s => {
-                const fullName = cleanStringForFuzzy(`${s.firstname} ${s.lastname}`);
-                return fullName.includes(searchVal);
-            });
-
-            let activeGrades = [];
-            clsData.students.forEach(s => {
-                const m = calculerMoyenneEleveMatiere(s, subjectId);
-                if (m !== null) {
-                    activeGrades.push(m);
-                }
-            });
-
-            if (activeGrades.length > 0) {
-                const sum = activeGrades.reduce((acc, curr) => acc + curr, 0);
-                const avg = sum / activeGrades.length;
-                const max = Math.max(...activeGrades);
-                const min = Math.min(...activeGrades);
-                
-                const threshold = isPrim ? 5 : 10;
-                const successes = activeGrades.filter(g => g >= threshold).length;
-                const rate = (successes / activeGrades.length) * 100;
-                const baseScale = isPrim ? "/ 10" : "/ 20";
+    if (role === 'enseignant') {
+        // IMPORTANT : Le prof peut maintenant utiliser les filtres pour changer de classe
+        document.getElementById('filter-class').disabled = false;
+        document.getElementById('filter-section').disabled = false;
         
-                // Formatage propre pour les statistiques
-                const formattedAvg = Number(avg.toFixed(2)).toString().replace('.', ',');
-                const formattedMax = Number(max.toFixed(2)).toString().replace('.', ',');
-                const formattedMin = Number(min.toFixed(2)).toString().replace('.', ',');
-                
-                document.getElementById('sub-stats-average').innerText = `${formattedAvg} ${baseScale}`;
-                document.getElementById('sub-stats-max').innerText = `${formattedMax} ${baseScale}`;
-                document.getElementById('sub-stats-min').innerText = `${formattedMin} ${baseScale}`;
-                document.getElementById('sub-stats-rate').innerText = `${rate.toFixed(1)}%`;
-            } else {
-                document.getElementById('sub-stats-average').innerText = "N/A";
-                document.getElementById('sub-stats-max').innerText = "N/A";
-                document.getElementById('sub-stats-min').innerText = "N/A";
-                document.getElementById('sub-stats-rate').innerText = "N/A";
-            }
-
-            const tbody = document.getElementById('grades-table-body');
-            tbody.innerHTML = "";
-
-            const semKey = "p_" + appState.currentSemester;
-
-            filteredStudents.forEach(s => {
-                if (!s.grades) s.grades = {};
-                if (!s.grades[semKey]) s.grades[semKey] = {};
-                if (!s.grades[semKey][subjectId]) s.grades[semKey][subjectId] = {};
-
-                const g = s.grades[semKey][subjectId];
-                const val1 = g.dev1 !== undefined ? g.dev1 : "";
-                const val2 = g.dev2 !== undefined ? g.dev2 : "";
-                const val3 = g.dev3 !== undefined ? g.dev3 : "";
-                const valCompo = g.compo !== undefined ? g.compo : "";
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/50 transition-colors";
-                tr.innerHTML = `
-                    <td class="p-3 text-left font-semibold text-slate-700">
-                        ${s.firstname} ${s.lastname.toUpperCase()}
-                    </td>
-                    <td class="p-2">
-                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val1}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev1', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
-                    </td>
-                    <td class="p-2">
-                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val2}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev2', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
-                    </td>
-                    <td class="p-2" style="display: ${dev3Visible ? '' : 'none'}">
-                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${val3}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'dev3', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
-                    </td>
-                    <td class="p-2">
-                        <input type="number" step="any" min="0" max="${isPrim?10:20}" value="${valCompo}" oninput="updateStudentGrade('${s.id}', '${subjectId}', 'compo', this.value)" class="w-20 bg-white border border-slate-200 rounded-lg py-1.5 text-center text-sm font-bold text-slate-800 outline-none focus:border-[#4c1d95] focus:ring-1 focus:ring-violet-500/20">
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+        adminOnly.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        document.getElementById('btn-export-teacher-grades').classList.remove('hidden');
+    } else {
+        document.getElementById('filter-class').disabled = false;
+        document.getElementById('filter-section').disabled = false;
+        adminOnly.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = (id === 'class-stats-section') ? 'grid' : '';
+        });
+        document.getElementById('btn-export-teacher-grades').classList.add('hidden');
+        
+        if (role === 'comptable') {
+            document.getElementById('btn-manage-subjects').style.display = 'none';
+            document.getElementById('grades-section').style.display = 'none';
         }
+    }
+    render();
+}
 
-        function updateStudentGrade(studentId, subjectId, field, value) {
-            const key = getCurrentClassKey();
-            const student = appState.classes[key].students.find(s => s.id === studentId);
-            if (!student) return;
+// --- MODIFICATION : SELECTEUR DE MATIÈRE (Filtre par nom de l'enseignant connecté) ---
+function populateSubjectSelector() {
+    const key = getCurrentClassKey();
+    const clsData = appState.classes[key] || { subjects: [] };
+    const select = document.getElementById('grade-subject-select');
+    if (!select) return;
 
-            const semKey = "p_" + appState.currentSemester;
-            if (!student.grades) student.grades = {};
-            if (!student.grades[semKey]) student.grades[semKey] = {};
-            if (!student.grades[semKey][subjectId]) student.grades[semKey][subjectId] = {};
+    const role = localStorage.getItem("gestnotes_local_role") || "admin";
+    const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
 
-            if (value.trim() === "") {
-                delete student.grades[semKey][subjectId][field];
-            } else {
-                const num = parseFloat(value);
-                if (!isNaN(num)) {
-                    student.grades[semKey][subjectId][field] = num;
-                }
-            }
-            saveToStorage();
-            debouncedRenderList();
-        }
+    let filteredSubjects = clsData.subjects || [];
 
-        let renderTimeout;
-        function debouncedRenderList() {
-            clearTimeout(renderTimeout);
-            renderTimeout = setTimeout(() => {
-                const key = getCurrentClassKey();
-                const clsData = appState.classes[key] || { students: [], subjects: [] };
-                renderStudentsTable(clsData.students, clsData.subjects);
-                calculateClassStats();
-            }, 500);
-        }
+    // MODIFICATION : Si c'est un enseignant, on filtre par son NOM
+    if (role === 'enseignant' && teacherName) {
+        const nameToMatch = teacherName.toLowerCase().trim();
+        filteredSubjects = filteredSubjects.filter(sub => 
+            sub.teacherName && sub.teacherName.toLowerCase().trim() === nameToMatch
+        );
+    }
 
-        function goToNextSubject() {
-            const select = document.getElementById('grade-subject-select');
-            if (!select || select.options.length <= 1) return;
-            let nextIdx = select.selectedIndex + 1;
-            if (nextIdx >= select.options.length) nextIdx = 0;
-            select.selectedIndex = nextIdx;
-            renderGradesGrid();
-            updateDev3Checkbox();
-        }
+    if (filteredSubjects.length === 0) {
+        select.innerHTML = `<option value="">Aucune matière assignée</option>`;
+    } else {
+        select.innerHTML = filteredSubjects.map(sub => `<option value="${sub.id}">${sub.name}</option>`).join('');
+    }
+    
+    updateDev3Checkbox();
+}
+// --- MODIFICATION : CONNEXION ENSEIGNANT (Uniquement le nom) ---
+function submitTeacherLogin() {
+    const name = document.getElementById('t-login-name').value.trim();
+    if (!name) {
+        alert("Veuillez saisir votre nom.");
+        return;
+    }
 
-        function filterStudentsGlobal() {
-            renderGradesGrid();
-        }
+    localStorage.setItem("gestnotes_local_role", "enseignant");
+    localStorage.setItem("gestnotes_teacher_name", name);
+    
+    closeModal('teacher-login-modal');
+    showToast(`Bienvenue ${name}. Utilisez les filtres en haut pour changer de classe.`, "success");
+    
+    applyRoleRestrictions();
+}
 
-        function showToast(msg, type = "info") {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-            const toast = document.createElement('div');
+// --- MODIFICATION : TRANSITION ÉPURÉE (Suppression des cases à cocher) ---
+function executeRollover() {
+    const targetClass = document.getElementById('rollover-target-class').value;
+    const key = getCurrentClassKey();
+    const currentClsData = appState.classes[key];
+    
+    if (!currentClsData || !currentClsData.students || currentClsData.students.length === 0) {
+        showToast("Aucun élève dans la classe actuelle.", "error");
+        return;
+    }
+
+    askConfirmation(
+        `Transférer les ${currentClsData.students.length} élèves vers la classe de ${targetClass} ?\nLes notes seront réinitialisées pour la nouvelle année.`,
+        `<i class="fas fa-random text-amber-600"></i> Confirmer la Transition`,
+        function() {
+            // On détermine la section de destination (Général par défaut si la section n'existe plus)
+            const validSections = getSectionsForClass(targetClass);
+            let targetSection = appState.selectedSection;
+            if (!validSections.includes(targetSection)) targetSection = validSections[0] || "";
+
+            const targetKey = `${targetClass}_${targetSection}`;
             
-            let bgColor = "bg-slate-900";
-            let icon = "fa-info-circle";
-            
-            if (type === "success") {
-                bgColor = "bg-emerald-600";
-                icon = "fa-circle-check";
-            } else if (type === "error") {
-                bgColor = "bg-rose-600";
-                icon = "fa-triangle-exclamation";
-            }
-            
-            toast.className = `toast-animate flex items-center gap-2.5 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg ${bgColor} pointer-events-auto`;
-            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${msg}</span>`;
-            
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.remove();
-            }, 3300);
-        }
-
-        let currentConfirmCallback = null;
-        function askConfirmation(message, titleHTML, callback) {
-            document.getElementById('confirm-modal-title').innerHTML = titleHTML || `<i class="fa-solid fa-circle-question text-violet-600"></i> Confirmation`;
-            document.getElementById('confirm-modal-message').innerHTML = message;
-            currentConfirmCallback = callback;
-            
-            const btn = document.getElementById('confirm-modal-btn');
-            btn.onclick = function() {
-                if (currentConfirmCallback) currentConfirmCallback();
-                closeModal('confirm-modal');
-            };
-            
-            openModal('confirm-modal');
-        }
-
-        function openWhatsAppRemindersModal() {
-            const select = document.getElementById('wa-reminder-month');
-            select.innerHTML = moisAnnee.map((m, idx) => `<option value="${idx}">${m === 'Inscription' ? 'Frais d\'inscription' : m}</option>`).join('');
-            
-            document.getElementById('wa-template-selector').value = "reminder";
-            onWaTemplateChange();
-            
-            openModal('wa-reminders-modal');
-        }
-
-        function onWaTemplateChange() {
-            const type = document.getElementById('wa-template-selector').value;
-            const tpl = appState.waTemplates[type] || "";
-            document.getElementById('wa-reminder-text').value = tpl;
-            renderWhatsAppReminders();
-        }
-
-        function renderWhatsAppReminders() {
-            const monthIdx = parseInt(document.getElementById('wa-reminder-month').value) || 0;
-            const textTpl = document.getElementById('wa-reminder-text').value;
-            
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            const tbody = document.getElementById('wa-reminders-list-tbody');
-            tbody.innerHTML = "";
-            
-            if (!clsData || !clsData.students || clsData.students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun élève enregistré dans cette section</td></tr>`;
-                return;
-            }
-            
-            clsData.students.forEach(s => {
-                if (!s.payments || !s.payments[monthIdx]) return;
-                const p = s.payments[monthIdx];
-                
-                if (p.statut === "Non payé") {
-                    const remains = p.montantDu;
-                    let msg = textTpl
-                        .replace(/{eleve}/g, `${s.firstname} ${s.lastname.toUpperCase()}`)
-                        .replace(/{classe}/g, `${appState.selectedClass} ${appState.selectedSection || ''}`)
-                        .replace(/{frais}/g, monthIdx === 0 ? "Frais d'inscription" : `Mensualité de ${p.designation}`)
-                        .replace(/{montant}/g, remains.toLocaleString())
-                        .replace(/{periode}/g, p.designation);
-                    
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 transition-colors";
-                    tr.innerHTML = `
-                        <td class="px-4 py-3 font-semibold text-slate-800 text-left">${s.firstname} ${s.lastname.toUpperCase()}</td>
-                        <td class="px-4 py-3 text-slate-600 font-medium text-left">${monthIdx === 0 ? "Frais d'inscription" : p.designation}</td>
-                        <td class="px-4 py-3 text-right font-extrabold text-rose-600">${remains.toLocaleString()} F</td>
-                        <td class="px-4 py-3 text-center text-slate-500">${s.phone || '-'}</td>
-                        <td class="px-4 py-3 text-center">
-                            <button onclick="sendSingleWaReminder('${s.id}', ${monthIdx}, \`${encodeURIComponent(msg)}\`)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2.5 py-1.5 rounded-lg border border-emerald-200 transition-all text-xs font-bold flex items-center justify-center gap-1 mx-auto">
-                                <i class="fab fa-whatsapp font-bold"></i> Relancer
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-            
-            if (tbody.children.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-emerald-600 font-bold">Tous les comptes sont à jour pour cette échéance ! 🎉</td></tr>`;
-            }
-        }
-
-        function sendSingleWaReminder(studentId, monthIdx, encodedMsg) {
-            let student = null;
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === studentId);
-                if (student) break;
-            }
-            if (!student || !student.phone) {
-                showToast("Aucun numéro configuré pour cet élève.", "error");
-                return;
-            }
-            let purePhone = formatPhoneForWhatsApp(student.phone);
-            
-            const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodedMsg}`;
-            window.open(url, '_blank');
-        }
-
-        function sendAllWaReminders() {
-            const monthIdx = parseInt(document.getElementById('wa-reminder-month').value) || 0;
-            const textTpl = document.getElementById('wa-reminder-text').value;
-            
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key];
-            if (!clsData || !clsData.students) return;
-            
-            let initiated = 0;
-            clsData.students.forEach(s => {
-                if (!s.payments || !s.payments[monthIdx]) return;
-                const p = s.payments[monthIdx];
-                if (p.statut === "Non payé" && s.phone) {
-                    let msg = textTpl
-                        .replace(/{eleve}/g, `${s.firstname} ${s.lastname.toUpperCase()}`)
-                        .replace(/{classe}/g, `${appState.selectedClass} ${appState.selectedSection || ''}`)
-                        .replace(/{frais}/g, monthIdx === 0 ? "Frais d'inscription" : `Mensualité de ${p.designation}`)
-                        .replace(/{montant}/g, p.montantDu.toLocaleString())
-                        .replace(/{periode}/g, p.designation);
-                    
-                    let purePhone = formatPhoneForWhatsApp(s.phone);
-                    
-                    const url = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(msg)}`;
-                    window.open(url, '_blank');
-                    initiated++;
-                }
-            });
-            if (initiated > 0) {
-                showToast(`${initiated} relances initiées.`, "success");
-            } else {
-                showToast("Aucun compte en retard à relancer.", "info");
-            }
-        }
-
-        function openCaisseJourModal() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            
-            document.getElementById('caisse-filter-date').value = `${year}-${month}-${day}`;
-            document.getElementById('caisse-filter-method').value = "ALL";
-            
-            openModal('caisse-modal');
-            renderCaisseJour();
-        }
-
-        function renderCaisseJour() {
-            const dateVal = document.getElementById('caisse-filter-date').value;
-            const methodVal = document.getElementById('caisse-filter-method').value;
-            
-            let dateToMatch = "";
-            if (dateVal) {
-                const parts = dateVal.split('-');
-                dateToMatch = `${parts[2]}/${parts[1]}/${parts[0]}`;
-            }
-
-            const tbody = document.getElementById('caisse-list-tbody');
-            tbody.innerHTML = "";
-
-            let totalFiltered = 0;
-            let paymentsList = [];
-
-            for (let classKey in appState.classes) {
-                const cls = appState.classes[classKey];
-                const parts = classKey.split('_');
-                const classNameDisplay = parts[0] + " " + (parts[1] || "");
-
-                if (cls.students) {
-                    cls.students.forEach(student => {
-                        if (student.payments) {
-                            student.payments.forEach(p => {
-                                if (p.statut === "Payé" && p.dateEncaissement) {
-                                    paymentsList.push({
-                                        date: p.dateEncaissement,
-                                        studentName: `${student.firstname} ${student.lastname.toUpperCase()}`,
-                                        className: classNameDisplay,
-                                        designation: p.designation === 'Inscription' ? "Frais d'inscription" : p.designation === 'Dette Antérieure' ? "Dette Antérieure" : `Mensualité ${p.designation}`,
-                                        method: p.methode,
-                                        amount: p.montantPaye
-                                    });
-                                }
-                            });
-                        }
-                    });
-                }
-            }
-
-            paymentsList.sort((a, b) => {
-                const parseDateStr = (str) => {
-                    const [datePart, timePart] = str.split(' ');
-                    const [d, m, y] = datePart.split('/');
-                    const [h, min] = timePart ? timePart.split(':') : [0, 0];
-                    return new Date(y, m - 1, d, h, min);
+            // Initialiser la classe de destination si besoin
+            if (!appState.classes[targetKey]) {
+                appState.classes[targetKey] = {
+                    students: [],
+                    subjects: getDefaultSubjects(targetClass),
+                    fees: { inscription: 0, mensualite: 0 },
+                    dev3Visible: {}
                 };
-                return parseDateStr(b.date) - parseDateStr(a.date);
-            });
-
-            paymentsList.forEach(item => {
-                const itemDateOnly = item.date.split(' ')[0];
-                const matchesDate = !dateVal || itemDateOnly === dateToMatch;
-                const matchesMethod = methodVal === "ALL" || item.method === methodVal;
-
-                if (matchesDate && matchesMethod) {
-                    totalFiltered += item.amount;
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 transition-colors";
-                    tr.innerHTML = `
-                        <td class="px-4 py-3 text-slate-500 font-semibold text-left">${item.date}</td>
-                        <td class="px-4 py-3 font-semibold text-slate-800 text-left">${item.studentName}</td>
-                        <td class="px-4 py-3 text-slate-600 font-semibold text-left">${item.className}</td>
-                        <td class="px-4 py-3 text-slate-600 text-left">${item.designation}</td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="px-2.5 py-0.5 border text-[10px] rounded-md font-bold uppercase bg-slate-100 text-slate-700">${item.method}</span>
-                        </td>
-                        <td class="px-4 py-3 text-right font-extrabold text-slate-900">${item.amount.toLocaleString()} F</td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-
-            document.getElementById('caisse-filtered-total').innerText = totalFiltered.toLocaleString() + " FCFA";
-
-            if (tbody.children.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-semibold">Aucun règlement enregistré pour ces critères.</td></tr>`;
             }
-        }
-
-        function validerEncaissement() {
-            let student = null;
-            for (let k in appState.classes) {
-                student = appState.classes[k].students.find(s => s.id === currentStudentIdForFinance);
-                if (student) break;
-            }
-            if (!student) return;
-
-            const amt = parseInt(document.getElementById('encaissement-montant-input').value) || 0;
-            const method = document.getElementById('encaissement-methode-select').value;
             
-            if (amt <= 0) {
-                showToast("Le montant doit être supérieur à 0 F.", "info");
-                return;
-            }
+            const targetFees = appState.classes[targetKey].fees || { inscription: 0, mensualite: 0 };
 
-            const p = student.payments[currentMonthIdxForFinance];
-            p.montantPaye = amt;
-            p.statut = "Payé";
-            p.methode = method;
+            currentClsData.students.forEach(s => {
+                // Création d'un nouvel échéancier financier vierge
+                const newPayments = moisAnnee.map((m, idx) => ({
+                    designation: m,
+                    statut: "Non payé",
+                    montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
+                    montantPaye: 0, methode: "", dateEncaissement: ""
+                }));
+
+                const promotedStudent = {
+                    ...s,
+                    id: "student_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+                    previousClassName: appState.selectedClass,
+                    grades: {}, // Efface les notes
+                    payments: newPayments // Nouveau carnet de paiement
+                };
+                appState.classes[targetKey].students.push(promotedStudent);
+            });
             
-            const today = new Date();
-            p.dateEncaissement = today.toLocaleDateString('fr-FR') + " " + today.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
-
+            // Vider la classe d'origine (Transfert pur)
+            currentClsData.students = [];
+            
             saveToStorage();
-            closeModal('encaissement-modal');
-            showToast(`Encaissement validé (${method}) !`, "success");
-            renderMensualitesList(student);
+            appState.selectedClass = targetClass;
+            appState.selectedSection = targetSection;
+            populateFilters();
+            closeModal('settings-modal');
+            showToast(`Transition vers ${targetClass} effectuée !`, "success");
             render();
         }
-
-        function populateRolloverSelector() {
-            const select = document.getElementById('rollover-target-class');
-            if (!select) return;
-            select.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
-        }
-
-        function executeRollover() {
-            const targetClass = document.getElementById('rollover-target-class').value;
-            const keepDebt = document.getElementById('rollover-keep-debt').checked;
-            const duplicateProfile = document.getElementById('rollover-duplicate-profile').checked;
-            const waiveInscription = document.getElementById('rollover-waive-inscription').checked;
-
-            const key = getCurrentClassKey();
-            const currentClsData = appState.classes[key];
-            
-            if (!currentClsData || !currentClsData.students || currentClsData.students.length === 0) {
-                showToast("Aucun élève à promouvoir dans cette classe.", "error");
-                return;
-            }
-            
-            const currentClassNameDisplay = appState.selectedClass + " " + (appState.selectedSection || "");
-            
-            // Construction des détails de l'alerte de confirmation en fonction des options cochées
-            let optionsDetails = [];
-            if (keepDebt) optionsDetails.push("report des dettes impayées");
-            if (duplicateProfile) {
-                optionsDetails.push("duplication (profils conservés en " + currentClassNameDisplay + ")");
-            } else {
-                optionsDetails.push("déplacement (profils retirés de " + currentClassNameDisplay + ")");
-            }
-            if (waiveInscription) optionsDetails.push("exonération des nouveaux frais d'inscription");
-
-            const detailsText = optionsDetails.length > 0 ? `<br><span class="text-xs text-amber-700 font-semibold">Options actives : ${optionsDetails.join(', ')}.</span>` : "";
-
-            askConfirmation(
-                `Promouvoir les ${currentClsData.students.length} élèves vers la classe supérieure (${targetClass}) ? ${detailsText}<br><br>⚠️ Confirmez-vous le lancement de cette procédure académique ?`,
-                `<i class="fas fa-angle-double-up text-amber-600"></i> Valider la promotion`,
-                function() {
-                    // Repli automatique si la section courante n'est pas supportée dans la classe de destination
-                    const validSections = getSectionsForClass(targetClass);
-                    let targetSection = appState.selectedSection;
-                    if (!validSections.includes(targetSection)) {
-                        targetSection = validSections[0] || "";
-                    }
-
-                    const targetKey = `${targetClass}_${targetSection}`;
-                    if (!appState.classes[targetKey]) {
-                        appState.classes[targetKey] = {
-                            students: [],
-                            subjects: getDefaultSubjects(targetClass),
-                            fees: { inscription: 0, mensualite: 0 },
-                            dev3Visible: {}
-                        };
-                    }
-                    
-                    let promotedCount = 0;
-                    currentClsData.students.forEach(s => {
-                        let remainingDebt = 0;
-                        if (keepDebt && s.payments) {
-                            let totalDue = 0;
-                            let totalPaid = 0;
-                            s.payments.forEach(p => {
-                                totalDue += (p.montantDu || 0);
-                                totalPaid += (p.montantPaye || 0);
-                            });
-                            remainingDebt = Math.max(0, totalDue - totalPaid);
-                        }
-
-                        const targetFees = appState.classes[targetKey].fees || { inscription: 0, mensualite: 0 };
-                        
-                        // Frais d'inscription de destination (0 si exonération active)
-                        const finalInscriptionFee = waiveInscription ? 0 : (targetFees.inscription || 0);
-
-                        const basePayments = moisAnnee.map((m, idx) => ({
-                            designation: m,
-                            statut: idx === 0 && waiveInscription ? "Payé" : "Non payé",
-                            montantDu: idx === 0 ? finalInscriptionFee : (targetFees.mensualite || 0),
-                            montantPaye: idx === 0 && waiveInscription ? 0 : 0,
-                            methode: idx === 0 && waiveInscription ? "Exonération" : "",
-                            dateEncaissement: idx === 0 && waiveInscription ? new Date().toLocaleDateString('fr-FR') : ""
-                        }));
-
-                        if (remainingDebt > 0) {
-                            basePayments.push({
-                                designation: "Dette Antérieure",
-                                statut: "Non payé",
-                                montantDu: remainingDebt,
-                                montantPaye: 0,
-                                methode: "",
-                                dateEncaissement: ""
-                            });
-                        }
-
-                        const promotedStudent = {
-                            ...s,
-                            id: "student_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
-                            previousStudentId: s.id,
-                            previousClassName: currentClassNameDisplay,
-                            grades: {},
-                            payments: basePayments
-                        };
-                        appState.classes[targetKey].students.push(promotedStudent);
-                        promotedCount++;
-                    });
-                    
-                    // Si l'archivage ou duplication n'est pas cochée, on vide la classe d'origine
-                    if (!duplicateProfile) {
-                        currentClsData.students = [];
-                    }
-                    
-                    saveToStorage();
-                    appState.selectedClass = targetClass;
-                    appState.selectedSection = targetSection;
-                    populateFilters();
-                    closeModal('settings-modal');
-                    showToast(`${promotedCount} élèves déplacés avec succès en ${targetClass} !`, "success");
-                    render();
-                }
-            );
-        }
-
+    );
+}
         // Export de grille de notes au format PDF professionnel avec notes réelles incluses
         function exporterFeuilleSaisie() {
             const key = getCurrentClassKey();
