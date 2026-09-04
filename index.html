@@ -470,28 +470,66 @@
         document.getElementById('filter-class').innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass === c ? 'selected' : ''}>${c}</option>`).join('');
         updateSectionFilterOptions();
     }
+// --- 6. GESTION DES FILTRES (Niveau & Option) ---
 
     function updateSectionFilterOptions() {
         const sections = getSectionsForClass(appState.selectedClass);
-        document.getElementById('filter-section').innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection === s ? 'selected' : ''}>${s || 'Général'}</option>`).join('');
+        const sectionSelect = document.getElementById('filter-section');
+        
+        // Si la section actuelle n'existe pas dans le nouveau niveau, on prend la première par défaut
+        if (!sections.includes(appState.selectedSection)) {
+            appState.selectedSection = sections[0];
+        }
+
+        sectionSelect.innerHTML = sections.map(s => 
+            `<option value="${s}" ${appState.selectedSection === s ? 'selected' : ''}>${s || 'Général'}</option>`
+        ).join('');
     }
 
     function onClassChange() {
         appState.selectedClass = document.getElementById('filter-class').value;
-        appState.selectedSection = "";
+        // On laisse updateSectionFilterOptions gérer la sélection de section valide
         updateSectionFilterOptions();
         updateHeaderDisplays();
         render();
+        saveToStorage();
     }
 
     function onSectionChange() {
         appState.selectedSection = document.getElementById('filter-section').value;
         render();
+        saveToStorage();
+    }
+
+    // --- 7. RENDU & STATISTIQUES ---
+
+    function calculateClassStats() {
+        const key = getCurrentClassKey();
+        const cls = appState.classes[key];
+        if (!cls) return;
+
+        let attendu = 0, encaisse = 0;
+        
+        // Sécurisation contre les données manquantes
+        (cls.students || []).forEach(s => {
+            (s.payments || []).forEach(p => {
+                attendu += (Number(p.montantDu) || 0);
+                encaisse += (Number(p.montantPaye) || 0);
+            });
+        });
+
+        document.getElementById('stats-total-attendu').innerText = attendu.toLocaleString() + " F";
+        document.getElementById('stats-total-encaisse').innerText = encaisse.toLocaleString() + " F";
+        document.getElementById('stats-reste-recouvrer').innerText = (attendu - encaisse).toLocaleString() + " F";
+        document.getElementById('stats-taux-recouvrement').innerText = attendu > 0 ? Math.round((encaisse / attendu) * 100) + "%" : "0%";
     }
 
     function render() {
         const key = getCurrentClassKey();
         const clsData = appState.classes[key] || { students: [], subjects: [] };
+        
+        document.getElementById('class-badge').innerText = appState.selectedClass + (appState.selectedSection ? ' ' + appState.selectedSection : '');
+        
         calculateClassStats();
         populateSubjectSelector();
         renderStudentsTable(clsData.students, clsData.subjects);
@@ -503,16 +541,57 @@
         document.getElementById('display-semester').innerText = getPeriodLabel(appState.selectedClass, appState.currentSemester);
     }
 
+    // --- 8. CONFIGURATION (SETTINGS) ---
+
     function openModal(id) { 
         document.getElementById(id).classList.remove('hidden'); 
-        if(id === 'settings-modal') populateRolloverSelector();
+        
+        if(id === 'settings-modal') {
+            // Remplissage automatique des champs avec les données actuelles
+            document.getElementById('settings-year').value = appState.currentYear;
+            document.getElementById('settings-access-code').value = appState.accessCode || "1234";
+            document.getElementById('settings-gdrive-sync-url').value = appState.googleSyncUrl || "";
+            
+            // Génération dynamique du sélecteur de période
+            const semSelect = document.getElementById('settings-semester');
+            const isPrim = isPrimary(appState.selectedClass);
+            const label = isPrim ? "Trimestre" : "Semestre";
+            const max = isPrim ? 3 : 2;
+            
+            let options = "";
+            for(let i=1; i<=max; i++) {
+                options += `<option value="${i}" ${appState.currentSemester == i ? 'selected' : ''}>${label} ${i}</option>`;
+            }
+            semSelect.innerHTML = options;
+
+            populateRolloverSelector();
+        }
     }
+
+    function saveSettings() {
+        // Récupérer les nouvelles valeurs
+        appState.currentYear = document.getElementById('settings-year').value;
+        appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
+        appState.accessCode = document.getElementById('settings-access-code').value;
+        appState.googleSyncUrl = document.getElementById('settings-gdrive-sync-url').value;
+
+        // Appliquer les changements
+        updateHeaderDisplays();
+        render();
+        saveToStorage();
+        closeModal('settings-modal');
+        
+        showToast("Configuration enregistrée !", "success");
+    }
+
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
     function populateRolloverSelector() {
         document.getElementById('rollover-target-class').innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
     }
 
-    // 7. Synchronisation et Sauvegarde
+    // --- 9. SYNCHRONISATION & STOCKAGE ---
+
     async function saveToStorage() {
         await idbKeyval.set("gestnotes_state", appState);
         if (appState.googleSyncUrl) {
@@ -524,17 +603,24 @@
 
     async function sauvegarderSurDrive() {
         try {
-            const res = await fetch(appState.googleSyncUrl, { method: 'POST', body: JSON.stringify(appState) });
-            if (res.ok) document.getElementById('lbl-gdrive-sync').innerText = "Cloud Synced";
-        } catch (e) { document.getElementById('lbl-gdrive-sync').innerText = "Erreur Cloud"; }
+            const res = await fetch(appState.googleSyncUrl, { 
+                method: 'POST', 
+                mode: 'no-cors', // Souvent nécessaire pour Google Apps Script
+                body: JSON.stringify(appState) 
+            });
+            document.getElementById('lbl-gdrive-sync').innerText = "Cloud Synced";
+        } catch (e) { 
+            document.getElementById('lbl-gdrive-sync').innerText = "Erreur Cloud"; 
+        }
     }
 
     async function chargerBaseDepuisDrive() {
+        if(!appState.googleSyncUrl) return;
         try {
             const res = await fetch(appState.googleSyncUrl);
             if (res.ok) {
                 const data = await res.json();
-                const url = appState.googleSyncUrl;
+                const url = appState.googleSyncUrl; // Garder l'URL actuelle
                 appState = data;
                 appState.googleSyncUrl = url;
                 render();
@@ -543,9 +629,12 @@
         } catch (e) { console.error("Erreur chargement cloud"); }
     }
 
-    function showToast(m, type) { alert(m); } // Version simplifiée pour le test
+    function showToast(m, type) { 
+        alert(m); // Vous pourrez remplacer par une div animée plus tard
+    } 
 
     window.addEventListener('DOMContentLoaded', initApp);
+   
 </script>
     
 </body>
