@@ -1008,18 +1008,28 @@
                 }
             }, 60000);
         }
+let driveSyncTimeout = null;
 
-        // Sauvegarde locale et cloud
-        async function saveToStorage(forceCloud = true) {
-            try {
-                await idbKeyval.set("gestnotes_state", appState);
-                if (forceCloud && appState.googleSyncUrl) {
-                    await sauvegarderSurDrive();
-                }
-            } catch (err) {
-                console.error("Erreur de sauvegarde locale :", err);
-            }
+async function saveToStorage(forceCloud = true) {
+    try {
+        // Sauvegarde locale immédiate
+        await idbKeyval.set("gestnotes_state", appState);
+        
+        // Sauvegarde Cloud différée (3 secondes après la fin de la saisie)
+        if (forceCloud && appState.googleSyncUrl) {
+            const lbl = document.getElementById('lbl-gdrive-sync');
+            if (lbl) lbl.innerText = "Modif. locales...";
+
+            clearTimeout(driveSyncTimeout);
+            driveSyncTimeout = setTimeout(async () => {
+                await sauvegarderSurDrive();
+            }, 3000); 
         }
+    } catch (err) {
+        console.error("Erreur sauvegarde :", err);
+    }
+}
+       
 
         // Récupération des données depuis le cloud (GET)
         async function chargerBaseDepuisDrive() {
@@ -1040,10 +1050,10 @@
                     const localUrl = appState.googleSyncUrl;
                     const localAccessCode = appState.accessCode;
                     
-                    appState = dbState;
-                    appState.googleSyncUrl = localUrl;
-                    if (appState.accessCode === undefined) appState.accessCode = localAccessCode;
-                    
+                    // Fusionner proprement
+                    appState = dbState; 
+                    appState.googleSyncUrl = localUrl; // On garde l'URL actuelle
+                    if (!appState.accessCode) appState.accessCode = localAccessCode;
                     buildEmptyState();
                     await idbKeyval.set("gestnotes_state", appState);
                     
