@@ -61,10 +61,10 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <button onclick="exportData()" class="bg-green-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-green-700"><i class="fas fa-download mr-2"></i>Exporter</button>
 
-                <button onclick="document.getElementById('importFile').click()" class="bg-blue-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-blue-700"><i class="fas fa-upload mr-2"></i>Importer</button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-blue-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-blue-700"><i class="fas fa-upload mr-2"></[...]
                 <input type="file" id="importFile" accept=".txt" class="hidden" onchange="importData(event)">
 
-                <button onclick="alert('Synchro Drive bientôt disponible')" class="bg-violet-600 text-white py-2 px-4 rounded-xl text-sm font-bold"><i class="fab fa-google-drive mr-2"></i>Synchro</button>
+                <button onclick="alert('Synchro Drive bientôt disponible')" class="bg-violet-600 text-white py-2 px-4 rounded-xl text-sm font-bold"><i class="fab fa-google-drive mr-2"></i>Synchro</bu[...]
 
                 <button onclick="openModal('registration-modal')" class="bg-slate-900 text-white py-2 px-4 rounded-xl text-sm font-bold"><i class="fas fa-plus mr-2"></i>Inscription</button>
             </div>
@@ -81,8 +81,8 @@
                 <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold"></select>
             </div>
             <div class="flex gap-2">
-                <button onclick="alert('Gestion des matières bientôt disponible')" class="bg-violet-50 text-[#4c1d95] px-4 py-2 rounded-xl text-xs font-bold border border-violet-100"><i class="fas fa-book mr-2"></i> Matières</button>
-                <button onclick="alert('Gestion des tarifs bientôt disponible')" class="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100"><i class="fas fa-coins mr-2"></i> Tarifs</button>
+                <button onclick="alert('Gestion des matières bientôt disponible')" class="bg-violet-50 text-[#4c1d95] px-4 py-2 rounded-xl text-xs font-bold border border-violet-100"><i class="fas f[...]
+                <button onclick="alert('Gestion des tarifs bientôt disponible')" class="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100"><i class="fas fa-coi[...]
             </div>
         </section>
 
@@ -134,7 +134,7 @@
         <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden no-print">
             <div class="p-5 border-b bg-slate-50/50 flex justify-between items-center">
                 <h2 class="text-lg font-bold text-slate-800">Registre des élèves <span id="student-count" class="text-xs font-normal text-slate-500 ml-2"></span></h2>
-                <button onclick="alert('Impression groupée bientôt disponible')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold"><i class="fas fa-print mr-1"></i> Bulletins</button>
+                <button onclick="alert('Impression groupée bientôt disponible')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold"><i class="fas fa-print mr-1"></i> Bulletins[...]
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
@@ -197,6 +197,13 @@
 
     // --- INITIALISATION ---
     async function initApp() {
+        // Wait for idbKeyval to be available
+        if (typeof idbKeyval === 'undefined') {
+            console.warn('idbKeyval not loaded yet, retrying...');
+            setTimeout(initApp, 100);
+            return;
+        }
+
         const saved = await idbKeyval.get("gestnotes_db");
         if (saved) appState = saved;
         
