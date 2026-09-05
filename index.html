@@ -25,6 +25,8 @@
         .modal { transition: opacity 0.25s ease; }
         .hidden { display: none !important; }
         .role-hidden { display: none !important; }
+        .success-toast { position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; z-index: 9999; animation: fadeOut 3s forwards; }
+        @keyframes fadeOut { 0% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
         @media print { .no-print { display: none; } }
     </style>
 </head>
@@ -51,7 +53,7 @@
                 <div class="px-2 py-1.5 font-medium text-violet-200" id="display-year">2025-2026</div>
                 <div class="bg-[#6d28d9] px-2 py-1.5 rounded-lg font-semibold" id="display-semester">S1</div>
             </div>
-            <button onclick="openModal('settings-modal')" class="p-2 hover:bg-white/10 rounded-xl"><i class="fas fa-cog"></i></button>
+            <button onclick="openModal('settings-modal')" class="p-2 hover:bg-white/10 rounded-xl" title="Paramètres"><i class="fas fa-cog"></i></button>
         </div>
     </header>
 
@@ -67,7 +69,7 @@
 
                 <button onclick="syncWithDrive()" class="bg-violet-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-violet-700"><i class="fab fa-google-drive mr-2"></i>Synchro</button>
 
-                <button onclick="openModal('registration-modal')" class="bg-slate-900 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-slate-800"><i class="fas fa-plus mr-2"></i>Inscription</button>
+                <button onclick="openModal('registration-modal')" class="bg-slate-900 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-slate-800"><i class="fas fa-plus mr-2"></i>Inscrire</button>
             </div>
         </div>
 
@@ -113,7 +115,7 @@
                 <h3 class="font-bold text-slate-700"><i class="fas fa-edit text-[#4c1d95] mr-2"></i>Saisie des Notes</h3>
                 <div class="flex items-center gap-2">
                     <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold"></select>
-                    <input type="text" id="grade-search" oninput="filterGrades()" placeholder="Rechercher..." class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                    <input type="text" id="grade-search" oninput="filterGrades()" placeholder="Rechercher un élève..." class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
                 </div>
             </div>
             <div class="overflow-x-auto">
@@ -124,6 +126,7 @@
                             <th>Devoir 1</th>
                             <th>Devoir 2</th>
                             <th class="bg-violet-50">Composition</th>
+                            <th class="bg-emerald-50">Moyenne</th>
                         </tr>
                     </thead>
                     <tbody id="grades-table-body"></tbody>
@@ -135,7 +138,14 @@
         <section id="students-section" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden no-print">
             <div class="p-5 border-b bg-slate-50/50 flex justify-between items-center">
                 <h2 class="text-lg font-bold text-slate-800">Registre des élèves <span id="student-count" class="text-xs font-normal text-slate-500 ml-2"></span></h2>
-                <button onclick="printBulletins()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700"><i class="fas fa-print mr-1"></i>Bulletins</button>
+                <div class="flex gap-2">
+                    <select id="students-per-page" onchange="renderStudents()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold">
+                        <option value="10">10 par page</option>
+                        <option value="20">20 par page</option>
+                        <option value="50">50 par page</option>
+                    </select>
+                    <button onclick="printBulletins()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700"><i class="fas fa-print mr-1"></i>Bulletins</button>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
@@ -150,8 +160,38 @@
                     <tbody id="students-table-body" class="divide-y divide-slate-100"></tbody>
                 </table>
             </div>
+            <!-- Pagination -->
+            <div id="pagination-controls" class="p-4 bg-slate-50 border-t border-slate-200 flex justify-center gap-2"></div>
         </section>
     </main>
+
+    <!-- MODAL: Paramètres -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-xl font-bold mb-4">Paramètres</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-2">Année Scolaire</label>
+                    <input type="text" id="set-year" placeholder="2025-2026" class="w-full border rounded-xl p-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-2">Semestre</label>
+                    <select id="set-semester" class="w-full border rounded-xl p-2.5 text-sm">
+                        <option value="1">Semestre 1</option>
+                        <option value="2">Semestre 2</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-2">Devise</label>
+                    <input type="text" id="set-currency" placeholder="F" class="w-full border rounded-xl p-2.5 text-sm">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="closeModal('settings-modal')" class="px-4 py-2 text-slate-500 font-bold">Annuler</button>
+                <button onclick="saveSettings()" class="bg-[#4c1d95] text-white px-6 py-2 rounded-xl font-bold hover:bg-violet-800">Enregistrer</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL: Inscription -->
     <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
@@ -175,9 +215,18 @@
     <!-- MODAL: Paiement -->
     <div id="payment-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <h3 class="text-xl font-bold mb-2 text-emerald-700">Paiement</h3>
+            <h3 class="text-xl font-bold mb-2 text-emerald-700">Enregistrer un Paiement</h3>
             <p id="payment-student-name" class="font-bold mb-4"></p>
-            <input type="number" id="pay-amount" placeholder="Montant" class="w-full border rounded-xl p-2.5 text-lg">
+            <div class="space-y-3 mb-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Montant</label>
+                    <input type="number" id="pay-amount" placeholder="Montant" class="w-full border rounded-xl p-2.5 text-lg" min="1">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Date</label>
+                    <input type="date" id="pay-date" class="w-full border rounded-xl p-2.5 text-sm">
+                </div>
+            </div>
             <div class="mt-6 flex justify-end gap-3">
                 <button onclick="closeModal('payment-modal')" class="px-4 py-2 text-slate-500 font-bold">Annuler</button>
                 <button onclick="confirmPayment()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-emerald-700">Valider</button>
@@ -192,7 +241,7 @@
             <div id="subjects-list" class="space-y-2 mb-4 max-h-60 overflow-y-auto"></div>
             <div class="space-y-2 mb-4">
                 <input type="text" id="subject-name" placeholder="Nom de la matière" class="w-full border rounded-xl p-2.5">
-                <input type="number" id="subject-coef" placeholder="Coefficient" class="w-full border rounded-xl p-2.5" value="1">
+                <input type="number" id="subject-coef" placeholder="Coefficient" class="w-full border rounded-xl p-2.5" value="1" min="0.5" step="0.5">
             </div>
             <div class="flex justify-end gap-3">
                 <button onclick="closeModal('subjects-modal')" class="px-4 py-2 text-slate-500 font-bold">Fermer</button>
@@ -208,11 +257,11 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1">Frais d'inscription (F)</label>
-                    <input type="number" id="fee-inscription" class="w-full border rounded-xl p-2.5" value="25000">
+                    <input type="number" id="fee-inscription" class="w-full border rounded-xl p-2.5" value="25000" min="0">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1">Mensualité (F)</label>
-                    <input type="number" id="fee-mensuality" class="w-full border rounded-xl p-2.5" value="15000">
+                    <input type="number" id="fee-mensuality" class="w-full border rounded-xl p-2.5" value="15000" min="0">
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-6">
@@ -225,18 +274,24 @@
 <script>
     // --- ÉTAT ---
     const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+    const sectionsByClass = {
+        "Seconde": ["", "A", "B"], "Première": ["S", "L", "ES"], "Terminale": ["S", "L", "ES"]
+    };
+    
     let appState = {
         currentYear: "2025-2026",
         currentSemester: 1,
         selectedClass: "6ème",
         selectedSection: "",
         currentRole: "admin",
-        classes: {}
+        currency: "F",
+        classes: {},
+        currentPage: 1,
+        studentsPerPage: 10
     };
 
     // --- INITIALISATION ---
     async function initApp() {
-        // Wait for idbKeyval to be available
         if (typeof idbKeyval === 'undefined') {
             console.warn('idbKeyval not loaded yet, retrying...');
             setTimeout(initApp, 100);
@@ -244,10 +299,11 @@
         }
 
         const saved = await idbKeyval.get("gestnotes_db");
-        if (saved) appState = saved;
+        if (saved) appState = { ...appState, ...saved };
         
         classNames.forEach(c => {
-            ["", "A", "B", "L1", "S1"].forEach(s => {
+            const sections = sectionsByClass[c] || ["", "A", "B", "L1", "S1"];
+            sections.forEach(s => {
                 const key = `${c}_${s}`;
                 if (!appState.classes[key]) {
                     appState.classes[key] = { 
@@ -271,8 +327,10 @@
     }
 
     function updateSectionOptions() {
-        const sections = ["", "A", "B", "L1", "S1"];
+        const sections = sectionsByClass[appState.selectedClass] || ["", "A", "B", "L1", "S1"];
         document.getElementById('filter-section').innerHTML = sections.map(s => `<option value="${s}">${s || 'Général'}</option>`).join('');
+        appState.selectedSection = sections[0];
+        appState.currentPage = 1;
     }
 
     function updateUI() {
@@ -293,32 +351,47 @@
     function updateRoleVisibility() {
         const gradesSection = document.getElementById('grades-section');
         const studentsSection = document.getElementById('students-section');
+        const statsSection = document.getElementById('class-stats-section');
         
-        if (appState.currentRole === 'enseignant') {
-            gradesSection.classList.remove('hidden');
-            studentsSection.classList.add('hidden');
-        } else {
+        // Admin: voir tout
+        if (appState.currentRole === 'admin') {
             gradesSection.classList.remove('hidden');
             studentsSection.classList.remove('hidden');
+            statsSection.classList.remove('hidden');
+        }
+        // Comptable: juste finances
+        else if (appState.currentRole === 'comptable') {
+            gradesSection.classList.add('hidden');
+            studentsSection.classList.remove('hidden');
+            statsSection.classList.remove('hidden');
+        }
+        // Enseignant: juste notes
+        else if (appState.currentRole === 'enseignant') {
+            gradesSection.classList.remove('hidden');
+            studentsSection.classList.add('hidden');
+            statsSection.classList.add('hidden');
         }
     }
 
     // --- ACTIONS ---
     function onClassChange() { 
-        appState.selectedClass = document.getElementById('filter-class').value; 
+        appState.selectedClass = document.getElementById('filter-class').value;
+        updateSectionOptions();
         updateUI(); 
     }
 
     function onSectionChange() { 
-        appState.selectedSection = document.getElementById('filter-section').value; 
+        appState.selectedSection = document.getElementById('filter-section').value;
+        appState.currentPage = 1;
         updateUI(); 
     }
 
     function saveStudent() {
         const fname = document.getElementById('reg-firstname').value.trim();
         const lname = document.getElementById('reg-lastname').value.trim();
+        
         if (!fname || !lname) {
-            alert("Veuillez remplir tous les champs");
+            showToast('Veuillez remplir tous les champs', 'error');
             return;
         }
 
@@ -337,13 +410,15 @@
         
         saveAndRefresh();
         closeModal('registration-modal');
+        showToast(`✓ ${fname} ${lname} inscrit avec succès`, 'success');
     }
 
     function deleteStudent(id) {
-        if(confirm("Supprimer cet élève ?")) {
+        if(confirm("Êtes-vous sûr de vouloir supprimer cet élève ?")) {
             const key = `${appState.selectedClass}_${appState.selectedSection}`;
             appState.classes[key].students = appState.classes[key].students.filter(s => s.id !== id);
             saveAndRefresh();
+            showToast('✓ Élève supprimé', 'success');
         }
     }
 
@@ -353,13 +428,22 @@
         const tbody = document.getElementById('students-table-body');
         document.getElementById('student-count').innerText = `(${students.length})`;
 
-        tbody.innerHTML = students.map(s => {
+        const perPage = parseInt(document.getElementById('students-per-page')?.value || appState.studentsPerPage);
+        appState.studentsPerPage = perPage;
+        const totalPages = Math.ceil(students.length / perPage);
+        
+        if (appState.currentPage > totalPages && totalPages > 0) appState.currentPage = totalPages;
+
+        const start = (appState.currentPage - 1) * perPage;
+        const paginatedStudents = students.slice(start, start + perPage);
+
+        tbody.innerHTML = paginatedStudents.map(s => {
             const paid = s.payments.reduce((sum, p) => sum + p.amount, 0);
             return `
             <tr>
                 <td class="px-5 py-3 font-bold">${s.firstname} ${s.lastname.toUpperCase()}</td>
-                <td class="px-5 py-3 text-center">${s.gender}</td>
-                <td class="px-5 py-3 text-center font-bold text-emerald-600">${paid.toLocaleString()} F</td>
+                <td class="px-5 py-3 text-center">${s.gender === 'M' ? '♂' : '♀'}</td>
+                <td class="px-5 py-3 text-center font-bold text-emerald-600">${paid.toLocaleString()} ${appState.currency}</td>
                 <td class="px-5 py-3 text-right space-x-2">
                     <button onclick="openPaymentModal('${s.id}')" class="text-emerald-600 hover:text-emerald-800" title="Enregistrer un paiement"><i class="fas fa-wallet"></i></button>
                     <button onclick="generateBulletin('${s.id}')" class="text-indigo-600 hover:text-indigo-800" title="Générer le bulletin"><i class="fas fa-file-pdf"></i></button>
@@ -367,6 +451,29 @@
                 </td>
             </tr>`;
         }).join('');
+
+        // Pagination
+        const paginationDiv = document.getElementById('pagination-controls');
+        paginationDiv.innerHTML = '';
+        if (totalPages > 1) {
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1 rounded-lg text-xs font-bold ${i === appState.currentPage ? 'bg-[#4c1d95] text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`;
+                btn.innerText = i;
+                btn.onclick = () => { appState.currentPage = i; renderStudents(); };
+                paginationDiv.appendChild(btn);
+            }
+        }
+    }
+
+    function calculateStudentAverage(student, subId, subject) {
+        const g = student.grades?.[subId] || {dev1:'', dev2:'', compo:''};
+        const dev1 = parseFloat(g.dev1) || 0;
+        const dev2 = parseFloat(g.dev2) || 0;
+        const compo = parseFloat(g.compo) || 0;
+        
+        // Moyenne pondérée: (dev1 + dev2 + compo*2) / 4 * coefficient
+        return ((dev1 + dev2 + compo * 2) / 4).toFixed(2);
     }
 
     function renderGradesGrid() {
@@ -378,23 +485,37 @@
         const subId = subSelect.value;
         const tbody = document.getElementById('grades-table-body');
         if (!subId) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-400">Aucune matière</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-400">Aucune matière</td></tr>';
             return;
         }
 
+        const subject = cls.subjects.find(s => s.id.toString() === subId.toString());
+
         tbody.innerHTML = cls.students.map(s => {
             const g = s.grades?.[subId] || {dev1:'', dev2:'', compo:''};
+            const dev1 = parseFloat(g.dev1) || 0;
+            const dev2 = parseFloat(g.dev2) || 0;
+            const compo = parseFloat(g.compo) || 0;
+            const average = calculateStudentAverage(s, subId, subject);
+            
             return `
             <tr>
                 <td class="text-left font-bold px-2">${s.firstname} ${s.lastname}</td>
                 <td><input type="number" min="0" max="20" onchange="updateGrade('${s.id}','${subId}','dev1',this.value)" value="${g.dev1}" class="w-12 text-center border rounded px-1"></td>
                 <td><input type="number" min="0" max="20" onchange="updateGrade('${s.id}','${subId}','dev2',this.value)" value="${g.dev2}" class="w-12 text-center border rounded px-1"></td>
-                <td class="bg-violet-50"><input type="number" min="0" max="20" onchange="updateGrade('${s.id}','${subId}','compo',this.value)" value="${g.compo}" class="w-12 text-center border rounded px-1 font-bold"></td>
+                <td class="bg-violet-50"><input type="number" min="0" max="20" onchange="updateGrade('${s.id}','${subId}','compo',this.value)" value="${g.compo}" class="w-12 text-center border rounded px-1"></td>
+                <td class="bg-emerald-50 font-bold text-emerald-700">${average}</td>
             </tr>`;
         }).join('');
     }
 
     function updateGrade(sid, subid, field, val) {
+        const value = parseFloat(val) || '';
+        if (value !== '' && (value < 0 || value > 20)) {
+            showToast('La note doit être entre 0 et 20', 'error');
+            return;
+        }
+
         const key = `${appState.selectedClass}_${appState.selectedSection}`;
         const student = appState.classes[key].students.find(s => s.id === sid);
         if (!student) return;
@@ -428,9 +549,9 @@
         const totalRemaining = totalAttended - totalPaid;
         const recoveryRate = totalAttended > 0 ? Math.round((totalPaid / totalAttended) * 100) : 0;
         
-        document.getElementById('stats-total-attendu').innerText = totalAttended.toLocaleString() + " F";
-        document.getElementById('stats-total-encaisse').innerText = totalPaid.toLocaleString() + " F";
-        document.getElementById('stats-reste-recouvrer').innerText = totalRemaining.toLocaleString() + " F";
+        document.getElementById('stats-total-attendu').innerText = totalAttended.toLocaleString() + " " + appState.currency;
+        document.getElementById('stats-total-encaisse').innerText = totalPaid.toLocaleString() + " " + appState.currency;
+        document.getElementById('stats-reste-recouvrer').innerText = totalRemaining.toLocaleString() + " " + appState.currency;
         document.getElementById('stats-taux-recouvrement').innerText = recoveryRate + "%";
     }
 
@@ -450,10 +571,15 @@
 
     function addSubject() {
         const name = document.getElementById('subject-name').value.trim();
-        const coef = parseInt(document.getElementById('subject-coef').value) || 1;
+        const coef = parseFloat(document.getElementById('subject-coef').value) || 1;
         
         if (!name) {
-            alert("Veuillez entrer le nom de la matière");
+            showToast('Veuillez entrer le nom de la matière', 'error');
+            return;
+        }
+        
+        if (coef <= 0) {
+            showToast('Le coefficient doit être positif', 'error');
             return;
         }
         
@@ -471,6 +597,7 @@
         renderSubjectsList();
         renderGradesGrid();
         saveAndRefresh();
+        showToast(`✓ Matière "${name}" ajoutée`, 'success');
     }
 
     function deleteSubject(id) {
@@ -479,12 +606,18 @@
         renderSubjectsList();
         renderGradesGrid();
         saveAndRefresh();
+        showToast('✓ Matière supprimée', 'success');
     }
 
     // --- TARIFS ---
     function saveFees() {
         const inscription = parseInt(document.getElementById('fee-inscription').value) || 0;
         const mensuality = parseInt(document.getElementById('fee-mensuality').value) || 0;
+        
+        if (inscription < 0 || mensuality < 0) {
+            showToast('Les montants ne peuvent pas être négatifs', 'error');
+            return;
+        }
         
         const key = `${appState.selectedClass}_${appState.selectedSection}`;
         appState.classes[key].fees = {
@@ -494,6 +627,27 @@
         
         saveAndRefresh();
         closeModal('fees-modal');
+        showToast('✓ Tarifs enregistrés', 'success');
+    }
+
+    // --- PARAMÈTRES ---
+    function saveSettings() {
+        const year = document.getElementById('set-year').value.trim();
+        const semester = document.getElementById('set-semester').value;
+        const currency = document.getElementById('set-currency').value.trim() || 'F';
+        
+        if (!year) {
+            showToast('Veuillez entrer l\'année scolaire', 'error');
+            return;
+        }
+
+        appState.currentYear = year;
+        appState.currentSemester = parseInt(semester);
+        appState.currency = currency;
+        
+        saveAndRefresh();
+        closeModal('settings-modal');
+        showToast('✓ Paramètres enregistrés', 'success');
     }
 
     // --- MODALS ---
@@ -504,6 +658,10 @@
             const key = `${appState.selectedClass}_${appState.selectedSection}`;
             document.getElementById('fee-inscription').value = appState.classes[key].fees.inscription;
             document.getElementById('fee-mensuality').value = appState.classes[key].fees.mensualite;
+        } else if (id === 'settings-modal') {
+            document.getElementById('set-year').value = appState.currentYear;
+            document.getElementById('set-semester').value = appState.currentSemester;
+            document.getElementById('set-currency').value = appState.currency;
         }
         document.getElementById(id).classList.remove('hidden'); 
     }
@@ -520,21 +678,32 @@
         if (!s) return;
         document.getElementById('payment-student-name').innerText = s.firstname + " " + s.lastname;
         document.getElementById('pay-amount').value = '';
+        document.getElementById('pay-date').value = new Date().toISOString().split('T')[0];
         openModal('payment-modal');
     }
 
     function confirmPayment() {
         const amt = parseInt(document.getElementById('pay-amount').value);
+        const date = document.getElementById('pay-date').value;
+        
         if(!amt || amt <= 0) {
-            alert("Veuillez entrer un montant valide");
+            showToast('Veuillez entrer un montant valide', 'error');
             return;
         }
+        
+        if (!date) {
+            showToast('Veuillez sélectionner une date', 'error');
+            return;
+        }
+
         const key = `${appState.selectedClass}_${appState.selectedSection}`;
         const s = appState.classes[key].students.find(st => st.id === currentPayId);
         if (!s) return;
-        s.payments.push({amount: amt, date: new Date().toLocaleDateString()});
+        
+        s.payments.push({amount: amt, date: date});
         saveAndRefresh();
         closeModal('payment-modal');
+        showToast('✓ Paiement enregistré', 'success');
     }
 
     // --- BULLETINS & IMPRESSIONS ---
@@ -617,23 +786,23 @@
                 <table>
                     <tr>
                         <td><strong>Frais d'inscription:</strong></td>
-                        <td>${fees.inscription.toLocaleString()} F</td>
+                        <td>${fees.inscription.toLocaleString()} ${appState.currency}</td>
                     </tr>
                     <tr>
                         <td><strong>Mensualité:</strong></td>
-                        <td>${fees.mensualite.toLocaleString()} F</td>
+                        <td>${fees.mensualite.toLocaleString()} ${appState.currency}</td>
                     </tr>
                     <tr>
                         <td><strong>Total attendu:</strong></td>
-                        <td>${totalFees.toLocaleString()} F</td>
+                        <td>${totalFees.toLocaleString()} ${appState.currency}</td>
                     </tr>
                     <tr style="background-color: #e8f5e9;">
                         <td><strong>Montant payé:</strong></td>
-                        <td><strong>${totalPaid.toLocaleString()} F</strong></td>
+                        <td><strong>${totalPaid.toLocaleString()} ${appState.currency}</strong></td>
                     </tr>
                     <tr style="background-color: #ffebee;">
                         <td><strong>Reste dû:</strong></td>
-                        <td><strong>${(totalFees - totalPaid).toLocaleString()} F</strong></td>
+                        <td><strong>${(totalFees - totalPaid).toLocaleString()} ${appState.currency}</strong></td>
                     </tr>
                 </table>
 
@@ -656,10 +825,11 @@
         };
 
         html2pdf().set(opt).from(bulletinHTML).save();
+        showToast(`✓ Bulletin de ${student.firstname} généré`, 'success');
     }
 
     function printBulletins() {
-        alert('Impression groupée en cours de développement...');
+        alert('Impression groupée bientôt disponible - Utilisez la génération PDF individuelle');
     }
 
     // --- SYNC DRIVE ---
@@ -673,12 +843,21 @@
         updateUI();
     }
 
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `success-toast ${type === 'error' ? 'bg-rose-600' : 'bg-emerald-600'}`;
+        toast.innerText = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
     function exportData() {
         const blob = new Blob([JSON.stringify(appState, null, 2)], {type: 'text/plain'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = `SAUVEGARDE_GESTNOTES_${new Date().toISOString().split('T')[0]}.txt`;
         a.click();
+        showToast('✓ Données exportées', 'success');
     }
 
     function importData(event) {
@@ -686,12 +865,12 @@
         reader.onload = async (e) => {
             try {
                 const imported = JSON.parse(e.target.result);
-                appState = imported;
+                appState = { ...appState, ...imported };
                 await saveAndRefresh();
-                alert("Données importées avec succès!");
-                location.reload();
+                showToast('✓ Données importées avec succès');
+                setTimeout(() => location.reload(), 1000);
             } catch (err) { 
-                alert("Erreur: Le fichier n'est pas valide");
+                showToast('Erreur: Le fichier n\'est pas valide', 'error');
             }
         };
         reader.readAsText(event.target.files[0]);
