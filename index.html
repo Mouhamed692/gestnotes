@@ -222,6 +222,30 @@
         </div>
     </div>
 
+    <!-- MODAL: Paramètres -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-xl font-bold mb-4">Paramètres</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Année Scolaire</label>
+                    <input type="text" id="settings-year" class="w-full border rounded-xl p-2.5" value="2025-2026">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Semestre</label>
+                    <select id="settings-semester" class="w-full border rounded-xl p-2.5">
+                        <option value="1">Semestre 1</option>
+                        <option value="2">Semestre 2</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeModal('settings-modal')" class="px-4 py-2 text-slate-500 font-bold">Fermer</button>
+                <button onclick="saveSettings()" class="bg-violet-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-violet-700">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
 <script>
     // --- ÉTAT ---
     const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
@@ -262,6 +286,11 @@
         populateFilters();
         updateUI();
         updateRoleVisibility();
+        
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW registration failed:', err));
+        }
     }
 
     function populateFilters() {
@@ -389,7 +418,7 @@
                 <td class="text-left font-bold px-2">${s.firstname} ${s.lastname}</td>
                 <td><input type="number" min="0" max="20" onchange="updateGrade('${s.id}','${subId}','dev1',this.value)" value="${g.dev1}" class="w-12 text-center border rounded px-1"></td>
                 <td><input type="number" min="0" max="20" onchange="updateGrade('${s.id}','${subId}','dev2',this.value)" value="${g.dev2}" class="w-12 text-center border rounded px-1"></td>
-                <td class="bg-violet-50"><input type="number" min="0" max="20" onchange="updateGrade('${s.id}','${subId}','compo',this.value)" value="${g.compo}" class="w-12 text-center border rounded px-1 font-bold"></td>
+                <td class="bg-violet-50"><input type="number" min="0" max="20" onchange="updateGrade('${s.id}','${subId}','compo',this.value)" value="${g.compo}" class="w-12 text-center border rounded px-1"></td>
             </tr>`;
         }).join('');
     }
@@ -496,6 +525,14 @@
         closeModal('fees-modal');
     }
 
+    // --- PARAMÈTRES ---
+    function saveSettings() {
+        appState.currentYear = document.getElementById('settings-year').value;
+        appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
+        saveAndRefresh();
+        closeModal('settings-modal');
+    }
+
     // --- MODALS ---
     function openModal(id) { 
         if (id === 'subjects-modal') {
@@ -504,6 +541,9 @@
             const key = `${appState.selectedClass}_${appState.selectedSection}`;
             document.getElementById('fee-inscription').value = appState.classes[key].fees.inscription;
             document.getElementById('fee-mensuality').value = appState.classes[key].fees.mensualite;
+        } else if (id === 'settings-modal') {
+            document.getElementById('settings-year').value = appState.currentYear;
+            document.getElementById('settings-semester').value = appState.currentSemester;
         }
         document.getElementById(id).classList.remove('hidden'); 
     }
@@ -659,7 +699,14 @@
     }
 
     function printBulletins() {
-        alert('Impression groupée en cours de développement...');
+        const key = `${appState.selectedClass}_${appState.selectedSection}`;
+        const students = appState.classes[key].students;
+        if (students.length === 0) {
+            alert('Aucun élève à imprimer');
+            return;
+        }
+        alert(`Impression de ${students.length} bulletin(s) en cours...`);
+        students.forEach(s => setTimeout(() => generateBulletin(s.id), 500));
     }
 
     // --- SYNC DRIVE ---
@@ -697,7 +744,7 @@
         reader.readAsText(event.target.files[0]);
     }
 
-    window.onload = initApp;
+    window.addEventListener('load', initApp);
 </script>
 </body>
 </html>
