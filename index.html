@@ -8,15 +8,15 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4c1d95">
-    <title>GestNotes – Administration scolaire (Sénégal)</title>
+    <title>GestNotes – Administration scolaire</title>
     
-    <!-- Bibliothèques Locales (Comme demandé) -->
+    <!-- Bibliothèques Locales (GitHub) -->
     <script src="tailwind.min.js"></script>
     <link rel="stylesheet" href="fontawesome.min.css">
     <script src="html2pdf.bundle.min.js"></script>
     <script src="idb-keyval.js"></script>
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts (Optionnel, conservé pour le design) -->
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
@@ -35,7 +35,7 @@
         <div class="flex items-center gap-3">
             <div class="bg-white/10 p-2 rounded-lg"><i class="fas fa-graduation-cap text-2xl text-violet-200"></i></div>
             <div>
-                <h1 class="text-xl font-bold tracking-tight" id="header-school-name">GestNotes</h1>
+                <h1 class="text-xl font-bold tracking-tight">GestNotes</h1>
                 <p class="text-xs text-violet-200">Admin & Gestion</p>
             </div>
         </div>
@@ -50,7 +50,7 @@
                 <div class="px-2 py-1.5 font-medium text-violet-200" id="display-year">2025-2026</div>
                 <div class="bg-[#6d28d9] px-2 py-1.5 rounded-lg font-semibold" id="display-semester">S1</div>
             </div>
-            <button onclick="openModal('settings-modal')" class="p-2 hover:bg-white/10 rounded-xl transition-colors"><i class="fas fa-cog"></i></button>
+            <button onclick="openModal('settings-modal')" class="p-2 hover:bg-white/10 rounded-xl"><i class="fas fa-cog"></i></button>
         </div>
     </header>
 
@@ -59,11 +59,11 @@
         <!-- BARRE D'ACTIONS -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 no-print">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <button onclick="exportData()" class="bg-green-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-green-700 transition-colors"><i class="fas fa-download mr-2"></i>Exporter</button>
-                <button onclick="document.getElementById('importFile').click()" class="bg-blue-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors"><i class="fas fa-upload mr-2"></i>Importer</button>
-                <input type="file" id="importFile" accept=".json,.txt" class="hidden" onchange="importData(event)">
-                <button onclick="alert('Synchro Drive bientôt disponible')" class="bg-violet-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-violet-700 transition-colors"><i class="fab fa-google-drive mr-2"></i>Synchro</button>
-                <button onclick="openRegistrationModal()" class="bg-slate-900 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"><i class="fas fa-plus mr-2"></i>Inscription</button>
+                <button onclick="exportData()" class="bg-green-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-green-700"><i class="fas fa-download mr-2"></i>Exporter</button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-blue-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-blue-700"><i class="fas fa-upload mr-2"></i>Importer</button>
+                <input type="file" id="importFile" accept=".txt" class="hidden" onchange="importData(event)">
+                <button onclick="alert('Synchro Drive bientôt disponible')" class="bg-violet-600 text-white py-2 px-4 rounded-xl text-sm font-bold"><i class="fab fa-google-drive mr-2"></i>Synchro</button>
+                <button onclick="openRegistrationModal()" class="bg-slate-900 text-white py-2 px-4 rounded-xl text-sm font-bold"><i class="fas fa-plus mr-2"></i>Inscription</button>
             </div>
         </div>
 
@@ -78,27 +78,27 @@
                 <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold"></select>
             </div>
             <div class="flex gap-2">
-                <button onclick="alert('Gestion des matières bientôt disponible')" class="bg-violet-50 text-[#4c1d95] px-4 py-2 rounded-xl text-xs font-bold border border-violet-100 hover:bg-violet-100"><i class="fas fa-book mr-1"></i> Matières</button>
-                <button onclick="alert('Gestion des tarifs bientôt disponible')" class="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100 hover:bg-amber-100"><i class="fas fa-coins mr-1"></i> Tarifs</button>
+                <button onclick="alert('Gestion des matières bientôt disponible')" class="bg-violet-50 text-[#4c1d95] px-4 py-2 rounded-xl text-xs font-bold border border-violet-100"><i class="fas fa-book mr-1"></i> Matières</button>
+                <button onclick="alert('Gestion des tarifs bientôt disponible')" class="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100"><i class="fas fa-coins mr-1"></i> Tarifs</button>
             </div>
         </section>
 
         <!-- STATS FINANCIÈRES -->
         <section id="class-stats-section" class="grid grid-cols-2 lg:grid-cols-4 gap-4 no-print">
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                <p class="text-[10px] uppercase font-bold text-slate-400">Attendu (Scolarité)</p>
-                <p class="text-xl font-bold text-slate-800" id="stats-total-attendu">0 FCFA</p>
+                <p class="text-[10px] uppercase font-bold text-slate-400">Attendu</p>
+                <p class="text-xl font-bold text-slate-800" id="stats-total-attendu">0 F</p>
             </div>
             <div class="bg-white p-4 rounded-2xl border-l-4 border-l-emerald-500 shadow-sm">
                 <p class="text-[10px] uppercase font-bold text-emerald-600">Encaissé</p>
-                <p class="text-xl font-bold text-emerald-700" id="stats-total-encaisse">0 FCFA</p>
+                <p class="text-xl font-bold text-emerald-700" id="stats-total-encaisse">0 F</p>
             </div>
             <div class="bg-white p-4 rounded-2xl border-l-4 border-l-rose-500 shadow-sm">
-                <p class="text-[10px] uppercase font-bold text-rose-600">Reste à recouvrer</p>
-                <p class="text-xl font-bold text-rose-700" id="stats-reste-recouvrer">0 FCFA</p>
+                <p class="text-[10px] uppercase font-bold text-rose-600">Reste</p>
+                <p class="text-xl font-bold text-rose-700" id="stats-reste-recouvrer">0 F</p>
             </div>
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                <p class="text-[10px] uppercase font-bold text-violet-600">Taux de recouvrement</p>
+                <p class="text-[10px] uppercase font-bold text-violet-600">Taux</p>
                 <p class="text-xl font-bold text-violet-700" id="stats-taux-recouvrement">0%</p>
             </div>
         </section>
@@ -106,10 +106,10 @@
         <!-- GRILLE DE NOTES -->
         <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 no-print">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-                <h3 class="font-bold text-slate-700"><i class="fas fa-edit text-[#4c1d95] mr-2"></i>Saisie des Notes (/20)</h3>
+                <h3 class="font-bold text-slate-700"><i class="fas fa-edit text-[#4c1d95] mr-2"></i>Saisie des Notes</h3>
                 <div class="flex items-center gap-2">
-                    <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold outline-none"></select>
-                    <input type="text" id="grade-search" oninput="filterGrades()" placeholder="Rechercher un élève..." class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none">
+                    <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold"></select>
+                    <input type="text" id="grade-search" oninput="filterGrades()" placeholder="Rechercher..." class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
                 </div>
             </div>
             <div class="overflow-x-auto">
@@ -131,7 +131,7 @@
         <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden no-print">
             <div class="p-5 border-b bg-slate-50/50 flex justify-between items-center">
                 <h2 class="text-lg font-bold text-slate-800">Registre des élèves <span id="student-count" class="text-xs font-normal text-slate-500 ml-2"></span></h2>
-                <button onclick="alert('Impression groupée bientôt disponible')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700"><i class="fas fa-print mr-1"></i> Bulletins</button>
+                <button onclick="alert('Impression groupée bientôt disponible')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold"><i class="fas fa-print mr-1"></i> Bulletins</button>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
@@ -139,7 +139,7 @@
                         <tr>
                             <th class="px-5 py-3">Nom Complet</th>
                             <th class="px-5 py-3 text-center">Sexe</th>
-                            <th class="px-5 py-3 text-center">Scolarité Payée</th>
+                            <th class="px-5 py-3 text-center">Scolarité</th>
                             <th class="px-5 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -149,76 +149,42 @@
         </section>
     </main>
 
-    <!-- MODAL : INSCRIPTION -->
+    <!-- MODALS (Inscription & Paiement) -->
     <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <h3 class="text-xl font-bold mb-4">Nouvelle Inscription</h3>
             <div class="space-y-4">
-                <input type="text" id="reg-firstname" placeholder="Prénom" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:border-[#4c1d95]">
-                <input type="text" id="reg-lastname" placeholder="Nom" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:border-[#4c1d95]">
-                <select id="reg-gender" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:border-[#4c1d95]">
+                <input type="text" id="reg-firstname" placeholder="Prénom" class="w-full border rounded-xl p-2.5">
+                <input type="text" id="reg-lastname" placeholder="Nom" class="w-full border rounded-xl p-2.5">
+                <select id="reg-gender" class="w-full border rounded-xl p-2.5">
                     <option value="M">Masculin</option>
                     <option value="F">Féminin</option>
                 </select>
             </div>
             <div class="mt-6 flex justify-end gap-3">
-                <button onclick="closeModal('registration-modal')" class="px-4 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-xl">Annuler</button>
-                <button onclick="saveStudent()" class="bg-[#4c1d95] text-white px-6 py-2 rounded-xl font-bold hover:bg-violet-900">Inscrire</button>
+                <button onclick="closeModal('registration-modal')" class="px-4 py-2 text-slate-500 font-bold">Annuler</button>
+                <button onclick="saveStudent()" class="bg-[#4c1d95] text-white px-6 py-2 rounded-xl font-bold">Inscrire</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL : PAIEMENT -->
     <div id="payment-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <h3 class="text-xl font-bold mb-2 text-emerald-700">Encaisser un paiement</h3>
-            <p id="payment-student-name" class="font-bold mb-4 text-slate-600"></p>
-            <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1">Montant (FCFA)</label>
-                <input type="number" id="pay-amount" placeholder="Ex: 15000" class="w-full border border-slate-300 rounded-xl p-2.5 text-lg outline-none focus:border-emerald-500">
-            </div>
+            <h3 class="text-xl font-bold mb-2 text-emerald-700">Paiement</h3>
+            <p id="payment-student-name" class="font-bold mb-4"></p>
+            <input type="number" id="pay-amount" placeholder="Montant" class="w-full border rounded-xl p-2.5 text-lg">
             <div class="mt-6 flex justify-end gap-3">
-                <button onclick="closeModal('payment-modal')" class="px-4 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-xl">Annuler</button>
-                <button onclick="confirmPayment()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-emerald-700">Valider</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL : PARAMÈTRES DE L'ÉCOLE -->
-    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <h3 class="text-xl font-bold mb-4 text-[#4c1d95]"><i class="fas fa-school mr-2"></i>Paramètres de l'école</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Nom de l'établissement</label>
-                    <input type="text" id="set-school-name" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:border-[#4c1d95]">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Année Scolaire</label>
-                    <input type="text" id="set-school-year" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:border-[#4c1d95]">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Découpage de l'année</label>
-                    <select id="set-period" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:border-[#4c1d95]">
-                        <option value="Trimestre">Trimestres (3 périodes)</option>
-                        <option value="Semestre">Semestres (2 périodes)</option>
-                    </select>
-                </div>
-            </div>
-            <div class="mt-6 flex justify-end gap-3">
-                <button onclick="closeModal('settings-modal')" class="px-4 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-xl">Annuler</button>
-                <button onclick="saveSettings()" class="bg-[#4c1d95] text-white px-6 py-2 rounded-xl font-bold hover:bg-violet-900">Enregistrer</button>
+                <button onclick="closeModal('payment-modal')" class="px-4 py-2 text-slate-500 font-bold">Annuler</button>
+                <button onclick="confirmPayment()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold">Valider</button>
             </div>
         </div>
     </div>
 
 <script>
-    // --- ÉTAT GLOBAL DE L'APPLICATION ---
+    // --- ÉTAT ---
     const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
     let appState = {
-        schoolName: "Lycée d'Excellence",
         currentYear: "2025-2026",
-        periodType: "Semestre", // ou "Trimestre"
         currentSemester: 1,
         selectedClass: "6ème",
         selectedSection: "",
@@ -229,25 +195,15 @@
     // --- INITIALISATION ---
     async function initApp() {
         const saved = await idbKeyval.get("gestnotes_db");
-        if (saved) {
-            // Fusionner pour éviter d'écraser les nouvelles variables (ex: schoolName) si on charge une ancienne sauvegarde
-            appState = { ...appState, ...saved }; 
-        }
+        if (saved) appState = saved;
         
-        // Génération automatique de la structure des classes si elles n'existent pas
         classNames.forEach(c => {
-            ["", "A", "B", "L1", "L2", "S1", "S2"].forEach(s => {
+            ["", "A", "B", "L1", "S1"].forEach(s => {
                 const key = `${c}_${s}`;
                 if (!appState.classes[key]) {
                     appState.classes[key] = { 
                         students: [], 
-                        // Matières de base par défaut
-                        subjects: [
-                            {id: 1, name: 'Mathématiques', coef: 2},
-                            {id: 2, name: 'Français', coef: 2},
-                            {id: 3, name: 'PC / SVT', coef: 2}
-                        ],
-                        // Frais de base (adaptable plus tard)
+                        subjects: [{id: 1, name: 'Mathématiques', coef: 2}],
                         fees: { inscription: 25000, mensualite: 15000 }
                     };
                 }
@@ -258,26 +214,6 @@
         updateUI();
     }
 
-    // --- GESTION DE L'INTERFACE ---
-    function updateUI() {
-        // Mise à jour de l'en-tête
-        document.getElementById('header-school-name').innerText = appState.schoolName;
-        document.getElementById('display-year').innerText = appState.currentYear;
-        
-        const prefix = appState.periodType === "Trimestre" ? "T" : "S";
-        document.getElementById('display-semester').innerText = prefix + appState.currentSemester;
-
-        // Mise à jour des formulaires des paramètres avec les valeurs actuelles
-        document.getElementById('set-school-name').value = appState.schoolName;
-        document.getElementById('set-school-year').value = appState.currentYear;
-        document.getElementById('set-period').value = appState.periodType;
-
-        // Rendu des tableaux
-        renderStudents();
-        renderGradesGrid();
-        renderStats();
-    }
-
     function populateFilters() {
         document.getElementById('filter-class').innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
         document.getElementById('filter-class').value = appState.selectedClass;
@@ -285,45 +221,26 @@
     }
 
     function updateSectionOptions() {
-        const sections = ["", "A", "B", "L1", "L2", "S1", "S2"];
+        const sections = ["", "A", "B", "L1", "S1"];
         document.getElementById('filter-section').innerHTML = sections.map(s => `<option value="${s}">${s || 'Général'}</option>`).join('');
-        document.getElementById('filter-section').value = appState.selectedSection;
     }
 
-    // --- ACTIONS DES FILTRES ET PARAMÈTRES ---
-    function onClassChange() { 
-        appState.selectedClass = document.getElementById('filter-class').value; 
-        updateUI(); 
-    }
-    
-    function onSectionChange() { 
-        appState.selectedSection = document.getElementById('filter-section').value; 
-        updateUI(); 
-    }
-    
-    function onRoleChange() { 
-        appState.currentRole = document.getElementById('role-selector').value; 
-        // Logique de restriction d'accès à venir selon le rôle
+    function updateUI() {
+        document.getElementById('display-year').innerText = appState.currentYear;
+        document.getElementById('display-semester').innerText = "S" + appState.currentSemester;
+        renderStudents();
+        renderGradesGrid();
+        renderStats();
     }
 
-    function saveSettings() {
-        appState.schoolName = document.getElementById('set-school-name').value || "Mon École";
-        appState.currentYear = document.getElementById('set-school-year').value;
-        appState.periodType = document.getElementById('set-period').value;
-        
-        saveAndRefresh();
-        closeModal('settings-modal');
-    }
+    // --- ACTIONS ---
+    function onClassChange() { appState.selectedClass = document.getElementById('filter-class').value; updateUI(); }
+    function onSectionChange() { appState.selectedSection = document.getElementById('filter-section').value; updateUI(); }
 
-    // --- GESTION DES ÉLÈVES ---
     function saveStudent() {
-        const fname = document.getElementById('reg-firstname').value.trim();
-        const lname = document.getElementById('reg-lastname').value.trim();
-        
-        if (!fname || !lname) {
-            alert("Veuillez renseigner le nom et le prénom de l'élève.");
-            return;
-        }
+        const fname = document.getElementById('reg-firstname').value;
+        const lname = document.getElementById('reg-lastname').value;
+        if (!fname || !lname) return;
 
         const key = `${appState.selectedClass}_${appState.selectedSection}`;
         appState.classes[key].students.push({
@@ -334,13 +251,12 @@
             payments: [],
             grades: {}
         });
-        
         saveAndRefresh();
         closeModal('registration-modal');
     }
 
     function deleteStudent(id) {
-        if(confirm("Confirmer la suppression de cet élève ? Toutes ses données (notes, paiements) seront perdues.")) {
+        if(confirm("Supprimer cet élève ?")) {
             const key = `${appState.selectedClass}_${appState.selectedSection}`;
             appState.classes[key].students = appState.classes[key].students.filter(s => s.id !== id);
             saveAndRefresh();
@@ -351,51 +267,42 @@
         const key = `${appState.selectedClass}_${appState.selectedSection}`;
         const students = appState.classes[key].students;
         const tbody = document.getElementById('students-table-body');
-        
-        document.getElementById('student-count').innerText = `(${students.length} inscrits)`;
+        document.getElementById('student-count').innerText = students.length;
 
         tbody.innerHTML = students.map(s => {
             const paid = s.payments.reduce((sum, p) => sum + p.amount, 0);
             return `
-            <tr class="hover:bg-slate-50 transition-colors">
-                <td class="px-5 py-3 font-bold text-slate-700">${s.firstname} <span class="uppercase">${s.lastname}</span></td>
-                <td class="px-5 py-3 text-center text-slate-500">${s.gender}</td>
-                <td class="px-5 py-3 text-center font-bold text-emerald-600">${paid.toLocaleString()} FCFA</td>
-                <td class="px-5 py-3 text-right space-x-3">
-                    <button onclick="openPaymentModal('${s.id}')" class="text-emerald-600 hover:text-emerald-800" title="Ajouter un paiement"><i class="fas fa-wallet"></i></button>
-                    <button onclick="generateBulletin('${s.id}')" class="text-indigo-600 hover:text-indigo-800" title="Générer le bulletin"><i class="fas fa-file-pdf"></i></button>
-                    <button onclick="deleteStudent('${s.id}')" class="text-rose-600 hover:text-rose-800" title="Supprimer l'élève"><i class="fas fa-trash"></i></button>
+            <tr>
+                <td class="px-5 py-3 font-bold">${s.firstname} ${s.lastname.toUpperCase()}</td>
+                <td class="px-5 py-3 text-center">${s.gender}</td>
+                <td class="px-5 py-3 text-center font-bold text-emerald-600">${paid.toLocaleString()} F</td>
+                <td class="px-5 py-3 text-right space-x-2">
+                    <button onclick="openPaymentModal('${s.id}')" class="text-emerald-600"><i class="fas fa-wallet"></i></button>
+                    <button onclick="generateBulletin('${s.id}')" class="text-indigo-600"><i class="fas fa-file-pdf"></i></button>
+                    <button onclick="deleteStudent('${s.id}')" class="text-rose-600"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`;
         }).join('');
     }
 
-    // --- GESTION DES NOTES ---
     function renderGradesGrid() {
         const key = `${appState.selectedClass}_${appState.selectedSection}`;
         const cls = appState.classes[key];
         const subSelect = document.getElementById('grade-subject-select');
-        
-        // Remplir le select des matières s'il est vide ou si la classe a changé
-        if(subSelect.options.length !== cls.subjects.length) {
-            subSelect.innerHTML = cls.subjects.map(s => `<option value="${s.id}">${s.name} (Coef ${s.coef})</option>`).join('');
-        }
+        subSelect.innerHTML = cls.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
         
         const subId = subSelect.value;
         const tbody = document.getElementById('grades-table-body');
-        if (!subId) {
-            tbody.innerHTML = "<tr><td colspan='4' class='text-center py-4 text-slate-500'>Aucune matière disponible</td></tr>";
-            return;
-        }
+        if (!subId) return;
 
         tbody.innerHTML = cls.students.map(s => {
             const g = s.grades?.[subId] || {dev1:'', dev2:'', compo:''};
             return `
-            <tr class="hover:bg-slate-50">
-                <td class="text-left font-bold px-3 py-2 text-slate-700">${s.firstname} ${s.lastname}</td>
-                <td><input type="number" min="0" max="20" step="0.5" onchange="updateGrade('${s.id}','${subId}','dev1',this.value)" value="${g.dev1}" class="w-16 text-center border border-slate-200 rounded py-1 outline-none focus:border-[#4c1d95]"></td>
-                <td><input type="number" min="0" max="20" step="0.5" onchange="updateGrade('${s.id}','${subId}','dev2',this.value)" value="${g.dev2}" class="w-16 text-center border border-slate-200 rounded py-1 outline-none focus:border-[#4c1d95]"></td>
-                <td class="bg-violet-50/50"><input type="number" min="0" max="20" step="0.5" onchange="updateGrade('${s.id}','${subId}','compo',this.value)" value="${g.compo}" class="w-16 text-center border border-violet-200 rounded py-1 font-bold text-[#4c1d95] outline-none focus:border-[#4c1d95]"></td>
+            <tr>
+                <td class="text-left font-bold px-2">${s.firstname}</td>
+                <td><input type="number" onchange="updateGrade('${s.id}','${subId}','dev1',this.value)" value="${g.dev1}" class="w-12 text-center border"></td>
+                <td><input type="number" onchange="updateGrade('${s.id}','${subId}','dev2',this.value)" value="${g.dev2}" class="w-12 text-center border"></td>
+                <td class="bg-violet-50"><input type="number" onchange="updateGrade('${s.id}','${subId}','compo',this.value)" value="${g.compo}" class="w-12 text-center border font-bold"></td>
             </tr>`;
         }).join('');
     }
@@ -403,17 +310,9 @@
     function updateGrade(sid, subid, field, val) {
         const key = `${appState.selectedClass}_${appState.selectedSection}`;
         const student = appState.classes[key].students.find(s => s.id === sid);
-        
         if (!student.grades[subid]) student.grades[subid] = {};
-        
-        // Validation basique (0 à 20)
-        let note = parseFloat(val);
-        if (note < 0) note = 0;
-        if (note > 20) note = 20;
-        
-        student.grades[subid][field] = isNaN(note) ? "" : note;
+        student.grades[subid][field] = val;
         idbKeyval.set("gestnotes_db", appState);
-        renderGradesGrid(); // Rafraîchir pour afficher la note corrigée si l'utilisateur a tapé > 20
     }
 
     function filterGrades() {
@@ -425,82 +324,48 @@
         });
     }
 
-    // --- STATISTIQUES FINANCIÈRES ---
     function renderStats() {
         const key = `${appState.selectedClass}_${appState.selectedSection}`;
         const cls = appState.classes[key];
-        
-        let totalEncaisse = 0;
-        // Calcul du total attendu (Ex: Inscription + 9 mois de mensualité)
-        const montantAttenduParEleve = cls.fees.inscription + (cls.fees.mensualite * 9); 
-        const totalAttendu = cls.students.length * montantAttenduParEleve;
-
-        cls.students.forEach(s => {
-            s.payments.forEach(p => totalEncaisse += p.amount);
-        });
-
-        const reste = Math.max(0, totalAttendu - totalEncaisse);
-        const taux = totalAttendu > 0 ? Math.round((totalEncaisse / totalAttendu) * 100) : 0;
-
-        document.getElementById('stats-total-attendu').innerText = totalAttendu.toLocaleString() + " FCFA";
-        document.getElementById('stats-total-encaisse').innerText = totalEncaisse.toLocaleString() + " FCFA";
-        document.getElementById('stats-reste-recouvrer').innerText = reste.toLocaleString() + " FCFA";
-        document.getElementById('stats-taux-recouvrement').innerText = taux + "%";
+        let total = 0;
+        cls.students.forEach(s => s.payments.forEach(p => total += p.amount));
+        document.getElementById('stats-total-encaisse').innerText = total.toLocaleString() + " F";
     }
 
-    // --- GESTION DES MODALS ET PAIEMENTS ---
+    // --- MODALS ---
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     
-    function openRegistrationModal() {
-        document.getElementById('reg-firstname').value = '';
-        document.getElementById('reg-lastname').value = '';
-        document.getElementById('reg-gender').value = 'M';
-        openModal('registration-modal');
-    }
-
     let currentPayId = null;
     function openPaymentModal(id) {
         currentPayId = id;
         const key = `${appState.selectedClass}_${appState.selectedSection}`;
         const s = appState.classes[key].students.find(st => st.id === id);
-        
         document.getElementById('payment-student-name').innerText = s.firstname + " " + s.lastname;
-        document.getElementById('pay-amount').value = ''; 
         openModal('payment-modal');
     }
 
     function confirmPayment() {
         const amt = parseInt(document.getElementById('pay-amount').value);
-        if(!amt || amt <= 0) {
-            alert("Veuillez saisir un montant valide.");
-            return;
-        }
-        
+        if(!amt) return;
         const key = `${appState.selectedClass}_${appState.selectedSection}`;
         const s = appState.classes[key].students.find(st => st.id === currentPayId);
         s.payments.push({amount: amt, date: new Date().toLocaleDateString()});
-        
         saveAndRefresh();
         closeModal('payment-modal');
     }
-    
-    function generateBulletin(id) {
-        // Préparation pour html2pdf (Prochaine étape)
-        alert("Génération du bulletin au format PDF (À développer dans la prochaine étape !)");
-    }
 
-    // --- UTILITAIRES (SAUVEGARDE, EXPORT, IMPORT) ---
+    // --- UTILS ---
     async function saveAndRefresh() {
         await idbKeyval.set("gestnotes_db", appState);
         updateUI();
     }
 
     function exportData() {
-        const blob = new Blob([JSON.stringify(appState, null, 2)], {type: 'application/json'});
+        const blob = new Blob([JSON.stringify(appState)], {type: 'text/plain'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `SAUVEGARDE_GESTNOTES_${new Date().toISOString().split('T')[0]}.json`;
+        a.download = `SAUVEGARDE_GESTNOTES.txt`;
         a.click();
     }
 
@@ -510,15 +375,12 @@
             try {
                 appState = JSON.parse(e.target.result);
                 await saveAndRefresh();
-                alert("Données importées avec succès !");
-            } catch (err) { 
-                alert("Erreur : Le fichier de sauvegarde est invalide ou corrompu."); 
-            }
+                location.reload();
+            } catch (err) { alert("Erreur de fichier"); }
         };
-        if(event.target.files[0]) reader.readAsText(event.target.files[0]);
+        reader.readAsText(event.target.files[0]);
     }
 
-    // Lancer l'application au chargement
     window.onload = initApp;
 </script>
 </body>
