@@ -10,11 +10,11 @@
     <meta name="theme-color" content="#4c1d95">
     <title>GestNotes – Administration scolaire</title>
     
-    <!-- Bibliothèques Locales (GitHub) -->
-    <script src="tailwind.min.js"></script>
-    <link rel="stylesheet" href="fontawesome.min.css">
-    <script src="html2pdf.bundle.min.js"></script>
-    <script src="idb-keyval.js"></script>
+    <!-- Bibliothèques (CDN fiables) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/idb-keyval@6/dist/idb-keyval-iife.min.js"></script>
 
     <!-- Google Fonts (Optionnel, conservé pour le design) -->
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
@@ -60,10 +60,13 @@
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 no-print">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <button onclick="exportData()" class="bg-green-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-green-700"><i class="fas fa-download mr-2"></i>Exporter</button>
+
                 <button onclick="document.getElementById('importFile').click()" class="bg-blue-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-blue-700"><i class="fas fa-upload mr-2"></i>Importer</button>
                 <input type="file" id="importFile" accept=".txt" class="hidden" onchange="importData(event)">
+
                 <button onclick="alert('Synchro Drive bientôt disponible')" class="bg-violet-600 text-white py-2 px-4 rounded-xl text-sm font-bold"><i class="fab fa-google-drive mr-2"></i>Synchro</button>
-                <button onclick="openRegistrationModal()" class="bg-slate-900 text-white py-2 px-4 rounded-xl text-sm font-bold"><i class="fas fa-plus mr-2"></i>Inscription</button>
+
+                <button onclick="openModal('registration-modal')" class="bg-slate-900 text-white py-2 px-4 rounded-xl text-sm font-bold"><i class="fas fa-plus mr-2"></i>Inscription</button>
             </div>
         </div>
 
@@ -78,8 +81,8 @@
                 <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold"></select>
             </div>
             <div class="flex gap-2">
-                <button onclick="alert('Gestion des matières bientôt disponible')" class="bg-violet-50 text-[#4c1d95] px-4 py-2 rounded-xl text-xs font-bold border border-violet-100"><i class="fas fa-book mr-1"></i> Matières</button>
-                <button onclick="alert('Gestion des tarifs bientôt disponible')" class="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100"><i class="fas fa-coins mr-1"></i> Tarifs</button>
+                <button onclick="alert('Gestion des matières bientôt disponible')" class="bg-violet-50 text-[#4c1d95] px-4 py-2 rounded-xl text-xs font-bold border border-violet-100"><i class="fas fa-book mr-2"></i> Matières</button>
+                <button onclick="alert('Gestion des tarifs bientôt disponible')" class="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100"><i class="fas fa-coins mr-2"></i> Tarifs</button>
             </div>
         </section>
 
