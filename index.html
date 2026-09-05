@@ -270,10 +270,10 @@
             </div>
         </div>
     </div>
+<!-- Remplacez tout votre bloc <script> actuel par celui-ci -->
 <script>
-    // 1. Constantes et État initial
     const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-    const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
+    const months = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin"];
     
     const DEFAULT_STATE = {
         currentYear: "2025-2026",
@@ -283,29 +283,13 @@
         currentRole: "admin",
         accessCode: "1234",
         googleSyncUrl: "",
-        waTemplates: {
-            reminder: "Bonjour, le paiement de {frais} pour {eleve} est attendu. Merci. 🎓",
-            bulletin: "Le bulletin de {eleve} est disponible. 🎓",
-            receipt: "Paiement reçu pour {eleve} : {montant} F. Merci. 🎓"
-        },
         classes: {}
     };
 
     let appState = null;
     let driveSyncTimeout = null;
 
-    // 2. Fonctions Utilitaires
-    function isPrimary(className) { return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className); }
-    function getPeriodLabel(className, periodNum) { return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`; }
-    function getCurrentClassKey() { return `${appState.selectedClass}_${appState.selectedSection}`; }
-    
-    function getSectionsForClass(cls) {
-        if (["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"].includes(cls)) return ["", "A", "B", "C"];
-        if (["Seconde", "Première", "Terminale"].includes(cls)) return ["L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S2", "S2A", "S2B"];
-        return [""];
-    }
-
-    // 3. Initialisation de l'App
+    // --- INITIALISATION ---
     async function initApp() {
         const savedState = await idbKeyval.get("gestnotes_state");
         appState = savedState || JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -317,8 +301,7 @@
         populateFilters();
         updateHeaderDisplays();
         applyRoleRestrictions();
-        
-        if (appState.googleSyncUrl) chargerBaseDepuisDrive();
+        render();
     }
 
     function buildEmptyState() {
@@ -326,110 +309,141 @@
             getSectionsForClass(c).forEach(s => {
                 const key = `${c}_${s}`;
                 if (!appState.classes[key]) {
-                    appState.classes[key] = { students: [], subjects: getDefaultSubjects(c), fees: { inscription: 0, mensualite: 0 } };
+                    appState.classes[key] = { 
+                        students: [], 
+                        subjects: getDefaultSubjects(c), 
+                        fees: { inscription: 25000, mensualite: 15000 } 
+                    };
                 }
             });
         });
     }
 
+    function isPrimary(className) { return ["CP", "CE1", "CE2", "CM1", "CM2"].includes(className); }
+    function getPeriodLabel(className, periodNum) { return isPrimary(className) ? `Trimestre ${periodNum}` : `Semestre ${periodNum}`; }
+    function getCurrentClassKey() { return `${appState.selectedClass}_${appState.selectedSection}`; }
+    
+    function getSectionsForClass(cls) {
+        if (["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"].includes(cls)) return ["", "A", "B", "C"];
+        if (["Seconde", "Première", "Terminale"].includes(cls)) return ["L1", "L1A", "L1B", "L2", "L2A", "L2B", "S1", "S2"];
+        return [""];
+    }
+
     function getDefaultSubjects(className) {
         return isPrimary(className) 
-            ? [{ id: "sub_1", name: "Mathématiques", coef: 10, teacherName: "" }, { id: "sub_2", name: "Français", coef: 10, teacherName: "" }]
-            : [{ id: "sub_1", name: "Mathématiques", coef: 4, teacherName: "" }, { id: "sub_2", name: "Français", coef: 5, teacherName: "" }];
+            ? [{ id: "s1", name: "Français", coef: 10 }, { id: "s2", name: "Maths", coef: 10 }]
+            : [{ id: "s1", name: "Français", coef: 5 }, { id: "s2", name: "Maths", coef: 4 }];
     }
 
-    // 4. Gestion des Rôles et Navigation Enseignant
-    function onRoleChange() {
-        const select = document.getElementById('role-selector');
-        if (select.value === 'enseignant') {
-            openTeacherLoginModal();
-        } else {
-            const password = prompt("Code d'accès :");
-            if (password !== (appState.accessCode || "1234")) {
-                alert("Accès refusé.");
-                select.value = localStorage.getItem("gestnotes_local_role") || "admin";
-                return;
+    // --- ACTIONS BOUTONS ---
+    function openRegistrationModal() {
+        const nom = prompt("Nom de l'élève :");
+        const prenom = prompt("Prénom de l'élève :");
+        if (!nom || !prenom) return;
+
+        const key = getCurrentClassKey();
+        const newStudent = {
+            id: Date.now().toString(),
+            lastname: nom,
+            firstname: prenom,
+            payments: [],
+            grades: {}
+        };
+        appState.classes[key].students.push(newStudent);
+        saveAndRefresh();
+    }
+
+    function openClassFeesModal() {
+        const key = getCurrentClassKey();
+        const cls = appState.classes[key];
+        const insc = prompt("Frais d'inscription (FCFA) :", cls.fees.inscription);
+        const mens = prompt("Mensualité (FCFA) :", cls.fees.mensualite);
+        if (insc) cls.fees.inscription = parseInt(insc);
+        if (mens) cls.fees.mensualite = parseInt(mens);
+        saveAndRefresh();
+    }
+
+    function openCaisseJourModal() {
+        const key = getCurrentClassKey();
+        const students = appState.classes[key].students;
+        if (students.length === 0) return alert("Aucun élève dans cette classe.");
+        
+        let list = students.map((s, i) => `${i+1}. ${s.firstname} ${s.lastname}`).join("\n");
+        const choix = prompt("Choisissez le numéro de l'élève :\n" + list);
+        const index = parseInt(choix) - 1;
+        
+        if (students[index]) {
+            const montant = prompt(`Montant payé par ${students[index].firstname} :`);
+            if (montant) {
+                if (!students[index].payments) students[index].payments = [];
+                students[index].payments.push({
+                    montantPaye: parseInt(montant),
+                    montantDu: 0, // Optionnel selon votre logique
+                    date: new Date().toLocaleDateString()
+                });
+                saveAndRefresh();
             }
-            localStorage.setItem("gestnotes_local_role", select.value);
-            localStorage.removeItem("gestnotes_teacher_name");
-            applyRoleRestrictions();
         }
     }
 
-    function openTeacherLoginModal() {
-        document.getElementById('t-login-name').value = localStorage.getItem("gestnotes_teacher_name") || "";
-        openModal('teacher-login-modal');
-    }
-
-    function submitTeacherLogin() {
-        const name = document.getElementById('t-login-name').value.trim();
-        if (!name) return alert("Nom requis.");
-        localStorage.setItem("gestnotes_local_role", "enseignant");
-        localStorage.setItem("gestnotes_teacher_name", name);
-        closeModal('teacher-login-modal');
-        applyRoleRestrictions();
-    }
-
-    function applyRoleRestrictions() {
-        const role = localStorage.getItem("gestnotes_local_role") || "admin";
-        const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
-        document.getElementById('role-selector').value = role;
-
-        const indicator = document.getElementById('active-teacher-indicator');
-        if (role === 'enseignant' && teacherName) {
-            indicator.innerText = `Enseignant : ${teacherName}`;
-            indicator.classList.remove('hidden');
-        } else { indicator.classList.add('hidden'); }
-
-        const adminOnly = ['btn-class-fees', 'btn-manage-subjects', 'btn-wa-reminders', 'btn-caisse-jour', 'btn-add-student', 'btn-add-student-shortcut', 'class-stats-section'];
-        adminOnly.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = (role === 'enseignant') ? 'none' : (id === 'class-stats-section' ? 'grid' : '');
-        });
-        render();
-    }
-
-    // 5. Fonctions de Calcul et Rendu (FIX ERROR)
-    function calculateClassStats() {
-        const key = getCurrentClassKey();
-        const cls = appState.classes[key];
-        if (!cls) return;
-        let attendu = 0, encaisse = 0;
-        cls.students.forEach(s => {
-            s.payments?.forEach(p => {
-                attendu += (p.montantDu || 0);
-                encaisse += (p.montantPaye || 0);
-            });
-        });
-        document.getElementById('stats-total-attendu').innerText = attendu.toLocaleString() + " F";
-        document.getElementById('stats-total-encaisse').innerText = encaisse.toLocaleString() + " F";
-        document.getElementById('stats-reste-recouvrer').innerText = (attendu - encaisse).toLocaleString() + " F";
-        document.getElementById('stats-taux-recouvrement').innerText = attendu > 0 ? Math.round((encaisse/attendu)*100) + "%" : "0%";
-    }
-
-    function populateSubjectSelector() {
-        const key = getCurrentClassKey();
-        const cls = appState.classes[key];
+    function goToNextSubject() {
         const select = document.getElementById('grade-subject-select');
-        const role = localStorage.getItem("gestnotes_local_role");
-        const tName = localStorage.getItem("gestnotes_teacher_name")?.toLowerCase().trim();
-
-        let subjects = cls?.subjects || [];
-        if (role === 'enseignant' && tName) {
-            subjects = subjects.filter(s => s.teacherName?.toLowerCase().trim() === tName);
+        if (select.selectedIndex < select.options.length - 1) {
+            select.selectedIndex++;
+        } else {
+            select.selectedIndex = 0;
         }
-        select.innerHTML = subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-        if (subjects.length === 0 && role === 'enseignant') select.innerHTML = '<option>Aucune matière</option>';
+        renderGradesGrid();
     }
 
-    function renderStudentsTable(students, subjects) {
+    // --- EXPORT / IMPORT ---
+    function exportData() {
+        const dataStr = JSON.stringify(appState);
+        const blob = new Blob([dataStr], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.download = `GestNotes_Sauvegarde_${appState.currentYear}.txt`;
+        link.href = url;
+        link.click();
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                appState = imported;
+                saveAndRefresh();
+                alert("Importation réussie !");
+            } catch (err) { alert("Erreur : Fichier invalide."); }
+        };
+        reader.readAsText(file);
+    }
+
+    // --- RENDU ET LOGIQUE ---
+    function render() {
+        const key = getCurrentClassKey();
+        const clsData = appState.classes[key] || { students: [], subjects: [] };
+        
+        calculateClassStats();
+        populateSubjectSelector();
+        renderStudentsTable(clsData.students);
+        renderGradesGrid();
+        
+        document.getElementById('class-badge').innerText = appState.selectedClass + " " + appState.selectedSection;
+    }
+
+    function renderStudentsTable(students) {
         const tbody = document.getElementById('students-table-body');
         tbody.innerHTML = students.map(s => `
-            <tr class="border-b">
+            <tr class="border-b hover:bg-slate-50">
                 <td class="py-3 px-5 font-bold">${s.firstname} ${s.lastname.toUpperCase()}</td>
-                <td class="py-3 px-5 text-center">-</td>
+                <td class="py-3 px-5 text-center font-semibold text-violet-700">Calcul en cours...</td>
                 <td class="py-3 px-5 text-right">
-                    <button onclick="ouvrirBulletin('${s.id}')" class="text-indigo-600 text-xs font-bold">Bulletin</button>
+                    <button onclick="supprimerEleve('${s.id}')" class="text-rose-600 px-2"><i class="fas fa-trash"></i></button>
+                    <button onclick="ouvrirBulletin('${s.id}')" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-xs font-bold">Bulletin</button>
                 </td>
             </tr>
         `).join('');
@@ -444,96 +458,73 @@
         const tbody = document.getElementById('grades-table-body');
         if (!subId || !cls) { tbody.innerHTML = ""; return; }
 
-        tbody.innerHTML = cls.students.map(s => `
-            <tr>
-                <td class="p-3 text-left font-semibold">${s.firstname} ${s.lastname}</td>
-                <td class="p-2"><input type="number" class="w-16 border rounded text-center" onchange="updateGrade('${s.id}','${subId}','dev1',this.value)" value="${s.grades?.['p'+appState.currentSemester]?.[subId]?.dev1 || ''}"></td>
-                <td class="p-2"><input type="number" class="w-16 border rounded text-center" onchange="updateGrade('${s.id}','${subId}','dev2',this.value)" value="${s.grades?.['p'+appState.currentSemester]?.[subId]?.dev2 || ''}"></td>
-                <td class="p-2"><input type="number" class="w-16 border rounded text-center" onchange="updateGrade('${s.id}','${subId}','compo',this.value)" value="${s.grades?.['p'+appState.currentSemester]?.[subId]?.compo || ''}"></td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = cls.students.map(s => {
+            const grades = s.grades?.[appState.currentSemester]?.[subId] || { dev1: "", dev2: "", compo: "" };
+            return `
+                <tr>
+                    <td class="p-3 text-left font-semibold">${s.firstname} ${s.lastname}</td>
+                    <td class="p-2"><input type="number" class="w-16 border rounded text-center p-1" onchange="updateGrade('${s.id}','${subId}','dev1',this.value)" value="${grades.dev1}"></td>
+                    <td class="p-2"><input type="number" class="w-16 border rounded text-center p-1" onchange="updateGrade('${s.id}','${subId}','dev2',this.value)" value="${grades.dev2}"></td>
+                    <td class="p-2 bg-violet-50"><input type="number" class="w-16 border rounded text-center p-1 font-bold" onchange="updateGrade('${s.id}','${subId}','compo',this.value)" value="${grades.compo}"></td>
+                </tr>
+            `;
+        }).join('');
     }
 
     function updateGrade(sId, subId, field, val) {
         const key = getCurrentClassKey();
         const student = appState.classes[key].students.find(s => s.id === sId);
-        const pKey = 'p' + appState.currentSemester;
+        const sem = appState.currentSemester;
         if (!student.grades) student.grades = {};
-        if (!student.grades[pKey]) student.grades[pKey] = {};
-        if (!student.grades[pKey][subId]) student.grades[pKey][subId] = {};
-        student.grades[pKey][subId][field] = parseFloat(val);
+        if (!student.grades[sem]) student.grades[sem] = {};
+        if (!student.grades[sem][subId]) student.grades[sem][subId] = {};
+        student.grades[sem][subId][field] = val;
         saveToStorage();
     }
 
-    // 6. Transition et Filtres
+    function calculateClassStats() {
+        const key = getCurrentClassKey();
+        const cls = appState.classes[key];
+        let totalAttendu = 0, totalEncaisse = 0;
+        
+        cls.students.forEach(s => {
+            (s.payments || []).forEach(p => {
+                totalEncaisse += parseInt(p.montantPaye || 0);
+            });
+        });
+
+        document.getElementById('stats-total-encaisse').innerText = totalEncaisse.toLocaleString() + " F";
+        // Les autres stats peuvent être ajoutées ici
+    }
+
+    function populateSubjectSelector() {
+        const key = getCurrentClassKey();
+        const cls = appState.classes[key];
+        const select = document.getElementById('grade-subject-select');
+        select.innerHTML = cls.subjects.map(s => `<option value="${s.id}">${s.name} (x${s.coef})</option>`).join('');
+    }
+
     function populateFilters() {
         document.getElementById('filter-class').innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass === c ? 'selected' : ''}>${c}</option>`).join('');
         updateSectionFilterOptions();
     }
-// --- 6. GESTION DES FILTRES (Niveau & Option) ---
 
     function updateSectionFilterOptions() {
         const sections = getSectionsForClass(appState.selectedClass);
-        const sectionSelect = document.getElementById('filter-section');
-        
-        // Si la section actuelle n'existe pas dans le nouveau niveau, on prend la première par défaut
-        if (!sections.includes(appState.selectedSection)) {
-            appState.selectedSection = sections[0];
-        }
-
-        sectionSelect.innerHTML = sections.map(s => 
-            `<option value="${s}" ${appState.selectedSection === s ? 'selected' : ''}>${s || 'Général'}</option>`
-        ).join('');
+        document.getElementById('filter-section').innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection === s ? 'selected' : ''}>${s || 'Général'}</option>`).join('');
     }
 
     function onClassChange() {
         appState.selectedClass = document.getElementById('filter-class').value;
-        // On laisse updateSectionFilterOptions gérer la sélection de section valide
+        appState.selectedSection = getSectionsForClass(appState.selectedClass)[0];
         updateSectionFilterOptions();
         updateHeaderDisplays();
         render();
-        saveToStorage();
     }
 
     function onSectionChange() {
         appState.selectedSection = document.getElementById('filter-section').value;
         render();
-        saveToStorage();
-    }
-
-    // --- 7. RENDU & STATISTIQUES ---
-
-    function calculateClassStats() {
-        const key = getCurrentClassKey();
-        const cls = appState.classes[key];
-        if (!cls) return;
-
-        let attendu = 0, encaisse = 0;
-        
-        // Sécurisation contre les données manquantes
-        (cls.students || []).forEach(s => {
-            (s.payments || []).forEach(p => {
-                attendu += (Number(p.montantDu) || 0);
-                encaisse += (Number(p.montantPaye) || 0);
-            });
-        });
-
-        document.getElementById('stats-total-attendu').innerText = attendu.toLocaleString() + " F";
-        document.getElementById('stats-total-encaisse').innerText = encaisse.toLocaleString() + " F";
-        document.getElementById('stats-reste-recouvrer').innerText = (attendu - encaisse).toLocaleString() + " F";
-        document.getElementById('stats-taux-recouvrement').innerText = attendu > 0 ? Math.round((encaisse / attendu) * 100) + "%" : "0%";
-    }
-
-    function render() {
-        const key = getCurrentClassKey();
-        const clsData = appState.classes[key] || { students: [], subjects: [] };
-        
-        document.getElementById('class-badge').innerText = appState.selectedClass + (appState.selectedSection ? ' ' + appState.selectedSection : '');
-        
-        calculateClassStats();
-        populateSubjectSelector();
-        renderStudentsTable(clsData.students, clsData.subjects);
-        renderGradesGrid();
     }
 
     function updateHeaderDisplays() {
@@ -541,100 +532,19 @@
         document.getElementById('display-semester').innerText = getPeriodLabel(appState.selectedClass, appState.currentSemester);
     }
 
-    // --- 8. CONFIGURATION (SETTINGS) ---
-
-    function openModal(id) { 
-        document.getElementById(id).classList.remove('hidden'); 
-        
-        if(id === 'settings-modal') {
-            // Remplissage automatique des champs avec les données actuelles
-            document.getElementById('settings-year').value = appState.currentYear;
-            document.getElementById('settings-access-code').value = appState.accessCode || "1234";
-            document.getElementById('settings-gdrive-sync-url').value = appState.googleSyncUrl || "";
-            
-            // Génération dynamique du sélecteur de période
-            const semSelect = document.getElementById('settings-semester');
-            const isPrim = isPrimary(appState.selectedClass);
-            const label = isPrim ? "Trimestre" : "Semestre";
-            const max = isPrim ? 3 : 2;
-            
-            let options = "";
-            for(let i=1; i<=max; i++) {
-                options += `<option value="${i}" ${appState.currentSemester == i ? 'selected' : ''}>${label} ${i}</option>`;
-            }
-            semSelect.innerHTML = options;
-
-            populateRolloverSelector();
-        }
-    }
-
-    function saveSettings() {
-        // Récupérer les nouvelles valeurs
-        appState.currentYear = document.getElementById('settings-year').value;
-        appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
-        appState.accessCode = document.getElementById('settings-access-code').value;
-        appState.googleSyncUrl = document.getElementById('settings-gdrive-sync-url').value;
-
-        // Appliquer les changements
-        updateHeaderDisplays();
-        render();
-        saveToStorage();
-        closeModal('settings-modal');
-        
-        showToast("Configuration enregistrée !", "success");
-    }
-
-    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-    function populateRolloverSelector() {
-        document.getElementById('rollover-target-class').innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
-    }
-
-    // --- 9. SYNCHRONISATION & STOCKAGE ---
-
     async function saveToStorage() {
         await idbKeyval.set("gestnotes_state", appState);
-        if (appState.googleSyncUrl) {
-            document.getElementById('lbl-gdrive-sync').innerText = "Sync...";
-            clearTimeout(driveSyncTimeout);
-            driveSyncTimeout = setTimeout(sauvegarderSurDrive, 3000);
-        }
     }
 
-    async function sauvegarderSurDrive() {
-        try {
-            const res = await fetch(appState.googleSyncUrl, { 
-                method: 'POST', 
-                mode: 'no-cors', // Souvent nécessaire pour Google Apps Script
-                body: JSON.stringify(appState) 
-            });
-            document.getElementById('lbl-gdrive-sync').innerText = "Cloud Synced";
-        } catch (e) { 
-            document.getElementById('lbl-gdrive-sync').innerText = "Erreur Cloud"; 
-        }
+    function saveAndRefresh() {
+        saveToStorage();
+        render();
     }
 
-    async function chargerBaseDepuisDrive() {
-        if(!appState.googleSyncUrl) return;
-        try {
-            const res = await fetch(appState.googleSyncUrl);
-            if (res.ok) {
-                const data = await res.json();
-                const url = appState.googleSyncUrl; // Garder l'URL actuelle
-                appState = data;
-                appState.googleSyncUrl = url;
-                render();
-                document.getElementById('lbl-gdrive-sync').innerText = "Cloud Synced";
-            }
-        } catch (e) { console.error("Erreur chargement cloud"); }
-    }
-
-    function showToast(m, type) { 
-        alert(m); // Vous pourrez remplacer par une div animée plus tard
-    } 
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
     window.addEventListener('DOMContentLoaded', initApp);
-   
 </script>
     
 </body>
