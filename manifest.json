@@ -5,7 +5,7 @@
   "description": "Système complet de gestion des notes, calcul de moyennes et édition de bulletins.",
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "https://img.icons8.com/fluency/192/test-passed.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"

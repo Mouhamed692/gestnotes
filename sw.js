@@ -6,12 +6,11 @@ const ASSETS = [
   '/index.html',
   '/bulletin.html',
   '/accueil.html', // Ajout de l'accueil au cache
-  '/lib/tailwind.min.js',
-  '/lib/fontawesome.min.css',
-  '/lib/html2pdf.bundle.min.js',
   '/manifest.json',
-  '/icons/icon-192.png', // Vos icônes locales
-  '/icons/icon-512.png'
+  'https://cdn.tailwindcss.com',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+  'https://unpkg.com/idb-keyval@6.2.1/dist/umd.js'
 ];
 
 // 1. Installation : Création du cache et mise en mémoire des ressources
