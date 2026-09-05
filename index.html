@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- PWA & SEO -->
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4c1d95">
     <title>GestNotes – Administration scolaire</title>
     
-    <!-- Chemins relatifs pour GitHub Pages -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Bibliothèques Locales (GitHub) -->
+    <script src="tailwind.min.js"></script>
+    <link rel="stylesheet" href="fontawesome.min.css">
     <script src="html2pdf.bundle.min.js"></script>
     <script src="idb-keyval.js"></script>
 
+    <!-- Google Fonts (Optionnel, conservé pour le design) -->
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
@@ -20,42 +24,53 @@
         .grid-table td, .grid-table th { border: 1px solid #e2e8f0; text-align: center; padding: 8px 6px; }
         .modal { transition: opacity 0.25s ease; }
         .hidden { display: none !important; }
+        @media print { .no-print { display: none; } }
     </style>
 </head>
 
 <body class="min-h-screen bg-slate-50 flex flex-col text-slate-800">
 
-    <!-- HEADER (Identique à votre design) -->
-    <header class="bg-[#4c1d95] text-white shadow-md px-4 py-3 md:px-6 flex flex-wrap items-center justify-between sticky top-0 z-40">
+    <!-- HEADER -->
+    <header class="bg-[#4c1d95] text-white shadow-md px-4 py-3 md:px-6 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40 no-print">
         <div class="flex items-center gap-3">
-            <i class="fas fa-graduation-cap text-2xl text-violet-200"></i>
-            <h1 class="text-xl font-bold">GestNotes</h1>
+            <div class="bg-white/10 p-2 rounded-lg"><i class="fas fa-graduation-cap text-2xl text-violet-200"></i></div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">GestNotes</h1>
+                <p class="text-xs text-violet-200">Admin & Gestion</p>
+            </div>
         </div>
-        <div class="flex items-center gap-3">
-            <select id="role-selector" onchange="onRoleChange()" class="bg-violet-950 text-white rounded-xl text-xs px-2 py-2">
+
+        <div class="flex items-center gap-3 ml-auto">
+            <select id="role-selector" onchange="onRoleChange()" class="bg-violet-950 text-white border border-violet-800 rounded-xl text-xs px-2 py-2 outline-none font-semibold">
                 <option value="admin">👑 Admin</option>
+                <option value="comptable">💼 Comptable</option>
                 <option value="enseignant">📝 Enseignant</option>
             </select>
+            <div class="bg-violet-950/50 rounded-xl p-1 flex border border-violet-800/50 text-xs">
+                <div class="px-2 py-1.5 font-medium text-violet-200" id="display-year">2025-2026</div>
+                <div class="bg-[#6d28d9] px-2 py-1.5 rounded-lg font-semibold" id="display-semester">S1</div>
+            </div>
             <button onclick="openModal('settings-modal')" class="p-2 hover:bg-white/10 rounded-xl"><i class="fas fa-cog"></i></button>
         </div>
     </header>
 
     <main class="flex-1 p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
         
-        <!-- BOUTONS ACTIONS RAPIDES -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+        <!-- BARRE D'ACTIONS -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 no-print">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <button onclick="exportData()" class="bg-green-600 text-white py-2 rounded-xl text-sm font-bold"><i class="fas fa-download mr-2"></i>Exporter</button>
-                <button onclick="document.getElementById('importFile').click()" class="bg-blue-600 text-white py-2 rounded-xl text-sm font-bold"><i class="fas fa-upload mr-2"></i>Importer</button>
-                <input type="file" id="importFile" class="hidden" onchange="importData(event)">
-                <button onclick="openModal('registration-modal')" class="bg-indigo-600 text-white py-2 rounded-xl text-sm font-bold"><i class="fas fa-user-plus mr-2"></i>Inscription</button>
+                <button onclick="exportData()" class="bg-green-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-green-700"><i class="fas fa-download mr-2"></i>Exporter</button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-blue-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-blue-700"><i class="fas fa-upload mr-2"></i>Importer</button>
+                <input type="file" id="importFile" accept=".txt" class="hidden" onchange="importData(event)">
+                <button onclick="alert('Synchro Drive bientôt disponible')" class="bg-violet-600 text-white py-2 px-4 rounded-xl text-sm font-bold"><i class="fab fa-google-drive mr-2"></i>Synchro</button>
+                <button onclick="openRegistrationModal()" class="bg-slate-900 text-white py-2 px-4 rounded-xl text-sm font-bold"><i class="fas fa-plus mr-2"></i>Inscription</button>
             </div>
         </div>
 
-        <!-- FILTRES NIVEAU ET OPTION -->
-        <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end">
+        <!-- FILTRES -->
+        <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end no-print">
             <div class="flex-1 min-w-[150px]">
-                <label class="block text-xs font-bold text-slate-500 mb-1">Niveau d'étude</label>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Classe</label>
                 <select id="filter-class" onchange="onClassChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold"></select>
             </div>
             <div class="flex-1 min-w-[150px]">
@@ -63,31 +78,38 @@
                 <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold"></select>
             </div>
             <div class="flex gap-2">
-                <button onclick="openModal('subjects-modal')" class="bg-violet-50 text-violet-700 px-4 py-2 rounded-xl text-xs font-bold border border-violet-100">Matières</button>
-                <button onclick="openModal('fees-modal')" class="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100">Tarifs</button>
-                <button onclick="openModal('caisse-modal')" class="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl text-xs font-bold border border-emerald-100">Caisse</button>
+                <button onclick="alert('Gestion des matières bientôt disponible')" class="bg-violet-50 text-[#4c1d95] px-4 py-2 rounded-xl text-xs font-bold border border-violet-100"><i class="fas fa-book mr-1"></i> Matières</button>
+                <button onclick="alert('Gestion des tarifs bientôt disponible')" class="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100"><i class="fas fa-coins mr-1"></i> Tarifs</button>
             </div>
         </section>
 
         <!-- STATS FINANCIÈRES -->
-        <section id="stats-section" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-2xl border border-slate-200">
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Encaissé</p>
-                <p id="stats-total-encaisse" class="text-xl font-bold text-emerald-600">0 F</p>
+        <section id="class-stats-section" class="grid grid-cols-2 lg:grid-cols-4 gap-4 no-print">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] uppercase font-bold text-slate-400">Attendu</p>
+                <p class="text-xl font-bold text-slate-800" id="stats-total-attendu">0 F</p>
             </div>
-            <div class="bg-white p-4 rounded-2xl border border-slate-200">
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Reste</p>
-                <p id="stats-reste" class="text-xl font-bold text-rose-600">0 F</p>
+            <div class="bg-white p-4 rounded-2xl border-l-4 border-l-emerald-500 shadow-sm">
+                <p class="text-[10px] uppercase font-bold text-emerald-600">Encaissé</p>
+                <p class="text-xl font-bold text-emerald-700" id="stats-total-encaisse">0 F</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border-l-4 border-l-rose-500 shadow-sm">
+                <p class="text-[10px] uppercase font-bold text-rose-600">Reste</p>
+                <p class="text-xl font-bold text-rose-700" id="stats-reste-recouvrer">0 F</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-[10px] uppercase font-bold text-violet-600">Taux</p>
+                <p class="text-xl font-bold text-violet-700" id="stats-taux-recouvrement">0%</p>
             </div>
         </section>
 
-        <!-- GRILLE DES NOTES -->
-        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-slate-700">Saisie des Notes</h3>
-                <div class="flex gap-2">
-                    <select id="grade-subject-select" onchange="renderGradesGrid()" class="text-sm border rounded-lg p-1"></select>
-                    <button onclick="goToNextSubject()" class="bg-slate-800 text-white text-xs px-3 py-1 rounded-lg">Suivant</button>
+        <!-- GRILLE DE NOTES -->
+        <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 no-print">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <h3 class="font-bold text-slate-700"><i class="fas fa-edit text-[#4c1d95] mr-2"></i>Saisie des Notes</h3>
+                <div class="flex items-center gap-2">
+                    <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold"></select>
+                    <input type="text" id="grade-search" oninput="filterGrades()" placeholder="Rechercher..." class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
                 </div>
             </div>
             <div class="overflow-x-auto">
@@ -95,9 +117,9 @@
                     <thead class="bg-slate-100">
                         <tr>
                             <th class="text-left">Élève</th>
-                            <th>Dev1</th>
-                            <th>Dev2</th>
-                            <th class="bg-violet-50">Compo</th>
+                            <th>Devoir 1</th>
+                            <th>Devoir 2</th>
+                            <th class="bg-violet-50">Composition</th>
                         </tr>
                     </thead>
                     <tbody id="grades-table-body"></tbody>
@@ -105,211 +127,261 @@
             </div>
         </section>
 
-        <!-- LISTE ÉLÈVES -->
-        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-4 border-b bg-slate-50 flex justify-between items-center">
-                <h2 class="font-bold">Liste des élèves (<span id="student-count">0</span>)</h2>
+        <!-- LISTE DES ÉLÈVES -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden no-print">
+            <div class="p-5 border-b bg-slate-50/50 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-slate-800">Registre des élèves <span id="student-count" class="text-xs font-normal text-slate-500 ml-2"></span></h2>
+                <button onclick="alert('Impression groupée bientôt disponible')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold"><i class="fas fa-print mr-1"></i> Bulletins</button>
             </div>
-            <table class="w-full text-left text-sm">
-                <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
-                    <tr>
-                        <th class="px-5 py-3">Nom Complet</th>
-                        <th class="px-5 py-3 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="students-table-body"></tbody>
-            </table>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold">
+                        <tr>
+                            <th class="px-5 py-3">Nom Complet</th>
+                            <th class="px-5 py-3 text-center">Sexe</th>
+                            <th class="px-5 py-3 text-center">Scolarité</th>
+                            <th class="px-5 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="students-table-body" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
         </section>
     </main>
 
-    <!-- TOUS LES MODALS (Cachés par défaut) -->
-    
-    <!-- Modal Inscription -->
-    <div id="registration-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 class="text-lg font-bold mb-4">Nouvel Élève</h3>
-            <input type="text" id="reg-firstname" placeholder="Prénom" class="w-full border p-2 rounded-lg mb-2">
-            <input type="text" id="reg-lastname" placeholder="Nom" class="w-full border p-2 rounded-lg mb-4">
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModal('registration-modal')" class="text-slate-500">Annuler</button>
-                <button onclick="saveStudent()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Enregistrer</button>
+    <!-- MODALS (Inscription & Paiement) -->
+    <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-xl font-bold mb-4">Nouvelle Inscription</h3>
+            <div class="space-y-4">
+                <input type="text" id="reg-firstname" placeholder="Prénom" class="w-full border rounded-xl p-2.5">
+                <input type="text" id="reg-lastname" placeholder="Nom" class="w-full border rounded-xl p-2.5">
+                <select id="reg-gender" class="w-full border rounded-xl p-2.5">
+                    <option value="M">Masculin</option>
+                    <option value="F">Féminin</option>
+                </select>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="closeModal('registration-modal')" class="px-4 py-2 text-slate-500 font-bold">Annuler</button>
+                <button onclick="saveStudent()" class="bg-[#4c1d95] text-white px-6 py-2 rounded-xl font-bold">Inscrire</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Tarifs -->
-    <div id="fees-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 class="text-lg font-bold mb-4">Paramètres Financiers</h3>
-            <label class="block text-xs font-bold mb-1">Frais d'Inscription</label>
-            <input type="number" id="fee-inscription" class="w-full border p-2 rounded-lg mb-2">
-            <label class="block text-xs font-bold mb-1">Mensualité</label>
-            <input type="number" id="fee-mensualite" class="w-full border p-2 rounded-lg mb-4">
-            <button onclick="saveFees()" class="w-full bg-amber-600 text-white py-2 rounded-lg">Appliquer</button>
-            <button onclick="closeModal('fees-modal')" class="w-full mt-2 text-slate-500">Fermer</button>
+    <div id="payment-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-xl font-bold mb-2 text-emerald-700">Paiement</h3>
+            <p id="payment-student-name" class="font-bold mb-4"></p>
+            <input type="number" id="pay-amount" placeholder="Montant" class="w-full border rounded-xl p-2.5 text-lg">
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="closeModal('payment-modal')" class="px-4 py-2 text-slate-500 font-bold">Annuler</button>
+                <button onclick="confirmPayment()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold">Valider</button>
+            </div>
         </div>
     </div>
 
-    <!-- Script Principal -->
-    <script>
-        const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-        let appState = {
-            currentYear: "2025-2026",
-            currentSemester: 1,
-            selectedClass: "6ème",
-            selectedSection: "",
-            classes: {}
-        };
+<script>
+    // --- ÉTAT ---
+    const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+    let appState = {
+        currentYear: "2025-2026",
+        currentSemester: 1,
+        selectedClass: "6ème",
+        selectedSection: "",
+        currentRole: "admin",
+        classes: {}
+    };
 
-        // --- INITIALISATION ---
-        async function initApp() {
-            const saved = await idbKeyval.get("gestnotes_state");
-            if (saved) appState = saved;
-            
-            classNames.forEach(c => {
-                const sections = getSectionsForClass(c);
-                sections.forEach(s => {
-                    const key = `${c}_${s}`;
-                    if (!appState.classes[key]) {
-                        appState.classes[key] = { 
-                            students: [], 
-                            subjects: [{id: 1, name: "Maths", coef: 2}, {id: 2, name: "Français", coef: 2}],
-                            fees: { inscription: 25000, mensualite: 15000 }
-                        };
-                    }
-                });
-            });
-
-            populateFilters();
-            render();
-        }
-
-        function getSectionsForClass(cls) {
-            if (["Seconde", "Première", "Terminale"].includes(cls)) return ["L1", "S1", "S2"];
-            return ["", "A", "B"];
-        }
-
-        function populateFilters() {
-            const cSel = document.getElementById('filter-class');
-            cSel.innerHTML = classNames.map(c => `<option value="${c}" ${appState.selectedClass === c ? 'selected' : ''}>${c}</option>`).join('');
-            updateSectionFilterOptions();
-        }
-
-        function updateSectionFilterOptions() {
-            const sections = getSectionsForClass(appState.selectedClass);
-            const sSel = document.getElementById('filter-section');
-            sSel.innerHTML = sections.map(s => `<option value="${s}" ${appState.selectedSection === s ? 'selected' : ''}>${s || 'Général'}</option>`).join('');
-            if (!sections.includes(appState.selectedSection)) appState.selectedSection = sections[0];
-        }
-
-        // --- ACTIONS ---
-        function onClassChange() {
-            appState.selectedClass = document.getElementById('filter-class').value;
-            updateSectionFilterOptions();
-            render();
-        }
-
-        function onSectionChange() {
-            appState.selectedSection = document.getElementById('filter-section').value;
-            render();
-        }
-
-        function saveStudent() {
-            const fname = document.getElementById('reg-firstname').value;
-            const lname = document.getElementById('reg-lastname').value;
-            if (!fname || !lname) return;
-
-            const key = `${appState.selectedClass}_${appState.selectedSection}`;
-            appState.classes[key].students.push({
-                id: Date.now(),
-                firstname: fname,
-                lastname: lname,
-                grades: {},
-                payments: []
-            });
-
-            saveAndRefresh();
-            closeModal('registration-modal');
-        }
-
-        function render() {
-            const key = `${appState.selectedClass}_${appState.selectedSection}`;
-            const cls = appState.classes[key];
-            
-            // Stats
-            let totalEncaisse = 0;
-            cls.students.forEach(s => s.payments.forEach(p => totalEncaisse += p.amount));
-            document.getElementById('stats-total-encaisse').innerText = totalEncaisse.toLocaleString() + " F";
-
-            // Tableaux
-            renderStudentsTable(cls.students);
-            renderGradesGrid();
-            
-            // Select Matières
-            document.getElementById('grade-subject-select').innerHTML = cls.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-        }
-
-        function renderStudentsTable(students) {
-            const tbody = document.getElementById('students-table-body');
-            tbody.innerHTML = students.map(s => `
-                <tr class="border-b">
-                    <td class="px-5 py-3 font-bold">${s.firstname} ${s.lastname}</td>
-                    <td class="px-5 py-3 text-right">
-                        <button onclick="ouvrirBulletin('${s.id}')" class="text-indigo-600 font-bold">Bulletin</button>
-                    </td>
-                </tr>
-            `).join('');
-            document.getElementById('student-count').innerText = students.length;
-        }
-
-        function renderGradesGrid() {
-            const key = `${appState.selectedClass}_${appState.selectedSection}`;
-            const cls = appState.classes[key];
-            const subId = document.getElementById('grade-subject-select').value;
-            const tbody = document.getElementById('grades-table-body');
-            if(!subId) return;
-
-            tbody.innerHTML = cls.students.map(s => {
-                const g = s.grades[subId] || {dev1:'', dev2:'', compo:''};
-                return `
-                    <tr>
-                        <td class="text-left font-bold">${s.firstname}</td>
-                        <td><input type="number" onchange="updateGrade('${s.id}', '${subId}', 'dev1', this.value)" value="${g.dev1}" class="w-10 border text-center"></td>
-                        <td><input type="number" onchange="updateGrade('${s.id}', '${subId}', 'dev2', this.value)" value="${g.dev2}" class="w-10 border text-center"></td>
-                        <td class="bg-violet-50"><input type="number" onchange="updateGrade('${s.id}', '${subId}', 'compo', this.value)" value="${g.compo}" class="w-10 border text-center font-bold"></td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function updateGrade(sid, subid, field, val) {
-            const key = `${appState.selectedClass}_${appState.selectedSection}`;
-            const student = appState.classes[key].students.find(s => s.id == sid);
-            if (!student.grades[subid]) student.grades[subid] = {};
-            student.grades[subid][field] = val;
-            idbKeyval.set("gestnotes_state", appState);
-        }
-
-        // --- UTILITAIRES ---
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    // --- INITIALISATION ---
+    async function initApp() {
+        const saved = await idbKeyval.get("gestnotes_db");
+        if (saved) appState = saved;
         
-        async function saveAndRefresh() {
-            await idbKeyval.set("gestnotes_state", appState);
-            render();
-        }
+        classNames.forEach(c => {
+            ["", "A", "B", "L1", "S1"].forEach(s => {
+                const key = `${c}_${s}`;
+                if (!appState.classes[key]) {
+                    appState.classes[key] = { 
+                        students: [], 
+                        subjects: [{id: 1, name: 'Mathématiques', coef: 2}],
+                        fees: { inscription: 25000, mensualite: 15000 }
+                    };
+                }
+            });
+        });
 
-        function exportData() {
-            const blob = new Blob([JSON.stringify(appState)], {type: 'text/plain'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = "sauvegarde_gestnotes.txt";
-            a.click();
-        }
+        populateFilters();
+        updateUI();
+    }
 
-        window.onload = initApp;
-    </script>
+    function populateFilters() {
+        document.getElementById('filter-class').innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
+        document.getElementById('filter-class').value = appState.selectedClass;
+        updateSectionOptions();
+    }
+
+    function updateSectionOptions() {
+        const sections = ["", "A", "B", "L1", "S1"];
+        document.getElementById('filter-section').innerHTML = sections.map(s => `<option value="${s}">${s || 'Général'}</option>`).join('');
+    }
+
+    function updateUI() {
+        document.getElementById('display-year').innerText = appState.currentYear;
+        document.getElementById('display-semester').innerText = "S" + appState.currentSemester;
+        renderStudents();
+        renderGradesGrid();
+        renderStats();
+    }
+
+    // --- ACTIONS ---
+    function onClassChange() { appState.selectedClass = document.getElementById('filter-class').value; updateUI(); }
+    function onSectionChange() { appState.selectedSection = document.getElementById('filter-section').value; updateUI(); }
+
+    function saveStudent() {
+        const fname = document.getElementById('reg-firstname').value;
+        const lname = document.getElementById('reg-lastname').value;
+        if (!fname || !lname) return;
+
+        const key = `${appState.selectedClass}_${appState.selectedSection}`;
+        appState.classes[key].students.push({
+            id: 'S' + Date.now(),
+            firstname: fname,
+            lastname: lname,
+            gender: document.getElementById('reg-gender').value,
+            payments: [],
+            grades: {}
+        });
+        saveAndRefresh();
+        closeModal('registration-modal');
+    }
+
+    function deleteStudent(id) {
+        if(confirm("Supprimer cet élève ?")) {
+            const key = `${appState.selectedClass}_${appState.selectedSection}`;
+            appState.classes[key].students = appState.classes[key].students.filter(s => s.id !== id);
+            saveAndRefresh();
+        }
+    }
+
+    function renderStudents() {
+        const key = `${appState.selectedClass}_${appState.selectedSection}`;
+        const students = appState.classes[key].students;
+        const tbody = document.getElementById('students-table-body');
+        document.getElementById('student-count').innerText = students.length;
+
+        tbody.innerHTML = students.map(s => {
+            const paid = s.payments.reduce((sum, p) => sum + p.amount, 0);
+            return `
+            <tr>
+                <td class="px-5 py-3 font-bold">${s.firstname} ${s.lastname.toUpperCase()}</td>
+                <td class="px-5 py-3 text-center">${s.gender}</td>
+                <td class="px-5 py-3 text-center font-bold text-emerald-600">${paid.toLocaleString()} F</td>
+                <td class="px-5 py-3 text-right space-x-2">
+                    <button onclick="openPaymentModal('${s.id}')" class="text-emerald-600"><i class="fas fa-wallet"></i></button>
+                    <button onclick="generateBulletin('${s.id}')" class="text-indigo-600"><i class="fas fa-file-pdf"></i></button>
+                    <button onclick="deleteStudent('${s.id}')" class="text-rose-600"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderGradesGrid() {
+        const key = `${appState.selectedClass}_${appState.selectedSection}`;
+        const cls = appState.classes[key];
+        const subSelect = document.getElementById('grade-subject-select');
+        subSelect.innerHTML = cls.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        
+        const subId = subSelect.value;
+        const tbody = document.getElementById('grades-table-body');
+        if (!subId) return;
+
+        tbody.innerHTML = cls.students.map(s => {
+            const g = s.grades?.[subId] || {dev1:'', dev2:'', compo:''};
+            return `
+            <tr>
+                <td class="text-left font-bold px-2">${s.firstname}</td>
+                <td><input type="number" onchange="updateGrade('${s.id}','${subId}','dev1',this.value)" value="${g.dev1}" class="w-12 text-center border"></td>
+                <td><input type="number" onchange="updateGrade('${s.id}','${subId}','dev2',this.value)" value="${g.dev2}" class="w-12 text-center border"></td>
+                <td class="bg-violet-50"><input type="number" onchange="updateGrade('${s.id}','${subId}','compo',this.value)" value="${g.compo}" class="w-12 text-center border font-bold"></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function updateGrade(sid, subid, field, val) {
+        const key = `${appState.selectedClass}_${appState.selectedSection}`;
+        const student = appState.classes[key].students.find(s => s.id === sid);
+        if (!student.grades[subid]) student.grades[subid] = {};
+        student.grades[subid][field] = val;
+        idbKeyval.set("gestnotes_db", appState);
+    }
+
+    function filterGrades() {
+        const val = document.getElementById('grade-search').value.toLowerCase();
+        const rows = document.querySelectorAll('#grades-table-body tr');
+        rows.forEach(r => {
+            const name = r.cells[0].innerText.toLowerCase();
+            r.style.display = name.includes(val) ? '' : 'none';
+        });
+    }
+
+    function renderStats() {
+        const key = `${appState.selectedClass}_${appState.selectedSection}`;
+        const cls = appState.classes[key];
+        let total = 0;
+        cls.students.forEach(s => s.payments.forEach(p => total += p.amount));
+        document.getElementById('stats-total-encaisse').innerText = total.toLocaleString() + " F";
+    }
+
+    // --- MODALS ---
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    
+    let currentPayId = null;
+    function openPaymentModal(id) {
+        currentPayId = id;
+        const key = `${appState.selectedClass}_${appState.selectedSection}`;
+        const s = appState.classes[key].students.find(st => st.id === id);
+        document.getElementById('payment-student-name').innerText = s.firstname + " " + s.lastname;
+        openModal('payment-modal');
+    }
+
+    function confirmPayment() {
+        const amt = parseInt(document.getElementById('pay-amount').value);
+        if(!amt) return;
+        const key = `${appState.selectedClass}_${appState.selectedSection}`;
+        const s = appState.classes[key].students.find(st => st.id === currentPayId);
+        s.payments.push({amount: amt, date: new Date().toLocaleDateString()});
+        saveAndRefresh();
+        closeModal('payment-modal');
+    }
+
+    // --- UTILS ---
+    async function saveAndRefresh() {
+        await idbKeyval.set("gestnotes_db", appState);
+        updateUI();
+    }
+
+    function exportData() {
+        const blob = new Blob([JSON.stringify(appState)], {type: 'text/plain'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `SAUVEGARDE_GESTNOTES.txt`;
+        a.click();
+    }
+
+    function importData(event) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                appState = JSON.parse(e.target.result);
+                await saveAndRefresh();
+                location.reload();
+            } catch (err) { alert("Erreur de fichier"); }
+        };
+        reader.readAsText(event.target.files[0]);
+    }
+
+    window.onload = initApp;
+</script>
 </body>
 </html>
-
-
