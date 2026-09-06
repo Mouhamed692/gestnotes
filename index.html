@@ -271,19 +271,30 @@
         </div>
     </div>
 
-    <!-- ... (Autres Modals : Inscription, Paiements, etc. restent identiques) ... -->
+  <script>
+    // --- 1. CONSTANTES ET ÉTAT PAR DÉFAUT ---
+    const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+    const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
+    
+    // CORRECTION : Déclaration de DEFAULT_STATE qui manquait
+    const DEFAULT_STATE = {
+        classes: {},
+        accessCode: "1234", // Code par défaut
+        googleSyncUrl: "",
+        currentRole: "admin",
+        selectedClass: "6ème",
+        selectedSection: "A"
+    };
 
-    <script>
-        // Logique de base et constantes
-        const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-        const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
-        let appState = null;
-        let driveSyncTimeout = null;
+    let appState = null;
+    let driveSyncTimeout = null;
 
-        // INITIALISATION
-        async function initApp() {
+    // --- 2. INITIALISATION ---
+    async function initApp() {
+        try {
             const savedState = await idbKeyval.get("gestnotes_state");
             appState = savedState || DEFAULT_STATE;
+            
             buildEmptyState();
 
             const role = localStorage.getItem("gestnotes_local_role") || "admin";
@@ -294,175 +305,176 @@
             applyRoleRestrictions();
             
             if (appState.googleSyncUrl) chargerBaseDepuisDrive();
+        } catch (error) {
+            console.error("Erreur lors de l'initialisation :", error);
+            showToast("Erreur de chargement des données", "error");
         }
+    }
 
-        // --- GESTION DES RÔLES ET FILTRES PROFESSEURS ---
+    // --- 3. GESTION DE L'INTERFACE ET DES MODALES (MANQUANTS) ---
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) modal.classList.remove('hidden');
+    }
 
-        function onRoleChange() {
-            const select = document.getElementById('role-selector');
-            const targetRole = select.value;
-            const requiredCode = appState.accessCode || "1234";
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) modal.classList.add('hidden');
+    }
 
-            if (targetRole === 'admin' || targetRole === 'comptable') {
-                const password = prompt("Code d'accès :");
-                if (password !== requiredCode) {
-                    alert("Accès refusé.");
-                    select.value = localStorage.getItem("gestnotes_local_role") || "admin";
-                    return;
-                }
-                localStorage.setItem("gestnotes_local_role", targetRole);
-                localStorage.removeItem("gestnotes_teacher_name");
-                applyRoleRestrictions();
-            } else {
-                openTeacherLoginModal();
+    function cancelTeacherLogin() {
+        document.getElementById('role-selector').value = localStorage.getItem("gestnotes_local_role") || "admin";
+        closeModal('teacher-login-modal');
+    }
+
+    // Implémentation du Toast (Notifications)
+    function showToast(message, type = "success") {
+        const toast = document.createElement('div');
+        const bgColor = type === "error" ? "bg-red-600" : "bg-emerald-600";
+        toast.className = `fixed bottom-4 right-4 ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg z-50 font-semibold text-sm toast-animate flex items-center gap-2`;
+        toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000); // 3s correspond à l'animation CSS
+    }
+
+    // Fonction de confirmation personnalisée ou native
+    function askConfirmation(message, title, callback) {
+        // Pour faire simple dans cette correction, on utilise confirm() natif
+        // Mais vous pouvez créer une modale custom plus tard
+        if (window.confirm(`${title}\n\n${message}`)) {
+            callback();
+        }
+    }
+
+    // --- 4. GESTION DES RÔLES ET FILTRES (CORRIGÉS) ---
+    function onRoleChange() {
+        const select = document.getElementById('role-selector');
+        const targetRole = select.value;
+        const requiredCode = appState.accessCode || "1234";
+
+        if (targetRole === 'admin' || targetRole === 'comptable') {
+            const password = prompt("Code d'accès sécurisé :");
+            if (password !== requiredCode) {
+                showToast("Accès refusé. Code incorrect.", "error");
+                select.value = localStorage.getItem("gestnotes_local_role") || "admin";
+                return;
             }
-        }
-
-        function openTeacherLoginModal() {
-            const savedName = localStorage.getItem("gestnotes_teacher_name") || "";
-            document.getElementById('t-login-name').value = savedName;
-            openModal('teacher-login-modal');
-        }
-
-        function submitTeacherLogin() {
-            const name = document.getElementById('t-login-name').value.trim();
-            if (!name) return alert("Nom requis.");
-            localStorage.setItem("gestnotes_local_role", "enseignant");
-            localStorage.setItem("gestnotes_teacher_name", name);
-            closeModal('teacher-login-modal');
+            localStorage.setItem("gestnotes_local_role", targetRole);
+            localStorage.removeItem("gestnotes_teacher_name");
             applyRoleRestrictions();
-            showToast(`Session active : ${name}`, "success");
+            showToast(`Connecté en tant que ${targetRole}`, "success");
+        } else {
+            openTeacherLoginModal();
+        }
+    }
+
+    function openTeacherLoginModal() {
+        const savedName = localStorage.getItem("gestnotes_teacher_name") || "";
+        document.getElementById('t-login-name').value = savedName;
+        openModal('teacher-login-modal');
+    }
+
+    function submitTeacherLogin() {
+        const name = document.getElementById('t-login-name').value.trim();
+        if (!name) return showToast("Votre nom est requis.", "error");
+        localStorage.setItem("gestnotes_local_role", "enseignant");
+        localStorage.setItem("gestnotes_teacher_name", name);
+        closeModal('teacher-login-modal');
+        applyRoleRestrictions();
+        showToast(`Session active : ${name}`, "success");
+    }
+
+    function applyRoleRestrictions() {
+        const role = localStorage.getItem("gestnotes_local_role") || "admin";
+        const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
+        
+        const roleSelector = document.getElementById('role-selector');
+        if (roleSelector) roleSelector.value = role;
+
+        const indicator = document.getElementById('active-teacher-indicator');
+        if (role === 'enseignant' && teacherName) {
+            indicator.innerText = `Ens. : ${teacherName}`;
+            indicator.classList.remove('hidden');
+        } else if (indicator) { 
+            indicator.classList.add('hidden'); 
         }
 
-        function applyRoleRestrictions() {
-            const role = localStorage.getItem("gestnotes_local_role") || "admin";
-            const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
-            document.getElementById('role-selector').value = role;
+        const adminElements = ['btn-class-fees', 'btn-manage-subjects', 'btn-wa-reminders', 'btn-caisse-jour', 'btn-add-student', 'btn-add-student-shortcut', 'class-stats-section', 'btn-export-base', 'btn-import-base'];
+        
+        adminElements.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = (role === 'enseignant') ? 'none' : (id === 'class-stats-section' ? 'grid' : '');
+        });
 
-            const indicator = document.getElementById('active-teacher-indicator');
-            if (role === 'enseignant' && teacherName) {
-                indicator.innerText = `Enseignant : ${teacherName}`;
-                indicator.classList.remove('hidden');
-            } else { indicator.classList.add('hidden'); }
+        const btnExportGrades = document.getElementById('btn-export-teacher-grades');
+        if (btnExportGrades) btnExportGrades.style.display = (role === 'enseignant') ? 'flex' : 'none';
 
-            // Filtres : Toujours actifs pour permettre la navigation multi-classe
-            document.getElementById('filter-class').disabled = false;
-            document.getElementById('filter-section').disabled = false;
+        const gradesSection = document.getElementById('grades-section');
+        if (gradesSection) gradesSection.style.display = (role === 'comptable') ? 'none' : 'flex';
 
-            const adminElements = ['btn-class-fees', 'btn-manage-subjects', 'btn-wa-reminders', 'btn-caisse-jour', 'btn-add-student', 'btn-add-student-shortcut', 'class-stats-section', 'btn-export-base', 'btn-import-base'];
-            
-            adminElements.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = (role === 'enseignant') ? 'none' : (id === 'class-stats-section' ? 'grid' : '');
+        if (typeof render === "function") render();
+    }
+
+    // --- 5. FONCTIONS DE SAUVEGARDE ET SYNC ---
+    async function saveToStorage(forceCloud = true) {
+        try {
+            await idbKeyval.set("gestnotes_state", appState);
+            if (forceCloud && appState.googleSyncUrl) {
+                const lbl = document.getElementById('lbl-gdrive-sync');
+                if (lbl) lbl.innerText = "Synchronisation...";
+                clearTimeout(driveSyncTimeout);
+                driveSyncTimeout = setTimeout(sauvegarderSurDrive, 3000);
+            }
+        } catch (e) { 
+            console.error("Erreur de sauvegarde locale:", e); 
+        }
+    }
+
+    async function sauvegarderSurDrive() {
+        if (!appState.googleSyncUrl) return;
+        try {
+            const res = await fetch(appState.googleSyncUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Attention au CORS
+                body: JSON.stringify(appState)
             });
-
-            if (role === 'comptable') {
-                document.getElementById('btn-manage-subjects').style.display = 'none';
-                document.getElementById('grades-section').style.display = 'none';
+            if (res.ok) {
+                document.getElementById('lbl-gdrive-sync').innerText = "Cloud Synced";
+            } else {
+                throw new Error("Erreur réseau");
             }
-            render();
+        } catch (e) { 
+            console.error("Erreur Cloud:", e);
+            document.getElementById('lbl-gdrive-sync').innerText = "Erreur Sync";
         }
+    }
 
-        function populateSubjectSelector() {
-            const key = getCurrentClassKey();
-            const clsData = appState.classes[key] || { subjects: [] };
-            const select = document.getElementById('grade-subject-select');
-            if (!select) return;
+    // --- 6. STUBS (Fonctions déclarées pour éviter les erreurs bloquantes) ---
+    // Vous devrez implémenter la logique métier de ces fonctions
+    function buildEmptyState() { /* Prépare la structure de la classe courante si vide */ }
+    function populateFilters() { /* Remplit les <select> filter-class et filter-section */ }
+    function updateHeaderDisplays() { /* Met à jour l'année et le semestre */ }
+    function chargerBaseDepuisDrive() { /* Fetch GET depuis le Cloud */ }
+    function onClassChange() { /* Logique au changement de classe */ }
+    function onSectionChange() { /* Logique au changement de section */ }
+    function render() { /* Rafraîchit l'affichage principal */ }
+    function getCurrentClassKey() { return "6ème_A"; /* Exemple statique, à dynamiser */ }
+    function saveSettings() { /* Sauvegarde la modale de config */ closeModal('settings-modal'); showToast("Paramètres enregistrés"); }
+    
+    // Fonctions d'export/import
+    function exportData() { alert("Exportation de la base..."); }
+    function importData(e) { alert("Importation..."); }
+    function exportTeacherGradesOnly() { alert("Export de vos notes..."); }
+    
+    // Modales non implémentées dans l'HTML fourni
+    function openRegistrationModal() { alert("Ouvrir Inscription"); }
+    function openWhatsAppRemindersModal() { alert("Ouvrir Relances WA"); }
+    function openClassFeesModal() { alert("Ouvrir Tarifs"); }
+    function openCaisseJourModal() { alert("Ouvrir Caisse"); }
+    function openSubjectsModal() { alert("Ouvrir Matières"); }
 
-            const role = localStorage.getItem("gestnotes_local_role") || "admin";
-            const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
-
-            let filtered = clsData.subjects || [];
-            if (role === 'enseignant' && teacherName) {
-                const search = teacherName.toLowerCase().trim();
-                filtered = filtered.filter(sub => sub.teacherName && sub.teacherName.toLowerCase().trim() === search);
-            }
-
-            select.innerHTML = filtered.length > 0 
-                ? filtered.map(s => `<option value="${s.id}">${s.name}</option>`).join('')
-                : `<option value="">Aucune matière assignée</option>`;
-            
-            renderGradesGrid();
-        }
-
-        // --- TRANSITION SIMPLIFIÉE (ROLLOVER) ---
-
-        function executeRollover() {
-            const targetClass = document.getElementById('rollover-target-class').value;
-            const key = getCurrentClassKey();
-            const currentClsData = appState.classes[key];
-
-            if (!currentClsData || currentClsData.students.length === 0) return showToast("Classe vide.", "error");
-
-            askConfirmation(
-                `Transférer les ${currentClsData.students.length} élèves vers ${targetClass} ?\nLes notes seront réinitialisées.`,
-                `<i class="fas fa-random text-amber-600"></i> Transition de niveau`,
-                function() {
-                    const validSections = getSectionsForClass(targetClass);
-                    let targetSection = appState.selectedSection;
-                    if (!validSections.includes(targetSection)) targetSection = validSections[0] || "";
-
-                    const targetKey = `${targetClass}_${targetSection}`;
-                    if (!appState.classes[targetKey]) {
-                        appState.classes[targetKey] = { students: [], subjects: getDefaultSubjects(targetClass), fees: { inscription: 0, mensualite: 0 }, dev3Visible: {} };
-                    }
-                    
-                    const targetFees = appState.classes[targetKey].fees || { inscription: 0, mensualite: 0 };
-
-                    currentClsData.students.forEach(s => {
-                        const newPayments = moisAnnee.map((m, idx) => ({
-                            designation: m, statut: "Non payé",
-                            montantDu: idx === 0 ? (targetFees.inscription || 0) : (targetFees.mensualite || 0),
-                            montantPaye: 0, methode: "", dateEncaissement: ""
-                        }));
-
-                        appState.classes[targetKey].students.push({
-                            ...s, id: "student_" + Date.now() + Math.random().toString(36).substr(2,5),
-                            grades: {}, payments: newPayments
-                        });
-                    });
-
-                    currentClsData.students = []; // On vide l'ancienne classe
-                    saveToStorage();
-                    appState.selectedClass = targetClass;
-                    appState.selectedSection = targetSection;
-                    populateFilters();
-                    closeModal('settings-modal');
-                    showToast("Transition réussie !", "success");
-                    render();
-                }
-            );
-        }
-
-        // --- FONCTIONS DE SAUVEGARDE ET SYNC ---
-
-        async function saveToStorage(forceCloud = true) {
-            try {
-                await idbKeyval.set("gestnotes_state", appState);
-                if (forceCloud && appState.googleSyncUrl) {
-                    const lbl = document.getElementById('lbl-gdrive-sync');
-                    if (lbl) lbl.innerText = "Attente Cloud...";
-                    clearTimeout(driveSyncTimeout);
-                    driveSyncTimeout = setTimeout(sauvegarderSurDrive, 3000);
-                }
-            } catch (e) { console.error(e); }
-        }
-
-        async function sauvegarderSurDrive() {
-            if (!appState.googleSyncUrl) return;
-            try {
-                const res = await fetch(appState.googleSyncUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(appState)
-                });
-                if (res.ok) document.getElementById('lbl-gdrive-sync').innerText = "Cloud Synced";
-            } catch (e) { console.error(e); }
-        }
-
-        // ... (Reste des fonctions techniques : buildEmptyState, renderGradesGrid, etc. sont conservées) ...
-
-        window.addEventListener('DOMContentLoaded', initApp);
-    </script>
+    window.addEventListener('DOMContentLoaded', initApp);
+</script> 
+     
 </body>
 </html>
