@@ -2,9 +2,12 @@
 <html lang="fr"> 
 
 <head>
+   
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- ICÔNES ET PWA -->
+    <link rel="icon" type="image/png" href="icon-192.png"> <!-- AJOUTÉ ICI -->
     <link class="apple-touch-icon" href="icon-192.png">
     <link class="manifest" href="manifest.json">
     <meta name="theme-color" content="#4c1d95">
@@ -16,8 +19,11 @@
     
     <title>GestNotes – Administration scolaire</title>
     
-    <script src="tailwind.min.js"></script>
+    <!-- SCRIPTS ET STYLES -->
+    <script src="https://cdn.tailwindcss.com"></script> <!-- MODIFIÉ ICI -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Assurez-vous que ces fichiers sont bien dans Vercel -->
     <script src="html2pdf.bundle.min.js"></script>
     <script src="idb-keyval.js"></script>
 
@@ -25,6 +31,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- ... vos balises <style> existantes ... -->
+
     <style>
         body { font-family: 'Hanken Grotesk', 'Inter', sans-serif; background-color: #f8fafc; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
