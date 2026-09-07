@@ -1,721 +1,650 @@
 <!DOCTYPE html>
-<html lang="fr" class="h-full bg-slate-100">
+<html lang="fr"> 
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GestNotes — Système Intégré de Gestion Scolaire & Pédagogique</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React & ReactDOM -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <!-- Babel Standalone -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- ICÔNES ET PWA -->
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link class="apple-touch-icon" href="icon-192.png">
+    <link class="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4c1d95">
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
-    }
-    @media print {
-      .no-print { display: none !important; }
-      .print-only { display: block !important; }
-      body { background-color: #ffffff !important; }
-    }
-  </style>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GestNotes">
+    
+    <title>GestNotes – Administration scolaire</title>
+    
+    <!-- SCRIPTS ET STYLES -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="html2pdf.bundle.min.js"></script>
+    <script src="idb-keyval.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Hanken Grotesk', 'Inter', sans-serif; background-color: #f8fafc; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        .toast-animate { animation: slideIn 0.3s ease forwards, fadeOut 0.3s ease 2.7s forwards; }
+        table { border-collapse: collapse; }
+        td, th { padding: 10px 12px; }
+        .grid-table td, .grid-table th { border: 1px solid #e2e8f0; text-align: center; padding: 8px 6px; }
+        /* Style pour les onglets actifs */
+        .tab-btn { border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab-active { border-bottom-color: #4c1d95; color: #4c1d95; font-weight: bold; }
+    </style>
 </head>
-<body class="h-full text-slate-900 antialiased flex flex-col">
-  <div id="root" class="flex flex-col flex-1"></div>
 
-  <script type="text/babel">
-    const { useState, useMemo, useEffect } = React;
+<body class="min-h-screen bg-slate-50 flex flex-col text-slate-800">
 
-    // --- RÉFÉRENTIEL ACADÉMIQUE ---
-    const INSTITUTION_CONFIG = {
-      name: "Lycée d'Excellence Cheikh Hamidou Kane",
-      academicYear: "2025 – 2026",
-      period: "Premier Trimestre",
-      headmaster: "M. Ibrahima SARR, Proviseur",
-      address: "Point E, Avenue Cheikh Anta Diop, Dakar",
-      registrationCode: "SN-DKR-2026-EXC",
-      tuitionDuePerStudent: 50000
-    };
-
-    const CURRICULUM = {
-      Seconde: [
-        { id: 'math', name: 'Mathématiques', coef: 4, teacher: 'M. Diop' },
-        { id: 'pc', name: 'Sciences Physiques', coef: 3, teacher: 'Mme Faye' },
-        { id: 'fr', name: 'Lettres & Philosophie', coef: 3, teacher: 'M. Ndiaye' },
-        { id: 'ang', name: 'Anglais', coef: 2, teacher: 'Mme Ba' },
-        { id: 'svt', name: 'Sciences de la Vie et de la Terre', coef: 2, teacher: 'M. Cissé' },
-        { id: 'hg', name: 'Histoire & Géographie', coef: 2, teacher: 'M. Sène' }
-      ],
-      Premiere: [
-        { id: 'math', name: 'Mathématiques', coef: 5, teacher: 'M. Diop' },
-        { id: 'pc', name: 'Sciences Physiques', coef: 4, teacher: 'Mme Faye' },
-        { id: 'fr', name: 'Français', coef: 3, teacher: 'M. Ndiaye' },
-        { id: 'ang', name: 'Anglais', coef: 2, teacher: 'Mme Ba' }
-      ],
-      Terminale: [
-        { id: 'math', name: 'Mathématiques', coef: 6, teacher: 'M. Diop' },
-        { id: 'pc', name: 'Sciences Physiques', coef: 5, teacher: 'Mme Faye' },
-        { id: 'philo', name: 'Philosophie', coef: 3, teacher: 'M. Sow' }
-      ]
-    };
-
-    const INITIAL_COHORT = {
-      Seconde: [
-        { id: 'ST-001', matricule: '2026-001S', lastName: 'DIALLO', firstName: 'Moussa', sex: 'M', birthDate: '2008-04-12', phone: '+221 77 123 45 67', paidFees: 45000 },
-        { id: 'ST-002', matricule: '2026-002S', lastName: 'NDIAYE', firstName: 'Fatou', sex: 'F', birthDate: '2008-09-21', phone: '+221 77 987 65 43', paidFees: 50000 },
-        { id: 'ST-003', matricule: '2026-003S', lastName: 'SOW', firstName: 'Amadou', sex: 'M', birthDate: '2007-11-05', phone: '+221 76 543 21 09', paidFees: 25000 },
-        { id: 'ST-004', matricule: '2026-004S', lastName: 'BA', firstName: 'Aïssatou', sex: 'F', birthDate: '2008-02-18', phone: '+221 70 888 99 00', paidFees: 50000 }
-      ]
-    };
-
-    const INITIAL_EVALUATIONS = {
-      'ST-001': {
-        math: { d1: 14.0, d2: 15.0, compo: 13.5 },
-        pc:   { d1: 12.0, d2: 14.0, compo: 13.0 },
-        fr:   { d1: 11.0, d2: 12.0, compo: 10.0 },
-        ang:  { d1: 13.5, d2: 14.0, compo: 13.5 },
-        svt:  { d1: 12.0, d2: 13.0, compo: 12.5 },
-        hg:   { d1: 14.0, d2: 13.0, compo: 13.0 }
-      },
-      'ST-002': {
-        math: { d1: 18.0, d2: 17.5, compo: 19.0 },
-        pc:   { d1: 16.0, d2: 17.0, compo: 18.0 },
-        fr:   { d1: 15.0, d2: 14.0, compo: 16.0 },
-        ang:  { d1: 17.0, d2: 18.0, compo: 17.5 },
-        svt:  { d1: 16.0, d2: 17.0, compo: 16.5 },
-        hg:   { d1: 15.0, d2: 16.0, compo: 15.0 }
-      },
-      'ST-003': {
-        math: { d1: 9.0, d2: 10.0, compo: 8.5 },
-        pc:   { d1: 11.0, d2: 10.0, compo: 9.0 },
-        fr:   { d1: 12.0, d2: 13.0, compo: 12.0 },
-        ang:  { d1: 10.0, d2: 11.0, compo: 10.0 },
-        svt:  { d1: 9.0, d2: 10.0, compo: 9.5 },
-        hg:   { d1: 11.0, d2: 12.0, compo: 11.0 }
-      },
-      'ST-004': {
-        math: { d1: 13.0, d2: 12.0, compo: 14.0 },
-        pc:   { d1: 14.0, d2: 15.0, compo: 13.5 },
-        fr:   { d1: 16.0, d2: 15.5, compo: 15.0 },
-        ang:  { d1: 14.0, d2: 15.0, compo: 14.5 },
-        svt:  { d1: 13.0, d2: 14.0, compo: 13.5 },
-        hg:   { d1: 14.0, d2: 15.0, compo: 14.0 }
-      }
-    };
-
-    const INITIAL_SUBMISSIONS = [
-      {
-        id: 'SUB-2026-01',
-        studentId: 'ST-002',
-        studentName: 'NDIAYE Fatou',
-        matricule: '2026-002S',
-        assignmentTitle: 'Devoir Surveillé n°1 : Algèbre & Polynômes',
-        subjectName: 'Mathématiques',
-        submittedAt: '2026-09-06T14:30:00Z',
-        fileName: '2026-002S_NDIAYE_Devoir1.pdf',
-        folderPath: 'Mathématiques - M. Diop / DS1_Algebre',
-        grade: 18.5,
-        status: 'validated'
-      },
-      {
-        id: 'SUB-2026-02',
-        studentId: 'ST-001',
-        studentName: 'DIALLO Moussa',
-        matricule: '2026-001S',
-        assignmentTitle: 'Devoir Surveillé n°1 : Algèbre & Polynômes',
-        subjectName: 'Mathématiques',
-        submittedAt: '2026-09-07T09:15:00Z',
-        fileName: '2026-001S_DIALLO_Devoir1.pdf',
-        folderPath: 'Mathématiques - M. Diop / DS1_Algebre',
-        grade: 14.0,
-        status: 'validated'
-      }
-    ];
-
-    function App() {
-      const [currentClass, setCurrentClass] = useState('Seconde');
-      const [activeModule, setActiveModule] = useState('grades'); // 'grades' | 'students' | 'homework' | 'bulletins'
-      const [students, setStudents] = useState(INITIAL_COHORT.Seconde);
-      const [evaluations, setEvaluations] = useState(INITIAL_EVALUATIONS);
-      const [submissions, setSubmissions] = useState(INITIAL_SUBMISSIONS);
-      const [selectedBulletinStudent, setSelectedBulletinStudent] = useState(null);
-      const [notification, setNotification] = useState(null);
-
-      // Dossier Google Drive de l'enseignant
-      const [driveConfig, setDriveConfig] = useState({
-        teacherName: 'M. Diop',
-        subjectName: 'Mathématiques',
-        targetFolder: 'Mathématiques — M. Diop (Seconde S)',
-        driveFolderId: '1AbC_dEfGhIjKlMnOpQrStUvWxYz',
-        organizationMode: 'by_assignment', // by_assignment | by_student | chronological
-        fileNamingRule: 'MATRICULE_NOM_DEVOIR'
-      });
-
-      const notify = (msg) => {
-        setNotification(msg);
-        setTimeout(() => setNotification(null), 3000);
-      };
-
-      const subjects = CURRICULUM[currentClass] || [];
-
-      // Moteur de calcul statistique académique
-      const metrics = useMemo(() => {
-        const results = {};
-        students.forEach((st) => {
-          let weightedSum = 0;
-          let totalCoefficients = 0;
-          const subjectBreakdown = {};
-
-          subjects.forEach((sub) => {
-            const ev = evaluations[st.id]?.[sub.id];
-            if (ev && ev.compo !== undefined) {
-              const dAvg = (ev.d1 !== undefined && ev.d2 !== undefined) ? (ev.d1 + ev.d2) / 2 : (ev.d1 || ev.d2 || ev.compo);
-              const subAvg = Number(((dAvg + ev.compo * 2) / 3).toFixed(2));
-              weightedSum += subAvg * sub.coef;
-              totalCoefficients += sub.coef;
-              subjectBreakdown[sub.id] = { ...ev, avg: subAvg };
-            }
-          });
-
-          const generalAverage = totalCoefficients > 0 ? Number((weightedSum / totalCoefficients).toFixed(2)) : null;
-          results[st.id] = { generalAverage, subjectBreakdown, weightedSum, totalCoefficients };
-        });
-
-        const rankedList = Object.entries(results)
-          .filter(([_, d]) => d.generalAverage !== null)
-          .sort((a, b) => b[1].generalAverage - a[1].generalAverage);
-
-        rankedList.forEach(([id], index) => {
-          results[id].rank = index + 1;
-        });
-
-        const avgs = Object.values(results).map(r => r.generalAverage).filter(a => a !== null);
-        const cohortMean = avgs.length > 0 ? (avgs.reduce((acc, v) => acc + v, 0) / avgs.length).toFixed(2) : '0.00';
-        const passingRate = avgs.length > 0 ? Math.round((avgs.filter(v => v >= 10).length / avgs.length) * 100) : 0;
-        const totalTuitionCollected = students.reduce((acc, s) => acc + s.paidFees, 0);
-
-        return { studentMetrics: results, cohortMean, passingRate, totalTuitionCollected };
-      }, [students, subjects, evaluations]);
-
-      const handleScoreUpdate = (studentId, subjectId, component, value) => {
-        const cleanVal = value === '' ? '' : Math.min(20, Math.max(0, parseFloat(value) || 0));
-        setEvaluations(prev => ({
-          ...prev,
-          [studentId]: {
-            ...(prev[studentId] || {}),
-            [subjectId]: {
-              ...(prev[studentId]?.[subjectId] || {}),
-              [component]: cleanVal
-            }
-          }
-        }));
-      };
-
-      return (
-        <div className="flex flex-col min-h-screen bg-slate-100">
-          {/* Notification système */}
-          {notification && (
-            <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-medium px-4 py-3 rounded-lg shadow-xl border border-slate-700 flex items-center gap-2.5 animate-fade-in">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>{notification}</span>
+    <header class="bg-[#4c1d95] text-white shadow-md px-4 py-3 md:px-6 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
+        <div class="flex items-center gap-3">
+            <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+                <i class="fas fa-graduation-cap text-2xl text-violet-200"></i>
             </div>
-          )}
-
-          {/* En-tête institutionnel */}
-          <header className="bg-slate-900 text-white border-b border-slate-800 no-print sticky top-0 z-30">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-indigo-400">
-                  GN
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm tracking-tight text-slate-100">GestNotes Administration</span>
-                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">v4.2 PRO</span>
-                  </div>
-                  <div className="text-[11px] text-slate-400">{INSTITUTION_CONFIG.name} • {INSTITUTION_CONFIG.academicYear}</div>
-                </div>
-              </div>
-
-              {/* Sélecteur de division académique & actions */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 bg-slate-800 p-1 rounded-md border border-slate-700 text-xs">
-                  <span className="text-slate-400 px-2 font-medium">Division :</span>
-                  <select
-                    value={currentClass}
-                    onChange={(e) => setCurrentClass(e.target.value)}
-                    className="bg-slate-900 text-white px-2.5 py-1 rounded font-medium border border-slate-700 outline-none cursor-pointer"
-                  >
-                    <option value="Seconde">Seconde S (Scientifique)</option>
-                    <option value="Premiere">Première S (Scientifique)</option>
-                    <option value="Terminale">Terminale S (Scientifique)</option>
-                  </select>
-                </div>
-
-                <div className="h-4 w-px bg-slate-700"></div>
-
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setActiveModule('grades')}
-                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${activeModule === 'grades' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    Relevé des Notes
-                  </button>
-                  <button
-                    onClick={() => setActiveModule('students')}
-                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${activeModule === 'students' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    Immatriculation & Droits
-                  </button>
-                  <button
-                    onClick={() => setActiveModule('homework')}
-                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${activeModule === 'homework' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    Dépôts & Google Drive
-                  </button>
-                  <button
-                    onClick={() => setActiveModule('bulletins')}
-                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${activeModule === 'bulletins' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    Bulletins Officiels
-                  </button>
-                </div>
-              </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">GestNotes</h1>
+                <p class="text-xs text-violet-200">Administration & Gestion des Notes</p>
             </div>
-          </header>
-
-          {/* Tableau de bord principal */}
-          <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
-
-            {/* Indicateurs synthétiques de cohorte */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 no-print">
-              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
-                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Effectif Inscrit</div>
-                <div className="text-xl font-bold text-slate-900 mt-1">{students.length} Apprenants</div>
-                <div className="text-[11px] text-slate-500 mt-0.5">Registre officiel à jour</div>
-              </div>
-              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
-                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Moyenne Générale Cohorte</div>
-                <div className="text-xl font-bold text-slate-900 mt-1">{metrics.cohortMean} <span className="text-xs text-slate-400 font-normal">/ 20</span></div>
-                <div className="text-[11px] text-slate-500 mt-0.5">{INSTITUTION_CONFIG.period}</div>
-              </div>
-              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
-                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Taux d'Admissibilité (≥ 10/20)</div>
-                <div className="text-xl font-bold text-slate-900 mt-1">{metrics.passingRate} %</div>
-                <div className="text-[11px] text-slate-500 mt-0.5">Seuil institutionnel respecté</div>
-              </div>
-              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
-                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Recouvrement Droits</div>
-                <div className="text-xl font-bold text-slate-900 mt-1">{metrics.totalTuitionCollected.toLocaleString()} <span className="text-xs text-slate-400 font-normal">FCFA</span></div>
-                <div className="text-[11px] text-slate-500 mt-0.5">Sur {(students.length * INSTITUTION_CONFIG.tuitionDuePerStudent).toLocaleString()} FCFA attendus</div>
-              </div>
-            </div>
-
-            {/* MODULE 1 : RELEVÉ ACADÉMIQUE DE NOTES */}
-            {activeModule === 'grades' && (
-              <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
-                  <div>
-                    <h2 className="text-sm font-bold text-slate-900">Registre d'Évaluation Périodique — {currentClass}</h2>
-                    <p className="text-xs text-slate-500">Pondération réglementaire : Moyenne = [((Devoir 1 + Devoir 2) ÷ 2) + Composition × 2] ÷ 3</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => notify("Données académiques validées et enregistrées dans la base de registre.")}
-                      className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold shadow-xs"
-                    >
-                      Enregistrer les saisies
-                    </button>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
-                        <th className="py-2.5 px-3 border-r border-slate-200 w-28">N° Matricule</th>
-                        <th className="py-2.5 px-3 border-r border-slate-200 w-44">Identité de l'Élève</th>
-                        {subjects.map(s => (
-                          <th key={s.id} className="py-2.5 px-2 text-center border-r border-slate-200 font-semibold">
-                            <div>{s.name}</div>
-                            <div className="text-[10px] text-slate-500 font-normal">Coef. {s.coef} (D1 / D2 / Compo)</div>
-                          </th>
-                        ))}
-                        <th className="py-2.5 px-3 text-center border-r border-slate-200 bg-slate-50 w-28">Moyenne</th>
-                        <th className="py-2.5 px-3 text-center bg-slate-50 w-20">Rang</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 text-slate-700">
-                      {students.map(st => {
-                        const m = metrics.studentMetrics[st.id] || {};
-                        return (
-                          <tr key={st.id} className="hover:bg-slate-50/75">
-                            <td className="py-2.5 px-3 font-mono font-medium text-slate-500 border-r border-slate-200">{st.matricule}</td>
-                            <td className="py-2.5 px-3 font-semibold text-slate-900 border-r border-slate-200">{st.lastName} {st.firstName}</td>
-                            {subjects.map(s => {
-                              const ev = evaluations[st.id]?.[s.id] || {};
-                              const subAvg = m.subjectBreakdown?.[s.id]?.avg;
-                              return (
-                                <td key={s.id} className="p-2 border-r border-slate-200 text-center">
-                                  <div className="inline-flex items-center gap-1">
-                                    <input
-                                      type="number"
-                                      step="0.5"
-                                      min="0"
-                                      max="20"
-                                      value={ev.d1 ?? ''}
-                                      placeholder="D1"
-                                      onChange={(e) => handleScoreUpdate(st.id, s.id, 'd1', e.target.value)}
-                                      className="w-10 text-center border border-slate-200 rounded py-1 font-mono text-xs focus:border-slate-800 outline-none"
-                                    />
-                                    <input
-                                      type="number"
-                                      step="0.5"
-                                      min="0"
-                                      max="20"
-                                      value={ev.d2 ?? ''}
-                                      placeholder="D2"
-                                      onChange={(e) => handleScoreUpdate(st.id, s.id, 'd2', e.target.value)}
-                                      className="w-10 text-center border border-slate-200 rounded py-1 font-mono text-xs focus:border-slate-800 outline-none"
-                                    />
-                                    <input
-                                      type="number"
-                                      step="0.5"
-                                      min="0"
-                                      max="20"
-                                      value={ev.compo ?? ''}
-                                      placeholder="CP"
-                                      onChange={(e) => handleScoreUpdate(st.id, s.id, 'compo', e.target.value)}
-                                      className="w-11 text-center bg-slate-50 border border-slate-300 rounded py-1 font-mono font-semibold text-xs focus:border-slate-800 outline-none"
-                                    />
-                                  </div>
-                                  {subAvg !== undefined && (
-                                    <div className={`text-[11px] font-mono mt-0.5 ${subAvg >= 10 ? 'text-slate-900' : 'text-red-700'}`}>
-                                      {subAvg.toFixed(2)}
-                                    </div>
-                                  )}
-                                </td>
-                              );
-                            })}
-                            <td className="py-2.5 px-3 text-center border-r border-slate-200 bg-slate-50 font-mono font-bold text-sm">
-                              {m.generalAverage !== null ? (
-                                <span className={m.generalAverage >= 10 ? 'text-slate-900' : 'text-red-700'}>
-                                  {m.generalAverage.toFixed(2)}
-                                </span>
-                              ) : '—'}
-                            </td>
-                            <td className="py-2.5 px-3 text-center bg-slate-50 font-mono font-semibold text-slate-700">
-                              {m.rank ? `${m.rank}e` : '—'}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* MODULE 2 : REGISTRE D'IMMATRICULATION & CAISSE */}
-            {activeModule === 'students' && (
-              <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-sm font-bold text-slate-900">Registre d'Immatriculation & Recouvrement des Frais de Scolarité</h2>
-                    <p className="text-xs text-slate-500">Tarif trimestriel réglementaire : {INSTITUTION_CONFIG.tuitionDuePerStudent.toLocaleString()} FCFA par apprenant</p>
-                  </div>
-                  <button
-                    onClick={() => notify("Formulaire d'immatriculation administrative ouvert.")}
-                    className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold shadow-xs"
-                  >
-                    + Immatriculer un Élève
-                  </button>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
-                        <th className="py-2.5 px-3">Matricule</th>
-                        <th className="py-2.5 px-3">Nom & Prénoms</th>
-                        <th className="py-2.5 px-3">Genre</th>
-                        <th className="py-2.5 px-3">Date de Naissance</th>
-                        <th className="py-2.5 px-3">Contact Tuteur</th>
-                        <th className="py-2.5 px-3">Montant Reçu</th>
-                        <th className="py-2.5 px-3">Situation</th>
-                        <th className="py-2.5 px-3 text-right">Régularisation</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 text-slate-700">
-                      {students.map(st => {
-                        const isSettled = st.paidFees >= INSTITUTION_CONFIG.tuitionDuePerStudent;
-                        const remainder = INSTITUTION_CONFIG.tuitionDuePerStudent - st.paidFees;
-                        return (
-                          <tr key={st.id} className="hover:bg-slate-50">
-                            <td className="py-2.5 px-3 font-mono text-slate-500">{st.matricule}</td>
-                            <td className="py-2.5 px-3 font-semibold text-slate-900">{st.lastName} {st.firstName}</td>
-                            <td className="py-2.5 px-3">{st.sex === 'M' ? 'Masculin' : 'Féminin'}</td>
-                            <td className="py-2.5 px-3 font-mono">{st.birthDate}</td>
-                            <td className="py-2.5 px-3 font-mono">{st.phone}</td>
-                            <td className="py-2.5 px-3 font-mono font-medium">{st.paidFees.toLocaleString()} FCFA</td>
-                            <td className="py-2.5 px-3">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${isSettled ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                                {isSettled ? 'En règle' : `Reliquat: ${remainder.toLocaleString()} F`}
-                              </span>
-                            </td>
-                            <td className="py-2.5 px-3 text-right">
-                              {!isSettled && (
-                                <button
-                                  onClick={() => {
-                                    const message = encodeURIComponent(`Avis d'échéance GestNotes — ${INSTITUTION_CONFIG.name} : Veuillez régulariser le reliquat de scolarité de ${remainder.toLocaleString()} FCFA pour l'élève ${st.firstName} ${st.lastName}.`);
-                                    window.open(`https://wa.me/${st.phone.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
-                                  }}
-                                  className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-medium text-[11px]"
-                                >
-                                  Relance Officielle
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* MODULE 3 : GESTION DU DOSSIER DÉDIÉ GOOGLE DRIVE */}
-            {activeModule === 'homework' && (
-              <div className="space-y-5">
-                <div className="bg-white rounded-lg border border-slate-200 p-5 space-y-4 shadow-xs">
-                  <div className="flex items-start justify-between flex-wrap gap-4 pb-4 border-b border-slate-200">
-                    <div>
-                      <h2 className="text-sm font-bold text-slate-900">Paramétrage du Dossier Dédié Enseignant (Google Drive)</h2>
-                      <p className="text-xs text-slate-500">Centralisation automatisée et indexation hiérarchique des travaux numériques remis par les apprenants</p>
-                    </div>
-                    <a
-                      href={`https://drive.google.com/drive/folders/${driveConfig.driveFolderId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold flex items-center gap-1.5 shadow-xs"
-                    >
-                      <span>Accéder au Dossier Drive</span>
-                      <span>↗</span>
-                    </a>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    <div>
-                      <label className="block text-slate-600 font-semibold mb-1">Intitulé du Dossier Racine :</label>
-                      <input
-                        type="text"
-                        value={driveConfig.targetFolder}
-                        onChange={(e) => setDriveConfig({ ...driveConfig, targetFolder: e.target.value })}
-                        className="w-full border border-slate-300 rounded px-2.5 py-1.5 text-slate-900 font-mono focus:border-slate-800 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-slate-600 font-semibold mb-1">Règle de Classement Interne :</label>
-                      <select
-                        value={driveConfig.organizationMode}
-                        onChange={(e) => { setDriveConfig({ ...driveConfig, organizationMode: e.target.value }); notify("Règle de structuration Drive actualisée."); }}
-                        className="w-full border border-slate-300 rounded px-2.5 py-1.5 text-slate-900 font-medium focus:border-slate-800 outline-none"
-                      >
-                        <option value="by_assignment">Par Devoir / Évaluation (Dossier distinct)</option>
-                        <option value="by_student">Par Apprenant (Dossier individuel annuel)</option>
-                        <option value="chronological">Chronologique (Horodatage des réceptions)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-slate-600 font-semibold mb-1">Format de Nomenclature des Fichiers :</label>
-                      <select
-                        value={driveConfig.fileNamingRule}
-                        onChange={(e) => setDriveConfig({ ...driveConfig, fileNamingRule: e.target.value })}
-                        className="w-full border border-slate-300 rounded px-2.5 py-1.5 text-slate-900 font-medium focus:border-slate-800 outline-none"
-                      >
-                        <option value="MATRICULE_NOM_DEVOIR">[Matricule]_[Nom]_[Intitulé].pdf</option>
-                        <option value="DEVOIR_MATRICULE_NOM">[Intitulé]_[Matricule]_[Nom].pdf</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Journal d'audit des travaux centralisés */}
-                <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900">Registre des Travaux & Évaluations Réceptionnés</h3>
-                      <p className="text-xs text-slate-500">Documents archivés et horodatés sur l'espace cloud institutionnel</p>
-                    </div>
-                    <span className="text-xs font-mono text-slate-600 bg-slate-200 px-2 py-0.5 rounded">
-                      {submissions.length} documents enregistrés
-                    </span>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead>
-                        <tr className="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
-                          <th className="py-2 px-3">Date & Heure</th>
-                          <th className="py-2 px-3">Apprenant</th>
-                          <th className="py-2 px-3">Évaluation</th>
-                          <th className="py-2 px-3">Nom du Fichier Stocké</th>
-                          <th className="py-2 px-3">Arborescence Drive</th>
-                          <th className="py-2 px-3 text-center">Note Validée</th>
-                          <th className="py-2 px-3 text-right">Lien Document</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200 text-slate-700">
-                        {submissions.map(sub => (
-                          <tr key={sub.id} className="hover:bg-slate-50">
-                            <td className="py-2 px-3 font-mono text-slate-500">{new Date(sub.submittedAt).toLocaleString()}</td>
-                            <td className="py-2 px-3 font-semibold text-slate-900">{sub.studentName} ({sub.matricule})</td>
-                            <td className="py-2 px-3">{sub.assignmentTitle}</td>
-                            <td className="py-2 px-3 font-mono text-slate-600">{sub.fileName}</td>
-                            <td className="py-2 px-3 font-mono text-slate-500">{sub.folderPath}</td>
-                            <td className="py-2 px-3 text-center font-mono font-bold text-slate-900">
-                              {sub.grade !== undefined ? `${sub.grade} / 20` : 'En attente'}
-                            </td>
-                            <td className="py-2 px-3 text-right">
-                              <a
-                                href="https://drive.google.com"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-indigo-600 hover:text-indigo-800 font-semibold"
-                              >
-                                Consulter sur Drive ↗
-                              </a>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* MODULE 4 : ÉDITION DES BULLETINS OFFICIELS */}
-            {activeModule === 'bulletins' && (
-              <div className="space-y-4">
-                <div className="bg-white rounded-lg border border-slate-200 p-4 no-print flex items-center justify-between flex-wrap gap-3 shadow-xs">
-                  <div>
-                    <h2 className="text-sm font-bold text-slate-900">Génération du Bulletin Trimestriel Officiel</h2>
-                    <p className="text-xs text-slate-500">Sélectionnez l'apprenant pour générer le document réglementaire prêt à l'impression</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <select
-                      onChange={(e) => setSelectedBulletinStudent(students.find(s => s.id === e.target.value) || null)}
-                      className="border border-slate-300 rounded px-3 py-1.5 text-xs font-semibold text-slate-800 outline-none"
-                    >
-                      <option value="">— Sélectionner un élève —</option>
-                      {students.map(st => (
-                        <option key={st.id} value={st.id}>{st.matricule} — {st.lastName} {st.firstName}</option>
-                      ))}
-                    </select>
-                    {selectedBulletinStudent && (
-                      <button
-                        onClick={() => window.print()}
-                        className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold shadow-xs"
-                      >
-                        Imprimer le Document Officiel
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* MODÈLE DU BULLETIN (CONFORME NORMES ACADÉMIQUES) */}
-                {selectedBulletinStudent && (
-                  <div className="bg-white p-8 rounded-lg border border-slate-300 shadow-sm max-w-4xl mx-auto space-y-6 text-slate-900">
-                    <div className="border-b-2 border-slate-900 pb-4 flex justify-between items-start text-xs">
-                      <div>
-                        <h3 className="font-extrabold text-sm uppercase tracking-wide">{INSTITUTION_CONFIG.name}</h3>
-                        <p className="text-slate-600">{INSTITUTION_CONFIG.address}</p>
-                        <p className="text-slate-600">Code Établissement : <span className="font-mono">{INSTITUTION_CONFIG.registrationCode}</span></p>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-extrabold text-base block tracking-tight">BULLETIN OFFICIEL DE NOTES</span>
-                        <span className="font-semibold text-slate-700">{INSTITUTION_CONFIG.period} • Année {INSTITUTION_CONFIG.academicYear}</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded border border-slate-200 text-xs">
-                      <div className="space-y-1">
-                        <div>Identité de l'Élève : <strong className="uppercase">{selectedBulletinStudent.lastName} {selectedBulletinStudent.firstName}</strong></div>
-                        <div>Matricule National : <strong className="font-mono">{selectedBulletinStudent.matricule}</strong></div>
-                        <div>Né(e) le : <strong className="font-mono">{selectedBulletinStudent.birthDate}</strong></div>
-                      </div>
-                      <div className="text-right space-y-1">
-                        <div>Division : <strong>{currentClass} S</strong></div>
-                        <div>Effectif Contrôlé : <strong>{students.length} Apprenants</strong></div>
-                        <div>Rang Général : <strong>{metrics.studentMetrics[selectedBulletinStudent.id]?.rank || '—'}e sur {students.length}</strong></div>
-                      </div>
-                    </div>
-
-                    <table className="w-full text-left text-xs border-collapse border border-slate-300">
-                      <thead>
-                        <tr className="bg-slate-100 font-semibold border-b border-slate-300">
-                          <th className="p-2.5 border-r border-slate-300">Discipline Enseignée</th>
-                          <th className="p-2.5 text-center border-r border-slate-300 w-16">Coef.</th>
-                          <th className="p-2.5 text-center border-r border-slate-300 w-24">Moyenne / 20</th>
-                          <th className="p-2.5 text-center border-r border-slate-300 w-28">Points Pondérés</th>
-                          <th className="p-2.5">Appréciation du Conseil Pédagogique</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-300">
-                        {subjects.map(s => {
-                          const subAvg = metrics.studentMetrics[selectedBulletinStudent.id]?.subjectBreakdown?.[s.id]?.avg;
-                          const weightedPts = subAvg !== undefined ? (subAvg * s.coef).toFixed(2) : '—';
-                          return (
-                            <tr key={s.id}>
-                              <td className="p-2.5 border-r border-slate-300 font-medium">{s.name}</td>
-                              <td className="p-2.5 text-center border-r border-slate-300 font-mono">{s.coef}</td>
-                              <td className="p-2.5 text-center border-r border-slate-300 font-mono font-bold">
-                                {subAvg !== undefined ? subAvg.toFixed(2) : '—'}
-                              </td>
-                              <td className="p-2.5 text-center border-r border-slate-300 font-mono">{weightedPts}</td>
-                              <td className="p-2.5 text-slate-600 italic">
-                                {subAvg >= 16 ? 'Excellent travail académique' : subAvg >= 14 ? 'Très bon ensemble, rigueur constante' : subAvg >= 12 ? 'Travail satisfaisant' : subAvg >= 10 ? 'Passable, consolider les bases' : 'Insuffisant, un suivi particulier est requis'}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-
-                    <div className="flex justify-between items-end pt-4 text-xs border-t border-slate-200">
-                      <div className="space-y-1">
-                        <div>Moyenne Générale Trimestrielle : <strong className="text-base font-bold font-mono">{metrics.studentMetrics[selectedBulletinStudent.id]?.generalAverage?.toFixed(2) || '—'} / 20</strong></div>
-                        <div>Moyenne de la Cohorte : <span className="font-mono">{metrics.cohortMean} / 20</span></div>
-                        <div>Décision du Conseil : <strong>{metrics.studentMetrics[selectedBulletinStudent.id]?.generalAverage >= 10 ? 'Admis au tableau d\'honneur' : 'Avertissement de travail'}</strong></div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-slate-600 mb-8">Le Chef d'Établissement</div>
-                        <div className="font-bold uppercase tracking-wider">{INSTITUTION_CONFIG.headmaster}</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </main>
-
-          {/* Pied de page */}
-          <footer className="bg-white border-t border-slate-200 py-3 text-center text-[11px] text-slate-500 no-print mt-auto">
-            GestNotes Infrastructure Pédagogique © 2026 — Plateforme d'Administration Scolaire & Synchronisation Sécurisée Google Drive
-          </footer>
         </div>
-      );
+
+        <div class="flex items-center gap-3 ml-auto sm:ml-0">
+            <div class="flex flex-col items-end gap-1">
+                <div class="flex items-center gap-1.5">
+                    <label class="hidden md:inline text-xs font-semibold text-violet-200">Rôle :</label>
+                    <select id="role-selector" onchange="onRoleChange()" class="bg-violet-950/80 text-white border border-violet-800 rounded-xl text-xs px-2.5 py-2 outline-none font-semibold cursor-pointer hover:bg-violet-900 transition-all">
+                        <option value="admin">👑 Directeur / Admin</option>
+                        <option value="comptable">💼 Comptable</option>
+                        <option value="enseignant">📝 Enseignant</option>
+                    </select>
+                </div>
+                <span id="active-teacher-indicator" class="text-[10px] text-violet-200 font-semibold hidden bg-violet-900/60 px-2 py-0.5 rounded-md"></span>
+            </div>
+
+            <div class="bg-violet-950/50 rounded-xl p-1 flex border border-violet-800/50 text-xs sm:text-sm">
+                <div class="px-2.5 py-1.5 font-medium text-violet-200 flex items-center gap-1.5">
+                    <i class="fas fa-calendar-alt text-xs text-violet-400"></i>
+                    <span id="display-year">2025-2026</span>
+                </div>
+                <div class="bg-[#6d28d9] px-2.5 py-1.5 rounded-lg font-semibold shadow-sm flex items-center gap-1.5">
+                    <i class="fas fa-clock text-xs"></i>
+                    <span id="display-semester">Semestre 1</span>
+                </div>
+            </div>
+
+            <button onclick="openModal('settings-modal')" id="btn-settings" class="p-2 md:p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10">
+                <i class="fas fa-cog text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-auto p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
+        
+        <!-- BARRE D'ACTIONS GLOBALES -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <button id="btn-export-base" onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md text-sm">
+                    <i class="fas fa-file-download"></i> <span>Exporter Base</span>
+                </button>
+                <button id="btn-export-teacher-grades" onclick="exportTeacherGradesOnly()" class="hidden flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm">
+                    <i class="fas fa-file-export"></i> <span>Exporter mes Notes</span>
+                </button>
+                <input type="file" id="importFile" accept=".txt" class="hidden" onchange="importData(event)">
+                <button id="btn-import-base" onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md text-sm">
+                    <i class="fas fa-file-upload"></i> <span>Importer Fichier</span>
+                </button>
+                <button id="btn-gdrive-sync" onclick="seConnecterAGoogleDrive()" class="flex items-center justify-center gap-2 bg-violet-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-violet-700 transition-all shadow-md text-sm">
+                    <i class="fab fa-google-drive"></i> <span id="lbl-gdrive-sync">Synchro Cloud</span>
+                </button>
+                <button id="btn-add-student-shortcut" onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm w-full">
+                    <i class="fas fa-user-plus"></i> Inscription
+                </button>
+            </div>
+        </div>
+
+        <!-- FILTRES DE CLASSES -->
+        <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 items-end w-full md:w-auto">
+                <div class="col-span-1">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Niveau d'étude</label>
+                    <select id="filter-class" onchange="onClassChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all"></select>
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Série / Option</label>
+                    <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all"></select>
+                </div>
+                <div class="col-span-2 sm:col-span-1">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Effectif</label>
+                    <input type="text" id="filter-effectif" readonly value="0" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-center text-[#4c1d95] focus:outline-none cursor-default">
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0">
+                <button id="btn-manage-subjects" onclick="openSubjectsModal()" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-violet-100"><i class="fas fa-book"></i> Matières</button>
+            </div>
+        </section>
+
+        <!-- NAVIGATION PAR ONGLETS -->
+        <nav class="flex gap-4 border-b border-slate-300 px-2 overflow-x-auto">
+            <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="tab-btn tab-active py-3 px-4 text-sm font-medium text-slate-500 hover:text-[#4c1d95] whitespace-nowrap">
+                <i class="fas fa-chart-pie mr-2"></i> Tableau de bord
+            </button>
+            <button onclick="switchTab('tab-students')" id="btn-tab-students" class="tab-btn py-3 px-4 text-sm font-medium text-slate-500 hover:text-[#4c1d95] whitespace-nowrap">
+                <i class="fas fa-users mr-2"></i> Élèves & Notes
+            </button>
+            <button onclick="switchTab('tab-finance')" id="btn-tab-finance" class="tab-btn py-3 px-4 text-sm font-medium text-slate-500 hover:text-[#4c1d95] whitespace-nowrap">
+                <i class="fas fa-wallet mr-2"></i> Finances & Caisse
+            </button>
+        </nav>
+
+        <!-- ============================================== -->
+        <!-- ONGLET 1 : TABLEAU DE BORD -->
+        <!-- ============================================== -->
+        <div id="tab-dashboard" class="flex flex-col gap-6">
+            <section id="class-stats-section" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+                    <p class="text-[10px] uppercase font-bold text-slate-400">Total Attendu (Année)</p>
+                    <p class="text-xl font-bold text-slate-800 mt-1" id="stats-total-attendu">0 F</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 border-l-4 border-l-emerald-500">
+                    <p class="text-[10px] uppercase font-bold text-emerald-600">Encaissé</p>
+                    <p class="text-xl font-bold text-emerald-700 mt-1" id="stats-total-encaisse">0 F</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 border-l-4 border-l-rose-500">
+                    <p class="text-[10px] uppercase font-bold text-rose-600">Reste à recouvrer</p>
+                    <p class="text-xl font-bold text-rose-700 mt-1" id="stats-reste-recouvrer">0 F</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+                    <p class="text-[10px] uppercase font-bold text-violet-600">Taux de recouvrement</p>
+                    <p class="text-xl font-bold text-violet-700 mt-1" id="stats-taux-recouvrement">0%</p>
+                </div>
+            </section>
+            
+            <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-center justify-between">
+                <div class="flex items-center gap-3 text-blue-800">
+                    <i class="fas fa-info-circle text-2xl"></i>
+                    <div>
+                        <h4 class="font-bold text-sm">Bienvenue sur GestNotes</h4>
+                        <p class="text-xs mt-1">Naviguez entre les onglets ci-dessus pour gérer les notes de vos élèves ou suivre la trésorerie de la classe.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- ONGLET 2 : ÉLÈVES & NOTES -->
+        <!-- ============================================== -->
+        <div id="tab-students" class="hidden flex-col gap-6">
+            
+            <!-- Grille de notes -->
+            <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col gap-4">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
+                    <h3 class="text-md font-bold text-slate-700 flex items-center gap-2"><i class="fas fa-edit text-[#4c1d95]"></i> Saisie des Notes</h3>
+                    <div class="flex flex-col sm:flex-row w-full lg:w-auto items-center gap-3">
+                        <input type="text" id="grade-search" oninput="filterStudentsGlobal()" placeholder="Rechercher un élève..." class="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm">
+                        <div class="flex items-center gap-2">
+                            <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium"></select>
+                            <button id="btn-next-subject" onclick="goToNextSubject()" class="bg-[#4c1d95] text-white text-sm px-3.5 py-2 rounded-lg font-bold transition-all flex items-center gap-1.5">Suivant <i class="fas fa-arrow-right"></i></button>
+                            <button onclick="exporterFeuilleSaisie()" class="bg-emerald-600 text-white text-sm px-3.5 py-2 rounded-lg font-bold"><i class="fas fa-file-pdf"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto w-full border border-slate-300 rounded-lg shadow-sm">
+                    <table class="w-full text-xs border-collapse table-fixed min-w-[800px] grid-table">
+                        <thead class="bg-slate-100">
+                            <tr>
+                                <th class="p-3 text-left">Élève</th>
+                                <th class="p-3 text-center" id="lbl-th-dev1">Devoir 1</th>
+                                <th class="p-3 text-center" id="lbl-th-dev2">Devoir 2</th>
+                                <th class="p-3 text-center" id="lbl-th-compo">Composition</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grades-table-body" class="divide-y divide-slate-200">
+                            <!-- Les champs de saisie seront générés ici -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Liste des élèves -->
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex-1 flex flex-col min-h-[400px]">
+                <div class="p-5 border-b bg-slate-50/50 flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Liste des élèves <span id="class-badge" class="bg-violet-100 text-[#4c1d95] text-xs px-2.5 py-1 rounded-full">...</span></h2>
+                        <p class="text-xs text-slate-500" id="student-count">0 élève</p>
+                    </div>
+                    <button onclick="ouvrirBulletin('ALL_STUDENTS')" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"><i class="fas fa-print text-[#4c1d95]"></i> Imprimer Bulletins</button>
+                </div>
+                <div class="overflow-x-auto relative min-h-[200px]">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead>
+                            <tr class="border-b text-xs font-semibold text-slate-500 uppercase bg-slate-50/70">
+                                <th class="py-3.5 px-5">Matricule & Nom Complet</th>
+                                <th class="py-3.5 px-5">Date & Lieu de Naissance</th>
+                                <th class="py-3.5 px-5 text-center">Contact Parent</th>
+                                <th class="py-3.5 px-5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm">
+                            <!-- Les élèves seront insérés ici par JS -->
+                        </tbody>
+                    </table>
+                    <div id="empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white z-10 text-slate-400">
+                        <i class="fas fa-folder-open text-4xl mb-3 opacity-50"></i>
+                        <p class="mb-4 text-sm font-medium">Aucun élève dans cette classe</p>
+                        <button onclick="openRegistrationModal()" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-4 py-2 rounded-lg text-sm transition-all shadow-sm flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Ajouter le premier élève
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- ONGLET 3 : FINANCES & CAISSE -->
+        <!-- ============================================== -->
+        <div id="tab-finance" class="hidden flex-col gap-6">
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col gap-4">
+                <div class="flex flex-col md:flex-row justify-between items-center border-b pb-4 gap-4">
+                    <h3 class="text-md font-bold text-slate-700 flex items-center gap-2"><i class="fas fa-wallet text-emerald-600"></i> Suivi des Paiements</h3>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold text-slate-500">Mois :</label>
+                        <select id="finance-month-select" onchange="render()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium">
+                            <!-- Rempli par JS (moisAnnee) -->
+                        </select>
+                        <button class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ml-2" onclick="alert('Relance WhatsApp générale en cours...')"><i class="fab fa-whatsapp"></i> Relancer Impayés</button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full text-sm text-left border-collapse">
+                        <thead class="bg-slate-100 text-xs uppercase text-slate-500">
+                            <tr>
+                                <th class="p-3">Élève</th>
+                                <th class="p-3">Montant Dû</th>
+                                <th class="p-3">Statut</th>
+                                <th class="p-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="finance-table-body" class="divide-y divide-slate-200">
+                            <!-- Rempli par JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ============================================== -->
+    <!-- MODALES (PARAMÈTRES, PROFESSEUR, INSCRIPTION)  -->
+    <!-- ============================================== -->
+
+    <!-- MODAL CONFIGURATION : Transition Simplifiée -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2"><i class="fas fa-cog text-[#4c1d95]"></i> Configuration</h3>
+            <!-- Contenu conservé de votre code d'origine -->
+            <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeModal('settings-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOUVEAU : MODAL INSCRIPTION ÉLÈVE COMPLÈTE -->
+    <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 border border-slate-100 my-auto">
+            <h3 class="text-xl font-bold mb-4 text-slate-800 border-b pb-3 flex items-center gap-2">
+                <i class="fas fa-user-plus text-[#4c1d95]"></i> Fiche d'Inscription
+            </h3>
+            
+            <form id="form-registration" onsubmit="submitStudentRegistration(event)">
+                
+                <h4 class="text-xs font-bold text-violet-700 uppercase tracking-wider mb-3 mt-2"><i class="fas fa-user-graduate"></i> État Civil de l'élève</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nom *</label>
+                        <input type="text" id="reg-nom" required placeholder="Ex: NDIAYE" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20 uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Prénom(s) *</label>
+                        <input type="text" id="reg-prenom" required placeholder="Ex: Fatou" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20 capitalize">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Date de naissance *</label>
+                        <input type="date" id="reg-datenais" required class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Lieu de naissance *</label>
+                        <input type="text" id="reg-lieunais" required placeholder="Ex: Dakar" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20 capitalize">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Genre *</label>
+                        <select id="reg-genre" required class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20">
+                            <option value="M">Masculin (Garçon)</option>
+                            <option value="F">Féminin (Fille)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h4 class="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-3 mt-6"><i class="fas fa-users"></i> Informations Tuteur</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nom du Parent/Tuteur *</label>
+                        <input type="text" id="reg-tuteur" required placeholder="Ex: Amadou NDIAYE" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Téléphone Parent (WhatsApp) *</label>
+                        <input type="tel" id="reg-contact" required placeholder="Ex: 77 123 45 67" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20">
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end gap-3 border-t pt-4">
+                    <button type="button" onclick="closeModal('registration-modal')" class="px-4 py-2.5 rounded-xl text-slate-500 text-sm font-semibold hover:bg-slate-100 transition-all">Annuler</button>
+                    <button type="submit" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all flex items-center gap-2">
+                        <i class="fas fa-save"></i> Enregistrer l'élève
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+  <script>
+    // --- 1. CONSTANTES ET ÉTAT PAR DÉFAUT ---
+    const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+    const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
+    
+    const DEFAULT_STATE = {
+        classes: {},
+        accessCode: "1234",
+        googleSyncUrl: "",
+        currentRole: "admin",
+        selectedClass: "6ème",
+        selectedSection: "A"
+    };
+
+    let appState = null;
+    let driveSyncTimeout = null;
+
+    // --- 2. INITIALISATION ---
+    async function initApp() {
+        try {
+            const savedState = await idbKeyval.get("gestnotes_state");
+            appState = savedState || DEFAULT_STATE;
+            
+            buildEmptyState();
+
+            const role = localStorage.getItem("gestnotes_local_role") || "admin";
+            appState.currentRole = role;
+
+            populateFilters();
+            
+            // Remplir le select des mois de l'onglet Finance
+            const monthSelect = document.getElementById('finance-month-select');
+            if (monthSelect) {
+                monthSelect.innerHTML = moisAnnee.map((m, index) => `<option value="${index}">${m}</option>`).join('');
+            }
+
+            applyRoleRestrictions();
+            render(); 
+            
+            if (appState.googleSyncUrl) chargerBaseDepuisDrive();
+        } catch (error) {
+            console.error("Erreur d'initialisation:", error);
+            showToast("Erreur de chargement des données", "error");
+        }
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-  </script>
+    // --- 3. UTILITAIRES ---
+    function openModal(modalId) { document.getElementById(modalId).classList.remove('hidden'); }
+    function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
+    
+    function showToast(message, type = "success") {
+        const toast = document.createElement('div');
+        const bgColor = type === "error" ? "bg-red-600" : "bg-emerald-600";
+        toast.className = `fixed bottom-4 right-4 ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg z-50 font-semibold text-sm toast-animate flex items-center gap-2`;
+        toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function askConfirmation(message, title, callback) {
+        if (window.confirm(`${title}\n\n${message}`)) callback();
+    }
+
+    // --- GESTION DES ONGLETS ---
+    function switchTab(tabId) {
+        // Cacher tous les onglets
+        document.getElementById('tab-dashboard').style.display = 'none';
+        document.getElementById('tab-students').style.display = 'none';
+        document.getElementById('tab-finance').style.display = 'none';
+        
+        // Retirer la classe active de tous les boutons
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('tab-active'));
+        
+        // Afficher l'onglet sélectionné
+        const target = document.getElementById(tabId);
+        if(target) target.style.display = 'flex';
+        
+        // Ajouter la classe active au bouton cliqué
+        const btn = document.getElementById(`btn-${tabId}`);
+        if(btn) btn.classList.add('tab-active');
+    }
+
+    // --- 4. GESTION DES RÔLES ---
+    function onRoleChange() {
+        const select = document.getElementById('role-selector');
+        const targetRole = select.value;
+        const requiredCode = appState.accessCode || "1234";
+
+        if (targetRole === 'admin' || targetRole === 'comptable') {
+            const password = prompt("Code d'accès sécurisé :");
+            if (password !== requiredCode) {
+                showToast("Accès refusé. Code incorrect.", "error");
+                select.value = localStorage.getItem("gestnotes_local_role") || "admin";
+                return;
+            }
+            localStorage.setItem("gestnotes_local_role", targetRole);
+            applyRoleRestrictions();
+            showToast(`Connecté en tant que ${targetRole}`, "success");
+        } else {
+            alert("Mode Enseignant non finalisé dans ce prototype.");
+            select.value = "admin";
+        }
+    }
+
+    function applyRoleRestrictions() {
+        const role = localStorage.getItem("gestnotes_local_role") || "admin";
+        document.getElementById('role-selector').value = role;
+
+        // Si comptable, cacher l'onglet des notes
+        const btnStudents = document.getElementById('btn-tab-students');
+        if (role === 'comptable') {
+            btnStudents.style.display = 'none';
+            switchTab('tab-finance');
+        } else {
+            btnStudents.style.display = 'inline-block';
+            switchTab('tab-dashboard');
+        }
+
+        render();
+    }
+
+    // --- 5. LOGIQUE DES CLASSES ---
+    function getCurrentClassKey() { return `${appState.selectedClass}_${appState.selectedSection}`; }
+
+    function buildEmptyState() {
+        if (!appState.classes) appState.classes = {};
+        const key = getCurrentClassKey();
+        if (!appState.classes[key]) {
+            appState.classes[key] = { students: [], subjects: [], fees: { inscription: 15000, mensualite: 10000 } };
+        }
+    }
+
+    function populateFilters() {
+        const classSelect = document.getElementById('filter-class');
+        const sectionSelect = document.getElementById('filter-section');
+        if (classSelect) { classSelect.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join(''); classSelect.value = appState.selectedClass; }
+        if (sectionSelect) {
+            const series = ["A", "B", "C", "D", "Scientifique", "Littéraire"];
+            sectionSelect.innerHTML = series.map(s => `<option value="${s}">Série ${s}</option>`).join('');
+            sectionSelect.value = appState.selectedSection;
+        }
+    }
+
+    function onClassChange() { appState.selectedClass = document.getElementById('filter-class').value; buildEmptyState(); render(); }
+    function onSectionChange() { appState.selectedSection = document.getElementById('filter-section').value; buildEmptyState(); render(); }
+
+    // --- 6. INSCRIPTION ÉLÈVE COMPLÈTE ---
+    function openRegistrationModal() { document.getElementById('form-registration').reset(); openModal('registration-modal'); }
+
+    function submitStudentRegistration(event) {
+        event.preventDefault(); 
+        
+        const nom = document.getElementById('reg-nom').value.trim().toUpperCase();
+        const prenom = document.getElementById('reg-prenom').value.trim();
+        const dateNais = document.getElementById('reg-datenais').value;
+        const lieuNais = document.getElementById('reg-lieunais').value.trim();
+        const genre = document.getElementById('reg-genre').value;
+        const nomTuteur = document.getElementById('reg-tuteur').value.trim();
+        const contact = document.getElementById('reg-contact').value.trim();
+        
+        const key = getCurrentClassKey();
+        const clsData = appState.classes[key];
+        const fees = clsData.fees || { inscription: 0, mensualite: 0 };
+
+        const initialPayments = moisAnnee.map((m, idx) => ({
+            designation: m, statut: "Non payé", montantDu: idx === 0 ? fees.inscription : fees.mensualite, montantPaye: 0
+        }));
+
+        const newStudent = {
+            id: 'stu_' + Date.now() + Math.random().toString(36).substr(2, 5), 
+            matricule: `MAT-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`, 
+            nom: nom, prenom: prenom, dateNaissance: dateNais, lieuNaissance: lieuNais, genre: genre,
+            tuteur: nomTuteur, contact: contact, grades: {}, payments: initialPayments 
+        };
+
+        clsData.students.push(newStudent);
+        clsData.students.sort((a, b) => (a.nom + " " + a.prenom).localeCompare(b.nom + " " + b.prenom));
+
+        saveToStorage(); closeModal('registration-modal'); showToast("Élève inscrit avec succès !"); render(); 
+    }
+
+    function deleteStudent(studentId, studentName) {
+        askConfirmation(`Supprimer ${studentName} ?\nToutes ses données seront perdues.`, "Suppression", () => {
+            const key = getCurrentClassKey();
+            appState.classes[key].students = appState.classes[key].students.filter(s => s.id !== studentId);
+            saveToStorage(); showToast("Élève supprimé", "success"); render();
+        });
+    }
+
+    // --- 7. RENDU GLOBAL DE L'INTERFACE ---
+    function render() {
+        const key = getCurrentClassKey();
+        const currentClass = appState.classes[key];
+        const students = currentClass ? currentClass.students : [];
+        const nbStudents = students.length;
+        
+        // -- MAJ HEADER --
+        document.getElementById('filter-effectif').value = nbStudents;
+        document.getElementById('student-count').innerText = `${nbStudents} élève${nbStudents > 1 ? 's' : ''}`;
+        document.getElementById('class-badge').innerText = key.replace('_', ' ');
+
+        // -- MAJ ONGLET 1: DASHBOARD STATS --
+        let totalAttendu = 0; let totalEncaisse = 0;
+        students.forEach(s => {
+            s.payments.forEach(p => {
+                totalAttendu += p.montantDu;
+                if(p.statut === "Payé") totalEncaisse += p.montantDu;
+            });
+        });
+        
+        document.getElementById('stats-total-attendu').innerText = totalAttendu.toLocaleString() + " F";
+        document.getElementById('stats-total-encaisse').innerText = totalEncaisse.toLocaleString() + " F";
+        document.getElementById('stats-reste-recouvrer').innerText = (totalAttendu - totalEncaisse).toLocaleString() + " F";
+        document.getElementById('stats-taux-recouvrement').innerText = totalAttendu > 0 ? Math.round((totalEncaisse/totalAttendu)*100) + "%" : "0%";
+
+        // -- MAJ ONGLET 2: LISTE DES ÉLÈVES --
+        const emptyState = document.getElementById('empty-state');
+        const tableBody = document.getElementById('students-table-body');
+        
+        if (nbStudents === 0) {
+            emptyState.classList.remove('hidden'); tableBody.innerHTML = '';
+        } else {
+            emptyState.classList.add('hidden');
+            tableBody.innerHTML = students.map((student, index) => {
+                const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50';
+                return `
+                <tr class="${bgClass} hover:bg-slate-100 transition-colors">
+                    <td class="py-3 px-5 border-b border-slate-100">
+                        <p class="font-bold text-slate-800">${student.nom} ${student.prenom}</p>
+                        <p class="text-[10px] text-slate-500">Matricule: ${student.matricule}</p>
+                    </td>
+                    <td class="py-3 px-5 border-b border-slate-100">
+                        <p class="text-sm">${student.dateNaissance ? new Date(student.dateNaissance).toLocaleDateString('fr-FR') : '-'} à ${student.lieuNaissance || '-'}</p>
+                    </td>
+                    <td class="py-3 px-5 border-b border-slate-100 text-center">
+                        <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
+                            ${student.contact ? `<i class="fas fa-phone mr-1"></i> ${student.contact}` : '-'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-5 border-b border-slate-100 text-right">
+                        <button onclick="deleteStudent('${student.id}', '${student.nom} ${student.prenom}')" class="text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg transition-colors"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        // -- MAJ ONGLET 3: FINANCES --
+        const financeTable = document.getElementById('finance-table-body');
+        const monthIndex = document.getElementById('finance-month-select') ? document.getElementById('finance-month-select').value : 0;
+        
+        if(financeTable) {
+            financeTable.innerHTML = students.map((student, index) => {
+                const payData = student.payments[monthIndex];
+                if(!payData) return '';
+                const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50';
+                
+                const statusBadge = payData.statut === "Payé" 
+                    ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold"><i class="fas fa-check"></i> Payé</span>`
+                    : `<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded text-xs font-bold">Impayé</span>`;
+
+                return `
+                <tr class="${bgClass} hover:bg-slate-100">
+                    <td class="p-3 font-bold">${student.nom} ${student.prenom}</td>
+                    <td class="p-3 font-bold text-slate-600">${payData.montantDu.toLocaleString()} F</td>
+                    <td class="p-3">${statusBadge}</td>
+                    <td class="p-3 text-right">
+                        ${payData.statut !== "Payé" 
+                            ? `<button class="bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-bold" onclick="alert('Module de paiement à venir')">Encaisser</button>`
+                            : `<button class="text-slate-400"><i class="fas fa-receipt"></i> Reçu</button>`}
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+    }
+
+    // --- 8. SAUVEGARDE ET INIT SW ---
+    async function saveToStorage() {
+        try { await idbKeyval.set("gestnotes_state", appState); } 
+        catch (e) { console.error(e); }
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+    window.addEventListener('load', () => {
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
+    });
+</script> 
 </body>
 </html>
