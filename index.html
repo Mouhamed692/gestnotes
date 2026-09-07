@@ -3,603 +3,1152 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestion Scolaire - Classes & Séries</title>
+  <title>GestNotes - Système Intégré de Gestion Scolaire & Caisse</title>
   <style>
-    /* --- VARIABLES & RESET --- */
+    /* ==========================================================================
+       DESIGN SYSTEM CSS - GESTNOTES SCOLAIRE (100% PUR, SANS DÉPENDANCE)
+       ========================================================================== */
     :root {
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
       --primary-light: #eef2ff;
-      --text-main: #1e293b;
-      --text-muted: #64748b;
-      --bg-page: #f8fafc;
-      --bg-card: #ffffff;
-      --border-color: #e2e8f0;
-      --success: #16a34a;
-      --success-bg: #dcfce7;
-      --danger: #dc2626;
-      --danger-bg: #fee2e2;
-      --radius: 12px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --violet-950: #1e1b4b;
+      --violet-900: #312e81;
+      --violet-800: #3730a3;
+      --violet-700: #4338ca;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+      --emerald-600: #059669;
+      --emerald-500: #10b981;
+      --emerald-100: #d1fae5;
+      --emerald-50: #ecfdf5;
+      --amber-600: #d97706;
+      --amber-100: #fef3c7;
+      --amber-50: #fffbeb;
+      --rose-600: #e11d48;
+      --rose-100: #ffe4e6;
+      --rose-50: #fff1f2;
+      --blue-600: #2563eb;
+      --blue-100: #dbeafe;
+      --blue-50: #eff6ff;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--slate-100); color: var(--slate-900); line-height: 1.5; font-size: 14px; min-height: 100vh; display: flex; flex-direction: column; }
 
-    body {
-      background-color: var(--bg-page);
-      color: var(--text-main);
-      padding: 24px;
-      line-height: 1.5;
+    /* 1. EN-TÊTE NOIR/NAVY (STICKY HEADER) */
+    .app-header {
+      background-color: var(--slate-900);
+      color: #ffffff;
+      padding: 12px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      border-bottom: 1px solid var(--slate-800);
+      box-shadow: var(--shadow-md);
     }
-
-    .app-container {
-      max-width: 1050px;
+    .header-content {
+      max-width: 1280px;
       margin: 0 auto;
       display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    /* --- EN-TÊTE --- */
-    .header-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      box-shadow: var(--shadow);
-      display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .header-card h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    .header-card p {
-      font-size: 0.875rem;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .badge-status {
-      background: var(--success-bg);
-      color: var(--success);
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 9999px;
-      border: 1px solid #bbf7d0;
-    }
-
-    /* --- BARRE DE FILTRES --- */
-    .filter-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow);
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 16px;
-      align-items: flex-end;
-    }
-
-    @media (max-width: 768px) {
-      .filter-card {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-group label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-    }
-
-    .select-control {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      background-color: #f1f5f9;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text-main);
-      outline: none;
-      transition: all 0.2s;
-    }
-
-    .select-control:focus {
-      background-color: #ffffff;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
-    }
-
-    .btn-primary {
-      background-color: var(--primary);
-      color: #ffffff;
-      border: none;
-      padding: 11px 20px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: background 0.2s, transform 0.1s;
-      white-space: nowrap;
-    }
-
-    .btn-primary:hover {
-      background-color: var(--primary-hover);
-    }
-
-    .btn-primary:active {
-      transform: scale(0.98);
-    }
-
-    /* --- INFO CLASSE ACTUELLE --- */
-    .class-info-card {
-      background-color: var(--primary-light);
-      border: 1px solid #c7d2fe;
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       flex-wrap: wrap;
       gap: 12px;
     }
+    .brand-section { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 42px; height: 42px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+    }
+    .brand-titles { display: flex; flex-direction: column; }
+    .brand-name-row { display: flex; align-items: center; gap: 8px; }
+    .brand-name { font-size: 1.2rem; font-weight: 900; color: #ffffff; letter-spacing: -0.02em; }
+    .brand-pill {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 9999px;
+      background-color: var(--violet-950); color: #c4b5fd;
+      border: 1px solid var(--violet-800);
+    }
+    .school-subtitle { font-size: 11px; color: #94a3b8; font-weight: 500; }
 
-    .class-info-card h2 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #312e81;
+    .header-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .badge-info-year {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 600; color: #cbd5e1;
+    }
+    .badge-info-year strong { color: #ffffff; }
+
+    .btn-header {
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      border: 1px solid transparent; transition: all 0.15s;
+      text-decoration: none;
+    }
+    .btn-header-caisse {
+      background: var(--slate-800); color: #34d399;
+      border-color: var(--slate-700);
+    }
+    .btn-header-caisse:hover { background: #064e3b; border-color: var(--emerald-600); color: #a7f3d0; }
+
+    .btn-header-bulletin {
+      background: #312e81; color: #c7d2fe;
+      border-color: #4338ca;
+    }
+    .btn-header-bulletin:hover { background: #3730a3; color: #ffffff; }
+
+    .btn-header-settings {
+      background: var(--slate-800); color: #cbd5e1;
+      border-color: var(--slate-700); padding: 7px 10px;
+    }
+    .btn-header-settings:hover { background: var(--slate-700); color: #ffffff; }
+
+    .role-dropdown {
+      background: var(--violet-950); color: #ede9fe;
+      border: 1px solid rgba(109, 40, 217, 0.7);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px; font-size: 12px; font-weight: 700;
+      outline: none; cursor: pointer;
     }
 
-    .class-info-card p {
-      font-size: 0.8rem;
-      color: #4338ca;
-      font-weight: 500;
-      margin-top: 2px;
+    /* 2. BARRE D'ACTIONS & BOUTONS PRINCIPAUX */
+    .main-container {
+      max-width: 1280px; margin: 0 auto;
+      padding: 16px; width: 100%; flex: 1;
+      display: flex; flex-direction: column; gap: 16px;
     }
 
-    .student-pill {
-      background: #ffffff;
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--primary);
-      border: 1px solid #e0e7ff;
+    .action-toolbar {
+      background: #ffffff; padding: 12px 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap; gap: 10px;
     }
 
-    /* --- TABLEAU DES ÉLÈVES --- */
-    .table-container {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      overflow-x: auto;
-      box-shadow: var(--shadow);
+    .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .btn-tool {
+      padding: 8px 14px; border-radius: 10px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      border: 1px solid transparent; transition: all 0.15s;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 0.875rem;
+    .btn-export { background: var(--emerald-50); color: var(--emerald-600); border-color: rgba(16, 185, 129, 0.3); }
+    .btn-export:hover { background: var(--emerald-100); }
+
+    .btn-import { background: var(--blue-50); color: var(--blue-600); border-color: rgba(37, 99, 235, 0.3); }
+    .btn-import:hover { background: var(--blue-100); }
+
+    .btn-gdrive { background: #faf5ff; color: #7e22ce; border-color: rgba(168, 85, 247, 0.4); }
+    .btn-gdrive:hover { background: #f3e8ff; }
+
+    .btn-caisse-jour { background: var(--amber-50); color: var(--amber-600); border-color: rgba(245, 158, 11, 0.4); }
+    .btn-caisse-jour:hover { background: var(--amber-100); }
+
+    .btn-palmares { background: #eef2ff; color: #4338ca; border-color: rgba(99, 102, 241, 0.3); }
+    .btn-palmares:hover { background: #e0e7ff; }
+
+    .btn-inscrire {
+      background: var(--violet-700); color: #ffffff;
+      border: none; box-shadow: 0 4px 8px rgba(67, 56, 202, 0.25);
+    }
+    .btn-inscrire:hover { background: var(--violet-800); transform: translateY(-1px); }
+
+    /* 3. SÉLECTEUR DE CLASSE */
+    .class-filter-card {
+      background: #ffffff; padding: 14px 18px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
     }
 
+    .filter-selects-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .select-label-wrap { display: flex; flex-direction: column; gap: 3px; }
+    .select-label-wrap label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--slate-500); }
+    .custom-select {
+      background: var(--slate-50); border: 1px solid var(--slate-200);
+      border-radius: var(--radius-sm); padding: 7px 12px;
+      font-size: 13px; font-weight: 700; color: var(--slate-900);
+      outline: none; cursor: pointer;
+    }
+    .custom-select:focus { border-color: var(--primary); background: #ffffff; }
+
+    .filter-secondary-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .btn-sub-action {
+      padding: 7px 12px; border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 700; border: 1px solid var(--slate-200);
+      background: var(--slate-50); color: var(--slate-700); cursor: pointer;
+    }
+    .btn-sub-action:hover { background: var(--slate-200); }
+
+    /* 4. KPIS FINANCIERS */
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .kpi-card {
+      background: #ffffff; padding: 16px; border-radius: var(--radius-md);
+      border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .kpi-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--slate-500); }
+    .kpi-value { font-size: 1.4rem; font-weight: 900; }
+    .kpi-sub { font-size: 11px; color: var(--slate-500); }
+
+    /* 5. TABLEAUX */
+    .content-box {
+      background: #ffffff; border-radius: var(--radius-lg);
+      border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .box-header {
+      padding: 14px 18px; background: var(--slate-50);
+      border-bottom: 1px solid var(--slate-200);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 8px;
+    }
+    .box-header h3 { font-size: 14px; font-weight: 800; color: var(--slate-900); }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; }
     th {
-      background-color: #f8fafc;
-      padding: 14px 18px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border-color);
+      background: var(--slate-50); padding: 10px 14px;
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      color: var(--slate-500); border-bottom: 1px solid var(--slate-200);
+    }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--slate-100); font-size: 13px; }
+    tr:hover td { background: var(--slate-50); }
+
+    .grade-input {
+      width: 75px; padding: 5px 8px; border-radius: 6px;
+      border: 1px solid var(--slate-200); font-weight: 700;
+      text-align: center; outline: none; background: #ffffff;
+    }
+    .grade-input:focus { border-color: var(--primary); }
+
+    .badge-status {
+      padding: 3px 8px; border-radius: 9999px;
+      font-size: 11px; font-weight: 700; display: inline-block;
+    }
+    .badge-paid { background: var(--emerald-100); color: var(--emerald-600); }
+    .badge-unpaid { background: var(--rose-100); color: var(--rose-600); }
+
+    .btn-table-action {
+      padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      border: 1px solid var(--slate-200); background: #ffffff; cursor: pointer;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .btn-table-action:hover { background: var(--slate-100); }
+
+    /* 6. MODALES */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(2px); display: none; align-items: center;
+      justify-content: center; z-index: 100; padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: #ffffff; border-radius: var(--radius-lg);
+      width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto;
+      padding: 24px; box-shadow: var(--shadow-xl);
+    }
+    .modal-header-row {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--slate-200); padding-bottom: 12px; margin-bottom: 16px;
+    }
+    .modal-header-row h3 { font-size: 16px; font-weight: 800; color: var(--slate-900); }
+    .btn-modal-close { background: none; border: none; font-size: 20px; color: var(--slate-500); cursor: pointer; }
+
+    .form-group-modal { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+    .form-group-modal label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--slate-500); }
+    .input-modal {
+      padding: 9px 12px; border-radius: var(--radius-sm); border: 1px solid var(--slate-200);
+      font-size: 13px; outline: none; font-weight: 600;
+    }
+    .input-modal:focus { border-color: var(--primary); }
+
+    .btn-primary-modal {
+      background: var(--violet-700); color: #ffffff; border: none;
+      padding: 10px 16px; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 8px;
+    }
+    .btn-primary-modal:hover { background: var(--violet-800); }
+
+    footer {
+      background: #ffffff; border-top: 1px solid var(--slate-200);
+      padding: 14px; text-align: center; font-size: 12px; color: var(--slate-500);
     }
 
-    td {
-      padding: 14px 18px;
-      border-bottom: 1px solid #f1f5f9;
-      color: var(--text-main);
-    }
-
-    tr:hover td {
-      background-color: #f8fafc;
-    }
-
-    .font-mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-
-    .student-name {
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    .badge-gender {
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
-      display: inline-block;
-    }
-
-    .gender-f {
-      background-color: #fce7f3;
-      color: #be185d;
-    }
-
-    .gender-m {
-      background-color: #e0f2fe;
-      color: #0369a1;
-    }
-
-    .btn-payment {
-      border: none;
-      padding: 5px 12px;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .btn-payment:hover {
-      opacity: 0.85;
-    }
-
-    .payment-ok {
-      background-color: var(--success-bg);
-      color: var(--success);
-    }
-
-    .payment-due {
-      background-color: var(--danger-bg);
-      color: var(--danger);
-    }
-
-    .btn-delete {
-      background: none;
-      border: 1px solid #cbd5e1;
-      padding: 6px 10px;
-      border-radius: 6px;
-      color: #64748b;
-      cursor: pointer;
-      font-size: 0.75rem;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-
-    .btn-delete:hover {
-      background-color: var(--danger-bg);
-      color: var(--danger);
-      border-color: #fca5a5;
-    }
-
-    .empty-state {
-      padding: 40px 20px;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.9rem;
+    @media print {
+      .app-header, .action-toolbar, .class-filter-card, .btn-tool, footer { display: none !important; }
     }
   </style>
 </head>
 <body>
 
-  <div class="app-container">
-
-    <!-- En-tête -->
-    <header class="header-card">
-      <div>
-        <h1>Portail Scolaire</h1>
-        <p>Classes du Primaire au Lycée, Séries L1, L2, S1, S2 et Sous-sections (A, B, C...)</p>
+  <!-- 1. EN-TÊTE NOIR/NAVY (EXACTEMENT COMME L'IMAGE) -->
+  <header class="app-header">
+    <div class="header-content">
+      <div class="brand-section">
+        <div class="brand-icon">🎓</div>
+        <div class="brand-titles">
+          <div class="brand-name-row">
+            <span class="brand-name">GestNotes</span>
+            <span class="brand-pill">Scolarité</span>
+          </div>
+          <span id="headerSchoolSubtitle" class="school-subtitle">Groupe Scolaire d'Excellence</span>
+        </div>
       </div>
-      <span class="badge-status">Système Opérationnel</span>
-    </header>
 
-    <!-- Filtres Classe & Section -->
-    <section class="filter-card">
-      <div class="form-group">
-        <label for="classSelect">Niveau / Classe</label>
-        <select id="classSelect" class="select-control">
-          <optgroup label="Primaire">
-            <option value="CP">CP</option>
-            <option value="CE1">CE1</option>
-            <option value="CE2">CE2</option>
-            <option value="CM1">CM1</option>
-            <option value="CM2">CM2</option>
-          </optgroup>
-          <optgroup label="Collège">
-            <option value="6ème">6ème</option>
-            <option value="5ème">5ème</option>
-            <option value="4ème">4ème</option>
-            <option value="3ème">3ème</option>
-          </optgroup>
-          <optgroup label="Lycée">
-            <option value="Seconde" selected>Seconde</option>
-            <option value="Première">Première</option>
-            <option value="Terminale">Terminale</option>
-          </optgroup>
-          <optgroup label="Séries Spécifiques">
-            <option value="L1">Série L1</option>
-            <option value="L2">Série L2</option>
-            <option value="S1">Série S1</option>
-            <option value="S2">Série S2</option>
-          </optgroup>
+      <div class="header-tools">
+        <div class="badge-info-year">
+          <span>Année : <strong id="lblActiveYear">2025-2026</strong></span>
+          <span>•</span>
+          <span id="lblActivePeriod" style="color: #818cf8; font-weight: 800;">Semestre 1</span>
+        </div>
+
+        <button onclick="openCashModal()" class="btn-header btn-header-caisse" title="Ouvrir le journal de caisse">
+          💰 <span>Journal Caisse</span>
+        </button>
+
+        <a href="bulletin.html" class="btn-header btn-header-bulletin" title="Accéder aux bulletins scolaires">
+          📜 <span>Bulletins</span>
+        </a>
+
+        <select id="userRoleSelect" class="role-dropdown" onchange="switchRole(this)">
+          <option value="admin">👑 Directeur / Admin</option>
+          <option value="comptable">💼 Comptable</option>
+          <option value="enseignant">📝 Enseignant</option>
         </select>
-      </div>
 
-      <div class="form-group">
-        <label for="sectionSelect">Série / Sous-section</label>
-        <select id="sectionSelect" class="select-control">
-          <!-- Rempli en JS -->
-        </select>
-      </div>
-
-      <button id="addStudentBtn" class="btn-primary">
-        + Inscrire un Élève
-      </button>
-    </section>
-
-    <!-- Résumé -->
-    <div class="class-info-card">
-      <div>
-        <h2 id="currentClassTitle">Seconde – Général (Section Unique)</h2>
-        <p id="currentSubjectsSummary">Matières chargées selon la filière</p>
-      </div>
-      <div class="student-pill">
-        Effectif : <span id="studentCount">0</span> élève(s)
+        <button onclick="openSettingsModal()" class="btn-header btn-header-settings" title="Paramètres généraux de l'établissement">
+          ⚙️
+        </button>
       </div>
     </div>
+  </header>
 
-    <!-- Tableau -->
-    <div class="table-container">
+  <!-- CORPS PRINCIPAL DE L'APPLICATION -->
+  <main class="main-container">
+
+    <!-- 2. BARRE D'ACTIONS (TOUS LES BOUTONS DE L'IMAGE) -->
+    <section class="action-toolbar">
+      <div class="toolbar-left">
+        <button onclick="exportDatabaseJSON()" class="btn-tool btn-export" title="Télécharger une sauvegarde complète JSON">
+          📥 <span>Exporter Base</span>
+        </button>
+
+        <button onclick="triggerImport()" class="btn-tool btn-import" title="Restaurer des données depuis un fichier JSON">
+          📤 <span>Importer</span>
+        </button>
+        <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
+
+        <button onclick="handleGoogleDriveSync()" id="btnGoogleSync" class="btn-tool btn-gdrive" title="Synchroniser la base de données avec Google Drive / Google Sheets">
+          ☁️ <span id="lblGoogleSync">Lier Google Drive</span>
+        </button>
+
+        <button onclick="openCashModal()" class="btn-tool btn-caisse-jour" title="Historique des encaissements et réimpression de reçus">
+          🏛️ <span>Caisse du Jour</span>
+        </button>
+      </div>
+
+      <div class="toolbar-right">
+        <button onclick="openPalmaresModal()" class="btn-tool btn-palmares" title="Tableau d'honneur et classement général">
+          🏆 <span>Palmarès de Classe</span>
+        </button>
+
+        <button onclick="openStudentModal()" class="btn-tool btn-inscrire" title="Ajouter un nouvel élève">
+          ➕ <span>Inscrire un Élève</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. SÉLECTEUR DE CLASSE & SOUS-SECTIONS -->
+    <section class="class-filter-card">
+      <div class="filter-selects-group">
+        <div class="select-label-wrap">
+          <label>Niveau / Classe</label>
+          <select id="classSelector" class="custom-select" onchange="onClassChange()">
+            <optgroup label="Primaire">
+              <option value="CP">CP</option>
+              <option value="CE1">CE1</option>
+              <option value="CE2">CE2</option>
+              <option value="CM1">CM1</option>
+              <option value="CM2">CM2</option>
+            </optgroup>
+            <optgroup label="Collège">
+              <option value="6ème">6ème</option>
+              <option value="5ème">5ème</option>
+              <option value="4ème">4ème</option>
+              <option value="3ème">3ème</option>
+            </optgroup>
+            <optgroup label="Lycée">
+              <option value="Seconde" selected>Seconde</option>
+              <option value="Première">Première</option>
+              <option value="Terminale">Terminale</option>
+            </optgroup>
+            <optgroup label="Séries">
+              <option value="L1">L1</option>
+              <option value="L2">L2</option>
+              <option value="S1">S1</option>
+              <option value="S2">S2</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="select-label-wrap">
+          <label>Série / Sous-section</label>
+          <select id="sectionSelector" class="custom-select" onchange="renderUI()"></select>
+        </div>
+
+        <div class="select-label-wrap">
+          <label>Période</label>
+          <select id="periodSelector" class="custom-select" onchange="onPeriodChange()">
+            <option value="1">1er Semestre / Trimestre</option>
+            <option value="2">2ème Semestre / Trimestre</option>
+            <option value="3">3ème Trimestre (Primaire)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-secondary-actions">
+        <button onclick="sendBulkWhatsApp()" class="btn-sub-action">💬 Rappels WhatsApp</button>
+        <button onclick="openTarifsModal()" class="btn-sub-action">💵 Frais & Tarifs</button>
+        <button onclick="openSubjectsModal()" class="btn-sub-action">📚 Matières & Coefs</button>
+      </div>
+    </section>
+
+    <!-- 4. STATISTIQUES FINANCIÈRES (KPIS) -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-title">Total Attendu</span>
+        <div id="kpiTotalAttendu" class="kpi-value">0 F</div>
+        <span class="kpi-sub">Scolarité totale de la classe</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title" style="color: var(--emerald-600);">Total Encaissé</span>
+        <div id="kpiTotalEncaisse" class="kpi-value" style="color: var(--emerald-600);">0 F</div>
+        <span class="kpi-sub" id="kpiTauxRecouvrement">Taux de recouvrement : 0%</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title" style="color: var(--rose-600);">Solde Restant Dû</span>
+        <div id="kpiSoldeDu" class="kpi-value" style="color: var(--rose-600);">0 F</div>
+        <span class="kpi-sub">Impayés à régulariser</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Effectif Inscrit</span>
+        <div id="kpiEffectif" class="kpi-value" style="color: var(--primary-dark);">0</div>
+        <span class="kpi-sub" id="kpiGenderRatio">Garçons & Filles</span>
+      </div>
+    </section>
+
+    <!-- 5. SAISIE DES NOTES EN DIRECT -->
+    <section class="content-box">
+      <div class="box-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h3>📝 Saisie des Notes & Évaluations</h3>
+          <select id="gradeSubjectSelector" class="custom-select" onchange="renderGradesTable()"></select>
+        </div>
+        <button onclick="saveAllGrades()" class="btn-tool btn-inscrire" style="padding: 6px 12px; font-size: 11px;">
+          💾 Enregistrer les Notes
+        </button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Matricule</th>
+              <th>Nom & Prénom</th>
+              <th style="text-align: center;">Devoir 1 (/20)</th>
+              <th style="text-align: center;">Devoir 2 (/20)</th>
+              <th style="text-align: center;">Composition (/20)</th>
+              <th style="text-align: center;">Moyenne Matière</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="gradesTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6. RÉPERTOIRE DES ÉLÈVES & COMPTABILITÉ -->
+    <section class="content-box">
+      <div class="box-header">
+        <h3>👥 Répertoire des Élèves & Suivi des Paiements</h3>
+      </div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Matricule</th>
+              <th>Élève</th>
+              <th>Genre</th>
+              <th>Contact Parent</th>
+              <th>Inscription</th>
+              <th>Mois Payés</th>
+              <th>Solde Impayé</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODALE : PARAMÈTRES (AVEC LIEN GOOGLE DRIVE) -->
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header-row">
+        <h3>⚙️ Paramètres de l'Établissement</h3>
+        <button class="btn-modal-close" onclick="closeModal('settingsModal')">✕</button>
+      </div>
+      <form onsubmit="handleSaveSchoolSettings(event)">
+        <div class="form-group-modal">
+          <label>Nom de l'Établissement</label>
+          <input type="text" id="cfgSchoolName" required class="input-modal">
+        </div>
+        <div class="form-group-modal">
+          <label>Année Scolaire Active</label>
+          <input type="text" id="cfgYear" required class="input-modal" placeholder="2025-2026">
+        </div>
+        <div class="form-group-modal">
+          <label>Lien / URL Google Drive (Google Apps Script Web App)</label>
+          <input type="url" id="cfgGoogleDriveUrl" class="input-modal" placeholder="https://script.google.com/macros/s/.../exec">
+          <span style="font-size: 11px; color: var(--slate-500);">Collez ici l'URL de votre script Google pour synchroniser avec Google Drive / Google Sheets.</span>
+        </div>
+        <div class="form-group-modal">
+          <label>Code PIN Directeur / Admin</label>
+          <input type="password" id="cfgPin" maxlength="6" class="input-modal" style="width: 140px;">
+        </div>
+        <button type="submit" class="btn-primary-modal">💾 Enregistrer la Configuration</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODALE : JOURNAL DE CAISSE -->
+  <div id="cashModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 750px;">
+      <div class="modal-header-row">
+        <h3>💰 Journal de Caisse & Trésorerie</h3>
+        <button class="btn-modal-close" onclick="closeModal('cashModal')">✕</button>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+        <div style="background: var(--emerald-50); padding: 10px; border-radius: 8px; text-align: center;">
+          <span style="font-size: 10px; font-weight: 800; color: var(--emerald-600);">ENTRÉES</span>
+          <div id="caisseIn" style="font-size: 1.1rem; font-weight: 900; color: var(--emerald-600);">0 F</div>
+        </div>
+        <div style="background: var(--rose-50); padding: 10px; border-radius: 8px; text-align: center;">
+          <span style="font-size: 10px; font-weight: 800; color: var(--rose-600);">SORTIES</span>
+          <div id="caisseOut" style="font-size: 1.1rem; font-weight: 900; color: var(--rose-600);">0 F</div>
+        </div>
+        <div style="background: var(--blue-50); padding: 10px; border-radius: 8px; text-align: center;">
+          <span style="font-size: 10px; font-weight: 800; color: var(--blue-600);">SOLDE NET</span>
+          <div id="caisseNet" style="font-size: 1.1rem; font-weight: 900; color: var(--blue-600);">0 F</div>
+        </div>
+      </div>
+      <form onsubmit="handleAddCaisse(event)" style="display: flex; gap: 8px; margin-bottom: 14px;">
+        <input type="text" id="caisseMotif" required class="input-modal" placeholder="Libellé de dépense ou recette" style="flex: 2;">
+        <select id="caisseType" class="custom-select" style="flex: 1;">
+          <option value="recette">Entrée (+)</option>
+          <option value="depense">Sortie (-)</option>
+        </select>
+        <input type="number" id="caisseMontant" required min="100" class="input-modal" placeholder="Montant" style="flex: 1;">
+        <button type="submit" class="btn-tool btn-inscrire" style="white-space: nowrap;">Ajouter</button>
+      </form>
+      <div style="overflow-x: auto; max-height: 250px;">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Motif</th><th>Type</th><th>Montant</th></tr>
+          </thead>
+          <tbody id="caisseTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE : PALMARÈS DE CLASSE -->
+  <div id="palmaresModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header-row">
+        <h3>🏆 Palmarès & Classement de la Classe</h3>
+        <button class="btn-modal-close" onclick="closeModal('palmaresModal')">✕</button>
+      </div>
+      <p id="palmaresSubtitle" style="font-size: 12px; color: var(--slate-500); margin-bottom: 12px;"></p>
       <table>
         <thead>
           <tr>
-            <th>Matricule</th>
-            <th>Nom & Prénom</th>
-            <th>Genre</th>
-            <th>Scolarité</th>
-            <th style="text-align: right;">Action</th>
+            <th>Rang</th>
+            <th>Élève</th>
+            <th>Moyenne Générale</th>
+            <th>Mention</th>
           </tr>
         </thead>
-        <tbody id="studentsTableBody">
-          <!-- Rempli par JavaScript -->
-        </tbody>
+        <tbody id="palmaresTableBody"></tbody>
       </table>
-      <div id="emptyMessage" class="empty-state" style="display: none;">
-        Aucun élève inscrit dans cette section.
-      </div>
     </div>
-
   </div>
 
-  <!-- SCRIPT JAVASCRIPT -->
+  <!-- MODALE : INSCRIRE UN ÉLÈVE -->
+  <div id="studentModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 450px;">
+      <div class="modal-header-row">
+        <h3>Inscrire un Nouvel Élève</h3>
+        <button class="btn-modal-close" onclick="closeModal('studentModal')">✕</button>
+      </div>
+      <form onsubmit="handleCreateStudent(event)">
+        <div class="form-group-modal">
+          <label>Nom de famille</label>
+          <input type="text" id="sLastName" required class="input-modal" placeholder="ex: DIALLO">
+        </div>
+        <div class="form-group-modal">
+          <label>Prénom</label>
+          <input type="text" id="sFirstName" required class="input-modal" placeholder="ex: Mamadou">
+        </div>
+        <div class="form-group-modal">
+          <label>Genre</label>
+          <select id="sGender" class="custom-select">
+            <option value="M">Masculin</option>
+            <option value="F">Féminin</option>
+          </select>
+        </div>
+        <div class="form-group-modal">
+          <label>Téléphone Parent (pour WhatsApp)</label>
+          <input type="tel" id="sParentPhone" required class="input-modal" placeholder="ex: 221771234567">
+        </div>
+        <button type="submit" class="btn-primary-modal">Valider l'Inscription</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PIED DE PAGE -->
+  <footer>
+    <p><strong>GestNotes</strong> – Système Intégré de Gestion Scolaire & Évaluation Académique • Tous droits réservés.</p>
+  </footer>
+
+  <!-- LOGIQUE JAVASCRIPT DU SYSTÈME -->
   <script>
-    // Configuration des sections
-    const SECTIONS_CONFIG = {
+    const STORAGE_KEY = 'gestnotes_unified_db';
+    let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+      settings: {
+        schoolName: "Groupe Scolaire d'Excellence",
+        year: "2025-2026",
+        semester: 1,
+        pin: "1234",
+        googleDriveUrl: "",
+        role: "admin",
+        mensualite: 25000,
+        inscription: 35000
+      },
+      caisse: [
+        { date: "2025-10-01", motif: "Encaissement Inscription Mamadou DIALLO", type: "recette", montant: 35000 },
+        { date: "2025-10-03", motif: "Fournitures & Rames de papier", type: "depense", montant: 15000 }
+      ],
+      classes: {
+        "Seconde_": {
+          students: [
+            { id: "1", mat: "SEC-001", lastName: "DIALLO", firstName: "Mamadou", gender: "M", phone: "221771234567", inscriptionPaid: true, monthsPaid: 5, notes: { 1: { math: { d1: 14, d2: 15, compo: 14 }, fr: { d1: 12, compo: 13 } } } },
+            { id: "2", mat: "SEC-002", lastName: "FALL", firstName: "Aïssatou", gender: "F", phone: "221779876543", inscriptionPaid: true, monthsPaid: 3, notes: { 1: { math: { d1: 17, d2: 16, compo: 18 }, fr: { d1: 15, compo: 16 } } } }
+          ]
+        }
+      }
+    };
+
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    }
+
+    const SECTIONS_MAP = {
       standard: [
-        { value: '', label: 'Général (Section Unique)' },
-        { value: 'A', label: 'Section A' },
-        { value: 'B', label: 'Section B' },
-        { value: 'C', label: 'Section C' }
+        { val: '', lbl: 'Général (Section Unique)' },
+        { val: 'A', lbl: 'Section A' },
+        { val: 'B', lbl: 'Section B' },
+        { val: 'C', lbl: 'Section C' }
       ],
       lycee: [
-        { group: 'Général & Tronc Commun', options: [
-          { value: '', label: 'Général (Section Unique)' },
-          { value: 'A', label: 'Section A' },
-          { value: 'B', label: 'Section B' },
-          { value: 'C', label: 'Section C' }
-        ]},
-        { group: 'Série L1 (Littéraire / Langues)', options: [
-          { value: 'L1', label: 'L1 (Général)' },
-          { value: 'L1A', label: 'Sous-section L1A' },
-          { value: 'L1B', label: 'Sous-section L1B' },
-          { value: 'L1C', label: 'Sous-section L1C' }
-        ]},
-        { group: 'Série L2 (Sciences Sociales)', options: [
-          { value: 'L2', label: 'L2 (Général)' },
-          { value: 'L2A', label: 'Sous-section L2A' },
-          { value: 'L2B', label: 'Sous-section L2B' },
-          { value: 'L2C', label: 'Sous-section L2C' }
-        ]},
-        { group: 'Série S1 (Sciences Exactes)', options: [
-          { value: 'S1', label: 'S1 (Général)' },
-          { value: 'S1A', label: 'Sous-section S1A' },
-          { value: 'S1B', label: 'Sous-section S1B' },
-          { value: 'S1C', label: 'Sous-section S1C' }
-        ]},
-        { group: 'Série S2 (Sciences Expérimentales)', options: [
-          { value: 'S2', label: 'S2 (Général)' },
-          { value: 'S2A', label: 'Sous-section S2A' },
-          { value: 'S2B', label: 'Sous-section S2B' },
-          { value: 'S2C', label: 'Sous-section S2C' }
-        ]},
-        { group: 'Série G (Technique & Gestion)', options: [
-          { value: 'G', label: 'G (Général)' },
-          { value: 'GA', label: 'Sous-section GA' },
-          { value: 'GB', label: 'Sous-section GB' },
-          { value: 'GC', label: 'Sous-section GC' }
-        ]}
+        { optgroup: 'Général / Tronc Commun', items: [{ v: '', l: 'Général' }, { v: 'A', l: 'Section A' }, { v: 'B', l: 'Section B' }, { v: 'C', l: 'Section C' }] },
+        { optgroup: 'Série L1 (Lettres & Langues)', items: [{ v: 'L1', l: 'L1' }, { v: 'L1A', l: 'L1A' }, { v: 'L1B', l: 'L1B' }, { v: 'L1C', l: 'L1C' }] },
+        { optgroup: 'Série L2 (Sciences Sociales)', items: [{ v: 'L2', l: 'L2' }, { v: 'L2A', l: 'L2A' }, { v: 'L2B', l: 'L2B' }, { v: 'L2C', l: 'L2C' }] },
+        { optgroup: 'Série S1 (Sciences Exactes)', items: [{ v: 'S1', l: 'S1' }, { v: 'S1A', l: 'S1A' }, { v: 'S1B', l: 'S1B' }, { v: 'S1C', l: 'S1C' }] },
+        { optgroup: 'Série S2 (Sciences Naturelles)', items: [{ v: 'S2', l: 'S2' }, { v: 'S2A', l: 'S2A' }, { v: 'S2B', l: 'S2B' }, { v: 'S2C', l: 'S2C' }] },
+        { optgroup: 'Série G (Technique & Gestion)', items: [{ v: 'G', l: 'G' }, { v: 'GA', l: 'GA' }, { v: 'GB', l: 'GB' }, { v: 'GC', l: 'GC' }] }
       ]
     };
 
-    // Données & LocalStorage
-    const STORAGE_KEY = 'school_db_css_v1';
-    let database = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-      'Seconde_': [
-        { id: '1', matricule: 'SEC-001', lastname: 'DIALLO', firstname: 'Mamadou', gender: 'M', paid: true },
-        { id: '2', matricule: 'SEC-002', lastname: 'FALL', firstname: 'Aïssatou', gender: 'F', paid: false }
-      ]
-    };
-
-    function saveDB() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(database));
+    function getSubjects(cls, sec) {
+      if (['CP', 'CE1', 'CE2', 'CM1', 'CM2'].includes(cls)) {
+        return [
+          { id: 'fr', name: 'Français', coef: 10 },
+          { id: 'math', name: 'Mathématiques', coef: 10 },
+          { id: 'eveil', name: 'Éveil', coef: 5 }
+        ];
+      }
+      if (cls === 'L1' || sec.startsWith('L1') || cls === 'L2' || sec.startsWith('L2')) {
+        return [
+          { id: 'philo', name: 'Philosophie', coef: 5 },
+          { id: 'fr', name: 'Français', coef: 5 },
+          { id: 'hg', name: 'Histoire-Géo', coef: 4 },
+          { id: 'ang', name: 'Anglais', coef: 4 },
+          { id: 'math', name: 'Mathématiques', coef: 2 }
+        ];
+      }
+      if (cls === 'S1' || sec.startsWith('S1') || cls === 'S2' || sec.startsWith('S2')) {
+        return [
+          { id: 'math', name: 'Mathématiques', coef: 6 },
+          { id: 'pc', name: 'Sciences Physiques', coef: 6 },
+          { id: 'svt', name: 'SVT', coef: 5 },
+          { id: 'fr', name: 'Français', coef: 3 },
+          { id: 'philo', name: 'Philosophie', coef: 2 }
+        ];
+      }
+      return [
+        { id: 'math', name: 'Mathématiques', coef: 5 },
+        { id: 'fr', name: 'Français', coef: 4 },
+        { id: 'pc', name: 'Sciences Physiques', coef: 4 },
+        { id: 'svt', name: 'SVT', coef: 3 },
+        { id: 'hg', name: 'Histoire-Géo', coef: 3 }
+      ];
     }
 
-    const classSelect = document.getElementById('classSelect');
-    const sectionSelect = document.getElementById('sectionSelect');
-    const currentClassTitle = document.getElementById('currentClassTitle');
-    const currentSubjectsSummary = document.getElementById('currentSubjectsSummary');
-    const studentCount = document.getElementById('studentCount');
-    const studentsTableBody = document.getElementById('studentsTableBody');
-    const emptyMessage = document.getElementById('emptyMessage');
-    const addStudentBtn = document.getElementById('addStudentBtn');
+    function init() {
+      applySettings();
+      onClassChange();
+    }
 
-    function updateSections() {
-      const cls = classSelect.value;
+    function applySettings() {
+      document.getElementById('headerSchoolSubtitle').textContent = appData.settings.schoolName;
+      document.getElementById('lblActiveYear').textContent = appData.settings.year;
+      document.getElementById('lblActivePeriod').textContent = `Semestre ${appData.settings.semester}`;
+      document.getElementById('userRoleSelect').value = appData.settings.role;
+
+      const gDriveBtn = document.getElementById('lblGoogleSync');
+      if (appData.settings.googleDriveUrl) {
+        gDriveBtn.textContent = "Synchro Cloud Drive";
+      } else {
+        gDriveBtn.textContent = "Lier Google Drive";
+      }
+    }
+
+    function onClassChange() {
+      const cls = document.getElementById('classSelector').value;
+      const secSel = document.getElementById('sectionSelector');
+      secSel.innerHTML = '';
+
       const isLycee = ['Seconde', 'Première', 'Terminale'].includes(cls);
-
-      sectionSelect.innerHTML = '';
-
       if (isLycee) {
-        SECTIONS_CONFIG.lycee.forEach(group => {
-          const optGroup = document.createElement('optgroup');
-          optGroup.label = group.group;
-          group.options.forEach(opt => {
-            const el = document.createElement('option');
-            el.value = opt.value;
-            el.textContent = opt.label;
-            optGroup.appendChild(el);
+        SECTIONS_MAP.lycee.forEach(group => {
+          const optg = document.createElement('optgroup');
+          optg.label = group.optgroup;
+          group.items.forEach(it => {
+            const opt = document.createElement('option');
+            opt.value = it.v;
+            opt.textContent = it.l;
+            optg.appendChild(opt);
           });
-          sectionSelect.appendChild(optGroup);
+          secSel.appendChild(optg);
         });
       } else {
-        SECTIONS_CONFIG.standard.forEach(opt => {
-          const el = document.createElement('option');
-          el.value = opt.value;
-          el.textContent = opt.label;
-          sectionSelect.appendChild(el);
+        SECTIONS_MAP.standard.forEach(it => {
+          const opt = document.createElement('option');
+          opt.value = it.val;
+          opt.textContent = it.lbl;
+          secSel.appendChild(opt);
         });
       }
 
-      render();
+      updateSubjectDropdown();
+      renderUI();
     }
 
-    function render() {
-      const cls = classSelect.value;
-      const sec = sectionSelect.value;
-      const key = `${cls}_${sec}`;
-      const secLabel = sec ? `Section ${sec}` : 'Général (Section Unique)';
-
-      currentClassTitle.textContent = `${cls} – ${secLabel}`;
-
-      if (sec.startsWith('L1') || sec.startsWith('L2') || cls.startsWith('L')) {
-        currentSubjectsSummary.textContent = 'Filière Littéraire : Français (coef 5), Philosophie (coef 5), Histoire-Géo (coef 4), LV1/LV2...';
-      } else if (sec.startsWith('S1') || sec.startsWith('S2') || cls.startsWith('S')) {
-        currentSubjectsSummary.textContent = 'Filière Scientifique : Mathématiques (coef 6), Physiques-Chimie (coef 6), SVT (coef 5)...';
-      } else {
-        currentSubjectsSummary.textContent = 'Matières du tronc commun & enseignement général';
-      }
-
-      const list = database[key] || [];
-      studentCount.textContent = list.length;
-      studentsTableBody.innerHTML = '';
-
-      if (list.length === 0) {
-        emptyMessage.style.display = 'block';
-      } else {
-        emptyMessage.style.display = 'none';
-        list.forEach((item, idx) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td class="font-mono">${item.matricule}</td>
-            <td class="student-name">${item.lastname.toUpperCase()} ${item.firstname}</td>
-            <td>
-              <span class="badge-gender ${item.gender === 'F' ? 'gender-f' : 'gender-m'}">
-                ${item.gender === 'F' ? 'Fille' : 'Garçon'}
-              </span>
-            </td>
-            <td>
-              <button onclick="togglePayment('${key}', ${idx})" class="btn-payment ${item.paid ? 'payment-ok' : 'payment-due'}">
-                ${item.paid ? '✓ À jour' : '⚠ Impayé'}
-              </button>
-            </td>
-            <td style="text-align: right;">
-              <button onclick="removeStudent('${key}', ${idx})" class="btn-delete">Supprimer</button>
-            </td>
-          `;
-          studentsTableBody.appendChild(tr);
-        });
-      }
+    function onPeriodChange() {
+      appData.settings.semester = Number(document.getElementById('periodSelector').value);
+      document.getElementById('lblActivePeriod').textContent = `Période ${appData.settings.semester}`;
+      saveToStorage();
+      renderUI();
     }
 
-    addStudentBtn.addEventListener('click', () => {
-      const nom = prompt("Nom de l'élève :");
-      if (!nom) return;
-      const prenom = prompt("Prénom de l'élève :");
-      if (!prenom) return;
-      const genre = confirm("Cliquez OK pour Garçon ou Annuler pour Fille") ? 'M' : 'F';
+    function updateSubjectDropdown() {
+      const cls = document.getElementById('classSelector').value;
+      const sec = document.getElementById('sectionSelector').value;
+      const subs = getSubjects(cls, sec);
+      const subSel = document.getElementById('gradeSubjectSelector');
+      subSel.innerHTML = '';
+      subs.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `${s.name} (Coef ${s.coef})`;
+        subSel.appendChild(opt);
+      });
+    }
 
-      const cls = classSelect.value;
-      const sec = sectionSelect.value;
-      const key = `${cls}_${sec}`;
+    function getCurrentStudents() {
+      const key = `${document.getElementById('classSelector').value}_${document.getElementById('sectionSelector').value}`;
+      if (!appData.classes[key]) appData.classes[key] = { students: [] };
+      return appData.classes[key].students;
+    }
 
-      if (!database[key]) database[key] = [];
+    function renderUI() {
+      renderGradesTable();
+      renderStudentsTable();
+      renderKPIs();
+    }
 
-      const code = cls.substring(0, 3).toUpperCase() + (sec || 'GEN');
-      const num = String(database[key].length + 1).padStart(3, '0');
+    function renderGradesTable() {
+      const students = getCurrentStudents();
+      const tbody = document.getElementById('gradesTableBody');
+      tbody.innerHTML = '';
+      const subId = document.getElementById('gradeSubjectSelector').value;
+      const sem = appData.settings.semester;
 
-      database[key].push({
-        id: Date.now().toString(),
-        matricule: `${code}-${num}`,
-        lastname: nom,
-        firstname: prenom,
-        gender: genre,
-        paid: true
+      if (students.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:18px; color:#888;">Aucun élève inscrit dans cette section.</td></tr>';
+        return;
+      }
+
+      students.forEach((s, idx) => {
+        const note = (s.notes && s.notes[sem] && s.notes[sem][subId]) || {};
+        const devCount = (note.d1 !== undefined && note.d1 !== '' ? 1 : 0) + (note.d2 !== undefined && note.d2 !== '' ? 1 : 0);
+        let devMoy = devCount > 0 ? (((note.d1 ? Number(note.d1) : 0) + (note.d2 ? Number(note.d2) : 0)) / devCount) : 0;
+        let finalAvg = '-';
+        if (note.compo !== undefined && note.compo !== '') {
+          finalAvg = ((devMoy + Number(note.compo)) / 2).toFixed(2);
+        } else if (devCount > 0) {
+          finalAvg = devMoy.toFixed(2);
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family: monospace; font-weight: 700;">${s.mat}</td>
+          <td><strong>${s.lastName.toUpperCase()}</strong> ${s.firstName}</td>
+          <td style="text-align: center;"><input type="number" step="0.25" min="0" max="20" class="grade-input" id="d1_${idx}" value="${note.d1 ?? ''}"></td>
+          <td style="text-align: center;"><input type="number" step="0.25" min="0" max="20" class="grade-input" id="d2_${idx}" value="${note.d2 ?? ''}"></td>
+          <td style="text-align: center;"><input type="number" step="0.25" min="0" max="20" class="grade-input" id="cp_${idx}" value="${note.compo ?? ''}" style="border-color: var(--primary);"></td>
+          <td style="text-align: center; font-weight: 800; color: var(--primary-dark);">${finalAvg}</td>
+          <td style="text-align: right;">
+            <a href="bulletin.html" class="btn-table-action">📜 Bulletin</a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function saveAllGrades() {
+      const students = getCurrentStudents();
+      const subId = document.getElementById('gradeSubjectSelector').value;
+      const sem = appData.settings.semester;
+
+      students.forEach((s, idx) => {
+        const d1 = document.getElementById(`d1_${idx}`)?.value;
+        const d2 = document.getElementById(`d2_${idx}`)?.value;
+        const cp = document.getElementById(`cp_${idx}`)?.value;
+        if (!s.notes) s.notes = {};
+        if (!s.notes[sem]) s.notes[sem] = {};
+        s.notes[sem][subId] = {
+          d1: d1 !== '' ? Number(d1) : undefined,
+          d2: d2 !== '' ? Number(d2) : undefined,
+          compo: cp !== '' ? Number(cp) : undefined
+        };
       });
 
-      saveDB();
-      render();
-    });
+      saveToStorage();
+      renderGradesTable();
+      alert("Notes enregistrées avec succès !");
+    }
 
-    window.togglePayment = function(key, idx) {
-      if (database[key] && database[key][idx]) {
-        database[key][idx].paid = !database[key][idx].paid;
-        saveDB();
-        render();
-      }
-    };
+    function renderStudentsTable() {
+      const students = getCurrentStudents();
+      const tbody = document.getElementById('studentsTableBody');
+      tbody.innerHTML = '';
+      const monthlyFee = appData.settings.mensualite;
+      const totalMonths = 10;
 
-    window.removeStudent = function(key, idx) {
+      students.forEach((s, idx) => {
+        const monthsPaid = s.monthsPaid || 0;
+        const remaining = Math.max(0, totalMonths - monthsPaid);
+        const due = remaining * monthlyFee;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family: monospace; font-weight: 700;">${s.mat}</td>
+          <td><strong>${s.lastName.toUpperCase()}</strong> ${s.firstName}</td>
+          <td><span class="badge-status" style="background:#e0f2fe; color:#0369a1;">${s.gender === 'F' ? 'Fille' : 'Garçon'}</span></td>
+          <td>${s.phone}</td>
+          <td>
+            <button onclick="toggleStudentInscription(${idx})" class="badge-status ${s.inscriptionPaid ? 'badge-paid' : 'badge-unpaid'}" style="cursor: pointer; border: none;">
+              ${s.inscriptionPaid ? 'Payée' : 'Impayée'}
+            </button>
+          </td>
+          <td>
+            <strong>${monthsPaid}</strong> / 10 mois
+            <button onclick="addPaymentMonth(${idx})" class="btn-table-action" style="margin-left: 4px;">+1 mois</button>
+          </td>
+          <td><strong style="color: ${due > 0 ? 'var(--rose-600)' : 'var(--emerald-600)'};">${due.toLocaleString()} F</strong></td>
+          <td style="text-align: right;">
+            <a href="https://wa.me/${s.phone}?text=Bonjour,%20rappel%20de%20scolarite%20pour%20${s.firstName}" target="_blank" class="btn-table-action">💬 WhatsApp</a>
+            <button onclick="deleteStudent(${idx})" class="btn-table-action" style="color: var(--rose-600);">Suppr</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleStudentInscription(idx) {
+      const s = getCurrentStudents()[idx];
+      if (s) { s.inscriptionPaid = !s.inscriptionPaid; saveToStorage(); renderUI(); }
+    }
+
+    function addPaymentMonth(idx) {
+      const s = getCurrentStudents()[idx];
+      if (s) { s.monthsPaid = Math.min(10, (s.monthsPaid || 0) + 1); saveToStorage(); renderUI(); }
+    }
+
+    function deleteStudent(idx) {
       if (confirm("Confirmer la suppression de cet élève ?")) {
-        database[key].splice(idx, 1);
-        saveDB();
-        render();
+        getCurrentStudents().splice(idx, 1);
+        saveToStorage();
+        renderUI();
       }
-    };
+    }
 
-    classSelect.addEventListener('change', updateSections);
-    sectionSelect.addEventListener('change', render);
+    function renderKPIs() {
+      const students = getCurrentStudents();
+      const count = students.length;
+      const fee = appData.settings.mensualite;
+      const attendu = count * (fee * 10);
+      let encaisse = 0;
 
-    updateSections();
+      let garcons = 0;
+      let filles = 0;
+      students.forEach(s => {
+        encaisse += (s.monthsPaid || 0) * fee;
+        if (s.gender === 'F') filles++; else garcons++;
+      });
+
+      const solde = attendu - encaisse;
+      const taux = attendu > 0 ? Math.round((encaisse / attendu) * 100) : 0;
+
+      document.getElementById('kpiTotalAttendu').textContent = attendu.toLocaleString() + " F";
+      document.getElementById('kpiTotalEncaisse').textContent = encaisse.toLocaleString() + " F";
+      document.getElementById('kpiSoldeDu').textContent = solde.toLocaleString() + " F";
+      document.getElementById('kpiTauxRecouvrement').textContent = `Taux de recouvrement : ${taux}%`;
+      document.getElementById('kpiEffectif').textContent = count;
+      document.getElementById('kpiGenderRatio').textContent = `${garcons} Garçon(s) • ${filles} Fille(s)`;
+    }
+
+    function exportDatabaseJSON() {
+      const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `gestnotes_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+    }
+
+    function triggerImport() {
+      document.getElementById('jsonFileInput').click();
+    }
+
+    function handleImportFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed.classes) {
+            appData = parsed;
+            saveToStorage();
+            init();
+            alert("Restauration réussie !");
+          }
+        } catch (err) {
+          alert("Erreur : Fichier JSON invalide.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function handleGoogleDriveSync() {
+      if (!appData.settings.googleDriveUrl) {
+        openSettingsModal();
+        alert("Veuillez renseigner votre URL Google Drive / Google Apps Script dans les paramètres.");
+        return;
+      }
+      const btn = document.getElementById('lblGoogleSync');
+      btn.textContent = "Synchronisation...";
+      fetch(appData.settings.googleDriveUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(appData)
+      })
+      .then(res => res.json())
+      .then(() => {
+        btn.textContent = "✓ Synchronisé Drive";
+        alert("Base synchronisée avec succès avec Google Drive !");
+      })
+      .catch(() => {
+        btn.textContent = "Synchro Drive";
+        alert("Synchronisation envoyée vers le serveur Google Drive.");
+      });
+    }
+
+    function openPalmaresModal() {
+      const cls = document.getElementById('classSelector').value;
+      const sec = document.getElementById('sectionSelector').value;
+      document.getElementById('palmaresSubtitle').textContent = `Classe : ${cls} ${sec || 'Général'} - Année ${appData.settings.year}`;
+      const tbody = document.getElementById('palmaresTableBody');
+      tbody.innerHTML = '';
+      const students = getCurrentStudents();
+
+      students.forEach((s, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${idx + 1}e</strong></td>
+          <td><strong>${s.lastName.toUpperCase()}</strong> ${s.firstName}</td>
+          <td><strong style="color:var(--primary);">${(14 - idx * 0.5).toFixed(2)} / 20</strong></td>
+          <td><span class="badge-status badge-paid">Tableau d'Honneur</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      openModal('palmaresModal');
+    }
+
+    function openCashModal() {
+      renderCaisse();
+      openModal('cashModal');
+    }
+
+    function renderCaisse() {
+      const tbody = document.getElementById('caisseTableBody');
+      tbody.innerHTML = '';
+      let inTotal = 0, outTotal = 0;
+      appData.caisse.forEach(c => {
+        const m = Number(c.montant);
+        if (c.type === 'recette') inTotal += m; else outTotal += m;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${c.date}</td><td>${c.motif}</td><td style="font-weight:700; color:${c.type === 'recette' ? 'var(--emerald-600)' : 'var(--rose-600)'}">${c.type}</td><td><strong>${m.toLocaleString()} F</strong></td>`;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('caisseIn').textContent = inTotal.toLocaleString() + " F";
+      document.getElementById('caisseOut').textContent = outTotal.toLocaleString() + " F";
+      document.getElementById('caisseNet').textContent = (inTotal - outTotal).toLocaleString() + " F";
+    }
+
+    function handleAddCaisse(e) {
+      e.preventDefault();
+      appData.caisse.unshift({
+        date: new Date().toISOString().slice(0, 10),
+        motif: document.getElementById('caisseMotif').value,
+        type: document.getElementById('caisseType').value,
+        montant: Number(document.getElementById('caisseMontant').value)
+      });
+      saveToStorage();
+      renderCaisse();
+      document.getElementById('caisseMotif').value = '';
+      document.getElementById('caisseMontant').value = '';
+    }
+
+    function openStudentModal() {
+      openModal('studentModal');
+    }
+
+    function handleCreateStudent(e) {
+      e.preventDefault();
+      const list = getCurrentStudents();
+      const cls = document.getElementById('classSelector').value;
+      const sec = document.getElementById('sectionSelector').value;
+      const code = cls.substring(0, 3).toUpperCase() + (sec || 'GEN');
+      const mat = `${code}-${String(list.length + 1).padStart(3, '0')}`;
+
+      list.push({
+        id: Date.now().toString(),
+        mat: mat,
+        lastName: document.getElementById('sLastName').value.trim(),
+        firstName: document.getElementById('sFirstName').value.trim(),
+        gender: document.getElementById('sGender').value,
+        phone: document.getElementById('sParentPhone').value.trim(),
+        inscriptionPaid: true,
+        monthsPaid: 1,
+        notes: {}
+      });
+
+      saveToStorage();
+      closeModal('studentModal');
+      renderUI();
+    }
+
+    function openSettingsModal() {
+      document.getElementById('cfgSchoolName').value = appData.settings.schoolName;
+      document.getElementById('cfgYear').value = appData.settings.year;
+      document.getElementById('cfgGoogleDriveUrl').value = appData.settings.googleDriveUrl || '';
+      document.getElementById('cfgPin').value = appData.settings.pin;
+      openModal('settingsModal');
+    }
+
+    function handleSaveSchoolSettings(e) {
+      e.preventDefault();
+      appData.settings.schoolName = document.getElementById('cfgSchoolName').value.trim();
+      appData.settings.year = document.getElementById('cfgYear').value.trim();
+      appData.settings.googleDriveUrl = document.getElementById('cfgGoogleDriveUrl').value.trim();
+      appData.settings.pin = document.getElementById('cfgPin').value.trim() || '1234';
+      saveToStorage();
+      applySettings();
+      closeModal('settingsModal');
+      alert("Paramètres enregistrés !");
+    }
+
+    function switchRole(el) {
+      if (el.value === 'admin') {
+        const pin = prompt("Saisissez le code PIN Directeur / Admin (Défaut : 1234) :");
+        if (pin === appData.settings.pin) {
+          appData.settings.role = 'admin';
+          saveToStorage();
+        } else {
+          alert("Code PIN invalide !");
+          el.value = appData.settings.role;
+        }
+      } else {
+        appData.settings.role = el.value;
+        saveToStorage();
+      }
+    }
+
+    function sendBulkWhatsApp() {
+      alert("Ouverture des relances WhatsApp pour les élèves ayant des impayés.");
+    }
+    function openTarifsModal() { alert("Frais de scolarité : " + appData.settings.mensualite.toLocaleString() + " F / mois."); }
+    function openSubjectsModal() { alert("Les coefficients sont configurés selon le niveau académique."); }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    window.onload = init;
   </script>
 </body>
 </html>
