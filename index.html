@@ -2,12 +2,11 @@
 <html lang="fr"> 
 
 <head>
-   
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- ICÔNES ET PWA -->
-    <link rel="icon" type="image/png" href="icon-192.png"> <!-- AJOUTÉ ICI -->
+    <link rel="icon" type="image/png" href="icon-192.png">
     <link class="apple-touch-icon" href="icon-192.png">
     <link class="manifest" href="manifest.json">
     <meta name="theme-color" content="#4c1d95">
@@ -20,10 +19,9 @@
     <title>GestNotes – Administration scolaire</title>
     
     <!-- SCRIPTS ET STYLES -->
-    <script src="https://cdn.tailwindcss.com"></script> <!-- MODIFIÉ ICI -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Assurez-vous que ces fichiers sont bien dans Vercel -->
     <script src="html2pdf.bundle.min.js"></script>
     <script src="idb-keyval.js"></script>
 
@@ -31,8 +29,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- ... vos balises <style> existantes ... -->
-
     <style>
         body { font-family: 'Hanken Grotesk', 'Inter', sans-serif; background-color: #f8fafc; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -205,20 +201,26 @@
                 </div>
                 <button onclick="ouvrirBulletin('ALL_STUDENTS')" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"><i class="fas fa-print text-[#4c1d95]"></i> Imprimer Bulletins</button>
             </div>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto relative min-h-[200px]">
                 <table class="w-full text-left border-collapse min-w-[600px]">
                     <thead>
                         <tr class="border-b text-xs font-semibold text-slate-500 uppercase bg-slate-50/70">
                             <th class="py-3.5 px-5">Élève</th>
+                            <th class="py-3.5 px-5 text-center">Contact Parent</th>
                             <th class="py-3.5 px-5 text-center">Moyenne Générale</th>
                             <th class="py-3.5 px-5 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                    <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm">
+                        <!-- Les élèves seront insérés ici par JS -->
+                    </tbody>
                 </table>
-                <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-slate-400">
+                <div id="empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white z-10 text-slate-400">
                     <i class="fas fa-folder-open text-4xl mb-3 opacity-50"></i>
-                    <p>Aucun élève</p>
+                    <p class="mb-4 text-sm font-medium">Aucun élève dans cette classe</p>
+                    <button onclick="openRegistrationModal()" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-4 py-2 rounded-lg text-sm transition-all shadow-sm flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Ajouter le premier élève
+                    </button>
                 </div>
             </div>
         </section>
@@ -279,15 +281,58 @@
         </div>
     </div>
 
+    <!-- NOUVEAU : MODAL INSCRIPTION ÉLÈVE -->
+    <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-100">
+            <h3 class="text-xl font-bold mb-4 text-slate-800 border-b pb-3 flex items-center gap-2">
+                <i class="fas fa-user-plus text-[#4c1d95]"></i> Nouvelle Inscription
+            </h3>
+            
+            <form id="form-registration" onsubmit="submitStudentRegistration(event)">
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Nom *</label>
+                            <input type="text" id="reg-nom" required placeholder="Ex: Ndiaye" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20 uppercase">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Prénom(s) *</label>
+                            <input type="text" id="reg-prenom" required placeholder="Ex: Fatou" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20 capitalize">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Genre *</label>
+                        <select id="reg-genre" required class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20">
+                            <option value="F">Fille</option>
+                            <option value="M">Garçon</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Contact Parent (Optionnel)</label>
+                        <input type="tel" id="reg-contact" placeholder="Ex: 77 123 45 67" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20">
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end gap-3 border-t pt-4">
+                    <button type="button" onclick="closeModal('registration-modal')" class="px-4 py-2.5 rounded-xl text-slate-500 text-sm font-semibold hover:bg-slate-100 transition-all">Annuler</button>
+                    <button type="submit" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all flex items-center gap-2">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
   <script>
     // --- 1. CONSTANTES ET ÉTAT PAR DÉFAUT ---
     const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
     const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
     
-    // CORRECTION : Déclaration de DEFAULT_STATE qui manquait
     const DEFAULT_STATE = {
         classes: {},
-        accessCode: "1234", // Code par défaut
+        accessCode: "1234",
         googleSyncUrl: "",
         currentRole: "admin",
         selectedClass: "6ème",
@@ -309,17 +354,18 @@
             appState.currentRole = role;
 
             populateFilters();
-            updateHeaderDisplays();
+            // updateHeaderDisplays(); // A implémenter plus tard (année/semestre)
             applyRoleRestrictions();
+            render(); // Appel essentiel pour afficher les données au démarrage
             
             if (appState.googleSyncUrl) chargerBaseDepuisDrive();
         } catch (error) {
-            console.error("Erreur lors de l'initialisation :", error);
+            console.error("Erreur d'initialisation:", error);
             showToast("Erreur de chargement des données", "error");
         }
     }
 
-    // --- 3. GESTION DE L'INTERFACE ET DES MODALES (MANQUANTS) ---
+    // --- 3. UTILITAIRES (Modales, Toast, Confirmation) ---
     function openModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) modal.classList.remove('hidden');
@@ -330,31 +376,22 @@
         if (modal) modal.classList.add('hidden');
     }
 
-    function cancelTeacherLogin() {
-        document.getElementById('role-selector').value = localStorage.getItem("gestnotes_local_role") || "admin";
-        closeModal('teacher-login-modal');
-    }
-
-    // Implémentation du Toast (Notifications)
     function showToast(message, type = "success") {
         const toast = document.createElement('div');
         const bgColor = type === "error" ? "bg-red-600" : "bg-emerald-600";
         toast.className = `fixed bottom-4 right-4 ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg z-50 font-semibold text-sm toast-animate flex items-center gap-2`;
         toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
         document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000); // 3s correspond à l'animation CSS
+        setTimeout(() => toast.remove(), 3000);
     }
 
-    // Fonction de confirmation personnalisée ou native
     function askConfirmation(message, title, callback) {
-        // Pour faire simple dans cette correction, on utilise confirm() natif
-        // Mais vous pouvez créer une modale custom plus tard
         if (window.confirm(`${title}\n\n${message}`)) {
             callback();
         }
     }
 
-    // --- 4. GESTION DES RÔLES ET FILTRES (CORRIGÉS) ---
+    // --- 4. GESTION DES RÔLES ET RESTRICTIONS ---
     function onRoleChange() {
         const select = document.getElementById('role-selector');
         const targetRole = select.value;
@@ -392,6 +429,11 @@
         showToast(`Session active : ${name}`, "success");
     }
 
+    function cancelTeacherLogin() {
+        document.getElementById('role-selector').value = localStorage.getItem("gestnotes_local_role") || "admin";
+        closeModal('teacher-login-modal');
+    }
+
     function applyRoleRestrictions() {
         const role = localStorage.getItem("gestnotes_local_role") || "admin";
         const teacherName = localStorage.getItem("gestnotes_teacher_name") || "";
@@ -420,10 +462,186 @@
         const gradesSection = document.getElementById('grades-section');
         if (gradesSection) gradesSection.style.display = (role === 'comptable') ? 'none' : 'flex';
 
-        if (typeof render === "function") render();
+        render();
     }
 
-    // --- 5. FONCTIONS DE SAUVEGARDE ET SYNC ---
+    // --- 5. LOGIQUE DES CLASSES ET FILTRES ---
+    function getCurrentClassKey() {
+        return `${appState.selectedClass}_${appState.selectedSection}`;
+    }
+
+    function buildEmptyState() {
+        if (!appState.classes) appState.classes = {};
+        const key = getCurrentClassKey();
+        if (!appState.classes[key]) {
+            appState.classes[key] = {
+                students: [],
+                subjects: [],
+                fees: { inscription: 0, mensualite: 0 }
+            };
+        }
+    }
+
+    function populateFilters() {
+        const classSelect = document.getElementById('filter-class');
+        const sectionSelect = document.getElementById('filter-section');
+
+        if (classSelect) {
+            classSelect.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
+            classSelect.value = appState.selectedClass;
+        }
+
+        if (sectionSelect) {
+            const series = ["A", "B", "C", "D", "Scientifique", "Littéraire"];
+            sectionSelect.innerHTML = series.map(s => `<option value="${s}">Série ${s}</option>`).join('');
+            sectionSelect.value = appState.selectedSection;
+        }
+    }
+
+    function onClassChange() {
+        appState.selectedClass = document.getElementById('filter-class').value;
+        buildEmptyState();
+        saveToStorage(false);
+        render();
+    }
+
+    function onSectionChange() {
+        appState.selectedSection = document.getElementById('filter-section').value;
+        buildEmptyState();
+        saveToStorage(false);
+        render();
+    }
+
+    // --- 6. LOGIQUE INSCRIPTION ET ÉLÈVES (NOUVEAU) ---
+    function openRegistrationModal() {
+        // Vider le formulaire avant de l'ouvrir
+        document.getElementById('form-registration').reset();
+        openModal('registration-modal');
+    }
+
+    function submitStudentRegistration(event) {
+        event.preventDefault(); // Empêche la page de se recharger
+        
+        const nom = document.getElementById('reg-nom').value.trim().toUpperCase();
+        const prenom = document.getElementById('reg-prenom').value.trim();
+        const genre = document.getElementById('reg-genre').value;
+        const contact = document.getElementById('reg-contact').value.trim();
+        
+        const key = getCurrentClassKey();
+        const clsData = appState.classes[key];
+        const fees = clsData.fees || { inscription: 0, mensualite: 0 };
+
+        // Préparer la structure financière (vide pour le moment)
+        const initialPayments = moisAnnee.map((m, idx) => ({
+            designation: m,
+            statut: "Non payé",
+            montantDu: idx === 0 ? fees.inscription : fees.mensualite,
+            montantPaye: 0,
+            methode: "",
+            dateEncaissement: ""
+        }));
+
+        const newStudent = {
+            id: 'stu_' + Date.now(),
+            nom: nom,
+            prenom: prenom,
+            genre: genre,
+            contact: contact,
+            grades: {},
+            payments: initialPayments
+        };
+
+        // Ajouter l'élève à la classe courante
+        clsData.students.push(newStudent);
+        
+        // Trier les élèves par ordre alphabétique (Nom)
+        clsData.students.sort((a, b) => a.nom.localeCompare(b.nom));
+
+        saveToStorage();
+        closeModal('registration-modal');
+        showToast("Élève inscrit avec succès !");
+        render(); // Mettre à jour l'affichage
+    }
+
+    function deleteStudent(studentId, studentName) {
+        askConfirmation(`Êtes-vous sûr de vouloir supprimer ${studentName} ?\nToutes ses notes et paiements seront perdus.`, "Suppression d'élève", () => {
+            const key = getCurrentClassKey();
+            // Filtrer le tableau pour retirer l'élève
+            appState.classes[key].students = appState.classes[key].students.filter(s => s.id !== studentId);
+            saveToStorage();
+            showToast("Élève supprimé", "success");
+            render();
+        });
+    }
+
+    // --- 7. RENDU PRINCIPAL DE L'INTERFACE ---
+    function render() {
+        const key = getCurrentClassKey();
+        const currentClass = appState.classes[key];
+        const nbStudents = currentClass ? currentClass.students.length : 0;
+        
+        // Mises à jour des compteurs et badges
+        document.getElementById('filter-effectif').value = nbStudents;
+        document.getElementById('student-count').innerText = `${nbStudents} élève${nbStudents > 1 ? 's' : ''}`;
+        document.getElementById('class-badge').innerText = key.replace('_', ' ');
+
+        const emptyState = document.getElementById('empty-state');
+        const tableBody = document.getElementById('students-table-body');
+        const role = localStorage.getItem("gestnotes_local_role") || "admin";
+        
+        if (nbStudents === 0) {
+            emptyState.classList.remove('hidden');
+            tableBody.innerHTML = '';
+        } else {
+            emptyState.classList.add('hidden');
+            
+            // Générer le HTML des lignes du tableau
+            tableBody.innerHTML = currentClass.students.map((student, index) => {
+                // Alterner les couleurs de fond pour une meilleure lisibilité
+                const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50';
+                
+                // Cacher le bouton supprimer si l'utilisateur est un enseignant
+                const deleteBtn = role !== 'enseignant' ? `
+                    <button onclick="deleteStudent('${student.id}', '${student.nom} ${student.prenom}')" class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 transition-colors" title="Supprimer">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                ` : '';
+
+                return `
+                <tr class="${bgClass} hover:bg-slate-100 transition-colors group">
+                    <td class="py-3 px-5 border-b border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-violet-100 text-[#4c1d95] flex items-center justify-center font-bold text-xs shrink-0">
+                                ${student.nom.charAt(0)}${student.prenom.charAt(0)}
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800">${student.nom} ${student.prenom}</p>
+                                <p class="text-[10px] text-slate-500">${student.genre === 'M' ? 'Garçon' : 'Fille'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-5 border-b border-slate-100 text-center">
+                        <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
+                            ${student.contact ? `<i class="fas fa-phone text-[10px] mr-1"></i> ${student.contact}` : '-'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-5 border-b border-slate-100 text-center">
+                        <span class="font-bold text-slate-400 text-xs">N/A</span> <!-- Calcul à faire plus tard -->
+                    </td>
+                    <td class="py-3 px-5 border-b border-slate-100 text-right opacity-50 group-hover:opacity-100 transition-opacity">
+                        <div class="flex justify-end gap-2">
+                            <button onclick="alert('Profil de ${student.prenom}')" class="text-violet-600 hover:text-violet-800 p-1.5 rounded-lg hover:bg-violet-50 transition-colors" title="Profil">
+                                <i class="fas fa-user-edit"></i>
+                            </button>
+                            ${deleteBtn}
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+    }
+
+    // --- 8. SAUVEGARDE ET CLOUD ---
     async function saveToStorage(forceCloud = true) {
         try {
             await idbKeyval.set("gestnotes_state", appState);
@@ -434,7 +652,7 @@
                 driveSyncTimeout = setTimeout(sauvegarderSurDrive, 3000);
             }
         } catch (e) { 
-            console.error("Erreur de sauvegarde locale:", e); 
+            console.error("Erreur save:", e); 
         }
     }
 
@@ -443,51 +661,37 @@
         try {
             const res = await fetch(appState.googleSyncUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Attention au CORS
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(appState)
             });
-            if (res.ok) {
-                document.getElementById('lbl-gdrive-sync').innerText = "Cloud Synced";
-            } else {
-                throw new Error("Erreur réseau");
-            }
+            if (res.ok) document.getElementById('lbl-gdrive-sync').innerText = "Cloud Synced";
         } catch (e) { 
-            console.error("Erreur Cloud:", e);
             document.getElementById('lbl-gdrive-sync').innerText = "Erreur Sync";
         }
     }
 
-    // --- 6. STUBS (Fonctions déclarées pour éviter les erreurs bloquantes) ---
-    // Vous devrez implémenter la logique métier de ces fonctions
-    function buildEmptyState() { /* Prépare la structure de la classe courante si vide */ }
-    function populateFilters() { /* Remplit les <select> filter-class et filter-section */ }
-    function updateHeaderDisplays() { /* Met à jour l'année et le semestre */ }
-    function chargerBaseDepuisDrive() { /* Fetch GET depuis le Cloud */ }
-    function onClassChange() { /* Logique au changement de classe */ }
-    function onSectionChange() { /* Logique au changement de section */ }
-    function render() { /* Rafraîchit l'affichage principal */ }
-    function getCurrentClassKey() { return "6ème_A"; /* Exemple statique, à dynamiser */ }
-    function saveSettings() { /* Sauvegarde la modale de config */ closeModal('settings-modal'); showToast("Paramètres enregistrés"); }
-    
-    // Fonctions d'export/import
+    // --- STUBS RESTANTS ---
     function exportData() { alert("Exportation de la base..."); }
     function importData(e) { alert("Importation..."); }
     function exportTeacherGradesOnly() { alert("Export de vos notes..."); }
-    
-    // Modales non implémentées dans l'HTML fourni
-    function openRegistrationModal() { alert("Ouvrir Inscription"); }
     function openWhatsAppRemindersModal() { alert("Ouvrir Relances WA"); }
     function openClassFeesModal() { alert("Ouvrir Tarifs"); }
     function openCaisseJourModal() { alert("Ouvrir Caisse"); }
     function openSubjectsModal() { alert("Ouvrir Matières"); }
+    function renderGradesGrid() { /* Affichage des notes */ }
+    function executeRollover() { alert("Transition..."); closeModal('settings-modal'); }
+    function saveSettings() { closeModal('settings-modal'); showToast("Paramètres sauvegardés"); }
 
+    // --- DÉMARRAGE ---
     window.addEventListener('DOMContentLoaded', initApp);
-     if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js')
-    .then(reg => console.log('Service Worker enregistré !', reg))
-    .catch(err => console.error('Erreur SW :', err));
-}
+    
+    window.addEventListener('load', () => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker enregistré !'))
+                .catch(err => console.error('Erreur SW :', err));
+        }
+    });
 </script> 
-     
 </body>
 </html>
