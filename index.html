@@ -534,6 +534,39 @@
 
     async function saveToStorage() { await idbKeyval.set("gestnotes_state", appState); }
     window.addEventListener('DOMContentLoaded', initApp);
+    
+function lireBulletinAudio() {
+    // Vérifie si le navigateur supporte la voix
+    if (!('speechSynthesis' in window)) {
+        alert("Désolé, votre téléphone ne supporte pas la lecture vocale.");
+        return;
+    }
+
+    // 1. Récupération des données du bulletin (vous devrez adapter les ID selon votre HTML de bulletin)
+    // Ici on simule ce que ça lirait :
+    const nomEleve = document.getElementById('nom-eleve-bulletin')?.innerText || "L'élève";
+    const rang = document.getElementById('rang-eleve')?.innerText || "Premier";
+    const moyenne = document.getElementById('moyenne-eleve')?.innerText || "15";
+    
+    // 2. Création du texte intelligent
+    const texteALire = `Bonjour. Voici les résultats scolaires de ${nomEleve} pour ce semestre. 
+                        La moyenne générale est de ${moyenne} sur 20. 
+                        L'élève est classé ${rang} de sa classe. 
+                        C'est un excellent travail, continuez ainsi !`;
+
+    // 3. Configuration de la voix (En Français)
+    const utterance = new SpeechSynthesisUtterance(texteALire);
+    utterance.lang = 'fr-FR'; // Langue française
+    utterance.rate = 0.9;     // Vitesse un peu ralentie pour plus de clarté
+    utterance.pitch = 1;      // Tonalité normale
+
+    // 4. Lancement de la lecture !
+    window.speechSynthesis.speak(utterance);
+    
+    // Petite animation visuelle (optionnelle)
+    console.log("Lecture en cours...");
+}
+
 </script> 
 </body>
 </html>
