@@ -1,41 +1,38 @@
-const CACHE_NAME = 'gestnotes-v2'; // Passage à la v2 pour forcer la mise à jour des navigateurs
+const CACHE_NAME = 'gestnotes-v2';
 
-// Liste des ressources indispensables à mettre en cache au démarrage (100% local/PWA)
 const ASSETS = [
   './',
   './index.html',
   './bulletin.html', 
   './manifest.json',
-  './tailwind.min.js',
   './html2pdf.bundle.min.js', 
   './idb-keyval.js',           
   './icon-192.png',
+  'https://cdn.tailwindcss.com', // Mis à jour avec le CDN
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap'
 ];
 
-// 1. Installation : Pré-chargement des assets statiques
+// 1. Installation
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
+    caches.open(CACHE_NAME).then((cache) => {
         const promises = ASSETS.map(url => 
-            cache.add(url).catch(err => console.warn('[SW] Ressource non mise en cache au démarrage :', url))
+            cache.add(url).catch(err => console.warn('[SW] Ressource non trouvée au démarrage :', url))
         );
         return Promise.all(promises);
-      })
-      .then(() => self.skipWaiting()) 
+    }).then(() => self.skipWaiting()) 
   );
 });
 
-// 2. Activation : Nettoyage des versions antérieures
+// 2. Activation : Nettoyage
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log('[Service Worker] Suppression de l\'ancien cache :', key);
+            console.log('[SW] Suppression ancien cache :', key);
             return caches.delete(key);
           }
         })
@@ -44,37 +41,52 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// 3. Stratégie réseau : Cache-first avec mise en cache dynamique (CORS autorisés)
+// 3. Stratégie de Fetch (Requêtes réseau)
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
-
-  // Ignorer les protocoles non-HTTP/HTTPS (par exemple chrome-extension:// ou data:)
   if (!e.request.url.startsWith('http')) return;
 
-  // CORRECTION MAJEURE : Ignorer et ne pas intercepter les requêtes vers Google Apps Script et Google Drive
-  // Cela permet au navigateur de gérer la redirection 302 nativement sans interférence ni blocage du Service Worker
+  // Contournement obligatoire pour Google Drive / Apps Script (CORS & Redirections)
   if (e.request.url.includes('script.google.com') || e.request.url.includes('script.googleusercontent.com')) {
-    return; // Sortie immédiate, le navigateur prend le relais directement sur le réseau
+    return; // Le navigateur gère tout seul
   }
 
+  // A. STRATÉGIE "NETWORK-FIRST" (Réseau en priorité) POUR LES PAGES HTML
+  // Permet à l'application de se mettre à jour instantanément si du réseau est dispo
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).then((networkResponse) => {
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(e.request, networkResponse.clone()); // On met à jour le cache
+          return networkResponse;
+        });
+      }).catch(() => {
+        // Si pas de réseau, on lit depuis le cache
+        return caches.match(e.request);
+      })
+    );
+    return;
+  }
+
+  // B. STRATÉGIE "CACHE-FIRST" (Cache en priorité) POUR LE RESTE (CSS, JS, Images, Polices)
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
       if (cachedResponse) {
-        return cachedResponse;
+        return cachedResponse; // On renvoie immédiatement la version en cache
       }
 
+      // Si absent du cache, on va le chercher sur le réseau
       return fetch(e.request).then((networkResponse) => {
-        // Ajout de 'cors' pour permettre la sauvegarde en cache des scripts et styles externes de confiance
         const isAcceptableType = networkResponse.type === 'basic' || networkResponse.type === 'cors';
         if (networkResponse && networkResponse.status === 200 && isAcceptableType) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(e.request, responseToCache);
+            cache.put(e.request, responseToCache); // Ajout dynamique au cache
           });
         }
         return networkResponse;
       }).catch((err) => {
-        console.warn('[Service Worker] Impossible de joindre le réseau pour la ressource :', e.request.url);
+        console.warn('[SW] Offline et ressource non mise en cache :', e.request.url);
       });
     })
   );
