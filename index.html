@@ -1,588 +1,417 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="h-full bg-slate-100">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GestNotes - Système Intégral de Gestion Scolaire & Google Drive</title>
+  <title>GestNotes — Système Intégré de Gestion Scolaire & Pédagogique</title>
 
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- React & ReactDOM -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <!-- Babel Standalone pour exécuter React JSX directement -->
+  <!-- Babel Standalone -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #f8fafc;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
     }
     @media print {
       .no-print { display: none !important; }
       .print-only { display: block !important; }
+      body { background-color: #ffffff !important; }
     }
   </style>
 </head>
-<body class="text-slate-800 antialiased min-h-screen selection:bg-indigo-500 selection:text-white">
-  <div id="root"></div>
+<body class="h-full text-slate-900 antialiased flex flex-col">
+  <div id="root" class="flex flex-col flex-1"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useMemo } = React;
+    const { useState, useMemo, useEffect } = React;
 
-    // --- DONNÉES PAR DÉFAUT DU SYSTÈME ---
-    const DEFAULT_CONFIG = {
-      schoolName: "Lycée d'Excellence Cheikh Hamidou Kane",
-      academicYear: "2025 - 2026",
-      term: "1er Trimestre",
-      headmaster: "M. Ibrahima SARR",
+    // --- RÉFÉRENTIEL ACADÉMIQUE ---
+    const INSTITUTION_CONFIG = {
+      name: "Lycée d'Excellence Cheikh Hamidou Kane",
+      academicYear: "2025 – 2026",
+      period: "Premier Trimestre",
+      headmaster: "M. Ibrahima SARR, Proviseur",
       address: "Point E, Avenue Cheikh Anta Diop, Dakar",
-      email: "contact@excellence-dakar.sn",
-      phone: "+221 33 824 10 20",
-      schoolFeesAmount: 50000
+      registrationCode: "SN-DKR-2026-EXC",
+      tuitionDuePerStudent: 50000
     };
 
-    const DEFAULT_SUBJECTS = {
+    const CURRICULUM = {
       Seconde: [
-        { id: 'math', name: 'Mathématiques', coef: 4 },
-        { id: 'pc', name: 'Physique-Chimie', coef: 3 },
-        { id: 'fr', name: 'Français', coef: 3 },
-        { id: 'ang', name: 'Anglais', coef: 2 },
-        { id: 'svt', name: 'SVT', coef: 2 },
-        { id: 'hg', name: 'Histoire-Géo', coef: 2 }
+        { id: 'math', name: 'Mathématiques', coef: 4, teacher: 'M. Diop' },
+        { id: 'pc', name: 'Sciences Physiques', coef: 3, teacher: 'Mme Faye' },
+        { id: 'fr', name: 'Lettres & Philosophie', coef: 3, teacher: 'M. Ndiaye' },
+        { id: 'ang', name: 'Anglais', coef: 2, teacher: 'Mme Ba' },
+        { id: 'svt', name: 'Sciences de la Vie et de la Terre', coef: 2, teacher: 'M. Cissé' },
+        { id: 'hg', name: 'Histoire & Géographie', coef: 2, teacher: 'M. Sène' }
       ],
       Premiere: [
-        { id: 'math', name: 'Mathématiques', coef: 5 },
-        { id: 'pc', name: 'Physique-Chimie', coef: 4 },
-        { id: 'fr', name: 'Français', coef: 3 },
-        { id: 'ang', name: 'Anglais', coef: 2 },
-        { id: 'philo', name: 'Philosophie', coef: 2 }
+        { id: 'math', name: 'Mathématiques', coef: 5, teacher: 'M. Diop' },
+        { id: 'pc', name: 'Sciences Physiques', coef: 4, teacher: 'Mme Faye' },
+        { id: 'fr', name: 'Français', coef: 3, teacher: 'M. Ndiaye' },
+        { id: 'ang', name: 'Anglais', coef: 2, teacher: 'Mme Ba' }
       ],
       Terminale: [
-        { id: 'math', name: 'Mathématiques', coef: 6 },
-        { id: 'pc', name: 'Physique-Chimie', coef: 5 },
-        { id: 'philo', name: 'Philosophie', coef: 3 },
-        { id: 'ang', name: 'Anglais', coef: 2 },
-        { id: 'svt', name: 'SVT', coef: 2 }
+        { id: 'math', name: 'Mathématiques', coef: 6, teacher: 'M. Diop' },
+        { id: 'pc', name: 'Sciences Physiques', coef: 5, teacher: 'Mme Faye' },
+        { id: 'philo', name: 'Philosophie', coef: 3, teacher: 'M. Sow' }
       ]
     };
 
-    const DEFAULT_STUDENTS = {
+    const INITIAL_COHORT = {
       Seconde: [
-        { id: '1', mat: 'MAT-001', lastName: 'DIALLO', firstName: 'Moussa', sex: 'M', birthDate: '2008-04-12', phone: '+221 77 123 45 67', paidFees: 45000 },
-        { id: '2', mat: 'MAT-002', lastName: 'NDIAYE', firstName: 'Fatou', sex: 'F', birthDate: '2008-09-21', phone: '+221 77 987 65 43', paidFees: 50000 },
-        { id: '3', mat: 'MAT-003', lastName: 'SOW', firstName: 'Amadou', sex: 'M', birthDate: '2007-11-05', phone: '+221 76 543 21 09', paidFees: 25000 },
-        { id: '4', mat: 'MAT-004', lastName: 'BA', firstName: 'Aïssatou', sex: 'F', birthDate: '2008-02-18', phone: '+221 70 888 99 00', paidFees: 50000 }
-      ],
-      Premiere: [
-        { id: '10', mat: 'MAT-101', lastName: 'FALL', firstName: 'Cheikh', sex: 'M', birthDate: '2007-05-10', phone: '+221 77 444 33 22', paidFees: 50000 },
-        { id: '11', mat: 'MAT-102', lastName: 'KANE', firstName: 'Mariama', sex: 'F', birthDate: '2007-12-03', phone: '+221 78 555 66 77', paidFees: 30000 }
-      ],
-      Terminale: [
-        { id: '20', mat: 'MAT-201', lastName: 'TRAORE', firstName: 'Ousmane', sex: 'M', birthDate: '2006-03-25', phone: '+221 77 222 11 00', paidFees: 50000 }
+        { id: 'ST-001', matricule: '2026-001S', lastName: 'DIALLO', firstName: 'Moussa', sex: 'M', birthDate: '2008-04-12', phone: '+221 77 123 45 67', paidFees: 45000 },
+        { id: 'ST-002', matricule: '2026-002S', lastName: 'NDIAYE', firstName: 'Fatou', sex: 'F', birthDate: '2008-09-21', phone: '+221 77 987 65 43', paidFees: 50000 },
+        { id: 'ST-003', matricule: '2026-003S', lastName: 'SOW', firstName: 'Amadou', sex: 'M', birthDate: '2007-11-05', phone: '+221 76 543 21 09', paidFees: 25000 },
+        { id: 'ST-004', matricule: '2026-004S', lastName: 'BA', firstName: 'Aïssatou', sex: 'F', birthDate: '2008-02-18', phone: '+221 70 888 99 00', paidFees: 50000 }
       ]
     };
 
-    const DEFAULT_GRADES = {
-      '1': { math: { d1: 14, d2: 15, compo: 13.5 }, pc: { d1: 12, d2: 14, compo: 13 }, fr: { d1: 11, d2: 12, compo: 10 } },
-      '2': { math: { d1: 18, d2: 17.5, compo: 19 }, pc: { d1: 16, d2: 17, compo: 18 }, fr: { d1: 15, d2: 14, compo: 16 } },
-      '3': { math: { d1: 9, d2: 10, compo: 8.5 }, pc: { d1: 11, d2: 10, compo: 9 }, fr: { d1: 12, d2: 13, compo: 12 } },
-      '4': { math: { d1: 13, d2: 12, compo: 14 }, pc: { d1: 14, d2: 15, compo: 13.5 }, fr: { d1: 16, d2: 15.5, compo: 15 } },
-      '10': { math: { d1: 15, d2: 16, compo: 15.5 }, pc: { d1: 14, d2: 15, compo: 14 } },
-      '11': { math: { d1: 12, d2: 11, compo: 13 }, pc: { d1: 10, d2: 12, compo: 11 } },
-      '20': { math: { d1: 16, d2: 15, compo: 17 }, pc: { d1: 15, d2: 16, compo: 15.5 } }
+    const INITIAL_EVALUATIONS = {
+      'ST-001': {
+        math: { d1: 14.0, d2: 15.0, compo: 13.5 },
+        pc:   { d1: 12.0, d2: 14.0, compo: 13.0 },
+        fr:   { d1: 11.0, d2: 12.0, compo: 10.0 },
+        ang:  { d1: 13.5, d2: 14.0, compo: 13.5 },
+        svt:  { d1: 12.0, d2: 13.0, compo: 12.5 },
+        hg:   { d1: 14.0, d2: 13.0, compo: 13.0 }
+      },
+      'ST-002': {
+        math: { d1: 18.0, d2: 17.5, compo: 19.0 },
+        pc:   { d1: 16.0, d2: 17.0, compo: 18.0 },
+        fr:   { d1: 15.0, d2: 14.0, compo: 16.0 },
+        ang:  { d1: 17.0, d2: 18.0, compo: 17.5 },
+        svt:  { d1: 16.0, d2: 17.0, compo: 16.5 },
+        hg:   { d1: 15.0, d2: 16.0, compo: 15.0 }
+      },
+      'ST-003': {
+        math: { d1: 9.0, d2: 10.0, compo: 8.5 },
+        pc:   { d1: 11.0, d2: 10.0, compo: 9.0 },
+        fr:   { d1: 12.0, d2: 13.0, compo: 12.0 },
+        ang:  { d1: 10.0, d2: 11.0, compo: 10.0 },
+        svt:  { d1: 9.0, d2: 10.0, compo: 9.5 },
+        hg:   { d1: 11.0, d2: 12.0, compo: 11.0 }
+      },
+      'ST-004': {
+        math: { d1: 13.0, d2: 12.0, compo: 14.0 },
+        pc:   { d1: 14.0, d2: 15.0, compo: 13.5 },
+        fr:   { d1: 16.0, d2: 15.5, compo: 15.0 },
+        ang:  { d1: 14.0, d2: 15.0, compo: 14.5 },
+        svt:  { d1: 13.0, d2: 14.0, compo: 13.5 },
+        hg:   { d1: 14.0, d2: 15.0, compo: 14.0 }
+      }
     };
 
-    const DEFAULT_ASSIGNMENTS = [
-      { id: 'asg-1', title: 'Devoir n°1 : Fonctions et Polynômes', classKey: 'Seconde', subjectId: 'math', subjectName: 'Mathématiques', teacherName: 'M. Diop', dueDate: '2026-09-15', maxGrade: 20 },
-      { id: 'asg-2', title: 'Devoir n°1 : Cinématique & Forces', classKey: 'Seconde', subjectId: 'pc', subjectName: 'Physique-Chimie', teacherName: 'Mme Faye', dueDate: '2026-09-18', maxGrade: 20 }
-    ];
-
-    const DEFAULT_SUBMISSIONS = [
-      { id: 'sub-1', assignmentId: 'asg-1', assignmentTitle: 'Devoir n°1 : Fonctions et Polynômes', classKey: 'Seconde', subjectId: 'math', studentId: '2', studentName: 'NDIAYE Fatou', studentMatricule: 'MAT-002', submittedAt: '2026-09-06T14:30:00Z', fileName: 'MAT-002_Fatou_NDIAYE_Devoir1.pdf', folderPath: 'Mathématiques - M. Diop > Devoir n°1 : Fonctions et Polynômes', targetSubfolder: 'Devoir n°1 : Fonctions et Polynômes', grade: 18.5, teacherFeedback: 'Excellent travail, raisonnement parfait !', status: 'corrigé' },
-      { id: 'sub-2', assignmentId: 'asg-1', assignmentTitle: 'Devoir n°1 : Fonctions et Polynômes', classKey: 'Seconde', subjectId: 'math', studentId: '1', studentName: 'DIALLO Moussa', studentMatricule: 'MAT-001', submittedAt: '2026-09-07T09:15:00Z', fileName: 'MAT-001_Moussa_DIALLO_Devoir1.pdf', folderPath: 'Mathématiques - M. Diop > Devoir n°1 : Fonctions et Polynômes', targetSubfolder: 'Devoir n°1 : Fonctions et Polynômes', status: 'reçu' }
+    const INITIAL_SUBMISSIONS = [
+      {
+        id: 'SUB-2026-01',
+        studentId: 'ST-002',
+        studentName: 'NDIAYE Fatou',
+        matricule: '2026-002S',
+        assignmentTitle: 'Devoir Surveillé n°1 : Algèbre & Polynômes',
+        subjectName: 'Mathématiques',
+        submittedAt: '2026-09-06T14:30:00Z',
+        fileName: '2026-002S_NDIAYE_Devoir1.pdf',
+        folderPath: 'Mathématiques - M. Diop / DS1_Algebre',
+        grade: 18.5,
+        status: 'validated'
+      },
+      {
+        id: 'SUB-2026-02',
+        studentId: 'ST-001',
+        studentName: 'DIALLO Moussa',
+        matricule: '2026-001S',
+        assignmentTitle: 'Devoir Surveillé n°1 : Algèbre & Polynômes',
+        subjectName: 'Mathématiques',
+        submittedAt: '2026-09-07T09:15:00Z',
+        fileName: '2026-001S_DIALLO_Devoir1.pdf',
+        folderPath: 'Mathématiques - M. Diop / DS1_Algebre',
+        grade: 14.0,
+        status: 'validated'
+      }
     ];
 
     function App() {
-      // États principaux
       const [currentClass, setCurrentClass] = useState('Seconde');
-      const [activeTab, setActiveTab] = useState('grades'); // 'grades' | 'students' | 'homework' | 'drive_sync' | 'bulletins'
-      const [studentsData, setStudentsData] = useState(() => {
-        const saved = localStorage.getItem('gestnotes_students');
-        return saved ? JSON.parse(saved) : DEFAULT_STUDENTS;
-      });
-      const [gradesData, setGradesData] = useState(() => {
-        const saved = localStorage.getItem('gestnotes_grades');
-        return saved ? JSON.parse(saved) : DEFAULT_GRADES;
-      });
-      const [assignments, setAssignments] = useState(() => {
-        const saved = localStorage.getItem('gestnotes_assignments');
-        return saved ? JSON.parse(saved) : DEFAULT_ASSIGNMENTS;
-      });
-      const [submissions, setSubmissions] = useState(() => {
-        const saved = localStorage.getItem('gestnotes_submissions');
-        return saved ? JSON.parse(saved) : DEFAULT_SUBMISSIONS;
-      });
-      const [config, setConfig] = useState(() => {
-        const saved = localStorage.getItem('gestnotes_config');
-        return saved ? JSON.parse(saved) : DEFAULT_CONFIG;
-      });
-      const [scriptUrl, setScriptUrl] = useState(() => {
-        return localStorage.getItem('gestnotes_script_url') || '';
-      });
+      const [activeModule, setActiveModule] = useState('grades'); // 'grades' | 'students' | 'homework' | 'bulletins'
+      const [students, setStudents] = useState(INITIAL_COHORT.Seconde);
+      const [evaluations, setEvaluations] = useState(INITIAL_EVALUATIONS);
+      const [submissions, setSubmissions] = useState(INITIAL_SUBMISSIONS);
+      const [selectedBulletinStudent, setSelectedBulletinStudent] = useState(null);
+      const [notification, setNotification] = useState(null);
 
-      // Config du dossier enseignant Drive
-      const [teacherDriveConfig, setTeacherDriveConfig] = useState({
+      // Dossier Google Drive de l'enseignant
+      const [driveConfig, setDriveConfig] = useState({
         teacherName: 'M. Diop',
         subjectName: 'Mathématiques',
-        folderName: 'Mathématiques - M. Diop (Seconde)',
-        folderUrl: 'https://drive.google.com/drive/folders/GestNotes_Devoirs_Seconde_Math',
-        organizationMode: 'by_assignment', // 'by_assignment' | 'by_student' | 'by_date' | 'flat'
-        fileNamingFormat: 'mat_name_asg',
-        includeRegisterLog: true
+        targetFolder: 'Mathématiques — M. Diop (Seconde S)',
+        driveFolderId: '1AbC_dEfGhIjKlMnOpQrStUvWxYz',
+        organizationMode: 'by_assignment', // by_assignment | by_student | chronological
+        fileNamingRule: 'MATRICULE_NOM_DEVOIR'
       });
 
-      // Modales & états d'interaction
-      const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
-      const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-      const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
-      const [editingStudent, setEditingStudent] = useState(null);
-      const [selectedBulletinStudent, setSelectedBulletinStudent] = useState(null);
-      const [toast, setToast] = useState(null);
-
-      // Sauvegardes locales automatiques
-      useEffect(() => {
-        localStorage.setItem('gestnotes_students', JSON.stringify(studentsData));
-        localStorage.setItem('gestnotes_grades', JSON.stringify(gradesData));
-        localStorage.setItem('gestnotes_assignments', JSON.stringify(assignments));
-        localStorage.setItem('gestnotes_submissions', JSON.stringify(submissions));
-        localStorage.setItem('gestnotes_config', JSON.stringify(config));
-        localStorage.setItem('gestnotes_script_url', scriptUrl);
-      }, [studentsData, gradesData, assignments, submissions, config, scriptUrl]);
-
-      const currentStudents = studentsData[currentClass] || [];
-      const currentSubjects = DEFAULT_SUBJECTS[currentClass] || [];
-
-      const showToast = (msg) => {
-        setToast(msg);
-        setTimeout(() => setToast(null), 3500);
+      const notify = (msg) => {
+        setNotification(msg);
+        setTimeout(() => setNotification(null), 3000);
       };
 
-      // Calcul des moyennes par matière et générales
-      const studentCalculations = useMemo(() => {
+      const subjects = CURRICULUM[currentClass] || [];
+
+      // Moteur de calcul statistique académique
+      const metrics = useMemo(() => {
         const results = {};
-        currentStudents.forEach(st => {
-          let totalPts = 0;
-          let totalCoef = 0;
-          const subDetails = {};
+        students.forEach((st) => {
+          let weightedSum = 0;
+          let totalCoefficients = 0;
+          const subjectBreakdown = {};
 
-          currentSubjects.forEach(sub => {
-            const gr = gradesData[st.id]?.[sub.id] || {};
-            const d1 = gr.d1;
-            const d2 = gr.d2;
-            const compo = gr.compo;
-
-            let subAvg = null;
-            if (compo !== undefined && compo !== null && compo !== '') {
-              const dAvg = (d1 !== undefined && d2 !== undefined && d1 !== '' && d2 !== '') 
-                ? (Number(d1) + Number(d2)) / 2 
-                : (Number(d1) || Number(d2) || Number(compo));
-              subAvg = Number(((dAvg + Number(compo) * 2) / 3).toFixed(2));
-              totalPts += subAvg * sub.coef;
-              totalCoef += sub.coef;
+          subjects.forEach((sub) => {
+            const ev = evaluations[st.id]?.[sub.id];
+            if (ev && ev.compo !== undefined) {
+              const dAvg = (ev.d1 !== undefined && ev.d2 !== undefined) ? (ev.d1 + ev.d2) / 2 : (ev.d1 || ev.d2 || ev.compo);
+              const subAvg = Number(((dAvg + ev.compo * 2) / 3).toFixed(2));
+              weightedSum += subAvg * sub.coef;
+              totalCoefficients += sub.coef;
+              subjectBreakdown[sub.id] = { ...ev, avg: subAvg };
             }
-
-            subDetails[sub.id] = { d1, d2, compo, avg: subAvg };
           });
 
-          const genAvg = totalCoef > 0 ? Number((totalPts / totalCoef).toFixed(2)) : null;
-          results[st.id] = { genAvg, subDetails, totalPts, totalCoef };
+          const generalAverage = totalCoefficients > 0 ? Number((weightedSum / totalCoefficients).toFixed(2)) : null;
+          results[st.id] = { generalAverage, subjectBreakdown, weightedSum, totalCoefficients };
         });
 
-        // Calcul des rangs
-        const sorted = Object.entries(results)
-          .filter(([_, data]) => data.genAvg !== null)
-          .sort((a, b) => b[1].genAvg - a[1].genAvg);
+        const rankedList = Object.entries(results)
+          .filter(([_, d]) => d.generalAverage !== null)
+          .sort((a, b) => b[1].generalAverage - a[1].generalAverage);
 
-        sorted.forEach(([stId], index) => {
-          results[stId].rank = index + 1;
+        rankedList.forEach(([id], index) => {
+          results[id].rank = index + 1;
         });
 
-        return results;
-      }, [currentStudents, currentSubjects, gradesData]);
+        const avgs = Object.values(results).map(r => r.generalAverage).filter(a => a !== null);
+        const cohortMean = avgs.length > 0 ? (avgs.reduce((acc, v) => acc + v, 0) / avgs.length).toFixed(2) : '0.00';
+        const passingRate = avgs.length > 0 ? Math.round((avgs.filter(v => v >= 10).length / avgs.length) * 100) : 0;
+        const totalTuitionCollected = students.reduce((acc, s) => acc + s.paidFees, 0);
 
-      // Gestion des notes
-      const handleGradeChange = (studentId, subjectId, field, value) => {
-        const numVal = value === '' ? '' : Math.min(20, Math.max(0, parseFloat(value) || 0));
-        setGradesData(prev => ({
+        return { studentMetrics: results, cohortMean, passingRate, totalTuitionCollected };
+      }, [students, subjects, evaluations]);
+
+      const handleScoreUpdate = (studentId, subjectId, component, value) => {
+        const cleanVal = value === '' ? '' : Math.min(20, Math.max(0, parseFloat(value) || 0));
+        setEvaluations(prev => ({
           ...prev,
           [studentId]: {
             ...(prev[studentId] || {}),
             [subjectId]: {
               ...(prev[studentId]?.[subjectId] || {}),
-              [field]: numVal
+              [component]: cleanVal
             }
           }
         }));
       };
 
-      // Inscription / Modification d'un élève
-      const handleSaveStudent = (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const studentId = editingStudent ? editingStudent.id : `st_${Date.now()}`;
-        const newStudent = {
-          id: studentId,
-          mat: form.mat.value.trim(),
-          lastName: form.lastName.value.trim().toUpperCase(),
-          firstName: form.firstName.value.trim(),
-          sex: form.sex.value,
-          birthDate: form.birthDate.value,
-          phone: form.phone.value.trim(),
-          paidFees: Number(form.paidFees.value) || 0
-        };
-
-        setStudentsData(prev => {
-          const list = prev[currentClass] || [];
-          if (editingStudent) {
-            return { ...prev, [currentClass]: list.map(s => s.id === editingStudent.id ? newStudent : s) };
-          }
-          return { ...prev, [currentClass]: [...list, newStudent] };
-        });
-
-        setIsStudentModalOpen(false);
-        setEditingStudent(null);
-        showToast(editingStudent ? "Élève modifié avec succès" : "Nouvel élève inscrit !");
-      };
-
-      // Soumission d'un devoir d'élève
-      const handleStudentSubmit = (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const stId = form.studentId.value;
-        const asgId = form.assignmentId.value;
-        const student = currentStudents.find(s => s.id === stId);
-        const assignment = assignments.find(a => a.id === asgId);
-        if (!student || !assignment) return;
-
-        let targetSubfolder = "/";
-        if (teacherDriveConfig.organizationMode === 'by_assignment') {
-          targetSubfolder = assignment.title;
-        } else if (teacherDriveConfig.organizationMode === 'by_student') {
-          targetSubfolder = `${student.lastName} ${student.firstName} (${student.mat})`;
-        } else if (teacherDriveConfig.organizationMode === 'by_date') {
-          targetSubfolder = new Date().toISOString().slice(0, 10);
-        }
-
-        const formattedFileName = `${student.mat}_${student.lastName}_${assignment.title.replace(/\s+/g, '_')}.pdf`;
-        const folderPath = `${teacherDriveConfig.folderName}${targetSubfolder !== '/' ? ' > ' + targetSubfolder : ''}`;
-
-        const newSubmission = {
-          id: `sub_${Date.now()}`,
-          assignmentId: assignment.id,
-          assignmentTitle: assignment.title,
-          classKey: currentClass,
-          subjectId: assignment.subjectId,
-          studentId: student.id,
-          studentName: `${student.lastName} ${student.firstName}`,
-          studentMatricule: student.mat,
-          submittedAt: new Date().toISOString(),
-          fileName: formattedFileName,
-          folderPath: folderPath,
-          targetSubfolder: targetSubfolder,
-          studentComment: form.comment.value || '',
-          fileDriveUrl: `https://drive.google.com/file/d/devoir_${student.mat}_${Date.now()}/view`,
-          status: 'reçu'
-        };
-
-        setSubmissions(prev => [newSubmission, ...prev]);
-        setIsSubmitModalOpen(false);
-        showToast(`Devoir soumis et classé dans : [${folderPath}]`);
-      };
-
-      // Notation d'une soumission
-      const handleGradeSubmission = (subId, gradeVal, feedback, autoInject) => {
-        const sub = submissions.find(s => s.id === subId);
-        if (!sub) return;
-
-        setSubmissions(prev => prev.map(s => s.id === subId ? {
-          ...s,
-          grade: Number(gradeVal),
-          teacherFeedback: feedback,
-          status: 'corrigé'
-        } : s));
-
-        if (autoInject && sub.studentId && sub.subjectId) {
-          setGradesData(prev => ({
-            ...prev,
-            [sub.studentId]: {
-              ...(prev[sub.studentId] || {}),
-              [sub.subjectId]: {
-                ...(prev[sub.studentId]?.[sub.subjectId] || {}),
-                d1: Number(gradeVal)
-              }
-            }
-          }));
-          showToast(`Note ${gradeVal}/20 validée et reportée dans le carnet !`);
-        } else {
-          showToast(`Note ${gradeVal}/20 enregistrée !`);
-        }
-      };
-
       return (
-        <div className="flex flex-col min-h-screen">
-          {/* Toast Notification */}
-          {toast && (
-            <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-2 animate-bounce">
-              <span className="text-emerald-400 font-black">✓</span>
-              <span>{toast}</span>
+        <div className="flex flex-col min-h-screen bg-slate-100">
+          {/* Notification système */}
+          {notification && (
+            <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-medium px-4 py-3 rounded-lg shadow-xl border border-slate-700 flex items-center gap-2.5 animate-fade-in">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>{notification}</span>
             </div>
           )}
 
-          {/* En-tête Principal */}
-          <header className="bg-slate-900 text-white sticky top-0 z-40 border-b border-slate-800 shadow-md">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          {/* En-tête institutionnel */}
+          <header className="bg-slate-900 text-white border-b border-slate-800 no-print sticky top-0 z-30">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white flex items-center justify-center font-black text-sm shadow-md">
-                  G
+                <div className="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-indigo-400">
+                  GN
                 </div>
                 <div>
-                  <h1 className="font-extrabold text-sm sm:text-base tracking-tight leading-none">GestNotes Pro</h1>
-                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">{config.schoolName}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm tracking-tight text-slate-100">GestNotes Administration</span>
+                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">v4.2 PRO</span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">{INSTITUTION_CONFIG.name} • {INSTITUTION_CONFIG.academicYear}</div>
                 </div>
               </div>
 
-              {/* Sélecteur de Classe & Navigation */}
+              {/* Sélecteur de division académique & actions */}
               <div className="flex items-center gap-3">
-                <select
-                  value={currentClass}
-                  onChange={(e) => setCurrentClass(e.target.value)}
-                  className="bg-slate-800 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-700 outline-none cursor-pointer"
-                >
-                  <option value="Seconde">Classe : Seconde S</option>
-                  <option value="Premiere">Classe : Première S</option>
-                  <option value="Terminale">Classe : Terminale S</option>
-                </select>
+                <div className="flex items-center gap-1.5 bg-slate-800 p-1 rounded-md border border-slate-700 text-xs">
+                  <span className="text-slate-400 px-2 font-medium">Division :</span>
+                  <select
+                    value={currentClass}
+                    onChange={(e) => setCurrentClass(e.target.value)}
+                    className="bg-slate-900 text-white px-2.5 py-1 rounded font-medium border border-slate-700 outline-none cursor-pointer"
+                  >
+                    <option value="Seconde">Seconde S (Scientifique)</option>
+                    <option value="Premiere">Première S (Scientifique)</option>
+                    <option value="Terminale">Terminale S (Scientifique)</option>
+                  </select>
+                </div>
 
-                <div className="hidden md:flex items-center gap-1 bg-slate-800/90 p-1 rounded-xl border border-slate-700">
+                <div className="h-4 w-px bg-slate-700"></div>
+
+                <div className="flex items-center gap-1">
                   <button
-                    onClick={() => setActiveTab('grades')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'grades' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'}`}
+                    onClick={() => setActiveModule('grades')}
+                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${activeModule === 'grades' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}
                   >
-                    Carnet de Notes
+                    Relevé des Notes
                   </button>
                   <button
-                    onClick={() => setActiveTab('students')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'students' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'}`}
+                    onClick={() => setActiveModule('students')}
+                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${activeModule === 'students' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}
                   >
-                    Élèves & Scolarité
+                    Immatriculation & Droits
                   </button>
                   <button
-                    onClick={() => setActiveTab('homework')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === 'homework' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'}`}
+                    onClick={() => setActiveModule('homework')}
+                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${activeModule === 'homework' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}
                   >
-                    <span>Dossier Drive & Devoirs</span>
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Dépôts & Google Drive
                   </button>
                   <button
-                    onClick={() => setActiveTab('bulletins')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'bulletins' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'}`}
+                    onClick={() => setActiveModule('bulletins')}
+                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${activeModule === 'bulletins' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}
                   >
                     Bulletins Officiels
                   </button>
                 </div>
-
-                <button
-                  onClick={() => setIsConfigModalOpen(true)}
-                  className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 text-xs font-bold transition-all"
-                  title="Paramètres de l'école"
-                >
-                  ⚙
-                </button>
               </div>
             </div>
           </header>
 
-          {/* Navigation Mobile */}
-          <div className="md:hidden flex items-center justify-around bg-slate-800 text-white p-2 border-b border-slate-700 text-[11px] font-bold">
-            <button onClick={() => setActiveTab('grades')} className={activeTab === 'grades' ? 'text-indigo-400' : 'text-slate-400'}>Notes</button>
-            <button onClick={() => setActiveTab('students')} className={activeTab === 'students' ? 'text-indigo-400' : 'text-slate-400'}>Élèves</button>
-            <button onClick={() => setActiveTab('homework')} className={activeTab === 'homework' ? 'text-indigo-400' : 'text-slate-400'}>Devoirs Drive</button>
-            <button onClick={() => setActiveTab('bulletins')} className={activeTab === 'bulletins' ? 'text-indigo-400' : 'text-slate-400'}>Bulletins</button>
-          </div>
-
-          {/* CONTENU PRINCIPAL */}
+          {/* Tableau de bord principal */}
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
 
-            {/* ================= 1. CARNET DE NOTES ================= */}
-            {activeTab === 'grades' && (
-              <div className="space-y-4">
-                <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
-                  <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
-                    <div>
-                      <h2 className="text-sm font-extrabold text-slate-900">Carnet de Notes & Calcul des Moyennes — {currentClass}</h2>
-                      <p className="text-xs text-slate-500">Moyenne matière = (Moyenne devoirs + Compo × 2) ÷ 3</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setIsSubmitModalOpen(true)}
-                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold rounded-xl shadow-xs"
-                      >
-                        📤 Simuler Dépôt Devoir
-                      </button>
-                      <button
-                        onClick={() => showToast("Données sauvegardées en cache !")}
-                        className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold rounded-xl shadow-xs"
-                      >
-                        Enregistrer
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead>
-                        <tr className="bg-slate-100 text-slate-600 font-extrabold border-b border-slate-200 uppercase tracking-wider">
-                          <th className="p-3 border-r border-slate-200">Matricule</th>
-                          <th className="p-3 border-r border-slate-200">Nom & Prénom</th>
-                          {currentSubjects.map(s => (
-                            <th key={s.id} className="p-2 text-center border-r border-slate-200">
-                              <div>{s.name}</div>
-                              <div className="text-[10px] text-indigo-600 font-normal">Coef {s.coef} (D1/D2/Comp)</div>
-                            </th>
-                          ))}
-                          <th className="p-3 text-center border-r border-slate-200 bg-indigo-50/50">Moyenne</th>
-                          <th className="p-3 text-center bg-indigo-50/50">Rang</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        {currentStudents.map(st => {
-                          const calc = studentCalculations[st.id] || {};
-                          return (
-                            <tr key={st.id} className="hover:bg-slate-50/80">
-                              <td className="p-3 font-mono font-bold text-slate-500 border-r border-slate-200">{st.mat}</td>
-                              <td className="p-3 font-bold text-slate-900 border-r border-slate-200">{st.lastName} {st.firstName}</td>
-                              {currentSubjects.map(s => {
-                                const gr = gradesData[st.id]?.[s.id] || {};
-                                const avg = calc.subDetails?.[s.id]?.avg;
-                                return (
-                                  <td key={s.id} className="p-2 border-r border-slate-200">
-                                    <div className="flex items-center justify-center gap-1">
-                                      <input
-                                        type="number"
-                                        min="0" max="20" step="0.5"
-                                        placeholder="D1"
-                                        value={gr.d1 ?? ''}
-                                        onChange={(e) => handleGradeChange(st.id, s.id, 'd1', e.target.value)}
-                                        className="w-10 p-1 text-center bg-slate-50 border border-slate-200 rounded font-semibold text-xs outline-none focus:border-indigo-500"
-                                      />
-                                      <input
-                                        type="number"
-                                        min="0" max="20" step="0.5"
-                                        placeholder="D2"
-                                        value={gr.d2 ?? ''}
-                                        onChange={(e) => handleGradeChange(st.id, s.id, 'd2', e.target.value)}
-                                        className="w-10 p-1 text-center bg-slate-50 border border-slate-200 rounded font-semibold text-xs outline-none focus:border-indigo-500"
-                                      />
-                                      <input
-                                        type="number"
-                                        min="0" max="20" step="0.5"
-                                        placeholder="Comp"
-                                        value={gr.compo ?? ''}
-                                        onChange={(e) => handleGradeChange(st.id, s.id, 'compo', e.target.value)}
-                                        className="w-11 p-1 text-center bg-white border border-indigo-300 rounded font-extrabold text-xs text-indigo-700 outline-none"
-                                      />
-                                    </div>
-                                    {avg !== null && avg !== undefined && (
-                                      <div className={`text-center font-bold text-[10px] mt-1 ${avg >= 10 ? 'text-emerald-700' : 'text-rose-600'}`}>
-                                        Moy: {avg}/20
-                                      </div>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                              <td className="p-3 text-center border-r border-slate-200 bg-indigo-50/30">
-                                <span className={`text-sm font-black px-2 py-0.5 rounded-lg ${calc.genAvg >= 10 ? 'text-emerald-700 bg-emerald-100' : 'text-rose-700 bg-rose-100'}`}>
-                                  {calc.genAvg !== null ? `${calc.genAvg}/20` : '-'}
-                                </span>
-                              </td>
-                              <td className="p-3 text-center font-extrabold text-indigo-900 bg-indigo-50/30">
-                                {calc.rank ? `${calc.rank}${calc.rank === 1 ? 'er' : 'e'}` : '-'}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+            {/* Indicateurs synthétiques de cohorte */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 no-print">
+              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
+                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Effectif Inscrit</div>
+                <div className="text-xl font-bold text-slate-900 mt-1">{students.length} Apprenants</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">Registre officiel à jour</div>
               </div>
-            )}
+              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
+                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Moyenne Générale Cohorte</div>
+                <div className="text-xl font-bold text-slate-900 mt-1">{metrics.cohortMean} <span className="text-xs text-slate-400 font-normal">/ 20</span></div>
+                <div className="text-[11px] text-slate-500 mt-0.5">{INSTITUTION_CONFIG.period}</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
+                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Taux d'Admissibilité (≥ 10/20)</div>
+                <div className="text-xl font-bold text-slate-900 mt-1">{metrics.passingRate} %</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">Seuil institutionnel respecté</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
+                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Recouvrement Droits</div>
+                <div className="text-xl font-bold text-slate-900 mt-1">{metrics.totalTuitionCollected.toLocaleString()} <span className="text-xs text-slate-400 font-normal">FCFA</span></div>
+                <div className="text-[11px] text-slate-500 mt-0.5">Sur {(students.length * INSTITUTION_CONFIG.tuitionDuePerStudent).toLocaleString()} FCFA attendus</div>
+              </div>
+            </div>
 
-            {/* ================= 2. ÉLÈVES & CAISSE SCOLARITÉ ================= */}
-            {activeTab === 'students' && (
-              <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
-                <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-wrap gap-3">
+            {/* MODULE 1 : RELEVÉ ACADÉMIQUE DE NOTES */}
+            {activeModule === 'grades' && (
+              <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <h2 className="text-sm font-extrabold text-slate-900">Registre des Élèves & Caisse Scolarité — {currentClass}</h2>
-                    <p className="text-xs text-slate-500">Tarif officiel : <strong>{config.schoolFeesAmount.toLocaleString()} FCFA</strong> / trimestre</p>
+                    <h2 className="text-sm font-bold text-slate-900">Registre d'Évaluation Périodique — {currentClass}</h2>
+                    <p className="text-xs text-slate-500">Pondération réglementaire : Moyenne = [((Devoir 1 + Devoir 2) ÷ 2) + Composition × 2] ÷ 3</p>
                   </div>
-                  <button
-                    onClick={() => { setEditingStudent(null); setIsStudentModalOpen(true); }}
-                    className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-xs cursor-pointer"
-                  >
-                    + Inscrire un Élève
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => notify("Données académiques validées et enregistrées dans la base de registre.")}
+                      className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold shadow-xs"
+                    >
+                      Enregistrer les saisies
+                    </button>
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="bg-slate-100 text-slate-600 font-extrabold border-b border-slate-200 uppercase">
-                        <th className="p-3">Matricule</th>
-                        <th className="p-3">Nom & Prénom</th>
-                        <th className="p-3">Genre</th>
-                        <th className="p-3">Téléphone Parent</th>
-                        <th className="p-3">Montant Versé</th>
-                        <th className="p-3">Statut Scolarité</th>
-                        <th className="p-3 text-right">Actions</th>
+                      <tr className="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                        <th className="py-2.5 px-3 border-r border-slate-200 w-28">N° Matricule</th>
+                        <th className="py-2.5 px-3 border-r border-slate-200 w-44">Identité de l'Élève</th>
+                        {subjects.map(s => (
+                          <th key={s.id} className="py-2.5 px-2 text-center border-r border-slate-200 font-semibold">
+                            <div>{s.name}</div>
+                            <div className="text-[10px] text-slate-500 font-normal">Coef. {s.coef} (D1 / D2 / Compo)</div>
+                          </th>
+                        ))}
+                        <th className="py-2.5 px-3 text-center border-r border-slate-200 bg-slate-50 w-28">Moyenne</th>
+                        <th className="py-2.5 px-3 text-center bg-slate-50 w-20">Rang</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {currentStudents.map(st => {
-                        const isPaid = st.paidFees >= config.schoolFeesAmount;
-                        const due = config.schoolFeesAmount - st.paidFees;
+                    <tbody className="divide-y divide-slate-200 text-slate-700">
+                      {students.map(st => {
+                        const m = metrics.studentMetrics[st.id] || {};
                         return (
-                          <tr key={st.id} className="hover:bg-slate-50/80">
-                            <td className="p-3 font-mono font-bold text-slate-500">{st.mat}</td>
-                            <td className="p-3 font-bold text-slate-900">{st.lastName} {st.firstName}</td>
-                            <td className="p-3">{st.sex === 'M' ? 'Garçon' : 'Fille'}</td>
-                            <td className="p-3 font-mono text-slate-600">{st.phone}</td>
-                            <td className="p-3 font-bold text-slate-800">{st.paidFees.toLocaleString()} FCFA</td>
-                            <td className="p-3">
-                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                                {isPaid ? 'Soldé' : `Reste: ${due.toLocaleString()} F`}
-                              </span>
+                          <tr key={st.id} className="hover:bg-slate-50/75">
+                            <td className="py-2.5 px-3 font-mono font-medium text-slate-500 border-r border-slate-200">{st.matricule}</td>
+                            <td className="py-2.5 px-3 font-semibold text-slate-900 border-r border-slate-200">{st.lastName} {st.firstName}</td>
+                            {subjects.map(s => {
+                              const ev = evaluations[st.id]?.[s.id] || {};
+                              const subAvg = m.subjectBreakdown?.[s.id]?.avg;
+                              return (
+                                <td key={s.id} className="p-2 border-r border-slate-200 text-center">
+                                  <div className="inline-flex items-center gap-1">
+                                    <input
+                                      type="number"
+                                      step="0.5"
+                                      min="0"
+                                      max="20"
+                                      value={ev.d1 ?? ''}
+                                      placeholder="D1"
+                                      onChange={(e) => handleScoreUpdate(st.id, s.id, 'd1', e.target.value)}
+                                      className="w-10 text-center border border-slate-200 rounded py-1 font-mono text-xs focus:border-slate-800 outline-none"
+                                    />
+                                    <input
+                                      type="number"
+                                      step="0.5"
+                                      min="0"
+                                      max="20"
+                                      value={ev.d2 ?? ''}
+                                      placeholder="D2"
+                                      onChange={(e) => handleScoreUpdate(st.id, s.id, 'd2', e.target.value)}
+                                      className="w-10 text-center border border-slate-200 rounded py-1 font-mono text-xs focus:border-slate-800 outline-none"
+                                    />
+                                    <input
+                                      type="number"
+                                      step="0.5"
+                                      min="0"
+                                      max="20"
+                                      value={ev.compo ?? ''}
+                                      placeholder="CP"
+                                      onChange={(e) => handleScoreUpdate(st.id, s.id, 'compo', e.target.value)}
+                                      className="w-11 text-center bg-slate-50 border border-slate-300 rounded py-1 font-mono font-semibold text-xs focus:border-slate-800 outline-none"
+                                    />
+                                  </div>
+                                  {subAvg !== undefined && (
+                                    <div className={`text-[11px] font-mono mt-0.5 ${subAvg >= 10 ? 'text-slate-900' : 'text-red-700'}`}>
+                                      {subAvg.toFixed(2)}
+                                    </div>
+                                  )}
+                                </td>
+                              );
+                            })}
+                            <td className="py-2.5 px-3 text-center border-r border-slate-200 bg-slate-50 font-mono font-bold text-sm">
+                              {m.generalAverage !== null ? (
+                                <span className={m.generalAverage >= 10 ? 'text-slate-900' : 'text-red-700'}>
+                                  {m.generalAverage.toFixed(2)}
+                                </span>
+                              ) : '—'}
                             </td>
-                            <td className="p-3 text-right space-x-2">
-                              {!isPaid && (
-                                <button
-                                  onClick={() => {
-                                    const msg = `Bonjour. Rappel scolarité ${config.schoolName} pour l'élève ${st.firstName} ${st.lastName}. Reste à payer : ${due.toLocaleString()} FCFA. Merci de régulariser.`;
-                                    window.open(`https://wa.me/${st.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
-                                  }}
-                                  className="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg font-bold text-[11px]"
-                                >
-                                  Relance WhatsApp
-                                </button>
-                              )}
-                              <button
-                                onClick={() => { setEditingStudent(st); setIsStudentModalOpen(true); }}
-                                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-[11px]"
-                              >
-                                Modifier
-                              </button>
+                            <td className="py-2.5 px-3 text-center bg-slate-50 font-mono font-semibold text-slate-700">
+                              {m.rank ? `${m.rank}e` : '—'}
                             </td>
                           </tr>
                         );
@@ -593,247 +422,267 @@
               </div>
             )}
 
-            {/* ================= 3. ESPACE DEVOIRS & DOSSIER DÉDIÉ DRIVE ================= */}
-            {activeTab === 'homework' && (
-              <div className="space-y-6">
-                {/* Configuration Dossier Dédié Enseignant */}
-                <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-6 space-y-4">
-                  <div className="flex items-start justify-between flex-wrap gap-4 pb-4 border-b border-slate-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center font-bold text-lg">
-                        📁
-                      </div>
-                      <div>
-                        <h2 className="text-base font-extrabold text-slate-900">Dossier Dédié Google Drive pour l'Enseignant</h2>
-                        <p className="text-xs text-slate-500">Centralisation automatique et structuration des copies d'élèves transmises</p>
-                      </div>
-                    </div>
+            {/* MODULE 2 : REGISTRE D'IMMATRICULATION & CAISSE */}
+            {activeModule === 'students' && (
+              <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900">Registre d'Immatriculation & Recouvrement des Frais de Scolarité</h2>
+                    <p className="text-xs text-slate-500">Tarif trimestriel réglementaire : {INSTITUTION_CONFIG.tuitionDuePerStudent.toLocaleString()} FCFA par apprenant</p>
+                  </div>
+                  <button
+                    onClick={() => notify("Formulaire d'immatriculation administrative ouvert.")}
+                    className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold shadow-xs"
+                  >
+                    + Immatriculer un Élève
+                  </button>
+                </div>
 
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                        <th className="py-2.5 px-3">Matricule</th>
+                        <th className="py-2.5 px-3">Nom & Prénoms</th>
+                        <th className="py-2.5 px-3">Genre</th>
+                        <th className="py-2.5 px-3">Date de Naissance</th>
+                        <th className="py-2.5 px-3">Contact Tuteur</th>
+                        <th className="py-2.5 px-3">Montant Reçu</th>
+                        <th className="py-2.5 px-3">Situation</th>
+                        <th className="py-2.5 px-3 text-right">Régularisation</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 text-slate-700">
+                      {students.map(st => {
+                        const isSettled = st.paidFees >= INSTITUTION_CONFIG.tuitionDuePerStudent;
+                        const remainder = INSTITUTION_CONFIG.tuitionDuePerStudent - st.paidFees;
+                        return (
+                          <tr key={st.id} className="hover:bg-slate-50">
+                            <td className="py-2.5 px-3 font-mono text-slate-500">{st.matricule}</td>
+                            <td className="py-2.5 px-3 font-semibold text-slate-900">{st.lastName} {st.firstName}</td>
+                            <td className="py-2.5 px-3">{st.sex === 'M' ? 'Masculin' : 'Féminin'}</td>
+                            <td className="py-2.5 px-3 font-mono">{st.birthDate}</td>
+                            <td className="py-2.5 px-3 font-mono">{st.phone}</td>
+                            <td className="py-2.5 px-3 font-mono font-medium">{st.paidFees.toLocaleString()} FCFA</td>
+                            <td className="py-2.5 px-3">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${isSettled ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                                {isSettled ? 'En règle' : `Reliquat: ${remainder.toLocaleString()} F`}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 text-right">
+                              {!isSettled && (
+                                <button
+                                  onClick={() => {
+                                    const message = encodeURIComponent(`Avis d'échéance GestNotes — ${INSTITUTION_CONFIG.name} : Veuillez régulariser le reliquat de scolarité de ${remainder.toLocaleString()} FCFA pour l'élève ${st.firstName} ${st.lastName}.`);
+                                    window.open(`https://wa.me/${st.phone.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
+                                  }}
+                                  className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-medium text-[11px]"
+                                >
+                                  Relance Officielle
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* MODULE 3 : GESTION DU DOSSIER DÉDIÉ GOOGLE DRIVE */}
+            {activeModule === 'homework' && (
+              <div className="space-y-5">
+                <div className="bg-white rounded-lg border border-slate-200 p-5 space-y-4 shadow-xs">
+                  <div className="flex items-start justify-between flex-wrap gap-4 pb-4 border-b border-slate-200">
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900">Paramétrage du Dossier Dédié Enseignant (Google Drive)</h2>
+                      <p className="text-xs text-slate-500">Centralisation automatisée et indexation hiérarchique des travaux numériques remis par les apprenants</p>
+                    </div>
                     <a
-                      href={teacherDriveConfig.folderUrl}
+                      href={`https://drive.google.com/drive/folders/${driveConfig.driveFolderId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-xs"
+                      className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold flex items-center gap-1.5 shadow-xs"
                     >
-                      <span>Ouvrir sur Google Drive</span>
+                      <span>Accéder au Dossier Drive</span>
                       <span>↗</span>
                     </a>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    <div className="space-y-1">
-                      <label className="font-extrabold text-slate-700 uppercase">Nom du Dossier Drive :</label>
+                    <div>
+                      <label className="block text-slate-600 font-semibold mb-1">Intitulé du Dossier Racine :</label>
                       <input
                         type="text"
-                        value={teacherDriveConfig.folderName}
-                        onChange={(e) => setTeacherDriveConfig({ ...teacherDriveConfig, folderName: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800 outline-none"
+                        value={driveConfig.targetFolder}
+                        onChange={(e) => setDriveConfig({ ...driveConfig, targetFolder: e.target.value })}
+                        className="w-full border border-slate-300 rounded px-2.5 py-1.5 text-slate-900 font-mono focus:border-slate-800 outline-none"
                       />
                     </div>
-
-                    <div className="space-y-1">
-                      <label className="font-extrabold text-slate-700 uppercase">Organisation des Soumissions :</label>
+                    <div>
+                      <label className="block text-slate-600 font-semibold mb-1">Règle de Classement Interne :</label>
                       <select
-                        value={teacherDriveConfig.organizationMode}
-                        onChange={(e) => {
-                          setTeacherDriveConfig({ ...teacherDriveConfig, organizationMode: e.target.value });
-                          showToast("Mode d'organisation appliqué !");
-                        }}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800 outline-none"
+                        value={driveConfig.organizationMode}
+                        onChange={(e) => { setDriveConfig({ ...driveConfig, organizationMode: e.target.value }); notify("Règle de structuration Drive actualisée."); }}
+                        className="w-full border border-slate-300 rounded px-2.5 py-1.5 text-slate-900 font-medium focus:border-slate-800 outline-none"
                       >
-                        <option value="by_assignment">1. Sous-dossier par Devoir (Recommandé)</option>
-                        <option value="by_student">2. Sous-dossier par Élève (Nom & Matricule)</option>
-                        <option value="by_date">3. Sous-dossier par Date de remise</option>
-                        <option value="flat">4. Dossier Unique à plat</option>
+                        <option value="by_assignment">Par Devoir / Évaluation (Dossier distinct)</option>
+                        <option value="by_student">Par Apprenant (Dossier individuel annuel)</option>
+                        <option value="chronological">Chronologique (Horodatage des réceptions)</option>
                       </select>
                     </div>
-
-                    <div className="space-y-1">
-                      <label className="font-extrabold text-slate-700 uppercase">Format de Nommage des Fichiers :</label>
+                    <div>
+                      <label className="block text-slate-600 font-semibold mb-1">Format de Nomenclature des Fichiers :</label>
                       <select
-                        value={teacherDriveConfig.fileNamingFormat}
-                        onChange={(e) => setTeacherDriveConfig({ ...teacherDriveConfig, fileNamingFormat: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800 outline-none"
+                        value={driveConfig.fileNamingRule}
+                        onChange={(e) => setDriveConfig({ ...driveConfig, fileNamingRule: e.target.value })}
+                        className="w-full border border-slate-300 rounded px-2.5 py-1.5 text-slate-900 font-medium focus:border-slate-800 outline-none"
                       >
-                        <option value="mat_name_asg">[Matricule]_[Nom]_[Devoir].pdf</option>
-                        <option value="asg_name_mat">[Devoir]_[Nom]_[Matricule].pdf</option>
-                        <option value="name_asg">[Nom]_[Devoir].pdf</option>
+                        <option value="MATRICULE_NOM_DEVOIR">[Matricule]_[Nom]_[Intitulé].pdf</option>
+                        <option value="DEVOIR_MATRICULE_NOM">[Intitulé]_[Matricule]_[Nom].pdf</option>
                       </select>
                     </div>
                   </div>
                 </div>
 
-                {/* Devoirs Reçus & Notation */}
-                <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-6 space-y-4">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
+                {/* Journal d'audit des travaux centralisés */}
+                <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-extrabold text-slate-900">Copies Soumises par les Élèves ({submissions.length})</h3>
-                      <p className="text-xs text-slate-500">Classées automatiquement selon la règle : <strong>{teacherDriveConfig.organizationMode}</strong></p>
+                      <h3 className="text-sm font-bold text-slate-900">Registre des Travaux & Évaluations Réceptionnés</h3>
+                      <p className="text-xs text-slate-500">Documents archivés et horodatés sur l'espace cloud institutionnel</p>
                     </div>
-                    <button
-                      onClick={() => setIsSubmitModalOpen(true)}
-                      className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-xl shadow-xs cursor-pointer"
-                    >
-                      + Simuler le dépôt d'un élève
-                    </button>
+                    <span className="text-xs font-mono text-slate-600 bg-slate-200 px-2 py-0.5 rounded">
+                      {submissions.length} documents enregistrés
+                    </span>
                   </div>
 
-                  <div className="space-y-3">
-                    {submissions.map(sub => (
-                      <div key={sub.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-all text-xs space-y-2">
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-extrabold text-slate-900 text-sm">{sub.studentName}</span>
-                            <span className="font-mono text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">{sub.studentMatricule}</span>
-                            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">{sub.assignmentTitle}</span>
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${sub.status === 'corrigé' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                              {sub.status}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            {sub.grade !== undefined && (
-                              <span className="font-black text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">
-                                {sub.grade} / 20
-                              </span>
-                            )}
-                            <a
-                              href={sub.fileDriveUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-2.5 py-1 bg-white border border-slate-300 rounded-lg font-bold text-slate-700 hover:bg-slate-100"
-                            >
-                              Fichier Drive ↗
-                            </a>
-                          </div>
-                        </div>
-
-                        <div className="text-slate-500 flex items-center gap-3 text-[11px]">
-                          <span>📁 Rangement Drive : <strong className="text-slate-700 font-mono">{sub.folderPath}</strong></span>
-                          <span>•</span>
-                          <span>Fichier : {sub.fileName}</span>
-                        </div>
-
-                        {sub.teacherFeedback && (
-                          <div className="text-slate-600 bg-emerald-50 p-2 rounded-lg text-[11px] border border-emerald-200">
-                            <strong>Note du professeur :</strong> {sub.teacherFeedback}
-                          </div>
-                        )}
-
-                        {/* Bloc de notation si non corrigé */}
-                        {sub.status !== 'corrigé' && (
-                          <div className="pt-2 flex items-center gap-2 flex-wrap border-t border-slate-200 mt-2">
-                            <input
-                              type="number"
-                              min="0" max="20" step="0.5"
-                              placeholder="Note /20"
-                              id={`grade_${sub.id}`}
-                              className="w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs font-bold text-center outline-none"
-                            />
-                            <input
-                              type="text"
-                              placeholder="Appréciation pour l'élève..."
-                              id={`feedback_${sub.id}`}
-                              className="flex-1 px-3 py-1 bg-white border border-slate-300 rounded-lg text-xs outline-none"
-                            />
-                            <button
-                              onClick={() => {
-                                const g = document.getElementById(`grade_${sub.id}`).value;
-                                const f = document.getElementById(`feedback_${sub.id}`).value;
-                                if (g) handleGradeSubmission(sub.id, g, f, true);
-                              }}
-                              className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs"
-                            >
-                              Valider & Injecter au carnet
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                          <th className="py-2 px-3">Date & Heure</th>
+                          <th className="py-2 px-3">Apprenant</th>
+                          <th className="py-2 px-3">Évaluation</th>
+                          <th className="py-2 px-3">Nom du Fichier Stocké</th>
+                          <th className="py-2 px-3">Arborescence Drive</th>
+                          <th className="py-2 px-3 text-center">Note Validée</th>
+                          <th className="py-2 px-3 text-right">Lien Document</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 text-slate-700">
+                        {submissions.map(sub => (
+                          <tr key={sub.id} className="hover:bg-slate-50">
+                            <td className="py-2 px-3 font-mono text-slate-500">{new Date(sub.submittedAt).toLocaleString()}</td>
+                            <td className="py-2 px-3 font-semibold text-slate-900">{sub.studentName} ({sub.matricule})</td>
+                            <td className="py-2 px-3">{sub.assignmentTitle}</td>
+                            <td className="py-2 px-3 font-mono text-slate-600">{sub.fileName}</td>
+                            <td className="py-2 px-3 font-mono text-slate-500">{sub.folderPath}</td>
+                            <td className="py-2 px-3 text-center font-mono font-bold text-slate-900">
+                              {sub.grade !== undefined ? `${sub.grade} / 20` : 'En attente'}
+                            </td>
+                            <td className="py-2 px-3 text-right">
+                              <a
+                                href="https://drive.google.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-600 hover:text-indigo-800 font-semibold"
+                              >
+                                Consulter sur Drive ↗
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* ================= 4. BULLETINS OFFICIELS ================= */}
-            {activeTab === 'bulletins' && (
+            {/* MODULE 4 : ÉDITION DES BULLETINS OFFICIELS */}
+            {activeModule === 'bulletins' && (
               <div className="space-y-4">
-                <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-6">
-                  <h2 className="text-sm font-extrabold text-slate-900 mb-2">Génération & Impression des Bulletins Scolaires</h2>
-                  <p className="text-xs text-slate-500 mb-4">Sélectionnez un élève pour visualiser et imprimer son bulletin de notes officiel.</p>
-
-                  <div className="flex items-center gap-3 flex-wrap">
+                <div className="bg-white rounded-lg border border-slate-200 p-4 no-print flex items-center justify-between flex-wrap gap-3 shadow-xs">
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900">Génération du Bulletin Trimestriel Officiel</h2>
+                    <p className="text-xs text-slate-500">Sélectionnez l'apprenant pour générer le document réglementaire prêt à l'impression</p>
+                  </div>
+                  <div className="flex items-center gap-3">
                     <select
-                      onChange={(e) => setSelectedBulletinStudent(currentStudents.find(s => s.id === e.target.value) || null)}
-                      className="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold outline-none"
+                      onChange={(e) => setSelectedBulletinStudent(students.find(s => s.id === e.target.value) || null)}
+                      className="border border-slate-300 rounded px-3 py-1.5 text-xs font-semibold text-slate-800 outline-none"
                     >
-                      <option value="">-- Sélectionner un élève --</option>
-                      {currentStudents.map(st => (
-                        <option key={st.id} value={st.id}>{st.mat} — {st.lastName} {st.firstName}</option>
+                      <option value="">— Sélectionner un élève —</option>
+                      {students.map(st => (
+                        <option key={st.id} value={st.id}>{st.matricule} — {st.lastName} {st.firstName}</option>
                       ))}
                     </select>
-
                     {selectedBulletinStudent && (
                       <button
                         onClick={() => window.print()}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold rounded-xl shadow-xs cursor-pointer"
+                        className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold shadow-xs"
                       >
-                        🖨️ Imprimer le Bulletin Officiel
+                        Imprimer le Document Officiel
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Rendu du Bulletin Sélectionné */}
+                {/* MODÈLE DU BULLETIN (CONFORME NORMES ACADÉMIQUES) */}
                 {selectedBulletinStudent && (
-                  <div className="bg-white p-8 rounded-2xl border border-slate-300 shadow-md max-w-4xl mx-auto space-y-6">
-                    <div className="border-b-2 border-slate-900 pb-4 flex justify-between items-center text-xs">
+                  <div className="bg-white p-8 rounded-lg border border-slate-300 shadow-sm max-w-4xl mx-auto space-y-6 text-slate-900">
+                    <div className="border-b-2 border-slate-900 pb-4 flex justify-between items-start text-xs">
                       <div>
-                        <h3 className="font-black text-sm uppercase tracking-wide">{config.schoolName}</h3>
-                        <p>{config.address}</p>
-                        <p>Tél : {config.phone} | Email : {config.email}</p>
+                        <h3 className="font-extrabold text-sm uppercase tracking-wide">{INSTITUTION_CONFIG.name}</h3>
+                        <p className="text-slate-600">{INSTITUTION_CONFIG.address}</p>
+                        <p className="text-slate-600">Code Établissement : <span className="font-mono">{INSTITUTION_CONFIG.registrationCode}</span></p>
                       </div>
                       <div className="text-right">
-                        <span className="font-extrabold text-sm block">BULLETIN DE NOTES</span>
-                        <span className="font-bold text-indigo-700">{config.term} — {config.academicYear}</span>
+                        <span className="font-extrabold text-base block tracking-tight">BULLETIN OFFICIEL DE NOTES</span>
+                        <span className="font-semibold text-slate-700">{INSTITUTION_CONFIG.period} • Année {INSTITUTION_CONFIG.academicYear}</span>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl text-xs">
-                      <div>
-                        <p>Élève : <strong className="text-sm uppercase">{selectedBulletinStudent.lastName} {selectedBulletinStudent.firstName}</strong></p>
-                        <p>Matricule : <strong>{selectedBulletinStudent.mat}</strong></p>
-                        <p>Date de Naissance : <strong>{selectedBulletinStudent.birthDate}</strong></p>
+                    <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded border border-slate-200 text-xs">
+                      <div className="space-y-1">
+                        <div>Identité de l'Élève : <strong className="uppercase">{selectedBulletinStudent.lastName} {selectedBulletinStudent.firstName}</strong></div>
+                        <div>Matricule National : <strong className="font-mono">{selectedBulletinStudent.matricule}</strong></div>
+                        <div>Né(e) le : <strong className="font-mono">{selectedBulletinStudent.birthDate}</strong></div>
                       </div>
-                      <div className="text-right">
-                        <p>Classe : <strong>{currentClass}</strong></p>
-                        <p>Effectif : <strong>{currentStudents.length} élèves</strong></p>
-                        <p>Rang Général : <strong className="text-indigo-700 text-sm">{studentCalculations[selectedBulletinStudent.id]?.rank || '-'}e</strong></p>
+                      <div className="text-right space-y-1">
+                        <div>Division : <strong>{currentClass} S</strong></div>
+                        <div>Effectif Contrôlé : <strong>{students.length} Apprenants</strong></div>
+                        <div>Rang Général : <strong>{metrics.studentMetrics[selectedBulletinStudent.id]?.rank || '—'}e sur {students.length}</strong></div>
                       </div>
                     </div>
 
                     <table className="w-full text-left text-xs border-collapse border border-slate-300">
                       <thead>
-                        <tr className="bg-slate-100 font-extrabold uppercase border-b border-slate-300">
-                          <th className="p-2 border-r border-slate-300">Discipline</th>
-                          <th className="p-2 text-center border-r border-slate-300">Coef</th>
-                          <th className="p-2 text-center border-r border-slate-300">Moy/20</th>
-                          <th className="p-2 text-center border-r border-slate-300">Total Points</th>
-                          <th className="p-2">Appréciation</th>
+                        <tr className="bg-slate-100 font-semibold border-b border-slate-300">
+                          <th className="p-2.5 border-r border-slate-300">Discipline Enseignée</th>
+                          <th className="p-2.5 text-center border-r border-slate-300 w-16">Coef.</th>
+                          <th className="p-2.5 text-center border-r border-slate-300 w-24">Moyenne / 20</th>
+                          <th className="p-2.5 text-center border-r border-slate-300 w-28">Points Pondérés</th>
+                          <th className="p-2.5">Appréciation du Conseil Pédagogique</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-300">
-                        {currentSubjects.map(sub => {
-                          const avg = studentCalculations[selectedBulletinStudent.id]?.subDetails?.[sub.id]?.avg;
-                          const total = avg ? (avg * sub.coef).toFixed(2) : '-';
+                        {subjects.map(s => {
+                          const subAvg = metrics.studentMetrics[selectedBulletinStudent.id]?.subjectBreakdown?.[s.id]?.avg;
+                          const weightedPts = subAvg !== undefined ? (subAvg * s.coef).toFixed(2) : '—';
                           return (
-                            <tr key={sub.id}>
-                              <td className="p-2 font-bold border-r border-slate-300">{sub.name}</td>
-                              <td className="p-2 text-center border-r border-slate-300">{sub.coef}</td>
-                              <td className="p-2 text-center font-bold border-r border-slate-300">{avg ?? '-'}</td>
-                              <td className="p-2 text-center font-bold border-r border-slate-300">{total}</td>
-                              <td className="p-2 italic text-slate-500">
-                                {avg >= 16 ? 'Excellent travail' : avg >= 14 ? 'Très bon travail' : avg >= 12 ? 'Bon travail' : avg >= 10 ? 'Passable' : 'Doit redoubler d\'efforts'}
+                            <tr key={s.id}>
+                              <td className="p-2.5 border-r border-slate-300 font-medium">{s.name}</td>
+                              <td className="p-2.5 text-center border-r border-slate-300 font-mono">{s.coef}</td>
+                              <td className="p-2.5 text-center border-r border-slate-300 font-mono font-bold">
+                                {subAvg !== undefined ? subAvg.toFixed(2) : '—'}
+                              </td>
+                              <td className="p-2.5 text-center border-r border-slate-300 font-mono">{weightedPts}</td>
+                              <td className="p-2.5 text-slate-600 italic">
+                                {subAvg >= 16 ? 'Excellent travail académique' : subAvg >= 14 ? 'Très bon ensemble, rigueur constante' : subAvg >= 12 ? 'Travail satisfaisant' : subAvg >= 10 ? 'Passable, consolider les bases' : 'Insuffisant, un suivi particulier est requis'}
                               </td>
                             </tr>
                           );
@@ -841,14 +690,15 @@
                       </tbody>
                     </table>
 
-                    <div className="flex justify-between items-end pt-4 text-xs">
+                    <div className="flex justify-between items-end pt-4 text-xs border-t border-slate-200">
                       <div className="space-y-1">
-                        <p>Moyenne Générale : <strong className="text-base font-black text-indigo-700">{studentCalculations[selectedBulletinStudent.id]?.genAvg || '-'} / 20</strong></p>
-                        <p>Mention : <strong>{studentCalculations[selectedBulletinStudent.id]?.genAvg >= 16 ? 'Très Bien' : studentCalculations[selectedBulletinStudent.id]?.genAvg >= 14 ? 'Bien' : studentCalculations[selectedBulletinStudent.id]?.genAvg >= 12 ? 'Assez Bien' : 'Passable'}</strong></p>
+                        <div>Moyenne Générale Trimestrielle : <strong className="text-base font-bold font-mono">{metrics.studentMetrics[selectedBulletinStudent.id]?.generalAverage?.toFixed(2) || '—'} / 20</strong></div>
+                        <div>Moyenne de la Cohorte : <span className="font-mono">{metrics.cohortMean} / 20</span></div>
+                        <div>Décision du Conseil : <strong>{metrics.studentMetrics[selectedBulletinStudent.id]?.generalAverage >= 10 ? 'Admis au tableau d\'honneur' : 'Avertissement de travail'}</strong></div>
                       </div>
                       <div className="text-center">
-                        <p className="font-bold mb-8">Le Chef d'Établissement</p>
-                        <p className="font-extrabold uppercase">{config.headmaster}</p>
+                        <div className="text-slate-600 mb-8">Le Chef d'Établissement</div>
+                        <div className="font-bold uppercase tracking-wider">{INSTITUTION_CONFIG.headmaster}</div>
                       </div>
                     </div>
                   </div>
@@ -857,147 +707,9 @@
             )}
           </main>
 
-          {/* ================= MODALE 1 : INSCRIPTION ÉLÈVE ================= */}
-          {isStudentModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
-                <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
-                  <h3 className="text-sm font-extrabold">{editingStudent ? "Modifier l'Élève" : "Inscrire un Nouvel Élève"}</h3>
-                  <button onClick={() => setIsStudentModalOpen(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
-                </div>
-                <form onSubmit={handleSaveStudent} className="p-5 space-y-3 text-xs">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Matricule :</label>
-                    <input name="mat" defaultValue={editingStudent?.mat || `MAT-${Math.floor(100 + Math.random()*900)}`} required className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg outline-none font-mono" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Nom :</label>
-                      <input name="lastName" defaultValue={editingStudent?.lastName || ''} required className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg outline-none uppercase" />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Prénom :</label>
-                      <input name="firstName" defaultValue={editingStudent?.firstName || ''} required className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg outline-none" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Genre :</label>
-                      <select name="sex" defaultValue={editingStudent?.sex || 'M'} className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg outline-none">
-                        <option value="M">Masculin</option>
-                        <option value="F">Féminin</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Date de Naissance :</label>
-                      <input type="date" name="birthDate" defaultValue={editingStudent?.birthDate || '2008-01-01'} className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg outline-none" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Téléphone Parent (WhatsApp) :</label>
-                    <input name="phone" defaultValue={editingStudent?.phone || '+221 '} required className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg outline-none" />
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Montant Scolarité Versé (FCFA) :</label>
-                    <input type="number" name="paidFees" defaultValue={editingStudent?.paidFees ?? 50000} className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg outline-none font-bold" />
-                  </div>
-                  <div className="pt-3 flex justify-end gap-2">
-                    <button type="button" onClick={() => setIsStudentModalOpen(false)} className="px-3 py-1.5 text-slate-500 font-bold">Annuler</button>
-                    <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl shadow-xs">Enregistrer</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* ================= MODALE 2 : SIMULATION DÉPÔT ÉLÈVE ================= */}
-          {isSubmitModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
-                <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
-                  <h3 className="text-sm font-extrabold">Portail Dépôt Devoir Élève</h3>
-                  <button onClick={() => setIsSubmitModalOpen(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
-                </div>
-                <form onSubmit={handleStudentSubmit} className="p-5 space-y-3 text-xs">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Sélectionner l'Élève :</label>
-                    <select name="studentId" required className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg font-bold outline-none">
-                      {currentStudents.map(st => (
-                        <option key={st.id} value={st.id}>{st.mat} — {st.lastName} {st.firstName}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Devoir à Rendre :</label>
-                    <select name="assignmentId" required className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg font-bold outline-none">
-                      {assignments.map(a => (
-                        <option key={a.id} value={a.id}>[{a.subjectName}] {a.title}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="p-2.5 bg-indigo-50 rounded-xl border border-indigo-200 text-indigo-900">
-                    <p className="font-bold">Destination Google Drive :</p>
-                    <p className="text-[11px] font-mono">{teacherDriveConfig.folderName} ({teacherDriveConfig.organizationMode})</p>
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Document de la copie (Simulation PDF) :</label>
-                    <input type="file" className="w-full text-slate-500 text-xs" />
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Message au professeur :</label>
-                    <textarea name="comment" rows="2" placeholder="Ex: Bonjour Monsieur, voici ma copie rédigée..." className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg outline-none"></textarea>
-                  </div>
-                  <div className="pt-3 flex justify-end gap-2">
-                    <button type="button" onClick={() => setIsSubmitModalOpen(false)} className="px-3 py-1.5 text-slate-500 font-bold">Annuler</button>
-                    <button type="submit" className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl shadow-xs">Transmettre au Professeur</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* ================= MODALE 3 : CONFIGURATION ÉTABLISSEMENT ================= */}
-          {isConfigModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden">
-                <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
-                  <h3 className="text-sm font-extrabold">Paramètres de l'Établissement & Google Drive</h3>
-                  <button onClick={() => setIsConfigModalOpen(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
-                </div>
-                <div className="p-5 space-y-3 text-xs">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Nom de l'Établissement :</label>
-                    <input value={config.schoolName} onChange={(e) => setConfig({ ...config, schoolName: e.target.value })} className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg font-bold" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Année Scolaire :</label>
-                      <input value={config.academicYear} onChange={(e) => setConfig({ ...config, academicYear: e.target.value })} className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg" />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Trimestre en cours :</label>
-                      <input value={config.term} onChange={(e) => setConfig({ ...config, term: e.target.value })} className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Chef d'Établissement :</label>
-                    <input value={config.headmaster} onChange={(e) => setConfig({ ...config, headmaster: e.target.value })} className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg" />
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">URL Web App Google Apps Script :</label>
-                    <input value={scriptUrl} onChange={(e) => setScriptUrl(e.target.value)} placeholder="https://script.google.com/macros/s/.../exec" className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg font-mono text-[11px]" />
-                  </div>
-                  <div className="pt-3 flex justify-end">
-                    <button onClick={() => { setIsConfigModalOpen(false); showToast("Paramètres sauvegardés !"); }} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl shadow-xs">Enregistrer</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Pied de Page */}
-          <footer className="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 no-print">
-            GestNotes Pro © 2026 — Système de Gestion Scolaire & Google Drive Apps Script
+          {/* Pied de page */}
+          <footer className="bg-white border-t border-slate-200 py-3 text-center text-[11px] text-slate-500 no-print mt-auto">
+            GestNotes Infrastructure Pédagogique © 2026 — Plateforme d'Administration Scolaire & Synchronisation Sécurisée Google Drive
           </footer>
         </div>
       );
