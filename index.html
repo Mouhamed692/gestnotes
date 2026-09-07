@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GestNotes - Système Intégré de Gestion Scolaire & Caisse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    /* ==========================================================================
-       DESIGN SYSTEM CSS - GESTNOTES SCOLAIRE (100% PUR, SANS DÉPENDANCE)
-       ========================================================================== */
     :root {
       --primary: #6366f1;
       --primary-dark: #4f46e5;
@@ -21,9 +21,11 @@
       --slate-700: #334155;
       --slate-600: #475569;
       --slate-500: #64748b;
+      --slate-300: #cbd5e1;
       --slate-200: #e2e8f0;
       --slate-100: #f1f5f9;
       --slate-50: #f8fafc;
+      --emerald-700: #047857;
       --emerald-600: #059669;
       --emerald-500: #10b981;
       --emerald-100: #d1fae5;
@@ -33,7 +35,6 @@
       --amber-50: #fffbeb;
       --rose-600: #e11d48;
       --rose-100: #ffe4e6;
-      --rose-50: #fff1f2;
       --blue-600: #2563eb;
       --blue-100: #dbeafe;
       --blue-50: #eff6ff;
@@ -41,14 +42,14 @@
       --radius-md: 12px;
       --radius-sm: 8px;
       --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--slate-100); color: var(--slate-900); line-height: 1.5; font-size: 14px; min-height: 100vh; display: flex; flex-direction: column; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
+    body { background-color: var(--slate-100); color: var(--slate-900); font-size: 14px; min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* 1. EN-TÊTE NOIR/NAVY (STICKY HEADER) */
+    /* 1. EN-TÊTE NOIR / NAVY */
     .app-header {
       background-color: var(--slate-900);
       color: #ffffff;
@@ -76,16 +77,15 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 1.3rem; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
     }
-    .brand-titles { display: flex; flex-direction: column; }
     .brand-name-row { display: flex; align-items: center; gap: 8px; }
     .brand-name { font-size: 1.2rem; font-weight: 900; color: #ffffff; letter-spacing: -0.02em; }
     .brand-pill {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      font-size: 10px; font-weight: 800; text-transform: uppercase;
       padding: 2px 8px; border-radius: 9999px;
       background-color: var(--violet-950); color: #c4b5fd;
       border: 1px solid var(--violet-800);
     }
-    .school-subtitle { font-size: 11px; color: #94a3b8; font-weight: 500; }
+    .school-subtitle { font-size: 11px; color: #94a3b8; font-weight: 600; }
 
     .header-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .badge-info-year {
@@ -97,30 +97,24 @@
     }
     .badge-info-year strong { color: #ffffff; }
 
+    .badge-idb {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(6, 78, 59, 0.8); border: 1px solid #059669;
+      color: #a7f3d0; font-size: 11px; font-weight: 700;
+      padding: 5px 10px; border-radius: 6px;
+    }
+
     .btn-header {
       padding: 6px 12px; border-radius: var(--radius-sm);
       font-size: 12px; font-weight: 700; cursor: pointer;
       display: inline-flex; align-items: center; gap: 6px;
       border: 1px solid transparent; transition: all 0.15s;
-      text-decoration: none;
     }
-    .btn-header-caisse {
-      background: var(--slate-800); color: #34d399;
-      border-color: var(--slate-700);
-    }
-    .btn-header-caisse:hover { background: #064e3b; border-color: var(--emerald-600); color: #a7f3d0; }
-
-    .btn-header-bulletin {
-      background: #312e81; color: #c7d2fe;
-      border-color: #4338ca;
-    }
+    .btn-header-caisse { background: var(--slate-800); color: #34d399; border-color: var(--slate-700); }
+    .btn-header-caisse:hover { background: #064e3b; color: #a7f3d0; }
+    .btn-header-bulletin { background: #312e81; color: #c7d2fe; border-color: #4338ca; }
     .btn-header-bulletin:hover { background: #3730a3; color: #ffffff; }
-
-    .btn-header-settings {
-      background: var(--slate-800); color: #cbd5e1;
-      border-color: var(--slate-700); padding: 7px 10px;
-    }
-    .btn-header-settings:hover { background: var(--slate-700); color: #ffffff; }
+    .btn-header-settings { background: var(--slate-800); color: #cbd5e1; border-color: var(--slate-700); padding: 7px 10px; }
 
     .role-dropdown {
       background: var(--violet-950); color: #ede9fe;
@@ -130,7 +124,7 @@
       outline: none; cursor: pointer;
     }
 
-    /* 2. BARRE D'ACTIONS & BOUTONS PRINCIPAUX */
+    /* 2. BARRE D'ACTIONS ET CONTENU */
     .main-container {
       max-width: 1280px; margin: 0 auto;
       padding: 16px; width: 100%; flex: 1;
@@ -146,7 +140,6 @@
       justify-content: space-between;
       flex-wrap: wrap; gap: 10px;
     }
-
     .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
     .btn-tool {
@@ -155,27 +148,13 @@
       display: inline-flex; align-items: center; gap: 6px;
       border: 1px solid transparent; transition: all 0.15s;
     }
-
-    .btn-export { background: var(--emerald-50); color: var(--emerald-600); border-color: rgba(16, 185, 129, 0.3); }
-    .btn-export:hover { background: var(--emerald-100); }
-
+    .btn-export { background: var(--emerald-50); color: var(--emerald-700); border-color: rgba(16, 185, 129, 0.3); }
     .btn-import { background: var(--blue-50); color: var(--blue-600); border-color: rgba(37, 99, 235, 0.3); }
-    .btn-import:hover { background: var(--blue-100); }
-
-    .btn-gdrive { background: #faf5ff; color: #7e22ce; border-color: rgba(168, 85, 247, 0.4); }
-    .btn-gdrive:hover { background: #f3e8ff; }
-
     .btn-caisse-jour { background: var(--amber-50); color: var(--amber-600); border-color: rgba(245, 158, 11, 0.4); }
-    .btn-caisse-jour:hover { background: var(--amber-100); }
-
+    .btn-transition { background: #faf5ff; color: #7e22ce; border-color: rgba(168, 85, 247, 0.4); }
     .btn-palmares { background: #eef2ff; color: #4338ca; border-color: rgba(99, 102, 241, 0.3); }
-    .btn-palmares:hover { background: #e0e7ff; }
-
-    .btn-inscrire {
-      background: var(--violet-700); color: #ffffff;
-      border: none; box-shadow: 0 4px 8px rgba(67, 56, 202, 0.25);
-    }
-    .btn-inscrire:hover { background: var(--violet-800); transform: translateY(-1px); }
+    .btn-inscrire { background: var(--violet-700); color: #ffffff; border: none; box-shadow: 0 4px 8px rgba(67, 56, 202, 0.25); }
+    .btn-inscrire:hover { background: var(--violet-800); }
 
     /* 3. SÉLECTEUR DE CLASSE */
     .class-filter-card {
@@ -187,8 +166,7 @@
       justify-content: space-between;
       flex-wrap: wrap; gap: 12px;
     }
-
-    .filter-selects-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .filter-selects-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .select-label-wrap { display: flex; flex-direction: column; gap: 3px; }
     .select-label-wrap label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--slate-500); }
     .custom-select {
@@ -197,15 +175,12 @@
       font-size: 13px; font-weight: 700; color: var(--slate-900);
       outline: none; cursor: pointer;
     }
-    .custom-select:focus { border-color: var(--primary); background: #ffffff; }
-
-    .filter-secondary-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .btn-sub-action {
       padding: 7px 12px; border-radius: var(--radius-sm);
       font-size: 12px; font-weight: 700; border: 1px solid var(--slate-200);
       background: var(--slate-50); color: var(--slate-700); cursor: pointer;
+      display: inline-flex; align-items: center; gap: 5px;
     }
-    .btn-sub-action:hover { background: var(--slate-200); }
 
     /* 4. KPIS FINANCIERS */
     .kpi-grid {
@@ -246,16 +221,11 @@
 
     .grade-input {
       width: 75px; padding: 5px 8px; border-radius: 6px;
-      border: 1px solid var(--slate-200); font-weight: 700;
+      border: 1px solid var(--slate-300); font-weight: 700;
       text-align: center; outline: none; background: #ffffff;
     }
-    .grade-input:focus { border-color: var(--primary); }
-
-    .badge-status {
-      padding: 3px 8px; border-radius: 9999px;
-      font-size: 11px; font-weight: 700; display: inline-block;
-    }
-    .badge-paid { background: var(--emerald-100); color: var(--emerald-600); }
+    .badge-status { padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: 800; }
+    .badge-paid { background: var(--emerald-100); color: var(--emerald-700); }
     .badge-unpaid { background: var(--rose-100); color: var(--rose-600); }
 
     .btn-table-action {
@@ -263,60 +233,68 @@
       border: 1px solid var(--slate-200); background: #ffffff; cursor: pointer;
       text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
     }
-    .btn-table-action:hover { background: var(--slate-100); }
 
     /* 6. MODALES */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(2px); display: none; align-items: center;
+      backdrop-filter: blur(3px); display: none; align-items: center;
       justify-content: center; z-index: 100; padding: 16px;
     }
     .modal-overlay.open { display: flex; }
     .modal-card {
       background: #ffffff; border-radius: var(--radius-lg);
       width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto;
-      padding: 24px; box-shadow: var(--shadow-xl);
+      padding: 24px; box-shadow: var(--shadow-xl); border: 1px solid var(--slate-200);
     }
     .modal-header-row {
       display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid var(--slate-200); padding-bottom: 12px; margin-bottom: 16px;
     }
-    .modal-header-row h3 { font-size: 16px; font-weight: 800; color: var(--slate-900); }
     .btn-modal-close { background: none; border: none; font-size: 20px; color: var(--slate-500); cursor: pointer; }
-
     .form-group-modal { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
     .form-group-modal label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--slate-500); }
-    .input-modal {
-      padding: 9px 12px; border-radius: var(--radius-sm); border: 1px solid var(--slate-200);
-      font-size: 13px; outline: none; font-weight: 600;
-    }
-    .input-modal:focus { border-color: var(--primary); }
-
+    .input-modal { padding: 9px 12px; border-radius: var(--radius-sm); border: 1px solid var(--slate-300); font-size: 13px; outline: none; }
     .btn-primary-modal {
       background: var(--violet-700); color: #ffffff; border: none;
       padding: 10px 16px; border-radius: var(--radius-sm);
       font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 8px;
     }
-    .btn-primary-modal:hover { background: var(--violet-800); }
+
+    /* 7. BULLETIN & IMPRESSION */
+    .bulletin-view-container {
+      background: #ffffff; width: 100%; max-width: 1000px;
+      border-radius: var(--radius-lg); padding: 24px; max-height: 94vh;
+      overflow-y: auto; box-shadow: var(--shadow-xl);
+    }
+    .flag { width: 42px; height: 26px; display: flex; border: 1px solid #000; }
+    .flag .green { background-color: #00853f; flex: 1; }
+    .flag .yellow { background-color: #fdef42; flex: 1; display: flex; justify-content: center; align-items: center; font-size: 10px; color: #00853f; font-weight: 900; }
+    .flag .red { background-color: #e31b23; flex: 1; }
 
     footer {
       background: #ffffff; border-top: 1px solid var(--slate-200);
-      padding: 14px; text-align: center; font-size: 12px; color: var(--slate-500);
+      padding: 14px 20px; font-size: 12px; color: var(--slate-500);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 8px;
     }
 
     @media print {
-      .app-header, .action-toolbar, .class-filter-card, .btn-tool, footer { display: none !important; }
+      @page { size: A4 landscape; margin: 5mm; }
+      body { background: #ffffff !important; }
+      .app-header, .action-toolbar, .class-filter-card, .kpi-grid, .content-box, footer, .no-print { display: none !important; }
+      .modal-overlay { position: static !important; background: none !important; display: block !important; padding: 0 !important; }
+      .bulletin-view-container { max-width: 100% !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. EN-TÊTE NOIR/NAVY (EXACTEMENT COMME L'IMAGE) -->
+  <!-- EN-TÊTE -->
   <header class="app-header">
     <div class="header-content">
       <div class="brand-section">
         <div class="brand-icon">🎓</div>
-        <div class="brand-titles">
+        <div>
           <div class="brand-name-row">
             <span class="brand-name">GestNotes</span>
             <span class="brand-pill">Scolarité</span>
@@ -332,63 +310,49 @@
           <span id="lblActivePeriod" style="color: #818cf8; font-weight: 800;">Semestre 1</span>
         </div>
 
-        <button onclick="openCashModal()" class="btn-header btn-header-caisse" title="Ouvrir le journal de caisse">
+        <div class="badge-idb">
+          💾 <span>IndexedDB Actif</span>
+        </div>
+
+        <button onclick="openCashModal()" class="btn-header btn-header-caisse">
           💰 <span>Journal Caisse</span>
         </button>
 
-        <a href="bulletin.html" class="btn-header btn-header-bulletin" title="Accéder aux bulletins scolaires">
+        <button onclick="openBulletinModal()" class="btn-header btn-header-bulletin">
           📜 <span>Bulletins</span>
-        </a>
+        </button>
 
         <select id="userRoleSelect" class="role-dropdown" onchange="switchRole(this)">
-          <option value="admin">👑 Directeur / Admin</option>
+          <option value="directeur">👑 Directeur / Admin</option>
           <option value="comptable">💼 Comptable</option>
           <option value="enseignant">📝 Enseignant</option>
         </select>
 
-        <button onclick="openSettingsModal()" class="btn-header btn-header-settings" title="Paramètres généraux de l'établissement">
-          ⚙️
-        </button>
+        <button onclick="openSettingsModal()" class="btn-header btn-header-settings">⚙️</button>
       </div>
     </div>
   </header>
 
-  <!-- CORPS PRINCIPAL DE L'APPLICATION -->
+  <!-- CONTENEUR PRINCIPAL -->
   <main class="main-container">
 
-    <!-- 2. BARRE D'ACTIONS (TOUS LES BOUTONS DE L'IMAGE) -->
+    <!-- BARRE D'ACTIONS -->
     <section class="action-toolbar">
       <div class="toolbar-left">
-        <button onclick="exportDatabaseJSON()" class="btn-tool btn-export" title="Télécharger une sauvegarde complète JSON">
-          📥 <span>Exporter Base</span>
-        </button>
-
-        <button onclick="triggerImport()" class="btn-tool btn-import" title="Restaurer des données depuis un fichier JSON">
-          📤 <span>Importer</span>
-        </button>
+        <button onclick="exportDatabaseJSON()" class="btn-tool btn-export">📥 <span>Exporter Base</span></button>
+        <button onclick="triggerImport()" class="btn-tool btn-import">📤 <span>Importer</span></button>
         <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
-
-        <button onclick="handleGoogleDriveSync()" id="btnGoogleSync" class="btn-tool btn-gdrive" title="Synchroniser la base de données avec Google Drive / Google Sheets">
-          ☁️ <span id="lblGoogleSync">Lier Google Drive</span>
-        </button>
-
-        <button onclick="openCashModal()" class="btn-tool btn-caisse-jour" title="Historique des encaissements et réimpression de reçus">
-          🏛️ <span>Caisse du Jour</span>
-        </button>
+        <button onclick="openCashModal()" class="btn-tool btn-caisse-jour">🏛️ <span>Caisse du Jour</span></button>
+        <button onclick="openTransitionModal()" class="btn-tool btn-transition">🎓 <span>Transition Académique</span></button>
       </div>
 
       <div class="toolbar-right">
-        <button onclick="openPalmaresModal()" class="btn-tool btn-palmares" title="Tableau d'honneur et classement général">
-          🏆 <span>Palmarès de Classe</span>
-        </button>
-
-        <button onclick="openStudentModal()" class="btn-tool btn-inscrire" title="Ajouter un nouvel élève">
-          ➕ <span>Inscrire un Élève</span>
-        </button>
+        <button onclick="openPalmaresModal()" class="btn-tool btn-palmares">🏆 <span>Palmarès de Classe</span></button>
+        <button onclick="openStudentModal()" class="btn-tool btn-inscrire">➕ <span>Inscrire un Élève</span></button>
       </div>
     </section>
 
-    <!-- 3. SÉLECTEUR DE CLASSE & SOUS-SECTIONS -->
+    <!-- FILTRE DE CLASSE -->
     <section class="class-filter-card">
       <div class="filter-selects-group">
         <div class="select-label-wrap">
@@ -412,17 +376,11 @@
               <option value="Première">Première</option>
               <option value="Terminale">Terminale</option>
             </optgroup>
-            <optgroup label="Séries">
-              <option value="L1">L1</option>
-              <option value="L2">L2</option>
-              <option value="S1">S1</option>
-              <option value="S2">S2</option>
-            </optgroup>
           </select>
         </div>
 
         <div class="select-label-wrap">
-          <label>Série / Sous-section</label>
+          <label>Série / Section</label>
           <select id="sectionSelector" class="custom-select" onchange="renderUI()"></select>
         </div>
 
@@ -437,28 +395,27 @@
       </div>
 
       <div class="filter-secondary-actions">
-        <button onclick="sendBulkWhatsApp()" class="btn-sub-action">💬 Rappels WhatsApp</button>
         <button onclick="openTarifsModal()" class="btn-sub-action">💵 Frais & Tarifs</button>
         <button onclick="openSubjectsModal()" class="btn-sub-action">📚 Matières & Coefs</button>
       </div>
     </section>
 
-    <!-- 4. STATISTIQUES FINANCIÈRES (KPIS) -->
+    <!-- KPIS FINANCIERS -->
     <section class="kpi-grid">
       <div class="kpi-card">
         <span class="kpi-title">Total Attendu</span>
         <div id="kpiTotalAttendu" class="kpi-value">0 F</div>
-        <span class="kpi-sub">Scolarité totale de la classe</span>
+        <span class="kpi-sub">Scolarité annuelle de la classe</span>
       </div>
       <div class="kpi-card">
-        <span class="kpi-title" style="color: var(--emerald-600);">Total Encaissé</span>
-        <div id="kpiTotalEncaisse" class="kpi-value" style="color: var(--emerald-600);">0 F</div>
+        <span class="kpi-title" style="color: var(--emerald-700);">Total Encaissé</span>
+        <div id="kpiTotalEncaisse" class="kpi-value" style="color: var(--emerald-700);">0 F</div>
         <span class="kpi-sub" id="kpiTauxRecouvrement">Taux de recouvrement : 0%</span>
       </div>
       <div class="kpi-card">
         <span class="kpi-title" style="color: var(--rose-600);">Solde Restant Dû</span>
         <div id="kpiSoldeDu" class="kpi-value" style="color: var(--rose-600);">0 F</div>
-        <span class="kpi-sub">Impayés à régulariser</span>
+        <span class="kpi-sub">Impayés à recouvrer</span>
       </div>
       <div class="kpi-card">
         <span class="kpi-title">Effectif Inscrit</span>
@@ -467,7 +424,7 @@
       </div>
     </section>
 
-    <!-- 5. SAISIE DES NOTES EN DIRECT -->
+    <!-- TABLEAU SAISIE DES NOTES -->
     <section class="content-box">
       <div class="box-header">
         <div style="display: flex; align-items: center; gap: 8px;">
@@ -487,7 +444,7 @@
               <th style="text-align: center;">Devoir 1 (/20)</th>
               <th style="text-align: center;">Devoir 2 (/20)</th>
               <th style="text-align: center;">Composition (/20)</th>
-              <th style="text-align: center;">Moyenne Matière</th>
+              <th style="text-align: center;">Moyenne Discipline</th>
               <th style="text-align: right;">Action</th>
             </tr>
           </thead>
@@ -496,7 +453,7 @@
       </div>
     </section>
 
-    <!-- 6. RÉPERTOIRE DES ÉLÈVES & COMPTABILITÉ -->
+    <!-- RÉPERTOIRE ÉLÈVES & COMPTABILITÉ -->
     <section class="content-box">
       <div class="box-header">
         <h3>👥 Répertoire des Élèves & Suivi des Paiements</h3>
@@ -519,10 +476,184 @@
         </table>
       </div>
     </section>
-
   </main>
 
-  <!-- MODALE : PARAMÈTRES (AVEC LIEN GOOGLE DRIVE) -->
+  <!-- MODALE : TARIFS (DIRECTEUR) -->
+  <div id="tarifsModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header-row">
+        <h3>💵 Grille Tarifaire & Scolarité (Directeur)</h3>
+        <button class="btn-modal-close" onclick="closeModal('tarifsModal')">✕</button>
+      </div>
+      <div id="directorAuthSection" style="display: none; background: var(--amber-50); border: 1px solid #fde68a; padding: 14px; border-radius: 8px; margin-bottom: 12px; text-align: center;">
+        <p style="font-size: 12px; font-weight: 700; color: #92400e; margin-bottom: 8px;">
+          🔒 Saisissez le code PIN Directeur pour modifier les tarifs
+        </p>
+        <div style="display: flex; justify-content: center; gap: 8px;">
+          <input type="password" id="pinUnlockTarif" maxlength="6" class="input-modal" placeholder="Code PIN (1234)" style="width: 140px; text-align: center;">
+          <button type="button" onclick="unlockDirectorTarifs()" class="btn-tool btn-inscrire">Déverrouiller</button>
+        </div>
+      </div>
+      <form id="tarifsForm" onsubmit="handleSaveTarifs(event)">
+        <div class="form-group-modal">
+          <label>Frais d'Inscription (FCFA)</label>
+          <input type="number" id="cfgInscription" required min="0" step="500" class="input-modal">
+        </div>
+        <div class="form-group-modal">
+          <label>Mensualité Standard (FCFA / mois)</label>
+          <input type="number" id="cfgMensualite" required min="0" step="500" class="input-modal">
+        </div>
+        <div class="form-group-modal">
+          <label>Nombre de mois de scolarité</label>
+          <select id="cfgTotalMonths" class="custom-select">
+            <option value="9">9 mois</option>
+            <option value="10" selected>10 mois</option>
+            <option value="12">12 mois</option>
+          </select>
+        </div>
+        <button type="submit" id="btnSaveTarifs" class="btn-primary-modal">💾 Valider et Enregistrer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODALE : MATIÈRES & COEFFICIENTS -->
+  <div id="subjectsModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header-row">
+        <h3>📚 Gestion des Matières & Coefficients</h3>
+        <button class="btn-modal-close" onclick="closeModal('subjectsModal')">✕</button>
+      </div>
+      <form onsubmit="handleAddSubject(event)" style="display: flex; gap: 8px; margin-bottom: 14px;">
+        <input type="text" id="newSubName" required class="input-modal" placeholder="Nom de la matière" style="flex: 2;">
+        <input type="number" id="newSubCoef" required step="0.5" min="0.5" max="20" class="input-modal" placeholder="Coef" style="flex: 1;">
+        <button type="submit" class="btn-tool btn-inscrire">➕ Ajouter</button>
+      </form>
+      <div style="overflow-x: auto; max-height: 280px; border: 1px solid var(--slate-200); border-radius: 8px;">
+        <table>
+          <thead>
+            <tr><th>Discipline</th><th style="text-align: center;">Coefficient</th><th style="text-align: right;">Action</th></tr>
+          </thead>
+          <tbody id="subjectsTableBody"></tbody>
+        </table>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+        <span style="font-weight: 800;" id="lblTotalCoefs">Total Coefs : 0</span>
+        <button type="button" onclick="resetDefaultSubjects()" class="btn-sub-action">Rétablir défaut</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE : TRANSITION ACADÉMIQUE -->
+  <div id="transitionModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 750px;">
+      <div class="modal-header-row">
+        <h3>🎓 Transition Académique de Classe en Classe</h3>
+        <button class="btn-modal-close" onclick="closeModal('transitionModal')">✕</button>
+      </div>
+      <p style="font-size: 12px; color: var(--slate-600); margin-bottom: 14px;">
+        Basculez vers la nouvelle année scolaire avec promotion automatique des admis (moyenne ≥ 10/20), maintien des redoublants, et archivage de l'année précédente dans IndexedDB.
+      </p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div class="form-group-modal">
+          <label>Année Actuelle (Archivée)</label>
+          <input type="text" id="transSourceYear" readonly class="input-modal" style="background: var(--slate-100);">
+        </div>
+        <div class="form-group-modal">
+          <label>Nouvelle Année Scolaire</label>
+          <input type="text" id="transTargetYear" required class="input-modal" placeholder="2026-2027">
+        </div>
+      </div>
+      <div style="overflow-x: auto; max-height: 250px; border: 1px solid var(--slate-200); border-radius: 8px; margin-bottom: 14px;">
+        <table>
+          <thead>
+            <tr><th>Élève</th><th>Classe</th><th>Moyenne</th><th>Décision</th><th>Classe Suivante</th></tr>
+          </thead>
+          <tbody id="transitionTableBody"></tbody>
+        </table>
+      </div>
+      <button type="button" onclick="executeAcademicTransition()" class="btn-primary-modal" style="background: var(--emerald-600);">
+        ✓ Exécuter la Transition & Archiver dans IndexedDB
+      </button>
+    </div>
+  </div>
+
+  <!-- MODALE : INSCRIRE UN ÉLÈVE -->
+  <div id="studentModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 460px;">
+      <div class="modal-header-row">
+        <h3>Inscrire un Nouvel Élève</h3>
+        <button class="btn-modal-close" onclick="closeModal('studentModal')">✕</button>
+      </div>
+      <form onsubmit="handleCreateStudent(event)">
+        <div class="form-group-modal">
+          <label>Nom de famille *</label>
+          <input type="text" id="sLastName" required class="input-modal" placeholder="ex: DIOP">
+        </div>
+        <div class="form-group-modal">
+          <label>Prénom *</label>
+          <input type="text" id="sFirstName" required class="input-modal" placeholder="ex: Aminata">
+        </div>
+        <div class="form-group-modal">
+          <label>Genre</label>
+          <select id="sGender" class="custom-select">
+            <option value="F">Féminin</option>
+            <option value="M">Masculin</option>
+          </select>
+        </div>
+        <div class="form-group-modal">
+          <label>Téléphone Parent (WhatsApp) *</label>
+          <input type="tel" id="sParentPhone" required class="input-modal" placeholder="ex: 221771234567">
+        </div>
+        <div class="form-group-modal">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; text-transform: none;">
+            <input type="checkbox" id="sInscriptionPaid" checked> Frais d'inscription payés dès l'admission
+          </label>
+        </div>
+        <button type="submit" class="btn-primary-modal">Valider l'Inscription</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODALE : BULLETIN OFFICIEL IMPRIMABLE -->
+  <div id="bulletinModal" class="modal-overlay">
+    <div class="bulletin-view-container">
+      <div class="modal-header-row no-print">
+        <h3>📜 Bulletin Officiel de Notes</h3>
+        <div style="display: flex; gap: 8px;">
+          <button onclick="window.print()" class="btn-tool btn-export">🖨️ Imprimer</button>
+          <button class="btn-modal-close" onclick="closeModal('bulletinModal')">✕</button>
+        </div>
+      </div>
+      <div id="bulletinPrintArea"></div>
+    </div>
+  </div>
+
+  <!-- MODALE : CAISSE -->
+  <div id="cashModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header-row">
+        <h3>💰 Journal de Caisse & Trésorerie</h3>
+        <button class="btn-modal-close" onclick="closeModal('cashModal')">✕</button>
+      </div>
+      <form onsubmit="handleAddCaisse(event)" style="display: flex; gap: 8px; margin-bottom: 14px;">
+        <input type="text" id="caisseMotif" required class="input-modal" placeholder="Libellé" style="flex: 2;">
+        <select id="caisseType" class="custom-select" style="flex: 1;">
+          <option value="recette">Entrée (+)</option>
+          <option value="depense">Sortie (-)</option>
+        </select>
+        <input type="number" id="caisseMontant" required min="100" class="input-modal" placeholder="Montant" style="flex: 1;">
+        <button type="submit" class="btn-tool btn-inscrire">Ajouter</button>
+      </form>
+      <div style="overflow-x: auto; max-height: 250px;">
+        <table>
+          <thead><tr><th>Date</th><th>Motif</th><th>Type</th><th>Montant</th></tr></thead>
+          <tbody id="caisseTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE : PARAMÈTRES -->
   <div id="settingsModal" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header-row">
@@ -535,196 +666,109 @@
           <input type="text" id="cfgSchoolName" required class="input-modal">
         </div>
         <div class="form-group-modal">
-          <label>Année Scolaire Active</label>
+          <label>Année Scolaire</label>
           <input type="text" id="cfgYear" required class="input-modal" placeholder="2025-2026">
         </div>
         <div class="form-group-modal">
-          <label>Lien / URL Google Drive (Google Apps Script Web App)</label>
-          <input type="url" id="cfgGoogleDriveUrl" class="input-modal" placeholder="https://script.google.com/macros/s/.../exec">
-          <span style="font-size: 11px; color: var(--slate-500);">Collez ici l'URL de votre script Google pour synchroniser avec Google Drive / Google Sheets.</span>
-        </div>
-        <div class="form-group-modal">
-          <label>Code PIN Directeur / Admin</label>
+          <label>Code PIN Directeur (Autorisations)</label>
           <input type="password" id="cfgPin" maxlength="6" class="input-modal" style="width: 140px;">
         </div>
-        <button type="submit" class="btn-primary-modal">💾 Enregistrer la Configuration</button>
+        <button type="submit" class="btn-primary-modal">💾 Enregistrer</button>
       </form>
     </div>
   </div>
 
-  <!-- MODALE : JOURNAL DE CAISSE -->
-  <div id="cashModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 750px;">
-      <div class="modal-header-row">
-        <h3>💰 Journal de Caisse & Trésorerie</h3>
-        <button class="btn-modal-close" onclick="closeModal('cashModal')">✕</button>
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px;">
-        <div style="background: var(--emerald-50); padding: 10px; border-radius: 8px; text-align: center;">
-          <span style="font-size: 10px; font-weight: 800; color: var(--emerald-600);">ENTRÉES</span>
-          <div id="caisseIn" style="font-size: 1.1rem; font-weight: 900; color: var(--emerald-600);">0 F</div>
-        </div>
-        <div style="background: var(--rose-50); padding: 10px; border-radius: 8px; text-align: center;">
-          <span style="font-size: 10px; font-weight: 800; color: var(--rose-600);">SORTIES</span>
-          <div id="caisseOut" style="font-size: 1.1rem; font-weight: 900; color: var(--rose-600);">0 F</div>
-        </div>
-        <div style="background: var(--blue-50); padding: 10px; border-radius: 8px; text-align: center;">
-          <span style="font-size: 10px; font-weight: 800; color: var(--blue-600);">SOLDE NET</span>
-          <div id="caisseNet" style="font-size: 1.1rem; font-weight: 900; color: var(--blue-600);">0 F</div>
-        </div>
-      </div>
-      <form onsubmit="handleAddCaisse(event)" style="display: flex; gap: 8px; margin-bottom: 14px;">
-        <input type="text" id="caisseMotif" required class="input-modal" placeholder="Libellé de dépense ou recette" style="flex: 2;">
-        <select id="caisseType" class="custom-select" style="flex: 1;">
-          <option value="recette">Entrée (+)</option>
-          <option value="depense">Sortie (-)</option>
-        </select>
-        <input type="number" id="caisseMontant" required min="100" class="input-modal" placeholder="Montant" style="flex: 1;">
-        <button type="submit" class="btn-tool btn-inscrire" style="white-space: nowrap;">Ajouter</button>
-      </form>
-      <div style="overflow-x: auto; max-height: 250px;">
-        <table>
-          <thead>
-            <tr><th>Date</th><th>Motif</th><th>Type</th><th>Montant</th></tr>
-          </thead>
-          <tbody id="caisseTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODALE : PALMARÈS DE CLASSE -->
-  <div id="palmaresModal" class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-header-row">
-        <h3>🏆 Palmarès & Classement de la Classe</h3>
-        <button class="btn-modal-close" onclick="closeModal('palmaresModal')">✕</button>
-      </div>
-      <p id="palmaresSubtitle" style="font-size: 12px; color: var(--slate-500); margin-bottom: 12px;"></p>
-      <table>
-        <thead>
-          <tr>
-            <th>Rang</th>
-            <th>Élève</th>
-            <th>Moyenne Générale</th>
-            <th>Mention</th>
-          </tr>
-        </thead>
-        <tbody id="palmaresTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- MODALE : INSCRIRE UN ÉLÈVE -->
-  <div id="studentModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 450px;">
-      <div class="modal-header-row">
-        <h3>Inscrire un Nouvel Élève</h3>
-        <button class="btn-modal-close" onclick="closeModal('studentModal')">✕</button>
-      </div>
-      <form onsubmit="handleCreateStudent(event)">
-        <div class="form-group-modal">
-          <label>Nom de famille</label>
-          <input type="text" id="sLastName" required class="input-modal" placeholder="ex: DIALLO">
-        </div>
-        <div class="form-group-modal">
-          <label>Prénom</label>
-          <input type="text" id="sFirstName" required class="input-modal" placeholder="ex: Mamadou">
-        </div>
-        <div class="form-group-modal">
-          <label>Genre</label>
-          <select id="sGender" class="custom-select">
-            <option value="M">Masculin</option>
-            <option value="F">Féminin</option>
-          </select>
-        </div>
-        <div class="form-group-modal">
-          <label>Téléphone Parent (pour WhatsApp)</label>
-          <input type="tel" id="sParentPhone" required class="input-modal" placeholder="ex: 221771234567">
-        </div>
-        <button type="submit" class="btn-primary-modal">Valider l'Inscription</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- PIED DE PAGE -->
+  <!-- FOOTER -->
   <footer>
-    <p><strong>GestNotes</strong> – Système Intégré de Gestion Scolaire & Évaluation Académique • Tous droits réservés.</p>
+    <p><strong>GestNotes</strong> – Système Intégré de Gestion Scolaire & Caisse</p>
+    <p style="color: var(--emerald-700); font-weight: 700;">● Persistance Locale IndexedDB Active (Hors-Ligne)</p>
   </footer>
 
-  <!-- LOGIQUE JAVASCRIPT DU SYSTÈME -->
+  <!-- SCRIPT JAVASCRIPT COMPLET -->
   <script>
-    const STORAGE_KEY = 'gestnotes_unified_db';
-    let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+    const DB_NAME = 'gestnotes_unified_offline_db';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'school_data';
+    const KEY_NAME = 'app_state';
+
+    // 1. AUCUN NOM D'ÉLÈVE N'EST ENREGISTRÉ EN DUR DANS LE CODE JAVASCRIPT
+    let appData = {
       settings: {
         schoolName: "Groupe Scolaire d'Excellence",
         year: "2025-2026",
         semester: 1,
         pin: "1234",
-        googleDriveUrl: "",
-        role: "admin",
+        role: "directeur",
         mensualite: 25000,
-        inscription: 35000
+        inscription: 35000,
+        totalMonths: 10
       },
       caisse: [
-        { date: "2025-10-01", motif: "Encaissement Inscription Mamadou DIALLO", type: "recette", montant: 35000 },
-        { date: "2025-10-03", motif: "Fournitures & Rames de papier", type: "depense", montant: 15000 }
+        { date: new Date().toISOString().slice(0, 10), motif: "Fonds initial", type: "recette", montant: 200000 }
       ],
       classes: {
         "Seconde_": {
-          students: [
-            { id: "1", mat: "SEC-001", lastName: "DIALLO", firstName: "Mamadou", gender: "M", phone: "221771234567", inscriptionPaid: true, monthsPaid: 5, notes: { 1: { math: { d1: 14, d2: 15, compo: 14 }, fr: { d1: 12, compo: 13 } } } },
-            { id: "2", mat: "SEC-002", lastName: "FALL", firstName: "Aïssatou", gender: "F", phone: "221779876543", inscriptionPaid: true, monthsPaid: 3, notes: { 1: { math: { d1: 17, d2: 16, compo: 18 }, fr: { d1: 15, compo: 16 } } } }
-          ]
+          subjects: [
+            { id: "math", name: "Mathématiques", coef: 5 },
+            { id: "fr", name: "Français", coef: 4 },
+            { id: "pc", name: "Sciences Physiques", coef: 4 },
+            { id: "svt", name: "SVT", coef: 3 },
+            { id: "hg", name: "Histoire-Géo", coef: 3 }
+          ],
+          students: [] // TOTALEMENT VIERGE
         }
       }
     };
 
-    function saveToStorage() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    // 2. PERSISTANCE LOCALE INDEXEDDB
+    let dbInstance = null;
+
+    function openIDB() {
+      return new Promise((resolve) => {
+        if (!window.indexedDB) { resolve(null); return; }
+        const req = window.indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
+        };
+        req.onsuccess = (e) => { dbInstance = e.target.result; resolve(dbInstance); };
+        req.onerror = () => resolve(null);
+      });
     }
 
-    const SECTIONS_MAP = {
-      standard: [
-        { val: '', lbl: 'Général (Section Unique)' },
-        { val: 'A', lbl: 'Section A' },
-        { val: 'B', lbl: 'Section B' },
-        { val: 'C', lbl: 'Section C' }
-      ],
-      lycee: [
-        { optgroup: 'Général / Tronc Commun', items: [{ v: '', l: 'Général' }, { v: 'A', l: 'Section A' }, { v: 'B', l: 'Section B' }, { v: 'C', l: 'Section C' }] },
-        { optgroup: 'Série L1 (Lettres & Langues)', items: [{ v: 'L1', l: 'L1' }, { v: 'L1A', l: 'L1A' }, { v: 'L1B', l: 'L1B' }, { v: 'L1C', l: 'L1C' }] },
-        { optgroup: 'Série L2 (Sciences Sociales)', items: [{ v: 'L2', l: 'L2' }, { v: 'L2A', l: 'L2A' }, { v: 'L2B', l: 'L2B' }, { v: 'L2C', l: 'L2C' }] },
-        { optgroup: 'Série S1 (Sciences Exactes)', items: [{ v: 'S1', l: 'S1' }, { v: 'S1A', l: 'S1A' }, { v: 'S1B', l: 'S1B' }, { v: 'S1C', l: 'S1C' }] },
-        { optgroup: 'Série S2 (Sciences Naturelles)', items: [{ v: 'S2', l: 'S2' }, { v: 'S2A', l: 'S2A' }, { v: 'S2B', l: 'S2B' }, { v: 'S2C', l: 'S2C' }] },
-        { optgroup: 'Série G (Technique & Gestion)', items: [{ v: 'G', l: 'G' }, { v: 'GA', l: 'GA' }, { v: 'GB', l: 'GB' }, { v: 'GC', l: 'GC' }] }
-      ]
-    };
+    async function loadFromStorage() {
+      const db = await openIDB();
+      if (db) {
+        return new Promise((resolve) => {
+          const tx = db.transaction([STORE_NAME], 'readonly');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.get(KEY_NAME);
+          req.onsuccess = () => {
+            if (req.result) { appData = req.result; resolve(true); }
+            else { saveToStorage(); resolve(false); }
+          };
+          req.onerror = () => resolve(false);
+        });
+      }
+      return false;
+    }
 
-    function getSubjects(cls, sec) {
+    function saveToStorage() {
+      if (dbInstance) {
+        try {
+          const tx = dbInstance.transaction([STORE_NAME], 'readwrite');
+          tx.objectStore(STORE_NAME).put(appData, KEY_NAME);
+        } catch (e) { console.warn("Erreur IndexedDB", e); }
+      }
+      localStorage.setItem(DB_NAME, JSON.stringify(appData));
+    }
+
+    function getDefaultSubjectsForClass(cls) {
       if (['CP', 'CE1', 'CE2', 'CM1', 'CM2'].includes(cls)) {
         return [
           { id: 'fr', name: 'Français', coef: 10 },
           { id: 'math', name: 'Mathématiques', coef: 10 },
           { id: 'eveil', name: 'Éveil', coef: 5 }
-        ];
-      }
-      if (cls === 'L1' || sec.startsWith('L1') || cls === 'L2' || sec.startsWith('L2')) {
-        return [
-          { id: 'philo', name: 'Philosophie', coef: 5 },
-          { id: 'fr', name: 'Français', coef: 5 },
-          { id: 'hg', name: 'Histoire-Géo', coef: 4 },
-          { id: 'ang', name: 'Anglais', coef: 4 },
-          { id: 'math', name: 'Mathématiques', coef: 2 }
-        ];
-      }
-      if (cls === 'S1' || sec.startsWith('S1') || cls === 'S2' || sec.startsWith('S2')) {
-        return [
-          { id: 'math', name: 'Mathématiques', coef: 6 },
-          { id: 'pc', name: 'Sciences Physiques', coef: 6 },
-          { id: 'svt', name: 'SVT', coef: 5 },
-          { id: 'fr', name: 'Français', coef: 3 },
-          { id: 'philo', name: 'Philosophie', coef: 2 }
         ];
       }
       return [
@@ -736,7 +780,8 @@
       ];
     }
 
-    function init() {
+    async function init() {
+      await loadFromStorage();
       applySettings();
       onClassChange();
     }
@@ -746,41 +791,41 @@
       document.getElementById('lblActiveYear').textContent = appData.settings.year;
       document.getElementById('lblActivePeriod').textContent = `Semestre ${appData.settings.semester}`;
       document.getElementById('userRoleSelect').value = appData.settings.role;
+    }
 
-      const gDriveBtn = document.getElementById('lblGoogleSync');
-      if (appData.settings.googleDriveUrl) {
-        gDriveBtn.textContent = "Synchro Cloud Drive";
-      } else {
-        gDriveBtn.textContent = "Lier Google Drive";
+    function getCurrentClassKey() {
+      const cls = document.getElementById('classSelector').value;
+      const sec = document.getElementById('sectionSelector').value;
+      return `${cls}_${sec}`;
+    }
+
+    function getCurrentClassData() {
+      const key = getCurrentClassKey();
+      const cls = document.getElementById('classSelector').value;
+      if (!appData.classes[key]) {
+        appData.classes[key] = {
+          subjects: getDefaultSubjectsForClass(cls),
+          students: []
+        };
       }
+      return appData.classes[key];
     }
 
     function onClassChange() {
       const cls = document.getElementById('classSelector').value;
       const secSel = document.getElementById('sectionSelector');
       secSel.innerHTML = '';
-
       const isLycee = ['Seconde', 'Première', 'Terminale'].includes(cls);
-      if (isLycee) {
-        SECTIONS_MAP.lycee.forEach(group => {
-          const optg = document.createElement('optgroup');
-          optg.label = group.optgroup;
-          group.items.forEach(it => {
-            const opt = document.createElement('option');
-            opt.value = it.v;
-            opt.textContent = it.l;
-            optg.appendChild(opt);
-          });
-          secSel.appendChild(optg);
-        });
-      } else {
-        SECTIONS_MAP.standard.forEach(it => {
-          const opt = document.createElement('option');
-          opt.value = it.val;
-          opt.textContent = it.lbl;
-          secSel.appendChild(opt);
-        });
-      }
+
+      const opts = isLycee
+        ? [{ v: '', l: 'Général' }, { v: 'A', l: 'Section A' }, { v: 'L1', l: 'Série L1' }, { v: 'S2', l: 'Série S2' }]
+        : [{ v: '', l: 'Général' }, { v: 'A', l: 'Section A' }, { v: 'B', l: 'Section B' }];
+
+      opts.forEach(it => {
+        const o = document.createElement('option');
+        o.value = it.v; o.textContent = it.l;
+        secSel.appendChild(o);
+      });
 
       updateSubjectDropdown();
       renderUI();
@@ -788,29 +833,20 @@
 
     function onPeriodChange() {
       appData.settings.semester = Number(document.getElementById('periodSelector').value);
-      document.getElementById('lblActivePeriod').textContent = `Période ${appData.settings.semester}`;
+      document.getElementById('lblActivePeriod').textContent = `Semestre ${appData.settings.semester}`;
       saveToStorage();
       renderUI();
     }
 
     function updateSubjectDropdown() {
-      const cls = document.getElementById('classSelector').value;
-      const sec = document.getElementById('sectionSelector').value;
-      const subs = getSubjects(cls, sec);
+      const clsData = getCurrentClassData();
       const subSel = document.getElementById('gradeSubjectSelector');
       subSel.innerHTML = '';
-      subs.forEach(s => {
+      clsData.subjects.forEach(s => {
         const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = `${s.name} (Coef ${s.coef})`;
+        opt.value = s.id; opt.textContent = `${s.name} (Coef ${s.coef})`;
         subSel.appendChild(opt);
       });
-    }
-
-    function getCurrentStudents() {
-      const key = `${document.getElementById('classSelector').value}_${document.getElementById('sectionSelector').value}`;
-      if (!appData.classes[key]) appData.classes[key] = { students: [] };
-      return appData.classes[key].students;
     }
 
     function renderUI() {
@@ -820,14 +856,15 @@
     }
 
     function renderGradesTable() {
-      const students = getCurrentStudents();
+      const clsData = getCurrentClassData();
+      const students = clsData.students;
       const tbody = document.getElementById('gradesTableBody');
       tbody.innerHTML = '';
       const subId = document.getElementById('gradeSubjectSelector').value;
       const sem = appData.settings.semester;
 
       if (students.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:18px; color:#888;">Aucun élève inscrit dans cette section.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:24px; color:#64748b; font-weight:700;">Aucun élève inscrit dans cette section. Cliquez sur "+ Inscrire un Élève".</td></tr>';
         return;
       }
 
@@ -837,10 +874,8 @@
         let devMoy = devCount > 0 ? (((note.d1 ? Number(note.d1) : 0) + (note.d2 ? Number(note.d2) : 0)) / devCount) : 0;
         let finalAvg = '-';
         if (note.compo !== undefined && note.compo !== '') {
-          finalAvg = ((devMoy + Number(note.compo)) / 2).toFixed(2);
-        } else if (devCount > 0) {
-          finalAvg = devMoy.toFixed(2);
-        }
+          finalAvg = ((devMoy + Number(note.compo) * 2) / 3).toFixed(2);
+        } else if (devCount > 0) finalAvg = devMoy.toFixed(2);
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -849,9 +884,9 @@
           <td style="text-align: center;"><input type="number" step="0.25" min="0" max="20" class="grade-input" id="d1_${idx}" value="${note.d1 ?? ''}"></td>
           <td style="text-align: center;"><input type="number" step="0.25" min="0" max="20" class="grade-input" id="d2_${idx}" value="${note.d2 ?? ''}"></td>
           <td style="text-align: center;"><input type="number" step="0.25" min="0" max="20" class="grade-input" id="cp_${idx}" value="${note.compo ?? ''}" style="border-color: var(--primary);"></td>
-          <td style="text-align: center; font-weight: 800; color: var(--primary-dark);">${finalAvg}</td>
+          <td style="text-align: center; font-weight: 900; color: var(--primary-dark);">${finalAvg}</td>
           <td style="text-align: right;">
-            <a href="bulletin.html" class="btn-table-action">📜 Bulletin</a>
+            <button onclick="openBulletinForStudent('${s.id}')" class="btn-table-action">📜 Bulletin</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -859,7 +894,8 @@
     }
 
     function saveAllGrades() {
-      const students = getCurrentStudents();
+      const clsData = getCurrentClassData();
+      const students = clsData.students;
       const subId = document.getElementById('gradeSubjectSelector').value;
       const sem = appData.settings.semester;
 
@@ -878,39 +914,44 @@
 
       saveToStorage();
       renderGradesTable();
-      alert("Notes enregistrées avec succès !");
+      alert("Notes enregistrées avec succès dans IndexedDB !");
     }
 
     function renderStudentsTable() {
-      const students = getCurrentStudents();
+      const clsData = getCurrentClassData();
+      const students = clsData.students;
       const tbody = document.getElementById('studentsTableBody');
       tbody.innerHTML = '';
       const monthlyFee = appData.settings.mensualite;
-      const totalMonths = 10;
+      const totalMonths = appData.settings.totalMonths || 10;
+
+      if (students.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:24px; color:#64748b; font-weight:700;">Aucun élève inscrit.</td></tr>';
+        return;
+      }
 
       students.forEach((s, idx) => {
         const monthsPaid = s.monthsPaid || 0;
-        const remaining = Math.max(0, totalMonths - monthsPaid);
-        const due = remaining * monthlyFee;
+        const due = Math.max(0, totalMonths - monthsPaid) * monthlyFee;
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td style="font-family: monospace; font-weight: 700;">${s.mat}</td>
           <td><strong>${s.lastName.toUpperCase()}</strong> ${s.firstName}</td>
           <td><span class="badge-status" style="background:#e0f2fe; color:#0369a1;">${s.gender === 'F' ? 'Fille' : 'Garçon'}</span></td>
-          <td>${s.phone}</td>
+          <td style="font-family: monospace;">${s.phone}</td>
           <td>
             <button onclick="toggleStudentInscription(${idx})" class="badge-status ${s.inscriptionPaid ? 'badge-paid' : 'badge-unpaid'}" style="cursor: pointer; border: none;">
-              ${s.inscriptionPaid ? 'Payée' : 'Impayée'}
+              ${s.inscriptionPaid ? '✓ Payée' : '✗ Impayée'}
             </button>
           </td>
           <td>
-            <strong>${monthsPaid}</strong> / 10 mois
-            <button onclick="addPaymentMonth(${idx})" class="btn-table-action" style="margin-left: 4px;">+1 mois</button>
+            <strong>${monthsPaid}</strong> / ${totalMonths} m
+            <button onclick="addPaymentMonth(${idx})" class="btn-table-action" style="margin-left: 4px;">+1m</button>
           </td>
-          <td><strong style="color: ${due > 0 ? 'var(--rose-600)' : 'var(--emerald-600)'};">${due.toLocaleString()} F</strong></td>
+          <td><strong style="color: ${due > 0 ? 'var(--rose-600)' : 'var(--emerald-700)'};">${due.toLocaleString()} F</strong></td>
           <td style="text-align: right;">
-            <a href="https://wa.me/${s.phone}?text=Bonjour,%20rappel%20de%20scolarite%20pour%20${s.firstName}" target="_blank" class="btn-table-action">💬 WhatsApp</a>
+            <a href="https://wa.me/${s.phone}?text=Rappel%20de%20scolarite%20pour%20${encodeURIComponent(s.firstName)}%20${encodeURIComponent(s.lastName)}.%20Solde%20du:%20${due}%20FCFA" target="_blank" class="btn-table-action">💬 WhatsApp</a>
             <button onclick="deleteStudent(${idx})" class="btn-table-action" style="color: var(--rose-600);">Suppr</button>
           </td>
         `;
@@ -919,38 +960,52 @@
     }
 
     function toggleStudentInscription(idx) {
-      const s = getCurrentStudents()[idx];
-      if (s) { s.inscriptionPaid = !s.inscriptionPaid; saveToStorage(); renderUI(); }
+      const s = getCurrentClassData().students[idx];
+      if (s) {
+        s.inscriptionPaid = !s.inscriptionPaid;
+        saveToStorage();
+        renderUI();
+      }
     }
 
     function addPaymentMonth(idx) {
-      const s = getCurrentStudents()[idx];
-      if (s) { s.monthsPaid = Math.min(10, (s.monthsPaid || 0) + 1); saveToStorage(); renderUI(); }
+      const s = getCurrentClassData().students[idx];
+      const maxM = appData.settings.totalMonths || 10;
+      if (s && (s.monthsPaid || 0) < maxM) {
+        s.monthsPaid = (s.monthsPaid || 0) + 1;
+        appData.caisse.unshift({
+          date: new Date().toISOString().slice(0, 10),
+          motif: `Mensualité mois ${s.monthsPaid} - ${s.lastName} ${s.firstName}`,
+          type: "recette",
+          montant: appData.settings.mensualite
+        });
+        saveToStorage();
+        renderUI();
+      }
     }
 
     function deleteStudent(idx) {
       if (confirm("Confirmer la suppression de cet élève ?")) {
-        getCurrentStudents().splice(idx, 1);
+        getCurrentClassData().students.splice(idx, 1);
         saveToStorage();
         renderUI();
       }
     }
 
     function renderKPIs() {
-      const students = getCurrentStudents();
-      const count = students.length;
+      const clsData = getCurrentClassData();
+      const count = clsData.students.length;
       const fee = appData.settings.mensualite;
-      const attendu = count * (fee * 10);
-      let encaisse = 0;
+      const totalMonths = appData.settings.totalMonths || 10;
+      const attendu = count * (fee * totalMonths);
+      let encaisse = 0, garcons = 0, filles = 0;
 
-      let garcons = 0;
-      let filles = 0;
-      students.forEach(s => {
+      clsData.students.forEach(s => {
         encaisse += (s.monthsPaid || 0) * fee;
         if (s.gender === 'F') filles++; else garcons++;
       });
 
-      const solde = attendu - encaisse;
+      const solde = Math.max(0, attendu - encaisse);
       const taux = attendu > 0 ? Math.round((encaisse / attendu) * 100) : 0;
 
       document.getElementById('kpiTotalAttendu').textContent = attendu.toLocaleString() + " F";
@@ -961,103 +1016,340 @@
       document.getElementById('kpiGenderRatio').textContent = `${garcons} Garçon(s) • ${filles} Fille(s)`;
     }
 
-    function exportDatabaseJSON() {
-      const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `gestnotes_backup_${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-    }
+    // 3. TARIFS DIRECTEUR
+    function openTarifsModal() {
+      const isDirector = appData.settings.role === 'directeur' || appData.settings.role === 'admin';
+      const authSec = document.getElementById('directorAuthSection');
+      const saveBtn = document.getElementById('btnSaveTarifs');
 
-    function triggerImport() {
-      document.getElementById('jsonFileInput').click();
-    }
+      document.getElementById('cfgInscription').value = appData.settings.inscription || 35000;
+      document.getElementById('cfgMensualite').value = appData.settings.mensualite || 25000;
+      document.getElementById('cfgTotalMonths').value = appData.settings.totalMonths || 10;
 
-    function handleImportFile(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const parsed = JSON.parse(evt.target.result);
-          if (parsed.classes) {
-            appData = parsed;
-            saveToStorage();
-            init();
-            alert("Restauration réussie !");
-          }
-        } catch (err) {
-          alert("Erreur : Fichier JSON invalide.");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    function handleGoogleDriveSync() {
-      if (!appData.settings.googleDriveUrl) {
-        openSettingsModal();
-        alert("Veuillez renseigner votre URL Google Drive / Google Apps Script dans les paramètres.");
-        return;
+      if (!isDirector) {
+        authSec.style.display = 'block';
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = '0.5';
+      } else {
+        authSec.style.display = 'none';
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = '1';
       }
-      const btn = document.getElementById('lblGoogleSync');
-      btn.textContent = "Synchronisation...";
-      fetch(appData.settings.googleDriveUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(appData)
-      })
-      .then(res => res.json())
-      .then(() => {
-        btn.textContent = "✓ Synchronisé Drive";
-        alert("Base synchronisée avec succès avec Google Drive !");
-      })
-      .catch(() => {
-        btn.textContent = "Synchro Drive";
-        alert("Synchronisation envoyée vers le serveur Google Drive.");
-      });
+      openModal('tarifsModal');
     }
 
-    function openPalmaresModal() {
-      const cls = document.getElementById('classSelector').value;
-      const sec = document.getElementById('sectionSelector').value;
-      document.getElementById('palmaresSubtitle').textContent = `Classe : ${cls} ${sec || 'Général'} - Année ${appData.settings.year}`;
-      const tbody = document.getElementById('palmaresTableBody');
-      tbody.innerHTML = '';
-      const students = getCurrentStudents();
+    function unlockDirectorTarifs() {
+      const pin = document.getElementById('pinUnlockTarif').value;
+      if (pin === appData.settings.pin) {
+        document.getElementById('directorAuthSection').style.display = 'none';
+        const saveBtn = document.getElementById('btnSaveTarifs');
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = '1';
+        alert("Autorisation accordée !");
+      } else {
+        alert("Code PIN invalide !");
+      }
+    }
 
-      students.forEach((s, idx) => {
+    function handleSaveTarifs(e) {
+      e.preventDefault();
+      appData.settings.inscription = Number(document.getElementById('cfgInscription').value);
+      appData.settings.mensualite = Number(document.getElementById('cfgMensualite').value);
+      appData.settings.totalMonths = Number(document.getElementById('cfgTotalMonths').value);
+      saveToStorage();
+      renderUI();
+      closeModal('tarifsModal');
+      alert("Tarifs enregistrés avec succès dans IndexedDB !");
+    }
+
+    // 4. MATIÈRES ET COEFFICIENTS
+    function openSubjectsModal() {
+      renderSubjectsList();
+      openModal('subjectsModal');
+    }
+
+    function renderSubjectsList() {
+      const clsData = getCurrentClassData();
+      const tbody = document.getElementById('subjectsTableBody');
+      tbody.innerHTML = '';
+      let sumCoef = 0;
+
+      clsData.subjects.forEach((s, idx) => {
+        sumCoef += Number(s.coef);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${idx + 1}e</strong></td>
-          <td><strong>${s.lastName.toUpperCase()}</strong> ${s.firstName}</td>
-          <td><strong style="color:var(--primary);">${(14 - idx * 0.5).toFixed(2)} / 20</strong></td>
-          <td><span class="badge-status badge-paid">Tableau d'Honneur</span></td>
+          <td><strong>${s.name}</strong></td>
+          <td style="text-align: center;">
+            <input type="number" step="0.5" min="0.5" max="20" class="grade-input" value="${s.coef}" onchange="updateSubjectCoef(${idx}, this.value)">
+          </td>
+          <td style="text-align: right;">
+            <button onclick="deleteSubject(${idx})" class="btn-table-action" style="color: var(--rose-600);">Suppr</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
 
-      openModal('palmaresModal');
+      document.getElementById('lblTotalCoefs').textContent = `Total Coefs : ${sumCoef}`;
     }
 
-    function openCashModal() {
-      renderCaisse();
-      openModal('cashModal');
+    function updateSubjectCoef(idx, val) {
+      getCurrentClassData().subjects[idx].coef = Number(val) || 1;
+      saveToStorage();
+      renderSubjectsList();
+      updateSubjectDropdown();
+      renderUI();
     }
 
+    function deleteSubject(idx) {
+      const clsData = getCurrentClassData();
+      if (confirm(`Supprimer la matière "${clsData.subjects[idx].name}" ?`)) {
+        clsData.subjects.splice(idx, 1);
+        saveToStorage();
+        renderSubjectsList();
+        updateSubjectDropdown();
+        renderUI();
+      }
+    }
+
+    function handleAddSubject(e) {
+      e.preventDefault();
+      const name = document.getElementById('newSubName').value.trim();
+      const coef = Number(document.getElementById('newSubCoef').value) || 1;
+      const id = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 6) + '_' + Date.now().toString().slice(-3);
+
+      getCurrentClassData().subjects.push({ id, name, coef });
+      saveToStorage();
+      document.getElementById('newSubName').value = '';
+      document.getElementById('newSubCoef').value = '';
+      renderSubjectsList();
+      updateSubjectDropdown();
+      renderUI();
+    }
+
+    function resetDefaultSubjects() {
+      const cls = document.getElementById('classSelector').value;
+      if (confirm("Rétablir les matières par défaut ?")) {
+        getCurrentClassData().subjects = getDefaultSubjectsForClass(cls);
+        saveToStorage();
+        renderSubjectsList();
+        updateSubjectDropdown();
+        renderUI();
+      }
+    }
+
+    // 5. TRANSITION ACADÉMIQUE
+    const PROGRESSION_MAP = {
+      'CP': 'CE1', 'CE1': 'CE2', 'CE2': 'CM1', 'CM1': 'CM2', 'CM2': '6ème',
+      '6ème': '5ème', '5ème': '4ème', '4ème': '3ème', '3ème': 'Seconde',
+      'Seconde': 'Première', 'Première': 'Terminale', 'Terminale': 'DIPLOME'
+    };
+
+    function openTransitionModal() {
+      document.getElementById('transSourceYear').value = appData.settings.year;
+      const parts = appData.settings.year.split('-');
+      if (parts.length === 2 && !isNaN(Number(parts[0]))) {
+        document.getElementById('transTargetYear').value = `${Number(parts[0]) + 1}-${Number(parts[1]) + 1}`;
+      } else {
+        document.getElementById('transTargetYear').value = '2026-2027';
+      }
+
+      const tbody = document.getElementById('transitionTableBody');
+      tbody.innerHTML = '';
+      const clsData = getCurrentClassData();
+      const cls = document.getElementById('classSelector').value;
+
+      clsData.students.forEach((s, idx) => {
+        const nextCls = PROGRESSION_MAP[cls] || cls;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${s.lastName.toUpperCase()}</strong> ${s.firstName}</td>
+          <td>${cls}</td>
+          <td><strong style="color:var(--emerald-700);">13.50 / 20</strong></td>
+          <td>
+            <select class="custom-select" id="trans_decision_${idx}">
+              <option value="promu">🟢 Promu(e)</option>
+              <option value="redouble">🟡 Redoublant(e)</option>
+              <option value="quitte">🔴 Quitte</option>
+            </select>
+          </td>
+          <td><strong>${nextCls}</strong></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      openModal('transitionModal');
+    }
+
+    function executeAcademicTransition() {
+      const newYear = document.getElementById('transTargetYear').value.trim();
+      if (!confirm(`Confirmer la transition vers ${newYear} ? L'année actuelle sera archivée.`)) return;
+
+      if (!appData.archives) appData.archives = {};
+      appData.archives[appData.settings.year] = {
+        date: new Date().toISOString(),
+        classes: JSON.parse(JSON.stringify(appData.classes))
+      };
+
+      appData.settings.year = newYear;
+      appData.settings.semester = 1;
+
+      Object.keys(appData.classes).forEach(k => {
+        appData.classes[k].students.forEach(s => {
+          s.notes = {};
+          s.monthsPaid = 0;
+          s.inscriptionPaid = false;
+        });
+      });
+
+      saveToStorage();
+      applySettings();
+      renderUI();
+      closeModal('transitionModal');
+      alert(`Transition académique vers ${newYear} exécutée et enregistrée !`);
+    }
+
+    // 6. INSCRIRE UN ÉLÈVE
+    function openStudentModal() { openModal('studentModal'); }
+    function handleCreateStudent(e) {
+      e.preventDefault();
+      const clsData = getCurrentClassData();
+      const cls = document.getElementById('classSelector').value;
+      const mat = `${cls.substring(0, 3).toUpperCase()}-${String(clsData.students.length + 1).padStart(3, '0')}`;
+
+      const newStudent = {
+        id: Date.now().toString(),
+        mat: mat,
+        lastName: document.getElementById('sLastName').value.trim(),
+        firstName: document.getElementById('sFirstName').value.trim(),
+        gender: document.getElementById('sGender').value,
+        phone: document.getElementById('sParentPhone').value.trim(),
+        inscriptionPaid: document.getElementById('sInscriptionPaid').checked,
+        monthsPaid: 1,
+        notes: {}
+      };
+
+      clsData.students.push(newStudent);
+
+      if (newStudent.inscriptionPaid) {
+        appData.caisse.unshift({
+          date: new Date().toISOString().slice(0, 10),
+          motif: `Inscription admission - ${newStudent.lastName} ${newStudent.firstName}`,
+          type: "recette",
+          montant: appData.settings.inscription || 35000
+        });
+      }
+
+      saveToStorage();
+      closeModal('studentModal');
+      document.getElementById('sLastName').value = '';
+      document.getElementById('sFirstName').value = '';
+      document.getElementById('sParentPhone').value = '';
+      renderUI();
+    }
+
+    // 7. BULLETIN OFFICIEL
+    function openBulletinModal() { renderBulletinView(); openModal('bulletinModal'); }
+    function openBulletinForStudent(id) { renderBulletinView(id); openModal('bulletinModal'); }
+
+    function renderBulletinView(studentId = null) {
+      const clsData = getCurrentClassData();
+      const cls = document.getElementById('classSelector').value;
+      const sem = appData.settings.semester;
+      const container = document.getElementById('bulletinPrintArea');
+      container.innerHTML = '';
+
+      const students = studentId ? clsData.students.filter(s => s.id === studentId) : clsData.students;
+      if (students.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding:30px; font-weight:700;">Aucun élève à afficher.</p>';
+        return;
+      }
+
+      students.forEach(s => {
+        let totalPts = 0, totalCoefs = 0, rowsHtml = '';
+
+        clsData.subjects.forEach(sub => {
+          const n = (s.notes && s.notes[sem] && s.notes[sem][sub.id]) || {};
+          let devMoy = (n.d1 || n.d2) ? (((n.d1 ? Number(n.d1) : 0) + (n.d2 ? Number(n.d2) : 0)) / ((n.d1?1:0)+(n.d2?1:0))) : 0;
+          let compo = n.compo !== undefined && n.compo !== '' ? Number(n.compo) : -1;
+          let moySub = compo !== -1 ? ((devMoy + compo * 2) / 3) : (devMoy > 0 ? devMoy : 0);
+          let coef = Number(sub.coef || 1);
+          let pts = moySub * coef;
+
+          if (moySub > 0) { totalPts += pts; totalCoefs += coef; }
+
+          rowsHtml += `
+            <tr>
+              <td><strong>${sub.name}</strong></td>
+              <td style="text-align:center;">${devMoy > 0 ? devMoy.toFixed(2) : '-'}</td>
+              <td style="text-align:center;">${compo !== -1 ? compo.toFixed(2) : '-'}</td>
+              <td style="text-align:center; font-weight:800;">${moySub > 0 ? moySub.toFixed(2) : '-'}</td>
+              <td style="text-align:center;">${coef}</td>
+              <td style="text-align:center; font-weight:800; color:var(--primary-dark);">${pts > 0 ? pts.toFixed(2) : '-'}</td>
+              <td style="font-size:11px; color:#64748b;">${moySub >= 14 ? 'Bien' : (moySub >= 10 ? 'Passable' : 'À renforcer')}</td>
+            </tr>
+          `;
+        });
+
+        let moyGen = totalCoefs > 0 ? (totalPts / totalCoefs).toFixed(2) : '-';
+
+        const card = document.createElement('div');
+        card.style.cssText = 'border: 2px solid #000; padding: 18px; border-radius: 8px; margin-bottom: 24px; background: #fff; page-break-after: always;';
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #312e81; padding-bottom: 8px; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="flag"><div class="green"></div><div class="yellow">★</div><div class="red"></div></div>
+              <div style="font-size: 10px; font-weight: 800; line-height: 1.2;">RÉPUBLIQUE DU SÉNÉGAL<br>MINISTÈRE DE L'ÉDUCATION</div>
+            </div>
+            <div style="text-align: center;">
+              <h2 style="font-size: 16px; font-weight: 900; text-transform: uppercase; color: #312e81; margin: 0;">BULLETIN DE NOTES</h2>
+              <span style="font-size: 11px; font-weight: 800;">${appData.settings.schoolName}</span>
+            </div>
+            <div style="text-align: right; font-size: 11px; font-weight: 800;">Année : ${appData.settings.year}<br>Semestre ${sem}</div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; border: 1.5px solid #000; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 12px;">
+            <div>Élève : <strong>${s.lastName.toUpperCase()} ${s.firstName}</strong><br>Matricule : <strong>${s.mat}</strong></div>
+            <div style="text-align: right;">Classe : <strong>${cls}</strong><br>Effectif : <strong>${clsData.students.length} élèves</strong></div>
+          </div>
+
+          <table style="border: 1.5px solid #000; margin-bottom: 12px; font-size: 12px;">
+            <thead>
+              <tr style="background: #f1f5f9; border-bottom: 1.5px solid #000;">
+                <th>Discipline</th><th style="text-align:center;">Moy. Devoirs</th><th style="text-align:center;">Note Compo</th>
+                <th style="text-align:center;">Moy. Discipline</th><th style="text-align:center;">Coef</th><th style="text-align:center;">Points</th><th>Appréciations</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+            <tfoot>
+              <tr style="background: #eef2ff; font-weight: 900; border-top: 1.5px solid #000;">
+                <td colspan="3" style="text-align:right;">TOTAUX :</td>
+                <td style="text-align:center;">MOY : <span style="font-size:14px; color:#16a34a;">${moyGen} / 20</span></td>
+                <td style="text-align:center;">${totalCoefs}</td>
+                <td style="text-align:center; color:var(--primary-dark);">${totalPts.toFixed(2)}</td>
+                <td>Mention : <strong>${Number(moyGen) >= 14 ? 'Bien' : (Number(moyGen) >= 10 ? 'Passable' : 'Insuffisant')}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div style="display: flex; justify-content: space-between; border-top: 1.5px solid #000; padding-top: 12px; margin-top: 12px; font-size: 11px;">
+            <div><strong>Observations du Conseil :</strong> Travail régulier.</div>
+            <div style="text-align: center; font-weight: 800;">Le Directeur<br><br><span style="color: #64748b;">(Cachet & Signature)</span></div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 8. CAISSE & PARAMÈTRES
+    function openCashModal() { renderCaisse(); openModal('cashModal'); }
     function renderCaisse() {
       const tbody = document.getElementById('caisseTableBody');
       tbody.innerHTML = '';
-      let inTotal = 0, outTotal = 0;
       appData.caisse.forEach(c => {
-        const m = Number(c.montant);
-        if (c.type === 'recette') inTotal += m; else outTotal += m;
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${c.date}</td><td>${c.motif}</td><td style="font-weight:700; color:${c.type === 'recette' ? 'var(--emerald-600)' : 'var(--rose-600)'}">${c.type}</td><td><strong>${m.toLocaleString()} F</strong></td>`;
+        tr.innerHTML = `<td>${c.date}</td><td>${c.motif}</td><td style="font-weight:800; color:${c.type==='recette'?'var(--emerald-700)':'var(--rose-600)'}">${c.type}</td><td><strong>${Number(c.montant).toLocaleString()} F</strong></td>`;
         tbody.appendChild(tr);
       });
-      document.getElementById('caisseIn').textContent = inTotal.toLocaleString() + " F";
-      document.getElementById('caisseOut').textContent = outTotal.toLocaleString() + " F";
-      document.getElementById('caisseNet').textContent = (inTotal - outTotal).toLocaleString() + " F";
     }
 
     function handleAddCaisse(e) {
@@ -1074,39 +1366,10 @@
       document.getElementById('caisseMontant').value = '';
     }
 
-    function openStudentModal() {
-      openModal('studentModal');
-    }
-
-    function handleCreateStudent(e) {
-      e.preventDefault();
-      const list = getCurrentStudents();
-      const cls = document.getElementById('classSelector').value;
-      const sec = document.getElementById('sectionSelector').value;
-      const code = cls.substring(0, 3).toUpperCase() + (sec || 'GEN');
-      const mat = `${code}-${String(list.length + 1).padStart(3, '0')}`;
-
-      list.push({
-        id: Date.now().toString(),
-        mat: mat,
-        lastName: document.getElementById('sLastName').value.trim(),
-        firstName: document.getElementById('sFirstName').value.trim(),
-        gender: document.getElementById('sGender').value,
-        phone: document.getElementById('sParentPhone').value.trim(),
-        inscriptionPaid: true,
-        monthsPaid: 1,
-        notes: {}
-      });
-
-      saveToStorage();
-      closeModal('studentModal');
-      renderUI();
-    }
-
+    function openPalmaresModal() { openModal('palmaresModal'); }
     function openSettingsModal() {
       document.getElementById('cfgSchoolName').value = appData.settings.schoolName;
       document.getElementById('cfgYear').value = appData.settings.year;
-      document.getElementById('cfgGoogleDriveUrl').value = appData.settings.googleDriveUrl || '';
       document.getElementById('cfgPin').value = appData.settings.pin;
       openModal('settingsModal');
     }
@@ -1115,7 +1378,6 @@
       e.preventDefault();
       appData.settings.schoolName = document.getElementById('cfgSchoolName').value.trim();
       appData.settings.year = document.getElementById('cfgYear').value.trim();
-      appData.settings.googleDriveUrl = document.getElementById('cfgGoogleDriveUrl').value.trim();
       appData.settings.pin = document.getElementById('cfgPin').value.trim() || '1234';
       saveToStorage();
       applySettings();
@@ -1124,26 +1386,39 @@
     }
 
     function switchRole(el) {
-      if (el.value === 'admin') {
-        const pin = prompt("Saisissez le code PIN Directeur / Admin (Défaut : 1234) :");
-        if (pin === appData.settings.pin) {
-          appData.settings.role = 'admin';
-          saveToStorage();
-        } else {
-          alert("Code PIN invalide !");
-          el.value = appData.settings.role;
-        }
+      if (el.value === 'directeur') {
+        const pin = prompt("Code PIN Directeur (Défaut : 1234) :");
+        if (pin === appData.settings.pin) { appData.settings.role = 'directeur'; saveToStorage(); }
+        else { alert("PIN erroné !"); el.value = appData.settings.role; }
       } else {
         appData.settings.role = el.value;
         saveToStorage();
       }
     }
 
-    function sendBulkWhatsApp() {
-      alert("Ouverture des relances WhatsApp pour les élèves ayant des impayés.");
+    function exportDatabaseJSON() {
+      const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `gestnotes_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
     }
-    function openTarifsModal() { alert("Frais de scolarité : " + appData.settings.mensualite.toLocaleString() + " F / mois."); }
-    function openSubjectsModal() { alert("Les coefficients sont configurés selon le niveau académique."); }
+
+    function triggerImport() { document.getElementById('jsonFileInput').click(); }
+    function handleImportFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          appData = JSON.parse(evt.target.result);
+          saveToStorage();
+          init();
+          alert("Base restaurée avec succès !");
+        } catch { alert("Fichier JSON invalide."); }
+      };
+      reader.readAsText(file);
+    }
 
     function openModal(id) { document.getElementById(id).classList.add('open'); }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); }
