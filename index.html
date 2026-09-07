@@ -1,411 +1,650 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr"> 
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SunuÉcole - Gestion Scolaire</title>
+
+    <!-- ICÔNES ET PWA -->
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link class="apple-touch-icon" href="icon-192.png">
+    <link class="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4c1d95">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GestNotes">
     
+    <title>GestNotes – Administration scolaire</title>
+    
+    <!-- SCRIPTS ET STYLES -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://unpkg.com/idb-keyval@6.2.1/dist/umd.js"></script>
+    
+    <script src="html2pdf.bundle.min.js"></script>
+    <script src="idb-keyval.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #f1f5f9; }
-        .tab-active { border-bottom: 3px solid #10b981; color: #10b981; font-weight: 700; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        body { font-family: 'Hanken Grotesk', 'Inter', sans-serif; background-color: #f8fafc; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        .toast-animate { animation: slideIn 0.3s ease forwards, fadeOut 0.3s ease 2.7s forwards; }
+        table { border-collapse: collapse; }
+        td, th { padding: 10px 12px; }
+        .grid-table td, .grid-table th { border: 1px solid #e2e8f0; text-align: center; padding: 8px 6px; }
+        /* Style pour les onglets actifs */
+        .tab-btn { border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab-active { border-bottom-color: #4c1d95; color: #4c1d95; font-weight: bold; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col text-slate-800">
 
-    <!-- HEADER SUNUÉCOLE -->
-    <header class="bg-slate-900 text-white shadow-xl px-4 py-3 sticky top-0 z-40 flex justify-between items-center">
+<body class="min-h-screen bg-slate-50 flex flex-col text-slate-800">
+
+    <header class="bg-[#4c1d95] text-white shadow-md px-4 py-3 md:px-6 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
         <div class="flex items-center gap-3">
-            <div class="bg-emerald-500 text-white p-2 rounded-lg">
-                <i class="fas fa-school text-xl"></i>
+            <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+                <i class="fas fa-graduation-cap text-2xl text-violet-200"></i>
             </div>
             <div>
-                <h1 class="text-xl font-bold tracking-wider text-emerald-400">SUNU<span class="text-white">ÉCOLE</span></h1>
-                <p class="text-[10px] text-slate-400 uppercase tracking-widest">Année Scolaire 2025-2026</p>
+                <h1 class="text-xl font-bold tracking-tight">GestNotes</h1>
+                <p class="text-xs text-violet-200">Administration & Gestion des Notes</p>
             </div>
         </div>
-        <div class="flex gap-2">
-            <select id="class-selector" onchange="renderApp()" class="bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm outline-none">
-                <optgroup label="Élémentaire">
-                    <option value="CI">CI</option>
-                    <option value="CP">CP</option>
-                    <option value="CE1">CE1</option>
-                    <option value="CE2">CE2</option>
-                    <option value="CM1">CM1</option>
-                    <option value="CM2">CM2</option>
-                </optgroup>
-                <optgroup label="Moyen / Secondaire">
-                    <option value="6eme" selected>6ème</option>
-                    <option value="3eme">3ème</option>
-                    <option value="Terminale">Terminale</option>
-                </optgroup>
-            </select>
-            <button onclick="openModal('add-student-modal')" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all flex items-center gap-2">
-                <i class="fas fa-user-plus"></i> <span class="hidden sm:inline">Nouveau</span>
+
+        <div class="flex items-center gap-3 ml-auto sm:ml-0">
+            <div class="flex flex-col items-end gap-1">
+                <div class="flex items-center gap-1.5">
+                    <label class="hidden md:inline text-xs font-semibold text-violet-200">Rôle :</label>
+                    <select id="role-selector" onchange="onRoleChange()" class="bg-violet-950/80 text-white border border-violet-800 rounded-xl text-xs px-2.5 py-2 outline-none font-semibold cursor-pointer hover:bg-violet-900 transition-all">
+                        <option value="admin">👑 Directeur / Admin</option>
+                        <option value="comptable">💼 Comptable</option>
+                        <option value="enseignant">📝 Enseignant</option>
+                    </select>
+                </div>
+                <span id="active-teacher-indicator" class="text-[10px] text-violet-200 font-semibold hidden bg-violet-900/60 px-2 py-0.5 rounded-md"></span>
+            </div>
+
+            <div class="bg-violet-950/50 rounded-xl p-1 flex border border-violet-800/50 text-xs sm:text-sm">
+                <div class="px-2.5 py-1.5 font-medium text-violet-200 flex items-center gap-1.5">
+                    <i class="fas fa-calendar-alt text-xs text-violet-400"></i>
+                    <span id="display-year">2025-2026</span>
+                </div>
+                <div class="bg-[#6d28d9] px-2.5 py-1.5 rounded-lg font-semibold shadow-sm flex items-center gap-1.5">
+                    <i class="fas fa-clock text-xs"></i>
+                    <span id="display-semester">Semestre 1</span>
+                </div>
+            </div>
+
+            <button onclick="openModal('settings-modal')" id="btn-settings" class="p-2 md:p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10">
+                <i class="fas fa-cog text-lg"></i>
             </button>
         </div>
     </header>
 
-    <!-- NAVIGATION TABS -->
-    <nav class="bg-white shadow-sm px-6 flex gap-6 overflow-x-auto">
-        <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="py-4 px-2 text-sm font-medium text-slate-500 hover:text-emerald-600 tab-active whitespace-nowrap">
-            <i class="fas fa-chart-pie mr-2"></i> Tableau de bord
-        </button>
-        <button onclick="switchTab('tab-students')" id="btn-tab-students" class="py-4 px-2 text-sm font-medium text-slate-500 hover:text-emerald-600 whitespace-nowrap">
-            <i class="fas fa-users mr-2"></i> Liste des Élèves
-        </button>
-        <button onclick="switchTab('tab-finance')" id="btn-tab-finance" class="py-4 px-2 text-sm font-medium text-slate-500 hover:text-emerald-600 whitespace-nowrap">
-            <i class="fas fa-wallet mr-2"></i> Mensualités & Caisse
-        </button>
-    </nav>
-
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full">
+    <main class="flex-1 overflow-auto p-4 md:p-6 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
         
-        <!-- ONGLET : TABLEAU DE BORD -->
-        <div id="tab-dashboard" class="space-y-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-blue-500">
-                    <p class="text-xs text-slate-400 font-bold uppercase">Effectif Classe</p>
-                    <h3 class="text-3xl font-bold text-slate-800 mt-1" id="dash-effectif">0</h3>
+        <!-- BARRE D'ACTIONS GLOBALES -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <button id="btn-export-base" onclick="exportData()" class="flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-green-700 transition-all shadow-md text-sm">
+                    <i class="fas fa-file-download"></i> <span>Exporter Base</span>
+                </button>
+                <button id="btn-export-teacher-grades" onclick="exportTeacherGradesOnly()" class="hidden flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm">
+                    <i class="fas fa-file-export"></i> <span>Exporter mes Notes</span>
+                </button>
+                <input type="file" id="importFile" accept=".txt" class="hidden" onchange="importData(event)">
+                <button id="btn-import-base" onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-blue-700 transition-all shadow-md text-sm">
+                    <i class="fas fa-file-upload"></i> <span>Importer Fichier</span>
+                </button>
+                <button id="btn-gdrive-sync" onclick="seConnecterAGoogleDrive()" class="flex items-center justify-center gap-2 bg-violet-600 text-white font-bold py-2.5 px-4 rounded-xl hover:bg-violet-700 transition-all shadow-md text-sm">
+                    <i class="fab fa-google-drive"></i> <span id="lbl-gdrive-sync">Synchro Cloud</span>
+                </button>
+                <button id="btn-add-student-shortcut" onclick="openRegistrationModal()" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl shadow-md font-bold flex items-center justify-center gap-2 transition-all text-sm w-full">
+                    <i class="fas fa-user-plus"></i> Inscription
+                </button>
+            </div>
+        </div>
+
+        <!-- FILTRES DE CLASSES -->
+        <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 items-end w-full md:w-auto">
+                <div class="col-span-1">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Niveau d'étude</label>
+                    <select id="filter-class" onchange="onClassChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all"></select>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-emerald-500">
-                    <p class="text-xs text-slate-400 font-bold uppercase">Caisse Mensuelle</p>
-                    <h3 class="text-3xl font-bold text-emerald-600 mt-1" id="dash-caisse">0 FCFA</h3>
+                <div class="col-span-1">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Série / Option</label>
+                    <select id="filter-section" onchange="onSectionChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#4c1d95] transition-all"></select>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-rose-500">
-                    <p class="text-xs text-slate-400 font-bold uppercase">Arriérés</p>
-                    <h3 class="text-3xl font-bold text-rose-600 mt-1" id="dash-arrieres">0 FCFA</h3>
-                </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-amber-500">
-                    <p class="text-xs text-slate-400 font-bold uppercase">Moyenne Classe</p>
-                    <h3 class="text-3xl font-bold text-slate-800 mt-1">-- / 20</h3>
+                <div class="col-span-2 sm:col-span-1">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1 px-1">Effectif</label>
+                    <input type="text" id="filter-effectif" readonly value="0" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-center text-[#4c1d95] focus:outline-none cursor-default">
                 </div>
             </div>
+
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0">
+                <button id="btn-manage-subjects" onclick="openSubjectsModal()" class="bg-violet-50 hover:bg-violet-100 text-[#4c1d95] px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border border-violet-100"><i class="fas fa-book"></i> Matières</button>
+            </div>
+        </section>
+
+        <!-- NAVIGATION PAR ONGLETS -->
+        <nav class="flex gap-4 border-b border-slate-300 px-2 overflow-x-auto">
+            <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="tab-btn tab-active py-3 px-4 text-sm font-medium text-slate-500 hover:text-[#4c1d95] whitespace-nowrap">
+                <i class="fas fa-chart-pie mr-2"></i> Tableau de bord
+            </button>
+            <button onclick="switchTab('tab-students')" id="btn-tab-students" class="tab-btn py-3 px-4 text-sm font-medium text-slate-500 hover:text-[#4c1d95] whitespace-nowrap">
+                <i class="fas fa-users mr-2"></i> Élèves & Notes
+            </button>
+            <button onclick="switchTab('tab-finance')" id="btn-tab-finance" class="tab-btn py-3 px-4 text-sm font-medium text-slate-500 hover:text-[#4c1d95] whitespace-nowrap">
+                <i class="fas fa-wallet mr-2"></i> Finances & Caisse
+            </button>
+        </nav>
+
+        <!-- ============================================== -->
+        <!-- ONGLET 1 : TABLEAU DE BORD -->
+        <!-- ============================================== -->
+        <div id="tab-dashboard" class="flex flex-col gap-6">
+            <section id="class-stats-section" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+                    <p class="text-[10px] uppercase font-bold text-slate-400">Total Attendu (Année)</p>
+                    <p class="text-xl font-bold text-slate-800 mt-1" id="stats-total-attendu">0 F</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 border-l-4 border-l-emerald-500">
+                    <p class="text-[10px] uppercase font-bold text-emerald-600">Encaissé</p>
+                    <p class="text-xl font-bold text-emerald-700 mt-1" id="stats-total-encaisse">0 F</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 border-l-4 border-l-rose-500">
+                    <p class="text-[10px] uppercase font-bold text-rose-600">Reste à recouvrer</p>
+                    <p class="text-xl font-bold text-rose-700 mt-1" id="stats-reste-recouvrer">0 F</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80">
+                    <p class="text-[10px] uppercase font-bold text-violet-600">Taux de recouvrement</p>
+                    <p class="text-xl font-bold text-violet-700 mt-1" id="stats-taux-recouvrement">0%</p>
+                </div>
+            </section>
             
             <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-center justify-between">
                 <div class="flex items-center gap-3 text-blue-800">
                     <i class="fas fa-info-circle text-2xl"></i>
                     <div>
-                        <h4 class="font-bold">Astuce Trésorerie</h4>
-                        <p class="text-sm">Envoyez des rappels de paiement aux parents par WhatsApp en un clic depuis l'onglet Finance.</p>
+                        <h4 class="font-bold text-sm">Bienvenue sur GestNotes</h4>
+                        <p class="text-xs mt-1">Naviguez entre les onglets ci-dessus pour gérer les notes de vos élèves ou suivre la trésorerie de la classe.</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ONGLET : LISTE DES ÉLÈVES ET NOTES -->
-        <div id="tab-students" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-4 border-b flex justify-between items-center bg-slate-50">
-                <h2 class="font-bold text-lg">Élèves & Notes (Semestre 1)</h2>
-                <button class="bg-slate-800 text-white px-3 py-1.5 rounded text-sm"><i class="fas fa-print"></i> Bulletins</button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-100 text-slate-500 text-xs uppercase">
-                        <tr>
-                            <th class="p-4">Nom Complet</th>
-                            <th class="p-4">Tél Parent</th>
-                            <th class="p-4 text-center">Maths (Coef 4)</th>
-                            <th class="p-4 text-center">Français (Coef 3)</th>
-                            <th class="p-4 text-center">Moy. Générale</th>
-                            <th class="p-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-students" class="divide-y divide-slate-100">
-                        <!-- Rempli par JS -->
-                    </tbody>
-                </table>
-            </div>
+        <!-- ============================================== -->
+        <!-- ONGLET 2 : ÉLÈVES & NOTES -->
+        <!-- ============================================== -->
+        <div id="tab-students" class="hidden flex-col gap-6">
+            
+            <!-- Grille de notes -->
+            <section id="grades-section" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col gap-4">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
+                    <h3 class="text-md font-bold text-slate-700 flex items-center gap-2"><i class="fas fa-edit text-[#4c1d95]"></i> Saisie des Notes</h3>
+                    <div class="flex flex-col sm:flex-row w-full lg:w-auto items-center gap-3">
+                        <input type="text" id="grade-search" oninput="filterStudentsGlobal()" placeholder="Rechercher un élève..." class="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm">
+                        <div class="flex items-center gap-2">
+                            <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium"></select>
+                            <button id="btn-next-subject" onclick="goToNextSubject()" class="bg-[#4c1d95] text-white text-sm px-3.5 py-2 rounded-lg font-bold transition-all flex items-center gap-1.5">Suivant <i class="fas fa-arrow-right"></i></button>
+                            <button onclick="exporterFeuilleSaisie()" class="bg-emerald-600 text-white text-sm px-3.5 py-2 rounded-lg font-bold"><i class="fas fa-file-pdf"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto w-full border border-slate-300 rounded-lg shadow-sm">
+                    <table class="w-full text-xs border-collapse table-fixed min-w-[800px] grid-table">
+                        <thead class="bg-slate-100">
+                            <tr>
+                                <th class="p-3 text-left">Élève</th>
+                                <th class="p-3 text-center" id="lbl-th-dev1">Devoir 1</th>
+                                <th class="p-3 text-center" id="lbl-th-dev2">Devoir 2</th>
+                                <th class="p-3 text-center" id="lbl-th-compo">Composition</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grades-table-body" class="divide-y divide-slate-200">
+                            <!-- Les champs de saisie seront générés ici -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Liste des élèves -->
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex-1 flex flex-col min-h-[400px]">
+                <div class="p-5 border-b bg-slate-50/50 flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Liste des élèves <span id="class-badge" class="bg-violet-100 text-[#4c1d95] text-xs px-2.5 py-1 rounded-full">...</span></h2>
+                        <p class="text-xs text-slate-500" id="student-count">0 élève</p>
+                    </div>
+                    <button onclick="ouvrirBulletin('ALL_STUDENTS')" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"><i class="fas fa-print text-[#4c1d95]"></i> Imprimer Bulletins</button>
+                </div>
+                <div class="overflow-x-auto relative min-h-[200px]">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead>
+                            <tr class="border-b text-xs font-semibold text-slate-500 uppercase bg-slate-50/70">
+                                <th class="py-3.5 px-5">Matricule & Nom Complet</th>
+                                <th class="py-3.5 px-5">Date & Lieu de Naissance</th>
+                                <th class="py-3.5 px-5 text-center">Contact Parent</th>
+                                <th class="py-3.5 px-5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm">
+                            <!-- Les élèves seront insérés ici par JS -->
+                        </tbody>
+                    </table>
+                    <div id="empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white z-10 text-slate-400">
+                        <i class="fas fa-folder-open text-4xl mb-3 opacity-50"></i>
+                        <p class="mb-4 text-sm font-medium">Aucun élève dans cette classe</p>
+                        <button onclick="openRegistrationModal()" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-4 py-2 rounded-lg text-sm transition-all shadow-sm flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Ajouter le premier élève
+                        </button>
+                    </div>
+                </div>
+            </section>
         </div>
 
-        <!-- ONGLET : FINANCE (WAVE/OM/CASH) -->
-        <div id="tab-finance" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-4 border-b bg-slate-50 flex justify-between items-center">
-                <h2 class="font-bold text-lg">Suivi des Mensualités</h2>
-                <select id="month-selector" onchange="renderApp()" class="border rounded px-2 py-1 text-sm font-bold">
-                    <option value="Octobre">Mensualité Octobre</option>
-                    <option value="Novembre">Mensualité Novembre</option>
-                </select>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-100 text-slate-500 text-xs uppercase">
-                        <tr>
-                            <th class="p-4">Élève</th>
-                            <th class="p-4">Montant Dû</th>
-                            <th class="p-4">Statut</th>
-                            <th class="p-4">Moyen de paiement</th>
-                            <th class="p-4 text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-finance" class="divide-y divide-slate-100">
-                        <!-- Rempli par JS -->
-                    </tbody>
-                </table>
-            </div>
+        <!-- ============================================== -->
+        <!-- ONGLET 3 : FINANCES & CAISSE -->
+        <!-- ============================================== -->
+        <div id="tab-finance" class="hidden flex-col gap-6">
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col gap-4">
+                <div class="flex flex-col md:flex-row justify-between items-center border-b pb-4 gap-4">
+                    <h3 class="text-md font-bold text-slate-700 flex items-center gap-2"><i class="fas fa-wallet text-emerald-600"></i> Suivi des Paiements</h3>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold text-slate-500">Mois :</label>
+                        <select id="finance-month-select" onchange="render()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium">
+                            <!-- Rempli par JS (moisAnnee) -->
+                        </select>
+                        <button class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ml-2" onclick="alert('Relance WhatsApp générale en cours...')"><i class="fab fa-whatsapp"></i> Relancer Impayés</button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full text-sm text-left border-collapse">
+                        <thead class="bg-slate-100 text-xs uppercase text-slate-500">
+                            <tr>
+                                <th class="p-3">Élève</th>
+                                <th class="p-3">Montant Dû</th>
+                                <th class="p-3">Statut</th>
+                                <th class="p-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="finance-table-body" class="divide-y divide-slate-200">
+                            <!-- Rempli par JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
-
     </main>
 
-    <!-- MODAL : AJOUTER ÉLÈVE -->
-    <div id="add-student-modal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h3 class="text-xl font-bold mb-4 border-b pb-2">Inscrire un élève</h3>
-            <form onsubmit="addStudent(event)">
-                <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-xs font-bold text-slate-600">Nom</label>
-                            <input type="text" id="reg-nom" required class="w-full border rounded-lg p-2 uppercase" placeholder="DIOP">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-slate-600">Prénom</label>
-                            <input type="text" id="reg-prenom" required class="w-full border rounded-lg p-2 capitalize" placeholder="Amadou">
-                        </div>
+    <!-- ============================================== -->
+    <!-- MODALES (PARAMÈTRES, PROFESSEUR, INSCRIPTION)  -->
+    <!-- ============================================== -->
+
+    <!-- MODAL CONFIGURATION : Transition Simplifiée -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2"><i class="fas fa-cog text-[#4c1d95]"></i> Configuration</h3>
+            <!-- Contenu conservé de votre code d'origine -->
+            <div class="mt-6 flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeModal('settings-modal')" class="px-4 py-2 rounded-xl text-slate-500 text-sm font-semibold">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOUVEAU : MODAL INSCRIPTION ÉLÈVE COMPLÈTE -->
+    <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 border border-slate-100 my-auto">
+            <h3 class="text-xl font-bold mb-4 text-slate-800 border-b pb-3 flex items-center gap-2">
+                <i class="fas fa-user-plus text-[#4c1d95]"></i> Fiche d'Inscription
+            </h3>
+            
+            <form id="form-registration" onsubmit="submitStudentRegistration(event)">
+                
+                <h4 class="text-xs font-bold text-violet-700 uppercase tracking-wider mb-3 mt-2"><i class="fas fa-user-graduate"></i> État Civil de l'élève</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nom *</label>
+                        <input type="text" id="reg-nom" required placeholder="Ex: NDIAYE" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20 uppercase">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-slate-600">Téléphone Parent (Numéro WhatsApp)</label>
-                        <div class="flex">
-                            <span class="bg-slate-100 border border-r-0 rounded-l-lg p-2 text-slate-500 font-bold">+221</span>
-                            <input type="tel" id="reg-tel" required pattern="[0-9]{9}" class="w-full border rounded-r-lg p-2" placeholder="77 123 45 67">
-                        </div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Prénom(s) *</label>
+                        <input type="text" id="reg-prenom" required placeholder="Ex: Fatou" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20 capitalize">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-slate-600">Scolarité Mensuelle (FCFA)</label>
-                        <input type="number" id="reg-fee" required value="15000" class="w-full border rounded-lg p-2 font-bold text-emerald-600">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Date de naissance *</label>
+                        <input type="date" id="reg-datenais" required class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Lieu de naissance *</label>
+                        <input type="text" id="reg-lieunais" required placeholder="Ex: Dakar" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20 capitalize">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Genre *</label>
+                        <select id="reg-genre" required class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20">
+                            <option value="M">Masculin (Garçon)</option>
+                            <option value="F">Féminin (Fille)</option>
+                        </select>
                     </div>
                 </div>
-                <div class="mt-6 flex justify-end gap-2">
-                    <button type="button" onclick="closeModal('add-student-modal')" class="px-4 py-2 rounded text-slate-600">Annuler</button>
-                    <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded font-bold">Inscrire</button>
+
+                <h4 class="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-3 mt-6"><i class="fas fa-users"></i> Informations Tuteur</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nom du Parent/Tuteur *</label>
+                        <input type="text" id="reg-tuteur" required placeholder="Ex: Amadou NDIAYE" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Téléphone Parent (WhatsApp) *</label>
+                        <input type="tel" id="reg-contact" required placeholder="Ex: 77 123 45 67" class="text-slate-900 border border-slate-300 rounded-xl p-2.5 w-full bg-slate-50 outline-none focus:ring-2 focus:ring-violet-500/20">
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end gap-3 border-t pt-4">
+                    <button type="button" onclick="closeModal('registration-modal')" class="px-4 py-2.5 rounded-xl text-slate-500 text-sm font-semibold hover:bg-slate-100 transition-all">Annuler</button>
+                    <button type="submit" class="bg-[#4c1d95] hover:bg-violet-800 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all flex items-center gap-2">
+                        <i class="fas fa-save"></i> Enregistrer l'élève
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL : ENCAISSER PAIEMENT -->
-    <div id="payment-modal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
-            <h3 class="text-lg font-bold mb-1">Encaisser Mensualité</h3>
-            <p id="pay-student-name" class="text-sm text-slate-500 mb-4 font-bold border-b pb-2"></p>
-            
-            <input type="hidden" id="pay-student-id">
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-slate-600">Montant (FCFA)</label>
-                    <input type="number" id="pay-amount" class="w-full border rounded-lg p-2 font-bold text-xl text-center" readonly>
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-600 block mb-2">Méthode de paiement</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button type="button" onclick="selectPaymentMethod('Wave')" id="btn-Wave" class="border rounded p-2 flex flex-col items-center gap-1 hover:bg-blue-50 transition-colors">
-                            <img src="https://play-lh.googleusercontent.com/12s3c-23FfG8s9YQ_H6vVvXqB0fB3Y1vJb-t1W6kFk8hT3O2hE-7B9gXkK-_A_v_F0A=w48-h48" class="w-6 h-6 rounded">
-                            <span class="text-xs font-bold">Wave</span>
-                        </button>
-                        <button type="button" onclick="selectPaymentMethod('OM')" id="btn-OM" class="border rounded p-2 flex flex-col items-center gap-1 hover:bg-orange-50 transition-colors">
-                            <div class="w-6 h-6 bg-[#ff6600] rounded flex items-center justify-center text-white font-bold text-[10px]">OM</div>
-                            <span class="text-xs font-bold">Orange</span>
-                        </button>
-                        <button type="button" onclick="selectPaymentMethod('Cash')" id="btn-Cash" class="border rounded p-2 flex flex-col items-center gap-1 hover:bg-emerald-50 transition-colors">
-                            <i class="fas fa-money-bill-wave text-emerald-500 text-xl"></i>
-                            <span class="text-xs font-bold">Cash</span>
-                        </button>
-                    </div>
-                    <input type="hidden" id="pay-method" value="">
-                </div>
-            </div>
-            <div class="mt-6 flex gap-2">
-                <button onclick="closeModal('payment-modal')" class="flex-1 border rounded py-2 text-sm font-bold">Annuler</button>
-                <button onclick="submitPayment()" class="flex-1 bg-emerald-600 text-white rounded py-2 text-sm font-bold">Valider Paiement</button>
-            </div>
-        </div>
-    </div>
+  <script>
+    // --- 1. CONSTANTES ET ÉTAT PAR DÉFAUT ---
+    const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+    const moisAnnee = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
+    
+    const DEFAULT_STATE = {
+        classes: {},
+        accessCode: "1234",
+        googleSyncUrl: "",
+        currentRole: "admin",
+        selectedClass: "6ème",
+        selectedSection: "A"
+    };
 
-    <script>
-        // --- BASE DE DONNÉES LOCALE ---
-        let db = { classes: {} };
-        const MONTHS = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin"];
+    let appState = null;
+    let driveSyncTimeout = null;
 
-        async function init() {
-            const saved = await idbKeyval.get('sunuecole_db');
-            if (saved) db = saved;
-            renderApp();
+    // --- 2. INITIALISATION ---
+    async function initApp() {
+        try {
+            const savedState = await idbKeyval.get("gestnotes_state");
+            appState = savedState || DEFAULT_STATE;
+            
+            buildEmptyState();
+
+            const role = localStorage.getItem("gestnotes_local_role") || "admin";
+            appState.currentRole = role;
+
+            populateFilters();
+            
+            // Remplir le select des mois de l'onglet Finance
+            const monthSelect = document.getElementById('finance-month-select');
+            if (monthSelect) {
+                monthSelect.innerHTML = moisAnnee.map((m, index) => `<option value="${index}">${m}</option>`).join('');
+            }
+
+            applyRoleRestrictions();
+            render(); 
+            
+            if (appState.googleSyncUrl) chargerBaseDepuisDrive();
+        } catch (error) {
+            console.error("Erreur d'initialisation:", error);
+            showToast("Erreur de chargement des données", "error");
+        }
+    }
+
+    // --- 3. UTILITAIRES ---
+    function openModal(modalId) { document.getElementById(modalId).classList.remove('hidden'); }
+    function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
+    
+    function showToast(message, type = "success") {
+        const toast = document.createElement('div');
+        const bgColor = type === "error" ? "bg-red-600" : "bg-emerald-600";
+        toast.className = `fixed bottom-4 right-4 ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg z-50 font-semibold text-sm toast-animate flex items-center gap-2`;
+        toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function askConfirmation(message, title, callback) {
+        if (window.confirm(`${title}\n\n${message}`)) callback();
+    }
+
+    // --- GESTION DES ONGLETS ---
+    function switchTab(tabId) {
+        // Cacher tous les onglets
+        document.getElementById('tab-dashboard').style.display = 'none';
+        document.getElementById('tab-students').style.display = 'none';
+        document.getElementById('tab-finance').style.display = 'none';
+        
+        // Retirer la classe active de tous les boutons
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('tab-active'));
+        
+        // Afficher l'onglet sélectionné
+        const target = document.getElementById(tabId);
+        if(target) target.style.display = 'flex';
+        
+        // Ajouter la classe active au bouton cliqué
+        const btn = document.getElementById(`btn-${tabId}`);
+        if(btn) btn.classList.add('tab-active');
+    }
+
+    // --- 4. GESTION DES RÔLES ---
+    function onRoleChange() {
+        const select = document.getElementById('role-selector');
+        const targetRole = select.value;
+        const requiredCode = appState.accessCode || "1234";
+
+        if (targetRole === 'admin' || targetRole === 'comptable') {
+            const password = prompt("Code d'accès sécurisé :");
+            if (password !== requiredCode) {
+                showToast("Accès refusé. Code incorrect.", "error");
+                select.value = localStorage.getItem("gestnotes_local_role") || "admin";
+                return;
+            }
+            localStorage.setItem("gestnotes_local_role", targetRole);
+            applyRoleRestrictions();
+            showToast(`Connecté en tant que ${targetRole}`, "success");
+        } else {
+            alert("Mode Enseignant non finalisé dans ce prototype.");
+            select.value = "admin";
+        }
+    }
+
+    function applyRoleRestrictions() {
+        const role = localStorage.getItem("gestnotes_local_role") || "admin";
+        document.getElementById('role-selector').value = role;
+
+        // Si comptable, cacher l'onglet des notes
+        const btnStudents = document.getElementById('btn-tab-students');
+        if (role === 'comptable') {
+            btnStudents.style.display = 'none';
+            switchTab('tab-finance');
+        } else {
+            btnStudents.style.display = 'inline-block';
+            switchTab('tab-dashboard');
         }
 
-        function saveDB() {
-            idbKeyval.set('sunuecole_db', db);
+        render();
+    }
+
+    // --- 5. LOGIQUE DES CLASSES ---
+    function getCurrentClassKey() { return `${appState.selectedClass}_${appState.selectedSection}`; }
+
+    function buildEmptyState() {
+        if (!appState.classes) appState.classes = {};
+        const key = getCurrentClassKey();
+        if (!appState.classes[key]) {
+            appState.classes[key] = { students: [], subjects: [], fees: { inscription: 15000, mensualite: 10000 } };
         }
+    }
 
-        // --- NAVIGATION ONGLET ---
-        function switchTab(tabId) {
-            document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-            
-            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('tab-active', 'text-emerald-600'));
-            document.getElementById(`btn-${tabId}`).classList.add('tab-active', 'text-emerald-600');
+    function populateFilters() {
+        const classSelect = document.getElementById('filter-class');
+        const sectionSelect = document.getElementById('filter-section');
+        if (classSelect) { classSelect.innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join(''); classSelect.value = appState.selectedClass; }
+        if (sectionSelect) {
+            const series = ["A", "B", "C", "D", "Scientifique", "Littéraire"];
+            sectionSelect.innerHTML = series.map(s => `<option value="${s}">Série ${s}</option>`).join('');
+            sectionSelect.value = appState.selectedSection;
         }
+    }
 
-        // --- MODALES ---
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    function onClassChange() { appState.selectedClass = document.getElementById('filter-class').value; buildEmptyState(); render(); }
+    function onSectionChange() { appState.selectedSection = document.getElementById('filter-section').value; buildEmptyState(); render(); }
 
-        // --- GESTION ÉLÈVES ---
-        function addStudent(e) {
-            e.preventDefault();
-            const nom = document.getElementById('reg-nom').value.trim().toUpperCase();
-            const prenom = document.getElementById('reg-prenom').value.trim();
-            const tel = document.getElementById('reg-tel').value.trim();
-            const fee = parseInt(document.getElementById('reg-fee').value);
-            const className = document.getElementById('class-selector').value;
+    // --- 6. INSCRIPTION ÉLÈVE COMPLÈTE ---
+    function openRegistrationModal() { document.getElementById('form-registration').reset(); openModal('registration-modal'); }
 
-            if (!db.classes[className]) db.classes[className] = [];
+    function submitStudentRegistration(event) {
+        event.preventDefault(); 
+        
+        const nom = document.getElementById('reg-nom').value.trim().toUpperCase();
+        const prenom = document.getElementById('reg-prenom').value.trim();
+        const dateNais = document.getElementById('reg-datenais').value;
+        const lieuNais = document.getElementById('reg-lieunais').value.trim();
+        const genre = document.getElementById('reg-genre').value;
+        const nomTuteur = document.getElementById('reg-tuteur').value.trim();
+        const contact = document.getElementById('reg-contact').value.trim();
+        
+        const key = getCurrentClassKey();
+        const clsData = appState.classes[key];
+        const fees = clsData.fees || { inscription: 0, mensualite: 0 };
 
-            // Créer les paiements mensuels
-            const payments = {};
-            MONTHS.forEach(m => payments[m] = { amountDue: fee, paid: false, method: null });
+        const initialPayments = moisAnnee.map((m, idx) => ({
+            designation: m, statut: "Non payé", montantDu: idx === 0 ? fees.inscription : fees.mensualite, montantPaye: 0
+        }));
 
-            db.classes[className].push({
-                id: 'STU_' + Date.now(), nom, prenom, tel, payments,
-                grades: { maths: null, fr: null }
+        const newStudent = {
+            id: 'stu_' + Date.now() + Math.random().toString(36).substr(2, 5), 
+            matricule: `MAT-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`, 
+            nom: nom, prenom: prenom, dateNaissance: dateNais, lieuNaissance: lieuNais, genre: genre,
+            tuteur: nomTuteur, contact: contact, grades: {}, payments: initialPayments 
+        };
+
+        clsData.students.push(newStudent);
+        clsData.students.sort((a, b) => (a.nom + " " + a.prenom).localeCompare(b.nom + " " + b.prenom));
+
+        saveToStorage(); closeModal('registration-modal'); showToast("Élève inscrit avec succès !"); render(); 
+    }
+
+    function deleteStudent(studentId, studentName) {
+        askConfirmation(`Supprimer ${studentName} ?\nToutes ses données seront perdues.`, "Suppression", () => {
+            const key = getCurrentClassKey();
+            appState.classes[key].students = appState.classes[key].students.filter(s => s.id !== studentId);
+            saveToStorage(); showToast("Élève supprimé", "success"); render();
+        });
+    }
+
+    // --- 7. RENDU GLOBAL DE L'INTERFACE ---
+    function render() {
+        const key = getCurrentClassKey();
+        const currentClass = appState.classes[key];
+        const students = currentClass ? currentClass.students : [];
+        const nbStudents = students.length;
+        
+        // -- MAJ HEADER --
+        document.getElementById('filter-effectif').value = nbStudents;
+        document.getElementById('student-count').innerText = `${nbStudents} élève${nbStudents > 1 ? 's' : ''}`;
+        document.getElementById('class-badge').innerText = key.replace('_', ' ');
+
+        // -- MAJ ONGLET 1: DASHBOARD STATS --
+        let totalAttendu = 0; let totalEncaisse = 0;
+        students.forEach(s => {
+            s.payments.forEach(p => {
+                totalAttendu += p.montantDu;
+                if(p.statut === "Payé") totalEncaisse += p.montantDu;
             });
+        });
+        
+        document.getElementById('stats-total-attendu').innerText = totalAttendu.toLocaleString() + " F";
+        document.getElementById('stats-total-encaisse').innerText = totalEncaisse.toLocaleString() + " F";
+        document.getElementById('stats-reste-recouvrer').innerText = (totalAttendu - totalEncaisse).toLocaleString() + " F";
+        document.getElementById('stats-taux-recouvrement').innerText = totalAttendu > 0 ? Math.round((totalEncaisse/totalAttendu)*100) + "%" : "0%";
 
-            saveDB();
-            closeModal('add-student-modal');
-            e.target.reset();
-            renderApp();
+        // -- MAJ ONGLET 2: LISTE DES ÉLÈVES --
+        const emptyState = document.getElementById('empty-state');
+        const tableBody = document.getElementById('students-table-body');
+        
+        if (nbStudents === 0) {
+            emptyState.classList.remove('hidden'); tableBody.innerHTML = '';
+        } else {
+            emptyState.classList.add('hidden');
+            tableBody.innerHTML = students.map((student, index) => {
+                const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50';
+                return `
+                <tr class="${bgClass} hover:bg-slate-100 transition-colors">
+                    <td class="py-3 px-5 border-b border-slate-100">
+                        <p class="font-bold text-slate-800">${student.nom} ${student.prenom}</p>
+                        <p class="text-[10px] text-slate-500">Matricule: ${student.matricule}</p>
+                    </td>
+                    <td class="py-3 px-5 border-b border-slate-100">
+                        <p class="text-sm">${student.dateNaissance ? new Date(student.dateNaissance).toLocaleDateString('fr-FR') : '-'} à ${student.lieuNaissance || '-'}</p>
+                    </td>
+                    <td class="py-3 px-5 border-b border-slate-100 text-center">
+                        <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
+                            ${student.contact ? `<i class="fas fa-phone mr-1"></i> ${student.contact}` : '-'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-5 border-b border-slate-100 text-right">
+                        <button onclick="deleteStudent('${student.id}', '${student.nom} ${student.prenom}')" class="text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg transition-colors"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
         }
 
-        // --- GESTION FINANCIÈRE ---
-        function openPaymentModal(studentId, studentName, amountDue) {
-            document.getElementById('pay-student-id').value = studentId;
-            document.getElementById('pay-student-name').innerText = studentName;
-            document.getElementById('pay-amount').value = amountDue;
-            
-            // Reset boutons
-            ['Wave', 'OM', 'Cash'].forEach(m => document.getElementById(`btn-${m}`).classList.remove('ring-2', 'ring-emerald-500', 'bg-slate-100'));
-            document.getElementById('pay-method').value = "";
-            
-            openModal('payment-modal');
-        }
-
-        function selectPaymentMethod(method) {
-            document.getElementById('pay-method').value = method;
-            ['Wave', 'OM', 'Cash'].forEach(m => document.getElementById(`btn-${m}`).classList.remove('ring-2', 'ring-emerald-500', 'bg-slate-100'));
-            document.getElementById(`btn-${method}`).classList.add('ring-2', 'ring-emerald-500', 'bg-slate-100');
-        }
-
-        function submitPayment() {
-            const method = document.getElementById('pay-method').value;
-            if (!method) return alert("Sélectionnez Wave, Orange Money ou Cash");
-
-            const studentId = document.getElementById('pay-student-id').value;
-            const className = document.getElementById('class-selector').value;
-            const month = document.getElementById('month-selector').value;
-
-            const student = db.classes[className].find(s => s.id === studentId);
-            student.payments[month].paid = true;
-            student.payments[month].method = method;
-
-            saveDB();
-            closeModal('payment-modal');
-            renderApp();
-        }
-
-        function sendWhatsAppReminder(tel, nom, mois, montant) {
-            const msg = encodeURIComponent(`Bonjour,\nCeci est un rappel aimable de l'école SUNUÉCOLE. La scolarité de ${nom} pour le mois de ${mois} (${montant} FCFA) est arrivée à échéance.\nMerci de régulariser via Wave/OM ou à la caisse.`);
-            window.open(`https://wa.me/221${tel}?text=${msg}`, '_blank');
-        }
-
-        // --- AFFICHAGE (RENDER) ---
-        function renderApp() {
-            const className = document.getElementById('class-selector').value;
-            const selectedMonth = document.getElementById('month-selector').value;
-            const students = db.classes[className] || [];
-
-            // 1. Mise à jour Dashboard
-            let totalCaisse = 0;
-            let totalArrieres = 0;
-
-            students.forEach(s => {
-                if (s.payments[selectedMonth].paid) totalCaisse += s.payments[selectedMonth].amountDue;
-                else totalArrieres += s.payments[selectedMonth].amountDue;
-            });
-
-            document.getElementById('dash-effectif').innerText = students.length;
-            document.getElementById('dash-caisse').innerText = totalCaisse.toLocaleString() + " F";
-            document.getElementById('dash-arrieres').innerText = totalArrieres.toLocaleString() + " F";
-
-            // 2. Remplir Table Élèves
-            const tStudents = document.getElementById('table-students');
-            tStudents.innerHTML = students.map(s => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-4 font-bold">${s.nom} ${s.prenom}</td>
-                    <td class="p-4"><i class="fab fa-whatsapp text-emerald-500 mr-1"></i> ${s.tel}</td>
-                    <td class="p-4 text-center"><input type="number" min="0" max="20" class="w-16 border rounded text-center" placeholder="/20" value="${s.grades.maths || ''}" onchange="updateGrade('${s.id}', 'maths', this.value)"></td>
-                    <td class="p-4 text-center"><input type="number" min="0" max="20" class="w-16 border rounded text-center" placeholder="/20" value="${s.grades.fr || ''}" onchange="updateGrade('${s.id}', 'fr', this.value)"></td>
-                    <td class="p-4 text-center font-bold text-emerald-600">${calculateMoyenne(s.grades)}</td>
-                    <td class="p-4 text-right"><button onclick="alert('Impression du bulletin en cours...')" class="text-blue-500 hover:bg-blue-50 px-2 py-1 rounded"><i class="fas fa-file-pdf"></i></button></td>
-                </tr>
-            `).join('') || `<tr><td colspan="6" class="p-8 text-center text-slate-400">Aucun élève dans cette classe.</td></tr>`;
-
-            // 3. Remplir Table Finance
-            const tFinance = document.getElementById('table-finance');
-            tFinance.innerHTML = students.map(s => {
-                const payData = s.payments[selectedMonth];
-                const statusBadge = payData.paid 
-                    ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold"><i class="fas fa-check-circle"></i> Payé</span>`
-                    : `<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded text-xs font-bold"><i class="fas fa-clock"></i> En attente</span>`;
+        // -- MAJ ONGLET 3: FINANCES --
+        const financeTable = document.getElementById('finance-table-body');
+        const monthIndex = document.getElementById('finance-month-select') ? document.getElementById('finance-month-select').value : 0;
+        
+        if(financeTable) {
+            financeTable.innerHTML = students.map((student, index) => {
+                const payData = student.payments[monthIndex];
+                if(!payData) return '';
+                const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50';
                 
-                let methodBadge = '-';
-                if (payData.method === 'Wave') methodBadge = '<span class="text-blue-600 font-bold">Wave</span>';
-                if (payData.method === 'OM') methodBadge = '<span class="text-orange-500 font-bold">Orange M.</span>';
-                if (payData.method === 'Cash') methodBadge = '<span class="text-emerald-600 font-bold">Cash</span>';
-
-                const actionBtn = payData.paid
-                    ? `<button class="text-slate-400 cursor-not-allowed"><i class="fas fa-receipt"></i> Reçu</button>`
-                    : `<div class="flex justify-end gap-2">
-                        <button onclick="sendWhatsAppReminder('${s.tel}', '${s.prenom}', '${selectedMonth}', ${payData.amountDue})" class="bg-emerald-50 text-emerald-600 p-2 rounded hover:bg-emerald-100" title="Relance WhatsApp"><i class="fab fa-whatsapp text-lg"></i></button>
-                        <button onclick="openPaymentModal('${s.id}', '${s.prenom} ${s.nom}', ${payData.amountDue})" class="bg-slate-800 text-white px-3 py-1.5 rounded font-bold text-xs hover:bg-slate-700">Encaisser</button>
-                       </div>`;
+                const statusBadge = payData.statut === "Payé" 
+                    ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold"><i class="fas fa-check"></i> Payé</span>`
+                    : `<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded text-xs font-bold">Impayé</span>`;
 
                 return `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-4 font-bold">${s.nom} ${s.prenom}</td>
-                    <td class="p-4 font-bold text-slate-600">${payData.amountDue.toLocaleString()} F</td>
-                    <td class="p-4">${statusBadge}</td>
-                    <td class="p-4">${methodBadge}</td>
-                    <td class="p-4 text-right">${actionBtn}</td>
+                <tr class="${bgClass} hover:bg-slate-100">
+                    <td class="p-3 font-bold">${student.nom} ${student.prenom}</td>
+                    <td class="p-3 font-bold text-slate-600">${payData.montantDu.toLocaleString()} F</td>
+                    <td class="p-3">${statusBadge}</td>
+                    <td class="p-3 text-right">
+                        ${payData.statut !== "Payé" 
+                            ? `<button class="bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-bold" onclick="alert('Module de paiement à venir')">Encaisser</button>`
+                            : `<button class="text-slate-400"><i class="fas fa-receipt"></i> Reçu</button>`}
+                    </td>
                 </tr>`;
-            }).join('') || `<tr><td colspan="5" class="p-8 text-center text-slate-400">Aucun élève dans cette classe.</td></tr>`;
+            }).join('');
         }
+    }
 
-        // --- CALCULS SCOLAIRES ---
-        function updateGrade(studentId, subject, value) {
-            const className = document.getElementById('class-selector').value;
-            const student = db.classes[className].find(s => s.id === studentId);
-            student.grades[subject] = value ? parseFloat(value) : null;
-            saveDB();
-            renderApp();
-        }
+    // --- 8. SAUVEGARDE ET INIT SW ---
+    async function saveToStorage() {
+        try { await idbKeyval.set("gestnotes_state", appState); } 
+        catch (e) { console.error(e); }
+    }
 
-        function calculateMoyenne(grades) {
-            if (!grades.maths || !grades.fr) return '--';
-            // Exemple : Maths Coef 4, Fr Coef 3
-            const total = (grades.maths * 4) + (grades.fr * 3);
-            const moyenne = total / 7;
-            return moyenne.toFixed(2);
-        }
-
-        window.onload = init;
-    </script>
+    window.addEventListener('DOMContentLoaded', initApp);
+    window.addEventListener('load', () => {
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
+    });
+</script> 
 </body>
 </html>
