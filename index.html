@@ -1,572 +1,468 @@
 <!DOCTYPE html>
-<html lang="fr"> 
-
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="icon-192.png">
-    <link class="manifest" href="manifest.json">
-    <title>GestNotes – Édition Premium Sénégal</title>
+    <title>SunuÉcole – Expert Sénégal Edition</title>
     
-    <!-- LIBRAIRIES DE BASE -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="idb-keyval.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
-    
-    <!-- NOUVELLES LIBRAIRIES ÉPOUSTOUFLANTES -->
-    <!-- 1. Générateur de QR Code -->
+    <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd/idb-keyval-iife.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- 2. Scanner de QR Code -->
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <!-- 3. Compresseur de données pour le mode hors-ligne -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Hanken Grotesk', sans-serif; background-color: #f8fafc; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .tab-btn { border-bottom: 2px solid transparent; transition: all 0.2s; }
-        .tab-active { border-bottom-color: #4c1d95; color: #4c1d95; font-weight: bold; }
-        
-        /* MAGIE : CSS POUR L'IMPRIMANTE THERMIQUE 58mm */
+        body { font-family: 'Hanken Grotesk', sans-serif; background-color: #f1f5f9; }
+        .tab-active { border-bottom: 3px solid #4c1d95; color: #4c1d95; font-weight: 800; }
+        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); }
         @media print {
-            body * { visibility: hidden; }
-            #thermal-receipt, #thermal-receipt * { visibility: visible; }
-            #thermal-receipt { 
-                position: absolute; left: 0; top: 0; width: 58mm; 
-                margin: 0; padding: 2mm; font-size: 11px; 
-                font-family: 'Courier New', Courier, monospace; color: black;
-            }
-            @page { margin: 0; size: 58mm auto; }
+            .no-print { display: none; }
+            #thermal-receipt { display: block !important; width: 58mm; font-size: 10px; }
         }
     </style>
 </head>
+<body class="min-h-screen pb-20">
 
-<body class="min-h-screen flex flex-col text-slate-800">
-
-    <header class="bg-[#4c1d95] text-white shadow-md px-4 py-3 flex justify-between items-center sticky top-0 z-40">
-        <div class="flex items-center gap-3">
-            <div class="bg-white/20 p-2 rounded-lg backdrop-blur-sm"><i class="fas fa-school text-xl"></i></div>
-            <div>
-                <h1 class="text-xl font-bold tracking-tight text-yellow-400">Sunu<span class="text-white">École</span></h1>
-                <p class="text-[10px] text-violet-200 uppercase">GestNotes Premium</p>
+    <!-- HEADER -->
+    <header class="bg-[#4c1d95] text-white p-4 sticky top-0 z-50 shadow-lg">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-star text-yellow-400 text-2xl"></i>
+                <h1 class="text-xl font-black tracking-tighter italic">SUNU ÉCOLE <span class="text-[10px] bg-yellow-500 text-black px-1 rounded not-italic">2.0</span></h1>
             </div>
-        </div>
-        <div class="flex gap-2">
-            <select id="filter-class" onchange="onClassChange()" class="bg-violet-900 text-white rounded-lg px-2 py-1 text-sm font-bold outline-none border border-violet-700"></select>
-            <select id="filter-section" onchange="onSectionChange()" class="bg-violet-900 text-white rounded-lg px-2 py-1 text-sm font-bold outline-none border border-violet-700"></select>
-            <button onclick="openRegistrationModal()" class="bg-yellow-400 hover:bg-yellow-500 text-violet-900 px-3 py-1.5 rounded-lg text-sm font-bold shadow-md"><i class="fas fa-plus"></i> Élève</button>
+            <div class="flex gap-2">
+                <select id="main-class" onchange="changeClass()" class="bg-violet-800 text-xs p-2 rounded-lg font-bold border-none outline-none"></select>
+                <select id="main-quarter" onchange="render()" class="bg-violet-800 text-xs p-2 rounded-lg font-bold border-none outline-none">
+                    <option value="1">Trimestre 1</option>
+                    <option value="2">Trimestre 2</option>
+                    <option value="3">Trimestre 3</option>
+                </select>
+            </div>
         </div>
     </header>
 
-    <nav class="flex gap-4 border-b border-slate-300 px-4 bg-white overflow-x-auto shadow-sm">
-        <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="tab-btn tab-active py-3 px-2 text-sm font-medium text-slate-500 whitespace-nowrap"><i class="fas fa-chart-pie mr-2"></i> Tableau de bord</button>
-        <button onclick="switchTab('tab-students')" id="btn-tab-students" class="tab-btn py-3 px-2 text-sm font-medium text-slate-500 whitespace-nowrap"><i class="fas fa-users mr-2"></i> Élèves & Notes</button>
-        <button onclick="switchTab('tab-finance')" id="btn-tab-finance" class="tab-btn py-3 px-2 text-sm font-medium text-slate-500 whitespace-nowrap"><i class="fas fa-wallet mr-2"></i> Trésorerie</button>
+    <!-- NAVIGATION PRINCIPALE -->
+    <nav class="bg-white border-b flex justify-around sticky top-[64px] z-40 shadow-sm no-print">
+        <button onclick="switchTab('tab-dash')" id="btn-tab-dash" class="py-4 px-2 text-sm tab-active"><i class="fas fa-home mr-1"></i> Board</button>
+        <button onclick="switchTab('tab-grades')" id="btn-tab-grades" class="py-4 px-2 text-sm"><i class="fas fa-graduation-cap mr-1"></i> Notes</button>
+        <button onclick="switchTab('tab-finance')" id="btn-tab-finance" class="py-4 px-2 text-sm"><i class="fas fa-wallet mr-1"></i> Finance</button>
+        <button onclick="switchTab('tab-discipline')" id="btn-tab-discipline" class="py-4 px-2 text-sm"><i class="fas fa-user-check mr-1"></i> Présence</button>
     </nav>
 
-    <main class="flex-1 p-4 max-w-6xl mx-auto w-full">
+    <main class="p-4 max-w-6xl mx-auto">
         
-        <!-- ONGLET 1 : TABLEAU DE BORD -->
-        <div id="tab-dashboard" class="flex flex-col gap-4">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-blue-500">
-                    <p class="text-[10px] uppercase font-bold text-slate-400">Effectif</p>
-                    <p class="text-2xl font-bold text-slate-800" id="dash-effectif">0</p>
+        <!-- DASHBOARD -->
+        <div id="tab-dash" class="space-y-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="bg-white p-4 rounded-2xl card-shadow border-l-4 border-violet-600">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Effectif Total</p>
+                    <p class="text-2xl font-black text-slate-800" id="stat-effectif">0</p>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-emerald-500">
-                    <p class="text-[10px] uppercase font-bold text-emerald-600">Encaissé (Mois)</p>
-                    <p class="text-2xl font-bold text-emerald-700" id="dash-encaisse">0 F</p>
+                <div class="bg-white p-4 rounded-2xl card-shadow border-l-4 border-emerald-500">
+                    <p class="text-[10px] font-bold text-emerald-600 uppercase">Recettes Globales</p>
+                    <p class="text-2xl font-black text-slate-800" id="stat-finance">0 F</p>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-rose-500">
-                    <p class="text-[10px] uppercase font-bold text-rose-600">Impayés</p>
-                    <p class="text-2xl font-bold text-rose-700" id="dash-arrieres">0 F</p>
+                <div class="bg-white p-4 rounded-2xl card-shadow border-l-4 border-orange-500">
+                    <p class="text-[10px] font-bold text-orange-600 uppercase">Moyenne Classe</p>
+                    <p class="text-2xl font-black text-slate-800" id="stat-avg">0.00</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl card-shadow border-l-4 border-rose-500">
+                    <p class="text-[10px] font-bold text-rose-600 uppercase">Retards/Absences</p>
+                    <p class="text-2xl font-black text-slate-800" id="stat-abs">0</p>
                 </div>
             </div>
 
-            <!-- BOUTONS MAGIQUES (Scanner, QR Offline) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                <button onclick="openScannerPresence()" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-5 rounded-2xl shadow-lg flex items-center justify-between hover:scale-[1.02] transition-transform">
-                    <div class="text-left">
-                        <h3 class="font-bold text-lg">Scanner de Présence</h3>
-                        <p class="text-xs text-blue-100">Envoyer WhatsApp automatique aux parents</p>
-                    </div>
-                    <i class="fas fa-qrcode text-4xl opacity-50"></i>
+            <div class="flex gap-2 no-print">
+                <button onclick="openRegistrationModal()" class="flex-1 bg-[#4c1d95] text-white p-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-2">
+                    <i class="fas fa-user-plus text-xl"></i>
+                    <span>Nouvel Élève</span>
                 </button>
-                <div class="flex gap-2">
-                    <button onclick="genererQrOffline()" class="flex-1 bg-slate-800 text-white p-5 rounded-2xl shadow-lg text-left hover:bg-slate-700">
-                        <i class="fas fa-share-alt text-2xl mb-2 text-violet-300"></i>
-                        <h3 class="font-bold">Exporter (Sans Internet)</h3>
-                        <p class="text-[10px] text-slate-400">Partager au directeur</p>
-                    </button>
-                    <button onclick="openScannerOffline()" class="flex-1 bg-violet-100 text-violet-900 p-5 rounded-2xl shadow-lg text-left border border-violet-200 hover:bg-violet-200">
-                        <i class="fas fa-camera text-2xl mb-2"></i>
-                        <h3 class="font-bold">Importer QR</h3>
-                        <p class="text-[10px] text-violet-600">Recevoir des notes</p>
-                    </button>
-                </div>
+                <button onclick="openScannerPresence()" class="flex-1 bg-yellow-400 text-violet-950 p-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-2">
+                    <i class="fas fa-qrcode text-xl"></i>
+                    <span>Scanner Présence</span>
+                </button>
             </div>
-        </div>
 
-        <!-- ONGLET 2 : NOTES -->
-        <div id="tab-students" class="hidden flex-col gap-4">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-                <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3 mb-3">
-                    <h3 class="font-bold text-slate-700"><i class="fas fa-edit text-[#4c1d95]"></i> Saisie des Notes</h3>
-                    
-                    <!-- LE BOUTON MAGIQUE VOCAL -->
-                    <button id="btn-voice" onclick="startVoiceRecognition()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full font-bold text-sm shadow-[0_0_15px_rgba(239,68,68,0.5)] flex items-center gap-2 animate-pulse">
-                        <i class="fas fa-microphone"></i> Dictée Vocale
-                    </button>
-                </div>
-                
-                <p id="voice-status" class="text-xs text-center text-rose-500 font-bold mb-2 hidden">Écoute en cours... Dites par exemple : "Fatou 15"</p>
-                
+            <div class="bg-white rounded-2xl p-4 card-shadow">
+                <h3 class="font-bold text-slate-700 mb-3 flex items-center justify-between">
+                    <span>Classement Général (Trimestre Actuel)</span>
+                    <button onclick="calculateRanks()" class="text-xs bg-slate-100 px-3 py-1 rounded-full text-violet-700">Actualiser les rangs</button>
+                </h3>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-100 text-xs uppercase text-slate-500">
-                            <tr>
-                                <th class="p-3">Élève</th>
-                                <th class="p-3 text-center">Note sur 20</th>
-                            </tr>
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
+                            <tr><th class="p-3">Rang</th><th class="p-3">Élève</th><th class="p-3">Moyenne</th><th class="p-3">Assiduité</th></tr>
                         </thead>
-                        <tbody id="grades-table-body" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="rank-table-body"></tbody>
                     </table>
                 </div>
-                <div class="mt-4 flex justify-end">
-                    <button onclick="window.location.href='bulletin.html'" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md"><i class="fas fa-print"></i> Générer les Bulletins</button>
+            </div>
+        </div>
+
+        <!-- NOTES & COEFFICIENTS -->
+        <div id="tab-grades" class="hidden space-y-4">
+            <div class="bg-white rounded-2xl p-4 card-shadow border border-violet-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold">Saisie des Notes</h3>
+                    <select id="grade-subject" onchange="render()" class="bg-slate-100 p-2 rounded-lg text-sm font-bold border-none"></select>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-100 text-[10px] uppercase font-bold text-slate-600">
+                            <tr>
+                                <th class="p-3 text-left">Nom de l'élève</th>
+                                <th class="p-3 text-center">Interro/Devoir (C1)</th>
+                                <th class="p-3 text-center">Composition (C2)</th>
+                                <th class="p-3 text-right">Moy/20</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grades-table-body"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- ONGLET 3 : FINANCE ET RELANCE MASSIVE -->
-        <div id="tab-finance" class="hidden flex-col gap-4">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-                <div class="flex flex-col sm:flex-row justify-between items-center border-b pb-3 mb-3 gap-3">
-                    <h3 class="font-bold text-slate-700"><i class="fas fa-wallet text-emerald-600"></i> Suivi des Paiements</h3>
-                    <div class="flex gap-2">
-                        <select id="finance-month-select" onchange="render()" class="bg-slate-50 border rounded-lg px-2 py-1.5 text-sm font-bold"></select>
-                        
-                        <!-- LE BOUTON DE RELANCE MASSIVE -->
-                        <button onclick="startMassWhatsApp()" class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-emerald-200 transition-colors">
-                            <i class="fab fa-whatsapp text-lg"></i> Relance Massive
-                        </button>
-                    </div>
+        <!-- FINANCE SÉNÉGAL (INSCRIPTION + MENSUALITÉS) -->
+        <div id="tab-finance" class="hidden space-y-4">
+            <div class="bg-white rounded-2xl p-4 card-shadow border border-emerald-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold">Gestion des Paiements</h3>
+                    <select id="finance-month" onchange="render()" class="bg-emerald-50 text-emerald-800 p-2 rounded-lg text-sm font-bold border-none"></select>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-100 text-xs uppercase text-slate-500">
+                    <table class="w-full text-sm">
+                        <thead class="bg-emerald-50 text-[10px] uppercase font-bold text-emerald-700">
                             <tr>
-                                <th class="p-3">Élève</th>
-                                <th class="p-3">Montant Dû</th>
-                                <th class="p-3">Statut</th>
+                                <th class="p-3 text-left">Élève</th>
+                                <th class="p-3 text-center">Inscription</th>
+                                <th class="p-3 text-center">Mensualité</th>
                                 <th class="p-3 text-right">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="finance-table-body" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="finance-table-body"></tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        <!-- DISCIPLINE & ABSENCES -->
+        <div id="tab-discipline" class="hidden space-y-4">
+            <div class="bg-white rounded-2xl p-4 card-shadow border border-orange-100">
+                <h3 class="font-bold mb-4">Suivi des Absences et Retards</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-orange-50 text-[10px] uppercase font-bold text-orange-700">
+                            <tr>
+                                <th class="p-3 text-left">Élève</th>
+                                <th class="p-3 text-center">Retards</th>
+                                <th class="p-3 text-center">Absences</th>
+                                <th class="p-3 text-right">Dernier Scan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="discipline-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </main>
 
-    <!-- ZONE INVISIBLE POUR LE REÇU THERMIQUE (58mm) -->
-    <div id="thermal-receipt" class="bg-white hidden">
-        <div style="text-align: center; border-bottom: 1px dashed black; padding-bottom: 5px; margin-bottom: 5px;">
-            <h2 style="margin:0; font-size: 16px; font-weight: bold;">SUNU ECOLE</h2>
-            <p style="margin:0; font-size: 10px;">Dakar, Sénégal</p>
-            <p style="margin:0; font-size: 10px;">Reçu de paiement</p>
-        </div>
-        <p style="margin: 2px 0;"><strong>Date:</strong> <span id="rec-date"></span></p>
-        <p style="margin: 2px 0;"><strong>Élève:</strong> <span id="rec-name"></span></p>
-        <p style="margin: 2px 0;"><strong>Mois:</strong> <span id="rec-month"></span></p>
-        <p style="margin: 2px 0;"><strong>Méthode:</strong> <span id="rec-method"></span></p>
-        <div style="text-align: right; border-top: 1px dashed black; padding-top: 5px; margin-top: 5px;">
-            <h3 style="margin:0; font-size: 14px;">TOTAL: <span id="rec-amount"></span> FCFA</h3>
-        </div>
-        <p style="text-align: center; font-size: 9px; margin-top: 10px;">Merci de votre confiance !</p>
-    </div>
-
-    <!-- MODALE ENCAISSEMENT & IMPRESSION -->
-    <div id="payment-modal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
-            <h3 class="text-lg font-bold mb-1">Encaisser Mensualité</h3>
-            <p id="pay-student-name" class="text-sm text-slate-500 mb-4 font-bold border-b pb-2"></p>
-            <input type="hidden" id="pay-student-id">
-            <div class="space-y-4">
-                <input type="number" id="pay-amount" class="w-full border rounded-lg p-2 font-bold text-xl text-center" readonly>
-                <div class="grid grid-cols-3 gap-2">
-                    <button type="button" onclick="selectPaymentMethod('Wave')" id="btn-Wave" class="border rounded p-2 text-xs font-bold hover:bg-blue-50">Wave</button>
-                    <button type="button" onclick="selectPaymentMethod('OM')" id="btn-OM" class="border rounded p-2 text-xs font-bold hover:bg-orange-50">Orange</button>
-                    <button type="button" onclick="selectPaymentMethod('Cash')" id="btn-Cash" class="border rounded p-2 text-xs font-bold hover:bg-emerald-50">Cash</button>
+    <!-- MODALE INSCRIPTION -->
+    <div id="modal-reg" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md p-6">
+            <h2 class="text-xl font-black mb-4">Nouvel Élève</h2>
+            <form onsubmit="saveStudent(event)" class="space-y-4">
+                <input type="text" id="reg-prenom" placeholder="Prénom" class="w-full p-3 bg-slate-100 rounded-xl" required>
+                <input type="text" id="reg-nom" placeholder="Nom" class="w-full p-3 bg-slate-100 rounded-xl uppercase" required>
+                <input type="tel" id="reg-tel" placeholder="Téléphone Parent (WhatsApp)" class="w-full p-3 bg-slate-100 rounded-xl" required>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeModal('modal-reg')" class="flex-1 p-3 bg-slate-200 rounded-xl font-bold">Annuler</button>
+                    <button type="submit" class="flex-1 p-3 bg-violet-600 text-white rounded-xl font-bold">Enregistrer</button>
                 </div>
-                <input type="hidden" id="pay-method" value="">
-                <label class="flex items-center gap-2 text-sm font-bold text-slate-600 mt-2 bg-slate-50 p-2 rounded border">
-                    <input type="checkbox" id="pay-print-receipt" checked class="w-4 h-4">
-                    🖨️ Imprimer reçu thermique
-                </label>
-            </div>
-            <div class="mt-6 flex gap-2">
-                <button onclick="closeModal('payment-modal')" class="flex-1 border rounded py-2 text-sm font-bold">Annuler</button>
-                <button onclick="submitPayment()" class="flex-1 bg-emerald-600 text-white rounded py-2 text-sm font-bold">Valider</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODALE SCANNER (PRÉSENCE / IMPORT OFFLINE) -->
-    <div id="scanner-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-4">
-        <h3 id="scanner-title" class="text-white text-xl font-bold mb-4">Scanner</h3>
-        <div id="reader" style="width: 300px; max-width: 100%; border-radius: 12px; overflow: hidden;" class="bg-black"></div>
-        <p id="scanner-result" class="text-emerald-400 font-bold mt-4 text-center"></p>
-        <button onclick="closeScanner()" class="mt-6 bg-white/20 text-white px-6 py-2 rounded-full font-bold">Fermer la caméra</button>
-    </div>
-
-    <!-- MODALE GÉNÉRATEUR QR OFFLINE -->
-    <div id="qr-export-modal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 flex flex-col items-center">
-            <h3 class="text-lg font-bold mb-2 text-[#4c1d95]">Transfert Hors-Ligne</h3>
-            <p class="text-xs text-slate-500 mb-4 text-center">Faites scanner ce code au Directeur pour lui envoyer vos notes de la classe actuelle sans internet.</p>
-            <div id="qrcode-container" class="bg-white p-2 border-4 border-violet-100 rounded-xl"></div>
-            <button onclick="closeModal('qr-export-modal')" class="mt-4 bg-slate-100 text-slate-700 px-6 py-2 rounded-full font-bold text-sm hover:bg-slate-200">Terminer</button>
-        </div>
-    </div>
-
-    <!-- MODALE INSCRIPTION CONSERVÉE -->
-    <div id="registration-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 border border-slate-100 my-auto">
-            <h3 class="text-xl font-bold mb-4 text-slate-800 border-b pb-3 flex items-center gap-2"><i class="fas fa-user-plus text-[#4c1d95]"></i> Inscription</h3>
-            <form id="form-registration" onsubmit="submitStudentRegistration(event)">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1">Nom *</label><input type="text" id="reg-nom" required class="border rounded-xl p-2 w-full uppercase"></div>
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1">Prénom *</label><input type="text" id="reg-prenom" required class="border rounded-xl p-2 w-full capitalize"></div>
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1">Téléphone Parent (WhatsApp) *</label><input type="tel" id="reg-contact" required placeholder="77..." class="border rounded-xl p-2 w-full"></div>
-                </div>
-                <div class="mt-4 flex justify-end gap-3"><button type="button" onclick="closeModal('registration-modal')" class="px-4 py-2 text-sm font-bold text-slate-500">Annuler</button><button type="submit" class="bg-[#4c1d95] text-white px-6 py-2 rounded-xl text-sm font-bold">Enregistrer</button></div>
             </form>
         </div>
     </div>
 
+    <!-- SCANNER MODAL -->
+    <div id="modal-scanner" class="hidden fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center p-4">
+        <div id="reader" class="w-full max-w-sm rounded-2xl overflow-hidden bg-white"></div>
+        <div id="scan-feedback" class="mt-4 p-4 rounded-xl text-white font-bold text-center"></div>
+        <button onclick="stopScanner()" class="mt-8 bg-white/20 text-white px-8 py-3 rounded-full font-bold">Fermer</button>
+    </div>
+
 <script>
-    // --- CONFIGURATION DE BASE ---
-    const classNames = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
-    const moisAnnee = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin"];
+    // CONFIGURATION ÉDUCATION SÉNÉGALAISE
+    const CLASSES = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "2nde", "1ère", "Terminale"];
+    const MOIS = ["Inscription", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
     
-    let appState = { classes: {}, selectedClass: "6ème", selectedSection: "A" };
-    let html5QrcodeScanner = null;
-    let scannerMode = ""; // "PRESENCE" ou "IMPORT"
+    // Sujets par défaut et coefficients (Standard Collège)
+    const SUBJECTS = [
+        { id: 'math', n: 'Mathématiques', c: 4 },
+        { id: 'fr', n: 'Français', c: 5 },
+        { id: 'pc', n: 'Physique-Chimie', c: 2 },
+        { id: 'svt', n: 'SVT', c: 2 },
+        { id: 'hg', n: 'Hist-Géo', c: 2 },
+        { id: 'ang', n: 'Anglais', c: 2 },
+        { id: 'eps', n: 'EPS', c: 1 }
+    ];
 
-    async function initApp() {
-        const saved = await idbKeyval.get("gestnotes_state");
-        if(saved) appState = saved;
+    let db = { classes: {}, currentClass: "6ème" };
+    let html5QrScanner = null;
+
+    async function init() {
+        const saved = await idbKeyval.get('sunuecole_db');
+        if (saved) db = saved;
+
+        // Populate selects
+        document.getElementById('main-class').innerHTML = CLASSES.map(c => `<option value="${c}">${c}</option>`).join('');
+        document.getElementById('main-class').value = db.currentClass;
+        document.getElementById('grade-subject').innerHTML = SUBJECTS.map(s => `<option value="${s.id}">${s.n} (Coef ${s.c})</option>`).join('');
+        document.getElementById('finance-month').innerHTML = MOIS.map((m, i) => `<option value="${i}">${m}</option>`).join('');
         
-        document.getElementById('filter-class').innerHTML = classNames.map(c => `<option value="${c}">${c}</option>`).join('');
-        document.getElementById('filter-class').value = appState.selectedClass;
-        document.getElementById('filter-section').innerHTML = ["A","B","C"].map(s => `<option value="${s}">Série ${s}</option>`).join('');
-        document.getElementById('filter-section').value = appState.selectedSection;
-        document.getElementById('finance-month-select').innerHTML = moisAnnee.map((m,i) => `<option value="${i}">${m}</option>`).join('');
-        
-        buildEmptyState(); render();
+        render();
     }
 
-    function buildEmptyState() {
-        const key = `${appState.selectedClass}_${appState.selectedSection}`;
-        if (!appState.classes[key]) appState.classes[key] = { students: [], fees: { mensualite: 15000 } };
+    function changeClass() {
+        db.currentClass = document.getElementById('main-class').value;
+        save();
+        render();
     }
-
-    function onClassChange() { appState.selectedClass = document.getElementById('filter-class').value; buildEmptyState(); render(); }
-    function onSectionChange() { appState.selectedSection = document.getElementById('filter-section').value; buildEmptyState(); render(); }
 
     function switchTab(tabId) {
-        ['tab-dashboard', 'tab-students', 'tab-finance'].forEach(id => document.getElementById(id).style.display = 'none');
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('tab-active'));
-        document.getElementById(tabId).style.display = 'flex';
-        document.getElementById(`btn-${tabId}`).classList.add('tab-active');
+        ['tab-dash', 'tab-grades', 'tab-finance', 'tab-discipline'].forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById('btn-' + id).classList.remove('tab-active');
+        });
+        document.getElementById(tabId).classList.remove('hidden');
+        document.getElementById('btn-' + tabId).classList.add('tab-active');
     }
 
-    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function openRegistrationModal() { document.getElementById('modal-reg').classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-    // --- 🎙️ FEATURE 1: RECONNAISSANCE VOCALE (La Magie) ---
-    function startVoiceRecognition() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) return alert("Votre navigateur ne supporte pas la dictée vocale (utilisez Chrome).");
-        
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'fr-FR';
-        const statusEl = document.getElementById('voice-status');
-        const btnVoice = document.getElementById('btn-voice');
-        
-        recognition.onstart = () => {
-            statusEl.classList.remove('hidden');
-            btnVoice.classList.replace('bg-red-500', 'bg-emerald-500');
-            btnVoice.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Écoute...';
-        };
-
-        recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript.trim().toLowerCase();
-            console.log("Entendu :", transcript);
-            
-            // Chercher un nombre dans la phrase
-            const noteMatch = transcript.match(/\b([0-9]+([.,][0-9]+)?)\b/);
-            if(noteMatch) {
-                const note = parseFloat(noteMatch[0].replace(',', '.'));
-                const key = `${appState.selectedClass}_${appState.selectedSection}`;
-                
-                // Chercher l'élève dont le prénom ou nom ressemble à ce qui a été dit
-                const student = appState.classes[key].students.find(s => 
-                    transcript.includes(s.prenom.toLowerCase()) || transcript.includes(s.nom.toLowerCase())
-                );
-
-                if(student) {
-                    student.grades.noteClass = note; // Simplification pour le prototype
-                    saveToStorage(); render();
-                    
-                    // Retour audio confirmant la saisie
-                    const utterance = new SpeechSynthesisUtterance(`Note de ${student.prenom} enregistrée : ${note}`);
-                    utterance.lang = 'fr-FR'; window.speechSynthesis.speak(utterance);
-                } else {
-                    alert(`Note reconnue (${note}) mais élève non trouvé. Nom entendu: ${transcript}`);
-                }
-            }
-        };
-
-        recognition.onend = () => {
-            statusEl.classList.add('hidden');
-            btnVoice.classList.replace('bg-emerald-500', 'bg-red-500');
-            btnVoice.innerHTML = '<i class="fas fa-microphone"></i> Dictée Vocale';
-        };
-
-        recognition.start();
+    async function save() {
+        await idbKeyval.set('sunuecole_db', db);
     }
 
-    // --- 🖨️ FEATURE 2: REÇU THERMIQUE (Caisse Locale) ---
-    function openPaymentModal(id, name, amount) {
-        document.getElementById('pay-student-id').value = id;
-        document.getElementById('pay-student-name').innerText = name;
-        document.getElementById('pay-amount').value = amount;
-        document.getElementById('pay-method').value = "";
-        ['Wave', 'OM', 'Cash'].forEach(m => document.getElementById(`btn-${m}`).classList.remove('ring-2', 'ring-emerald-500', 'bg-slate-100'));
-        openModal('payment-modal');
+    function getStudents() {
+        if (!db.classes[db.currentClass]) db.classes[db.currentClass] = [];
+        return db.classes[db.currentClass];
     }
 
-    function selectPaymentMethod(m) {
-        document.getElementById('pay-method').value = m;
-        ['Wave', 'OM', 'Cash'].forEach(x => document.getElementById(`btn-${x}`).classList.remove('ring-2', 'ring-emerald-500', 'bg-slate-100'));
-        document.getElementById(`btn-${m}`).classList.add('ring-2', 'ring-emerald-500', 'bg-slate-100');
-    }
-
-    function submitPayment() {
-        const method = document.getElementById('pay-method').value;
-        if (!method) return alert("Choisissez la méthode (Wave, OM, Cash)");
-        
-        const id = document.getElementById('pay-student-id').value;
-        const monthIdx = document.getElementById('finance-month-select').value;
-        const key = `${appState.selectedClass}_${appState.selectedSection}`;
-        
-        const student = appState.classes[key].students.find(s => s.id === id);
-        student.payments[monthIdx].statut = "Payé";
-        student.payments[monthIdx].methode = method;
-        student.payments[monthIdx].montantPaye = student.payments[monthIdx].montantDu;
-
-        saveToStorage(); closeModal('payment-modal'); render();
-
-        if(document.getElementById('pay-print-receipt').checked) {
-            // Remplir le template caché
-            document.getElementById('rec-date').innerText = new Date().toLocaleString('fr-FR');
-            document.getElementById('rec-name').innerText = `${student.prenom} ${student.nom}`;
-            document.getElementById('rec-month').innerText = moisAnnee[monthIdx];
-            document.getElementById('rec-method').innerText = method;
-            document.getElementById('rec-amount').innerText = student.payments[monthIdx].montantDu;
-            
-            // Lancer l'impression (Seul le css @media print gérera l'affichage du format 58mm)
-            setTimeout(() => window.print(), 500);
-        }
-    }
-
-    // --- 🚀 FEATURE 3: RELANCE MASSIVE WHATSAPP ---
-    async function startMassWhatsApp() {
-        const monthIdx = document.getElementById('finance-month-select').value;
-        const moisNom = moisAnnee[monthIdx];
-        const key = `${appState.selectedClass}_${appState.selectedSection}`;
-        const impayes = appState.classes[key].students.filter(s => s.payments[monthIdx].statut !== "Payé" && s.contact);
-
-        if(impayes.length === 0) return alert("Aucun impayé ou aucun numéro enregistré.");
-        
-        if(!confirm(`Vous allez envoyer des relances à ${impayes.length} parents un par un. Continuer ?`)) return;
-
-        // Astuce pour éviter le blocage des popups : envoyer 1 par 1 en confirmant.
-        for(let i=0; i<impayes.length; i++) {
-            const student = impayes[i];
-            const msg = encodeURIComponent(`Bonjour,\nRappel de scolarité : Le mois de ${moisNom} (${student.payments[monthIdx].montantDu} FCFA) pour ${student.prenom} est dû. Merci de régulariser.\n- La Direction`);
-            const tel = student.contact.replace(/\s+/g, '');
-            
-            // Ouvre un nouvel onglet WhatsApp Web/App
-            window.open(`https://wa.me/221${tel}?text=${msg}`, '_blank');
-            
-            if(i < impayes.length - 1) {
-                // Fait une pause en demandant à l'utilisateur de cliquer pour envoyer le suivant
-                await new Promise(resolve => setTimeout(() => {
-                    if(confirm(`Message ${i+1}/${impayes.length} ouvert. Cliquez sur OK pour ouvrir le suivant.`)) resolve();
-                }, 1500));
-            }
-        }
-        alert("Terminé !");
-    }
-
-    // --- 🔗 FEATURE 4: OFFLINE QR TRANSFERT ---
-    function genererQrOffline() {
-        const key = `${appState.selectedClass}_${appState.selectedSection}`;
-        const dataToTransfer = { c: key, s: appState.classes[key].students.map(s => ({ i: s.id, n: s.grades.noteClass || 0 })) }; // Format minimisé
-        
-        const jsonString = JSON.stringify(dataToTransfer);
-        // Compression LZString pour faire rentrer beaucoup d'infos dans un QR
-        const compressed = LZString.compressToBase64(jsonString); 
-        
-        document.getElementById('qrcode-container').innerHTML = "";
-        new QRCode(document.getElementById("qrcode-container"), {
-            text: "GN|" + compressed, // Signature GestNotes
-            width: 250, height: 250,
-            colorDark : "#4c1d95", colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.L
-        });
-        openModal('qr-export-modal');
-    }
-
-    function openScannerOffline() {
-        scannerMode = "IMPORT";
-        document.getElementById('scanner-title').innerText = "Importer des notes (QR du prof)";
-        openModal('scanner-modal');
-        initScanner();
-    }
-
-    function openScannerPresence() {
-        scannerMode = "PRESENCE";
-        document.getElementById('scanner-title').innerText = "Scanner Carte Élève (Présence)";
-        openModal('scanner-modal');
-        initScanner();
-    }
-
-    function initScanner() {
-        if(!html5QrcodeScanner) {
-            html5QrcodeScanner = new Html5Qrcode("reader");
-        }
-        html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: {width: 250, height: 250} }, 
-        (decodedText) => {
-            document.getElementById('scanner-result').innerText = "Scan réussi !";
-            html5QrcodeScanner.stop();
-            
-            if(scannerMode === "IMPORT") {
-                if(decodedText.startsWith("GN|")) {
-                    const compressed = decodedText.substring(3);
-                    const jsonString = LZString.decompressFromBase64(compressed);
-                    const data = JSON.parse(jsonString);
-                    // Fusionner les notes reçues...
-                    alert(`Notes de la classe ${data.c} importées avec succès !`);
-                }
-            } else if (scannerMode === "PRESENCE") {
-                // decodedText = ID de l'élève (matricule sur la carte)
-                // Envoi WhatsApp direct
-                alert(`Présence enregistrée. WhatsApp envoyé au parent de l'élève ${decodedText}.`);
-            }
-            setTimeout(() => closeModal('scanner-modal'), 1000);
-        }, 
-        (err) => { /* Ignore errors during scan */ });
-    }
-    
-    function closeScanner() {
-        if(html5QrcodeScanner) html5QrcodeScanner.stop();
-        closeModal('scanner-modal');
-    }
-
-    // --- LOGIQUE STANDARD (Inscription & Rendu) ---
-    function openRegistrationModal() { document.getElementById('form-registration').reset(); openModal('registration-modal'); }
-    function submitStudentRegistration(e) {
+    function saveStudent(e) {
         e.preventDefault();
-        const key = `${appState.selectedClass}_${appState.selectedSection}`;
+        const students = getStudents();
         const newStudent = {
-            id: 'stu_' + Date.now(),
-            matricule: `MAT-${Math.floor(Math.random()*1000)}`,
-            nom: document.getElementById('reg-nom').value.toUpperCase(),
+            id: 'S' + Date.now(),
             prenom: document.getElementById('reg-prenom').value,
-            contact: document.getElementById('reg-contact').value,
-            grades: {},
-            payments: moisAnnee.map((m) => ({ designation: m, statut: "Impayé", montantDu: 15000, montantPaye: 0 }))
+            nom: document.getElementById('reg-nom').value.toUpperCase(),
+            tel: document.getElementById('reg-tel').value,
+            notes: {}, // Structure: { trim_1: { math: { dev: 12, compo: 14 }, ... }, ... }
+            finance: Array(11).fill(false), // Index 0 = Inscription, 1-10 = Mensualités
+            discipline: { retard: 0, absence: 0, lastScan: null },
+            rang: 0,
+            moyenneTrim: 0
         };
-        appState.classes[key].students.push(newStudent);
-        saveToStorage(); closeModal('registration-modal'); render();
+        students.push(newStudent);
+        save();
+        closeModal('modal-reg');
+        e.target.reset();
+        render();
     }
 
+    // LOGIQUE DE CALCUL DES MOYENNES
+    function calcMoyenneMatiere(dev, compo) {
+        if (dev === undefined || compo === undefined) return null;
+        return ((parseFloat(dev) * 1) + (parseFloat(compo) * 2)) / 3;
+    }
+
+    function calculateRanks() {
+        const students = getStudents();
+        const quarter = document.getElementById('main-quarter').value;
+        const qKey = 'trim_' + quarter;
+
+        students.forEach(s => {
+            let totalPoints = 0;
+            let totalCoefs = 0;
+            
+            SUBJECTS.forEach(sub => {
+                const n = s.notes[qKey]?.[sub.id];
+                if (n) {
+                    const moy = calcMoyenneMatiere(n.dev, n.compo);
+                    if (moy !== null) {
+                        totalPoints += (moy * sub.c);
+                        totalCoefs += sub.c;
+                    }
+                }
+            });
+            s.moyenneTrim = totalCoefs > 0 ? (totalPoints / totalCoefs) : 0;
+        });
+
+        // Tri pour le rang
+        const sorted = [...students].sort((a, b) => b.moyenneTrim - a.moyenneTrim);
+        sorted.forEach((s, index) => {
+            const studentInDb = students.find(st => st.id === s.id);
+            studentInDb.rang = index + 1;
+        });
+
+        save();
+        render();
+        alert("Calcul des moyennes et rangs terminé !");
+    }
+
+    // RENDU DE L'INTERFACE
     function render() {
-        const key = `${appState.selectedClass}_${appState.selectedSection}`;
-        const students = appState.classes[key] ? appState.classes[key].students : [];
-        const monthIdx = document.getElementById('finance-month-select').value;
-        
-        // MAJ Stats
-        document.getElementById('dash-effectif').innerText = students.length;
-        
-        // Rendu Table Notes
-        const tableGrades = document.getElementById('grades-table-body');
-        tableGrades.innerHTML = students.map((s, i) => `
-            <tr class="${i%2===0?'bg-white':'bg-slate-50'}">
-                <td class="p-3 font-bold">${s.nom} ${s.prenom}</td>
-                <td class="p-3 text-center"><input type="number" value="${s.grades.noteClass || ''}" onchange="appState.classes['${key}'].students[${i}].grades.noteClass=this.value;saveToStorage()" class="border rounded text-center w-20 p-1"></td>
+        const students = getStudents();
+        const quarter = document.getElementById('main-quarter').value;
+        const qKey = 'trim_' + quarter;
+        const subjectId = document.getElementById('grade-subject').value;
+        const monthIdx = parseInt(document.getElementById('finance-month').value);
+
+        // Stats
+        document.getElementById('stat-effectif').innerText = students.length;
+        let globalFinance = 0;
+        let totalAbs = 0;
+        students.forEach(s => {
+            s.finance.forEach(f => { if(f) globalFinance += 15000 }); // Hypothèse 15k/mois
+            totalAbs += s.discipline.absence;
+        });
+        document.getElementById('stat-finance').innerText = globalFinance.toLocaleString() + ' F';
+        document.getElementById('stat-abs').innerText = totalAbs;
+
+        // Table Rangs (Dashboard)
+        document.getElementById('rank-table-body').innerHTML = students
+            .sort((a,b) => (a.rang || 99) - (b.rang || 99))
+            .map(s => `
+            <tr class="border-b">
+                <td class="p-3 font-black text-violet-700">${s.rang || '-'}<sup>${s.rang==1?'re':''}</sup></td>
+                <td class="p-3 font-bold">${s.prenom} ${s.nom}</td>
+                <td class="p-3 font-bold text-slate-600">${s.moyenneTrim ? s.moyenneTrim.toFixed(2) : '-'}</td>
+                <td class="p-3 text-xs">${s.discipline.absence} Abs / ${s.discipline.retard} Ret</td>
             </tr>
         `).join('');
 
-        // Rendu Table Finance
-        const tableFin = document.getElementById('finance-table-body');
-        let totEnc = 0, totImp = 0;
-        tableFin.innerHTML = students.map((s, i) => {
-            const p = s.payments[monthIdx];
-            if(p.statut === "Payé") totEnc += p.montantDu; else totImp += p.montantDu;
-            
-            return `<tr class="${i%2===0?'bg-white':'bg-slate-50'}">
-                <td class="p-3 font-bold">${s.nom} ${s.prenom}</td><td class="p-3 text-slate-600">${p.montantDu} F</td>
-                <td class="p-3">${p.statut==="Payé"?'<span class="bg-emerald-100 text-emerald-700 px-2 rounded text-xs font-bold">Payé</span>':'<span class="bg-rose-100 text-rose-700 px-2 rounded text-xs font-bold">Impayé</span>'}</td>
-                <td class="p-3 text-right">${p.statut!=="Payé"?`<button onclick="openPaymentModal('${s.id}', '${s.prenom} ${s.nom}', ${p.montantDu})" class="bg-slate-800 text-white px-2 py-1 rounded text-xs">Encaisser</button>`:'-'}</td>
+        // Table Notes
+        document.getElementById('grades-table-body').innerHTML = students.map(s => {
+            const n = s.notes[qKey]?.[subjectId] || { dev: '', compo: '' };
+            const moy = calcMoyenneMatiere(n.dev, n.compo);
+            return `
+            <tr class="border-b">
+                <td class="p-3 font-bold">${s.prenom} ${s.nom}</td>
+                <td class="p-3 text-center">
+                    <input type="number" step="0.5" value="${n.dev}" onchange="updateNote('${s.id}', 'dev', this.value)" class="w-16 p-1 border rounded text-center">
+                </td>
+                <td class="p-3 text-center">
+                    <input type="number" step="0.5" value="${n.compo}" onchange="updateNote('${s.id}', 'compo', this.value)" class="w-16 p-1 border rounded text-center">
+                </td>
+                <td class="p-3 text-right font-black ${moy < 10 ? 'text-rose-600' : 'text-emerald-600'}">
+                    ${moy ? moy.toFixed(2) : '-'}
+                </td>
             </tr>`;
         }).join('');
+
+        // Table Finance
+        document.getElementById('finance-table-body').innerHTML = students.map(s => `
+            <tr class="border-b">
+                <td class="p-3 font-bold">${s.prenom} ${s.nom}</td>
+                <td class="p-3 text-center">
+                    <i class="fas ${s.finance[0] ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-slate-300'} text-xl"></i>
+                </td>
+                <td class="p-3 text-center">
+                    <i class="fas ${s.finance[monthIdx] ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-slate-300'} text-xl"></i>
+                </td>
+                <td class="p-3 text-right">
+                    <button onclick="pay('${s.id}', ${monthIdx})" class="bg-slate-800 text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase">Encaisser</button>
+                </td>
+            </tr>
+        `).join('');
+
+        // Table Discipline
+        document.getElementById('discipline-table-body').innerHTML = students.map(s => `
+            <tr class="border-b">
+                <td class="p-3 font-bold">${s.prenom} ${s.nom}</td>
+                <td class="p-3 text-center font-bold text-orange-600">${s.discipline.retard}</td>
+                <td class="p-3 text-center font-bold text-rose-600">${s.discipline.absence}</td>
+                <td class="p-3 text-right text-[10px] text-slate-400 italic">${s.discipline.lastScan || 'Jamais'}</td>
+            </tr>
+        `).join('');
+    }
+
+    function updateNote(studentId, type, value) {
+        const quarter = document.getElementById('main-quarter').value;
+        const qKey = 'trim_' + quarter;
+        const subjectId = document.getElementById('grade-subject').value;
+        const student = getStudents().find(s => s.id === studentId);
         
-        document.getElementById('dash-encaisse').innerText = totEnc + " F";
-        document.getElementById('dash-arrieres').innerText = totImp + " F";
+        if (!student.notes[qKey]) student.notes[qKey] = {};
+        if (!student.notes[qKey][subjectId]) student.notes[qKey][subjectId] = { dev: undefined, compo: undefined };
+        
+        student.notes[qKey][subjectId][type] = value === "" ? undefined : parseFloat(value);
+        save();
+        render();
     }
 
-    async function saveToStorage() { await idbKeyval.set("gestnotes_state", appState); }
-    window.addEventListener('DOMContentLoaded', initApp);
-    
-function lireBulletinAudio() {
-    // Vérifie si le navigateur supporte la voix
-    if (!('speechSynthesis' in window)) {
-        alert("Désolé, votre téléphone ne supporte pas la lecture vocale.");
-        return;
+    function pay(studentId, monthIdx) {
+        const student = getStudents().find(s => s.id === studentId);
+        student.finance[monthIdx] = true;
+        
+        // Si paiement mensuel, on valide aussi l'inscription par défaut
+        if(monthIdx > 0) student.finance[0] = true; 
+        
+        save();
+        render();
+        alert(`Paiement enregistré pour ${student.prenom} ${student.nom}`);
     }
 
-    // 1. Récupération des données du bulletin (vous devrez adapter les ID selon votre HTML de bulletin)
-    // Ici on simule ce que ça lirait :
-    const nomEleve = document.getElementById('nom-eleve-bulletin')?.innerText || "L'élève";
-    const rang = document.getElementById('rang-eleve')?.innerText || "Premier";
-    const moyenne = document.getElementById('moyenne-eleve')?.innerText || "15";
-    
-    // 2. Création du texte intelligent
-    const texteALire = `Bonjour. Voici les résultats scolaires de ${nomEleve} pour ce semestre. 
-                        La moyenne générale est de ${moyenne} sur 20. 
-                        L'élève est classé ${rang} de sa classe. 
-                        C'est un excellent travail, continuez ainsi !`;
+    // SCANNER & PRÉSENCE
+    function openScannerPresence() {
+        document.getElementById('modal-scanner').classList.remove('hidden');
+        if (!html5QrScanner) {
+            html5QrScanner = new Html5Qrcode("reader");
+        }
+        
+        html5QrScanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            (decodedText) => {
+                // Le decodedText doit être l'ID de l'élève
+                const student = getStudents().find(s => s.id === decodedText);
+                const feedback = document.getElementById('scan-feedback');
+                
+                if (student) {
+                    student.discipline.lastScan = new Date().toLocaleTimeString();
+                    feedback.innerText = "PRÉSENCE VALIDÉE : " + student.prenom + " " + student.nom;
+                    feedback.className = "mt-4 p-4 rounded-xl bg-emerald-500 text-white font-bold text-center";
+                    
+                    // Simulation envoi WhatsApp (Ouvre le lien)
+                    const msg = encodeURIComponent(`SunuÉcole : Votre enfant ${student.prenom} est bien arrivé à l'école à ${student.discipline.lastScan}.`);
+                    window.open(`https://wa.me/221${student.tel}?text=${msg}`, '_blank');
+                    
+                    save();
+                    render();
+                } else {
+                    feedback.innerText = "ÉLÈVE NON RECONNU";
+                    feedback.className = "mt-4 p-4 rounded-xl bg-rose-500 text-white font-bold text-center";
+                }
+            },
+            (err) => {}
+        );
+    }
 
-    // 3. Configuration de la voix (En Français)
-    const utterance = new SpeechSynthesisUtterance(texteALire);
-    utterance.lang = 'fr-FR'; // Langue française
-    utterance.rate = 0.9;     // Vitesse un peu ralentie pour plus de clarté
-    utterance.pitch = 1;      // Tonalité normale
+    function stopScanner() {
+        if (html5QrScanner) {
+            html5QrScanner.stop().then(() => {
+                closeModal('modal-scanner');
+            });
+        } else {
+            closeModal('modal-scanner');
+        }
+    }
 
-    // 4. Lancement de la lecture !
-    window.speechSynthesis.speak(utterance);
-    
-    // Petite animation visuelle (optionnelle)
-    console.log("Lecture en cours...");
-}
-
-</script> 
+    window.onload = init;
+</script>
 </body>
 </html>
