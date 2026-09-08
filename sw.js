@@ -1,4 +1,3 @@
-// Service Worker pour GestNotes (Mode Hors-ligne / PWA)
 const CACHE_NAME = 'gestnotes-cache-v1';
 const ASSETS = [
   '/',
@@ -37,7 +36,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // En arrière-plan, essayer de rafraîchir le cache
         fetch(event.request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
@@ -46,7 +44,6 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse;
       }
       return fetch(event.request).catch(() => {
-        // Si hors-ligne et requête pour une page HTML
         if (event.request.headers.get('accept')?.includes('text/html')) {
           return caches.match('/bulletin.html');
         }
