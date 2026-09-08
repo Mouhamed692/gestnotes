@@ -209,11 +209,11 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
     </div>
 </div>
 
-<!-- MODAL MENSUALITES & RELANCE WHATSAPP -->
+<!-- MODAL MENSUALITES & RELANCE / REÇU WHATSAPP -->
 <div id="mensualites-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 backdrop-blur-sm">
     <div class="bg-white rounded-2xl w-full max-w-2xl p-5 flex flex-col max-h-[90vh]">
         <div class="flex justify-between items-center border-b pb-3 mb-3">
-            <h3 class="font-bold text-indigo-900">Suivi Financier & Relance WhatsApp</h3>
+            <h3 class="font-bold text-indigo-900">Suivi Financier & Reçus WhatsApp</h3>
             <button onclick="closeModal('mensualites-modal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <p id="mens-student-name" class="text-sm font-bold text-slate-700 mb-2"></p>
@@ -223,7 +223,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
         </div>
         <div class="overflow-x-auto flex-1 border rounded-lg">
             <table class="w-full text-xs">
-                <thead><tr class="bg-slate-100"><th>Mois</th><th>Statut</th><th>Montant (FCFA)</th><th>Action / WhatsApp</th></tr></thead>
+                <thead><tr class="bg-slate-100"><th>Mois</th><th>Statut</th><th>Montant (FCFA)</th><th>Actions WhatsApp</th></tr></thead>
                 <tbody id="mensualites-list-tbody" class="divide-y"></tbody>
             </table>
         </div>
@@ -281,12 +281,19 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
     </div>
 </div>
 
+<!-- MODAL GESTION DES MATIÈRES -->
 <div id="subjects-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 flex flex-col max-h-[85vh]">
-        <div class="flex justify-between items-center mb-4"><h3 class="font-bold">Matières</h3><button onclick="loadStandardSubjects()" class="text-xs bg-emerald-600 text-white p-1 rounded">Standards</button></div>
-        <div id="subjects-container" class="space-y-2 overflow-y-auto"></div>
-        <button onclick="addNewSubjectRow()" class="mt-4 border-2 border-dashed p-2 rounded-xl text-slate-400">+ Ajouter</button>
-        <div class="mt-4 flex justify-end gap-2"><button onclick="closeModal('subjects-modal')">Fermer</button><button onclick="saveSubjectsList()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl">Enregistrer</button></div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-indigo-900"><i class="fa-solid fa-book"></i> Gestion des Matières (<span id="subj-modal-class"></span>)</h3>
+            <button onclick="loadStandardSubjects()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg font-semibold"><i class="fa-solid fa-wand-magic-sparkles"></i> Matières standards</button>
+        </div>
+        <div id="subjects-container" class="space-y-2 overflow-y-auto flex-1 pr-1"></div>
+        <button onclick="addNewSubjectRow()" class="mt-4 border-2 border-dashed border-slate-300 hover:border-indigo-500 text-slate-500 hover:text-indigo-600 p-2.5 rounded-xl text-xs font-semibold w-full transition-all">+ Ajouter une matière</button>
+        <div class="mt-4 flex justify-end gap-2 pt-3 border-t">
+            <button onclick="closeModal('subjects-modal')" class="px-4 py-2 text-sm">Annuler</button>
+            <button onclick="saveSubjectsList()" class="bg-indigo-900 text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
+        </div>
     </div>
 </div>
 
@@ -304,6 +311,23 @@ const sectionsByClass = {
     "Seconde": ["L1", "L2", "S1", "S2"], "Première": ["L1", "L2", "S1", "S2"], "Terminale": ["L1", "L2", "S1", "S2"]
 };
 const MOIS_SCOLAIRES = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
+
+const MATIERES_COLLEGE_LYCEE = [
+    { name: "Français", coef: 4 },
+    { name: "Mathématiques", coef: 4 },
+    { name: "Anglais", coef: 2 },
+    { name: "Histoire-Géo", coef: 2 },
+    { name: "SVT", coef: 2 },
+    { name: "Physique-Chimie", coef: 2 },
+    { name: "Philosophie", coef: 3 }
+];
+
+const MATIERES_PRIME = [
+    { name: "Élocution / Lecture", coef: 1 },
+    { name: "Dictée / Orthographe", coef: 1 },
+    { name: "Calcul / Mathématiques", coef: 1 },
+    { name: "Étude du Milieu", coef: 1 }
+];
 
 let appState = {
     currentYear: "2024-2025",
@@ -493,8 +517,8 @@ function updateRegSections() {
     (sectionsByClass[document.getElementById('reg-class').value] || [""]).forEach(s => rSec.add(new Option(s || "Générale", s)));
 }
 
-function validerInscriptionOuChangement(e) {
-    e.preventDefault();
+function validerInscriptionOuChangement(event) {
+    event.preventDefault();
     const targetKey = `${document.getElementById('reg-class').value}-${document.getElementById('reg-section').value}`;
     const newSt = {
         id: 'st_' + Date.now(),
@@ -550,7 +574,61 @@ function supprimerEleve(id) {
     }
 }
 
-// --- GESTION MENSUALITÉS & RELANCE WHATSAPP ---
+// --- GESTION DES MATIÈRES ---
+function openSubjectsModal() {
+    const key = getCurrentClassKey();
+    document.getElementById('subj-modal-class').textContent = key;
+    const container = document.getElementById('subjects-container');
+    container.innerHTML = "";
+    
+    const subs = appState.classes[key].subjects || [];
+    if (subs.length === 0) {
+        loadStandardSubjects(true);
+        return;
+    }
+    subs.forEach(sub => addNewSubjectRow(sub.name, sub.coef));
+    openModal('subjects-modal');
+}
+
+function addNewSubjectRow(name = '', coef = 1) {
+    const container = document.getElementById('subjects-container');
+    const div = document.createElement('div');
+    div.className = "flex items-center gap-2 subject-row";
+    div.innerHTML = `
+        <input type="text" placeholder="Nom de la matière" value="${name}" class="border rounded-xl p-2.5 text-xs flex-1 subject-name-input outline-none focus:border-indigo-500">
+        <input type="number" min="1" max="10" placeholder="Coef" value="${coef}" class="border rounded-xl p-2.5 text-xs w-20 subject-coef-input text-center outline-none focus:border-indigo-500" title="Coefficient">
+        <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 p-2"><i class="fa-solid fa-trash text-xs"></i></button>
+    `;
+    container.appendChild(div);
+}
+
+function loadStandardSubjects(autoOpen = false) {
+    const container = document.getElementById('subjects-container');
+    container.innerHTML = "";
+    const list = isPrimary(appState.selectedClass) ? MATIERES_PRIME : MATIERES_COLLEGE_LYCEE;
+    list.forEach(m => addNewSubjectRow(m.name, m.coef));
+    if (autoOpen) openModal('subjects-modal');
+}
+
+function saveSubjectsList() {
+    const key = getCurrentClassKey();
+    const rows = document.querySelectorAll('.subject-row');
+    const newSubjects = [];
+    
+    rows.forEach(row => {
+        const name = row.querySelector('.subject-name-input').value.trim();
+        const coef = parseInt(row.querySelector('.subject-coef-input').value) || 1;
+        if (name) newSubjects.push({ name, coef });
+    });
+
+    appState.classes[key].subjects = newSubjects;
+    saveToStorage();
+    closeModal('subjects-modal');
+    render();
+    showToast("Matières enregistrées avec succès ✅");
+}
+
+// --- GESTION MENSUALITÉS & REÇUS / RELANCES WHATSAPP ---
 function ouvrirModalMensualites(studentId) {
     currentActiveStudentId = studentId;
     const key = getCurrentClassKey();
@@ -585,9 +663,10 @@ function ouvrirModalMensualites(studentId) {
                 <button onclick="toggleMoisStatut('${mois}')" class="px-2 py-1 rounded text-[11px] font-semibold ${isPaye ? 'bg-slate-200 text-slate-700' : 'bg-emerald-600 text-white'}">
                     ${isPaye ? 'Annuler' : 'Payer'}
                 </button>
-                <button onclick="envoyerRelanceWhatsApp('${st.firstName}', '${st.lastName}', '${mois}', ${dataMois.montant}, '${st.phone}')" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[11px] flex items-center gap-1">
-                    <i class="fa-brands fa-whatsapp"></i> Relance
-                </button>
+                ${isPaye 
+                    ? `<button onclick="envoyerRecuWhatsApp('${st.firstName}', '${st.lastName}', '${mois}', ${dataMois.montant}, '${st.phone}')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2 py-1 rounded text-[11px] flex items-center gap-1 shadow-sm"><i class="fa-brands fa-whatsapp"></i> Reçu</button>`
+                    : `<button onclick="envoyerRelanceWhatsApp('${st.firstName}', '${st.lastName}', '${mois}', ${dataMois.montant}, '${st.phone}')" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[11px] flex items-center gap-1"><i class="fa-brands fa-whatsapp"></i> Relance</button>`
+                }
             </td>
         `;
         tbody.appendChild(tr);
@@ -630,8 +709,17 @@ function envoyerRelanceWhatsApp(prenom, nom, mois, montant, phone) {
     }
     const msg = `Bonjour, ceci est un rappel de l'établissement concernant le solde de la mensualité du mois de *${mois}* pour *${prenom} ${nom}* d'un montant de *${montant.toLocaleString()} FCFA*. Merci de bien vouloir régulariser la situation.`;
     const cleanPhone = phone.replace(/[^0-9]/g, '');
-    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
-    window.open(url, '_blank');
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function envoyerRecuWhatsApp(prenom, nom, mois, montant, phone) {
+    if (!phone) {
+        showToast("Numéro de téléphone manquant pour cet élève", "error");
+        return;
+    }
+    const msg = `*REÇU DE PAIEMENT - GESTNOTES*\n\nÉlève : *${prenom} ${nom}*\nMotif : Mensualité de *${mois}* (${appState.currentYear})\nMontant payé : *${montant.toLocaleString()} FCFA*\nStatut : *PAYÉ ✅*\n\nMerci pour votre confiance.`;
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 // --- TRANSITION CLASSE PAR CLASSE ---
@@ -667,7 +755,6 @@ function lancerTransitionClasse() {
 function lancerTransitionGlobale() {
     if (!confirm("Attention : Cette action va promouvoir l'ensemble des classes vers le niveau supérieur. Continuer ?")) return;
 
-    // Du bas vers le haut pour éviter d'écraser
     const orderedClasses = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première"];
     
     orderedClasses.reverse().forEach(className => {
