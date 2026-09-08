@@ -3,7 +3,7 @@ const ASSETS = [
   '/',
   '/index.html',
   '/bulletin.html',
-  '/gestnotes.html',
+  '/accueil.html',
   '/manifest.json'
 ];
 
