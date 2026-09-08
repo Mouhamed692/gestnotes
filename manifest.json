@@ -1,27 +1,24 @@
 {
-  "id": "/",
-  "name": "GestNotes - Administration Scolaire",
+  "id": "gestnotes-v2",
   "short_name": "GestNotes",
-  "description": "Système complet de gestion scolaire, saisie de notes, bulletins officiels et comptabilité scolaire.",
-  "start_url": "./index.html",
-  "scope": "/",
-  "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#ffffff",
-  "theme_color": "#4c1d95",
-  "categories": ["education", "productivity"],
+  "name": "GestNotes – Administration Scolaire",
+  "description": "Système complet de gestion des notes, calcul de moyennes et édition de bulletins.",
   "icons": [
     {
-      "src": "/assets/icon-192.png",
-      "sizes": "192x192",
+      "src": "icon-192.png",
       "type": "image/png",
+      "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "/assets/icon-512.png",
-      "sizes": "512x512",
+      "src": "icon-512.png",
       "type": "image/png",
-      "purpose": "any"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#4c1d95",
+  "background_color": "#f8fafc"
 }
