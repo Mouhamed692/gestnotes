@@ -32,8 +32,6 @@ body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
 table { border-collapse: collapse; }
 td, th { padding: 8px 6px; text-align: center; border: 1px solid #e2e8f0; }
 td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
-#rec-body tr:nth-child(even) { background-color: #f8fafc; }
-#rec-body tr:hover { background-color: #eef2ff; }
 </style>
 </head>
 
@@ -51,8 +49,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
     </div>
 
     <div class="flex items-center gap-4 ml-auto sm:ml-0">
-        <!-- Indicateur de statut de stockage -->
-        <div id="storage-status" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-900/50 border border-emerald-700/50 text-xs font-medium text-emerald-200" title="Données enregistrées localement">
+        <div id="storage-status" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-900/50 border border-emerald-700/50 text-xs font-medium text-emerald-200">
             <i class="fa-solid fa-circle text-[8px] text-emerald-400 animate-pulse"></i>
             <span>Synchronisé</span>
         </div>
@@ -135,7 +132,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
         <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
             <h3 class="text-md font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-indigo-600"></i> Saisie des Notes (Sur 20)</h3>
             <div class="flex flex-col sm:flex-row items-center gap-3">
-                <input type="text" id="grade-search" oninput="filterStudentsGlobal()" placeholder="Rechercher..." class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none">
+                <input type="text" id="grade-search" placeholder="Rechercher..." class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none">
                 <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none"></select>
                 <button onclick="goToNextSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-bold">Suivant <i class="fa-solid fa-arrow-right"></i></button>
             </div>
@@ -173,10 +170,10 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
     </section>
 </main>
 
-<!-- MODAL CONFIGURATION -->
+<!-- MODAL CONFIGURATION & TRANSITION -->
 <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 border border-slate-200 max-h-[90vh] overflow-y-auto">
-        <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-gear text-indigo-900"></i> Configuration</h3>
+        <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-gear text-indigo-900"></i> Configuration & Passage de Classe</h3>
         <div class="space-y-4">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Année académique</label>
@@ -185,7 +182,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Période courante</label>
                 <select id="settings-semester" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                    <option value="1">1er Période (Trimestre / Semestre)</option>
+                    <option value="1">1er Période</option>
                     <option value="2">2ème Période</option>
                     <option value="3">3ème Période</option>
                 </select>
@@ -194,24 +191,44 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
                 <label class="block text-xs font-semibold text-slate-500 mb-1">URL Google AppScript (Sync Drive)</label>
                 <input type="text" id="settings-appscript" placeholder="https://script.google.com/macros/s/..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
             </div>
-            
-            <!-- Aide / Script Google AppsScript intégré -->
-            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <p class="text-xs font-bold text-slate-700 mb-1">Code AppsScript requis (code.gs) :</p>
-                <textarea readonly class="w-full h-24 text-[10px] bg-slate-900 text-slate-200 p-2 rounded font-mono select-all">function doPost(e) {
-  var data = JSON.parse(e.postData.contents);
-  PropertiesService.getScriptProperties().setProperty('GESTNOTES_DATA', JSON.stringify(data));
-  return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
-}
-function doGet(e) {
-  var data = PropertiesService.getScriptProperties().getProperty('GESTNOTES_DATA');
-  return ContentService.createTextOutput(data || "{}").setMimeType(ContentService.MimeType.JSON);
-}</textarea>
+
+            <!-- SECTION TRANSITION CLASSE PAR CLASSE -->
+            <div class="border-t pt-4 mt-4">
+                <h4 class="text-sm font-bold text-indigo-900 mb-2"><i class="fa-solid fa-users-gear"></i> Transition / Passage de Classe (Fin d'année)</h4>
+                <p class="text-xs text-slate-500 mb-3">Passez automatiquement les élèves de leur niveau actuel au niveau supérieur pour l'année prochaine.</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="lancerTransitionClasse()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">Promouvoir la classe active</button>
+                    <button onclick="lancerTransitionGlobale()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">Promouvoir TOUTES les classes</button>
+                </div>
             </div>
         </div>
         <div class="mt-6 flex justify-end gap-2">
             <button onclick="closeModal('settings-modal')" class="px-4 py-2 text-sm">Annuler</button>
             <button onclick="saveSettings()" class="bg-indigo-900 text-white px-4 py-2 rounded-xl text-sm font-semibold">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL MENSUALITES & RELANCE WHATSAPP -->
+<div id="mensualites-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl w-full max-w-2xl p-5 flex flex-col max-h-[90vh]">
+        <div class="flex justify-between items-center border-b pb-3 mb-3">
+            <h3 class="font-bold text-indigo-900">Suivi Financier & Relance WhatsApp</h3>
+            <button onclick="closeModal('mensualites-modal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <p id="mens-student-name" class="text-sm font-bold text-slate-700 mb-2"></p>
+        <div class="bg-slate-50 p-2 rounded-xl mb-3 text-xs flex justify-between items-center">
+            <span>Tarif mensuel de la classe : <strong id="mens-default-amount" class="text-indigo-600">0</strong> FCFA</span>
+            <span class="text-slate-500" id="mens-phone-display"></span>
+        </div>
+        <div class="overflow-x-auto flex-1 border rounded-lg">
+            <table class="w-full text-xs">
+                <thead><tr class="bg-slate-100"><th>Mois</th><th>Statut</th><th>Montant (FCFA)</th><th>Action / WhatsApp</th></tr></thead>
+                <tbody id="mensualites-list-tbody" class="divide-y"></tbody>
+            </table>
+        </div>
+        <div class="mt-4 flex justify-end">
+            <button onclick="closeModal('mensualites-modal')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-semibold">Fermer</button>
         </div>
     </div>
 </div>
@@ -277,11 +294,16 @@ function doGet(e) {
 
 <script>
 const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+const progressionMap = {
+    "CI": "CP", "CP": "CE1", "CE1": "CE2", "CE2": "CM1", "CM1": "CM2", "CM2": "6ème",
+    "6ème": "5ème", "5ème": "4ème", "4ème": "3ème", "3ème": "Seconde", "Seconde": "Première", "Première": "Terminale"
+};
 const sectionsByClass = {
     "CI": [""], "CP": [""], "CE1": [""], "CE2": [""], "CM1": [""], "CM2": [""],
     "6ème": ["A", "B", "C"], "5ème": ["A", "B", "C"], "4ème": ["A", "B", "C"], "3ème": ["A", "B", "C"],
     "Seconde": ["L1", "L2", "S1", "S2"], "Première": ["L1", "L2", "S1", "S2"], "Terminale": ["L1", "L2", "S1", "S2"]
 };
+const MOIS_SCOLAIRES = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
 
 let appState = {
     currentYear: "2024-2025",
@@ -293,6 +315,7 @@ let appState = {
 };
 
 let showDev3Col = false;
+let currentActiveStudentId = null;
 
 async function syncWithDrive() {
     if (!appState.syncUrl) {
@@ -501,7 +524,8 @@ function render() {
             <td class="p-4 font-bold">${st.firstName} ${st.lastName}</td>
             <td class="p-4">-</td>
             <td class="p-4 text-right">
-                <button onclick="supprimerEleve('${st.id}')" class="text-rose-600">Suppr</button>
+                <button onclick="ouvrirModalMensualites('${st.id}')" class="text-amber-600 mr-3 font-semibold text-xs bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200"><i class="fa-solid fa-money-bill-wave"></i> Frais</button>
+                <button onclick="supprimerEleve('${st.id}')" class="text-rose-600 text-xs font-semibold bg-rose-50 px-2 py-1 rounded-lg border border-rose-200">Suppr</button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -524,6 +548,151 @@ function supprimerEleve(id) {
         appState.classes[key].students = appState.classes[key].students.filter(s => s.id !== id);
         saveToStorage(); render();
     }
+}
+
+// --- GESTION MENSUALITÉS & RELANCE WHATSAPP ---
+function ouvrirModalMensualites(studentId) {
+    currentActiveStudentId = studentId;
+    const key = getCurrentClassKey();
+    const cls = appState.classes[key];
+    const st = cls.students.find(s => s.id === studentId);
+    if (!st) return;
+
+    document.getElementById('mens-student-name').textContent = `Élève : ${st.firstName} ${st.lastName}`;
+    document.getElementById('mens-default-amount').textContent = (cls.tarifMensuel || 0).toLocaleString();
+    document.getElementById('mens-phone-display').textContent = st.phone ? `Tél : ${st.phone}` : 'Pas de téléphone';
+
+    if (!st.mensualites) st.mensualites = {};
+    if (!st.mensualites[appState.currentYear]) st.mensualites[appState.currentYear] = {};
+
+    const tbody = document.getElementById('mensualites-list-tbody');
+    tbody.innerHTML = "";
+
+    MOIS_SCOLAIRES.forEach(mois => {
+        const dataMois = st.mensualites[appState.currentYear][mois] || { statut: 'IMPAYE', montant: cls.tarifMensuel || 0 };
+        const isPaye = dataMois.statut === 'PAYE';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="font-medium p-2">${mois}</td>
+            <td class="p-2">
+                <span class="px-2 py-1 rounded-full text-[10px] font-bold ${isPaye ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                    ${isPaye ? 'PAYÉ' : 'IMPAYÉ'}
+                </span>
+            </td>
+            <td class="p-2"><input type="number" id="monto_${mois}" value="${dataMois.montant}" class="w-20 border rounded text-center p-1" onchange="updateMoisMontant('${mois}', this.value)"></td>
+            <td class="p-2 flex items-center justify-center gap-2">
+                <button onclick="toggleMoisStatut('${mois}')" class="px-2 py-1 rounded text-[11px] font-semibold ${isPaye ? 'bg-slate-200 text-slate-700' : 'bg-emerald-600 text-white'}">
+                    ${isPaye ? 'Annuler' : 'Payer'}
+                </button>
+                <button onclick="envoyerRelanceWhatsApp('${st.firstName}', '${st.lastName}', '${mois}', ${dataMois.montant}, '${st.phone}')" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[11px] flex items-center gap-1">
+                    <i class="fa-brands fa-whatsapp"></i> Relance
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    openModal('mensualites-modal');
+}
+
+function updateMoisMontant(mois, val) {
+    const key = getCurrentClassKey();
+    const st = appState.classes[key].students.find(s => s.id === currentActiveStudentId);
+    if (st) {
+        if (!st.mensualites[appState.currentYear][mois]) st.mensualites[appState.currentYear][mois] = { statut: 'IMPAYE' };
+        st.mensualites[appState.currentYear][mois].montant = parseInt(val) || 0;
+        saveToStorage();
+    }
+}
+
+function toggleMoisStatut(mois) {
+    const key = getCurrentClassKey();
+    const st = appState.classes[key].students.find(s => s.id === currentActiveStudentId);
+    if (st) {
+        const currentStatut = st.mensualites[appState.currentYear][mois]?.statut || 'IMPAYE';
+        const nouveauStatut = currentStatut === 'PAYE' ? 'IMPAYE' : 'PAYE';
+        const defaultMontant = appState.classes[key].tarifMensuel || 0;
+
+        st.mensualites[appState.currentYear][mois] = {
+            statut: nouveauStatut,
+            montant: st.mensualites[appState.currentYear][mois]?.montant || defaultMontant
+        };
+        saveToStorage();
+        ouvrirModalMensualites(currentActiveStudentId);
+    }
+}
+
+function envoyerRelanceWhatsApp(prenom, nom, mois, montant, phone) {
+    if (!phone) {
+        showToast("Numéro de téléphone manquant pour cet élève", "error");
+        return;
+    }
+    const msg = `Bonjour, ceci est un rappel de l'établissement concernant le solde de la mensualité du mois de *${mois}* pour *${prenom} ${nom}* d'un montant de *${montant.toLocaleString()} FCFA*. Merci de bien vouloir régulariser la situation.`;
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+}
+
+// --- TRANSITION CLASSE PAR CLASSE ---
+function lancerTransitionClasse() {
+    const currentKey = getCurrentClassKey();
+    const [className, section] = currentKey.split('-');
+    const nextClassName = progressionMap[className];
+
+    if (!nextClassName) {
+        showToast("Impossible de promouvoir la Terminale (Fin de cycle)", "error");
+        return;
+    }
+
+    const nextKey = `${nextClassName}-${section || ''}`;
+    if (!appState.classes[nextKey]) {
+        showToast(`La classe de destination ${nextKey} n'existe pas`, "error");
+        return;
+    }
+
+    if (confirm(`Voulez-vous transférer les élèves de ${currentKey} vers ${nextKey} pour l'année prochaine ?`)) {
+        const studentsToMove = appState.classes[currentKey].students;
+        appState.classes[nextKey].students.push(...studentsToMove);
+        appState.classes[currentKey].students = [];
+        saveToStorage();
+        closeModal('settings-modal');
+        appState.selectedClass = nextClassName;
+        populateFilters();
+        render();
+        showToast(`Transition réussie vers ${nextKey} ✅`, "success");
+    }
+}
+
+function lancerTransitionGlobale() {
+    if (!confirm("Attention : Cette action va promouvoir l'ensemble des classes vers le niveau supérieur. Continuer ?")) return;
+
+    // Du bas vers le haut pour éviter d'écraser
+    const orderedClasses = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première"];
+    
+    orderedClasses.reverse().forEach(className => {
+        const nextClassName = progressionMap[className];
+        if (!nextClassName) return;
+
+        const sections = sectionsByClass[className] || [""];
+        sections.forEach(sec => {
+            const srcKey = `${className}-${sec}`;
+            const destKey = `${nextClassName}-${sec}`;
+
+            if (appState.classes[srcKey] && appState.classes[destKey]) {
+                const students = appState.classes[srcKey].students;
+                if (students && students.length > 0) {
+                    appState.classes[destKey].students.push(...students);
+                    appState.classes[srcKey].students = [];
+                }
+            }
+        });
+    });
+
+    saveToStorage();
+    closeModal('settings-modal');
+    render();
+    showToast("Transition globale effectuée avec succès 🚀", "success");
 }
 
 function toggleDev3() {
@@ -566,7 +735,6 @@ function updateGrade(studentId, subjectName, field, val) {
         if (!st.grades[appState.currentSemester]) st.grades[appState.currentSemester] = {};
         if (!st.grades[appState.currentSemester][subjectName]) st.grades[appState.currentSemester][subjectName] = {};
         
-        // Validation et enregistrement (gestion string vide vs 0 explicite)
         st.grades[appState.currentSemester][subjectName][field] = val === '' ? '' : parseFloat(val);
         saveToStorage();
     }
@@ -578,7 +746,7 @@ function calculerEtAfficherBilansFinanciers() {
         c.students.forEach(s => {
             ins += s.registrationAmount || 0;
             if(s.mensualites && s.mensualites[appState.currentYear]) {
-                Object.values(s.mensualites[appState.currentYear]).forEach(m => mens += m.montant);
+                Object.values(s.mensualites[appState.currentYear]).forEach(m => mens += (m.statut === 'PAYE' ? (m.montant || 0) : 0));
             }
         });
     });
