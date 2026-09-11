@@ -59,16 +59,14 @@ self.addEventListener('fetch', (e) => {
       // 2. Sinon, on va le chercher sur le réseau
       return fetch(e.request).then((networkResponse) => {
         // Si la réponse est valide, on l'ajoute dynamiquement au cache (ex: pour le CDN Tailwind)
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+        if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(e.request, responseToCache);
-          });
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, responseToCache));
         }
         return networkResponse;
       }).catch(() => {
-        console.error('[Service Worker] Réseau indisponible et ressource non cachée :', e.request.url);
-        // Optionnel : retourner une page d'erreur 404 hors-ligne ici si nécessaire
+        if (e.request.mode === 'navigate') return caches.match('/index.html');
+        return new Response('', { status: 503, statusText: 'Hors connexion' });
       });
     })
   );

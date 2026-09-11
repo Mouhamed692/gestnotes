@@ -20,6 +20,34 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/idb-keyval@6.2.1/dist/umd.js"></script>
+    <script>
+        // Repli minimal pour que l'application reste utilisable si le CDN IndexedDB est indisponible.
+        window.idbKeyval = window.idbKeyval || (() => {
+            const database = indexedDB.open('gestnotes-fallback', 1);
+            const request = database;
+            request.onupgradeneeded = () => request.result.createObjectStore('state');
+            const transaction = (mode, action) => new Promise((resolve, reject) => {
+                request.onsuccess = () => {
+                    try {
+                        const tx = request.result.transaction('state', mode);
+                        const store = tx.objectStore('state');
+                        const operation = action(store);
+                        operation.onsuccess = () => resolve(operation.result);
+                        operation.onerror = () => reject(operation.error);
+                    } catch (error) { reject(error); }
+                };
+                request.onerror = () => reject(request.error);
+            });
+            return {
+                get: (key) => transaction('readonly', store => store.get(key)),
+                set: (key, value) => transaction('readwrite', store => store.put(value, key))
+            };
+        })();
+        window.html2pdf = window.html2pdf || (() => ({
+            set: () => window.html2pdf(),
+            from: () => ({ save: () => window.print() })
+        }));
+    </script>
 
     <style>
         body {
@@ -1316,7 +1344,7 @@
         await saveToStorage();
     }
 
-    function exportData() {
+    async function exportData() {
         const dataStr = JSON.stringify(appState, null, 2);
         const blob = new Blob([dataStr], { type: "application/json" });
         const url = URL.createObjectURL(blob);
@@ -1337,11 +1365,20 @@
         reader.onload = async function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
+                if (!importedData || typeof importedData !== 'object' || !importedData.classes) {
+                    throw new Error('Format GestNotes invalide');
+                }
+                if (!confirm('Importer cette sauvegarde et remplacer les données actuelles ?')) return;
+                await idbKeyval.set('gestnotes_backup_before_import', appState);
                 appState = importedData;
-                await saveToStorage(); 
-                location.reload(); 
+                await saveToStorage();
+                showToast('Sauvegarde importée avec succès.', 'success');
+                setTimeout(() => location.reload(), 500);
             } catch (err) {
-                alert("Erreur : le fichier sélectionné est invalide.");
+                console.error('[v0] Import invalide :', err);
+                alert('Erreur : le fichier sélectionné est invalide.');
+            } finally {
+                event.target.value = '';
             }
         };
         reader.readAsText(file);
