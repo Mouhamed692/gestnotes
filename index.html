@@ -65,7 +65,8 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
             </div>
         </div>
 
-        <button onclick="openModal('settings-modal')" class="p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10" title="Configuration">
+      <button onclick="openSettingsModal()" 
+  class="p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10" title="Configuration">
             <i class="fa-solid fa-gear text-lg"></i>
         </button>
     </div>
@@ -132,7 +133,13 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
         <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b pb-4 gap-4">
             <h3 class="text-md font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-indigo-600"></i> Saisie des Notes (Sur 20)</h3>
             <div class="flex flex-col sm:flex-row items-center gap-3">
-                <input type="text" id="grade-search" placeholder="Rechercher..." class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none">
+               <input
+    type="text"
+    id="grade-search"
+    placeholder="Rechercher un élève..."
+    oninput="renderGradesGrid()"
+    class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none">
+
                 <select id="grade-subject-select" onchange="renderGradesGrid()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-sm text-slate-700 outline-none"></select>
                 <button onclick="goToNextSubject()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-lg font-bold">Suivant <i class="fa-solid fa-arrow-right"></i></button>
             </div>
@@ -300,15 +307,56 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
 <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <script>
-const classNames = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première", "Terminale"];
+const firstName =
+    document.getElementById('reg-firstname').value.trim();
+
+const lastName =
+    document.getElementById('reg-lastname').value.trim();
+
+if (!firstName || !lastName) {
+    showToast(
+        'Le prénom et le nom sont obligatoires',
+        'error'
+    );
+    return;
+}
+firstName,
+lastName,
+const classNames = [
+    "CI", "CP", "CE1", "CE2", "CM1", "CM2",
+    "6ème", "5ème", "4ème", "3ème",
+    "Seconde", "Première", "Terminale"
+];
+
 const progressionMap = {
-    "CI": "CP", "CP": "CE1", "CE1": "CE2", "CE2": "CM1", "CM1": "CM2", "CM2": "6ème",
-    "6ème": "5ème", "5ème": "4ème", "4ème": "3ème", "3ème": "Seconde", "Seconde": "Première", "Première": "Terminale"
+    "CI": "CP",
+    "CP": "CE1",
+    "CE1": "CE2",
+    "CE2": "CM1",
+    "CM1": "CM2",
+    "CM2": "6ème",
+    "6ème": "5ème",
+    "5ème": "4ème",
+    "4ème": "3ème",
+    "3ème": "Seconde",
+    "Seconde": "Première",
+    "Première": "Terminale"
 };
+
 const sectionsByClass = {
-    "CI": [""], "CP": [""], "CE1": [""], "CE2": [""], "CM1": [""], "CM2": [""],
-    "6ème": ["A", "B", "C"], "5ème": ["A", "B", "C"], "4ème": ["A", "B", "C"], "3ème": ["A", "B", "C"],
-    "Seconde": ["L1", "L2", "S1", "S2"], "Première": ["L1", "L2", "S1", "S2"], "Terminale": ["L1", "L2", "S1", "S2"]
+    "CI": [""],
+    "CP": [""],
+    "CE1": [""],
+    "CE2": [""],
+    "CM1": [""],
+    "CM2": [""],
+    "6ème": ["A", "B", "C"],
+    "5ème": ["A", "B", "C"],
+    "4ème": ["A", "B", "C"],
+    "3ème": ["A", "B", "C"],
+    "Seconde": ["L1", "L2", "S1", "S2"],
+    "Première": ["L1", "L2", "S1", "S2"],
+    "Terminale": ["L1", "L2", "S1", "S2"]
 };
 const MOIS_SCOLAIRES = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
 
@@ -343,27 +391,58 @@ let currentActiveStudentId = null;
 
 async function syncWithDrive() {
     if (!appState.syncUrl) {
-        showToast("Veuillez configurer l'URL AppScript dans les paramètres", "error");
-        openModal('settings-modal');
+        showToast(
+            "Veuillez configurer l'URL AppScript dans les paramètres",
+            "error"
+        );
+
+        openSettingsModal();
         return;
     }
-    showToast("Synchronisation avec Google Drive...", "info");
+
+    showToast("Synchronisation en cours...", "info");
+
     try {
         const response = await fetch(appState.syncUrl, {
-            method: 'POST',
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify(appState)
         });
-        if (response.ok) {
-            showToast("Données sauvegardées sur Drive ✅", "success");
-        } else {
+
+        if (!response.ok) {
             throw new Error("Erreur serveur");
         }
+
+        showToast(
+            "Données sauvegardées sur Drive ✅",
+            "success"
+        );
     } catch (error) {
         console.error(error);
-        showToast("Échec de synchronisation. Vérifiez l'URL.", "error");
+
+        showToast(
+            "Échec de synchronisation. Vérifiez l'URL.",
+            "error"
+        );
     }
 }
+function normaliserTelephone(phone) {
+    let numero = String(phone || '')
+        .replace(/\D/g, '');
 
+    if (numero.startsWith('00')) {
+        numero = numero.substring(2);
+    }
+
+    // Sénégal : transforme 77XXXXXXX en 22177XXXXXXX
+    if (numero.length === 9 && numero.startsWith('7')) {
+        numero = '221' + numero;
+    }
+
+    return numero;
+}
 function exportData() {
     const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
     const downloadAnchor = document.createElement('a');
@@ -463,7 +542,7 @@ function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast-animate px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold bg-white`;
-    toast.innerHTML = message;
+    toast.textContent = message;
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 3200);
 }
@@ -521,7 +600,9 @@ function validerInscriptionOuChangement(event) {
     event.preventDefault();
     const targetKey = `${document.getElementById('reg-class').value}-${document.getElementById('reg-section').value}`;
     const newSt = {
-        id: 'st_' + Date.now(),
+        id: crypto.randomUUID
+    ? crypto.randomUUID()
+    : 'st_' + Date.now() + '_' + Math.random(),
         firstName: document.getElementById('reg-firstname').value,
         lastName: document.getElementById('reg-lastname').value,
         registrationAmount: parseInt(document.getElementById('reg-amount').value) || 0,
@@ -532,46 +613,152 @@ function validerInscriptionOuChangement(event) {
     appState.classes[targetKey].students.push(newSt);
     saveToStorage(); closeModal('registration-modal'); render();
 }
+function getGradeObject(student, subjectName) {
+    if (!student.grades) {
+        student.grades = {};
+    }
 
+    if (!student.grades[appState.currentSemester]) {
+        student.grades[appState.currentSemester] = {};
+    }
+
+    if (!student.grades[appState.currentSemester][subjectName]) {
+        student.grades[appState.currentSemester][subjectName] = {
+            dev1: '',
+            dev2: '',
+            dev3: '',
+            comp: ''
+        };
+    }
+
+    return student.grades[appState.currentSemester][subjectName];
+}
+
+function calculerMoyenneMatiere(grade) {
+    const notes = [
+        grade.dev1,
+        grade.dev2,
+        grade.dev3,
+        grade.comp
+    ]
+        .filter(note =>
+            note !== '' &&
+            note !== null &&
+            note !== undefined &&
+            !Number.isNaN(Number(note))
+        )
+        .map(Number);
+
+    if (!notes.length) {
+        return null;
+    }
+
+    return notes.reduce((total, note) => total + note, 0)
+        / notes.length;
+}
 function render() {
     const key = getCurrentClassKey();
     const cls = appState.classes[key];
-    const tbody = document.getElementById('students-table-body');
-    tbody.innerHTML = "";
-    
-    document.getElementById('class-badge').textContent = key;
-    document.getElementById('filter-effectif').value = cls.students.length;
 
-    cls.students.forEach(st => {
+    if (!cls) {
+        console.error(`Classe introuvable : ${key}`);
+        return;
+    }
+
+    const tbody = document.getElementById('students-table-body');
+
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    document.getElementById('class-badge').textContent = key;
+    document.getElementById('filter-effectif').value =
+        cls.students.length;
+
+    const emptyState = document.getElementById('empty-state');
+
+    if (emptyState) {
+        emptyState.classList.toggle(
+            'hidden',
+            cls.students.length > 0
+        );
+    }
+
+    cls.students.forEach(student => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td class="p-4 font-bold">${st.firstName} ${st.lastName}</td>
-            <td class="p-4">-</td>
-            <td class="p-4 text-right">
-                <button onclick="ouvrirModalMensualites('${st.id}')" class="text-amber-600 mr-3 font-semibold text-xs bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200"><i class="fa-solid fa-money-bill-wave"></i> Frais</button>
-                <button onclick="supprimerEleve('${st.id}')" class="text-rose-600 text-xs font-semibold bg-rose-50 px-2 py-1 rounded-lg border border-rose-200">Suppr</button>
-            </td>
-        `;
+
+        const moyenne =
+            typeof calculerMoyenneEleve === 'function'
+                ? calculerMoyenneEleve(student, cls)
+                : null;
+
+        const moyenneAffichee =
+            moyenne === null ||
+            moyenne === undefined ||
+            Number.isNaN(Number(moyenne))
+                ? '-'
+                : `${Number(moyenne).toFixed(2)}/20`;  
+    
+function calculerMoyenneEleve(student, classe) {
+    if (!classe.subjects || classe.subjects.length === 0) {
+        return null;
+    }
+
+    let totalPoints = 0;
+    let totalCoefficients = 0;
+
+    classe.subjects.forEach(subject => {
+        const notes =
+            student.grades?.[appState.currentSemester]?.[subject.name];
+
+        if (!notes) return;
+
+        const valeurs = [
+            notes.dev1,
+            notes.dev2,
+            notes.dev3,
+            notes.comp
+        ]
+            .filter(note =>
+                note !== '' &&
+                note !== null &&
+                note !== undefined &&
+                !Number.isNaN(Number(note))
+            )
+            .map(Number);
+
+        if (valeurs.length === 0) return;
+
+        const moyenneMatiere =
+            valeurs.reduce((total, note) => total + note, 0)
+            / valeurs.length;
+
+        const coefficient = Number(subject.coef) || 1;
+
+        totalPoints += moyenneMatiere * coefficient;
+        totalCoefficients += coefficient;
+    });
+
+    return totalCoefficients > 0
+        ? totalPoints / totalCoefficients
+        : null;
         tbody.appendChild(tr);
     });
-    
-    if (cls.subjects && cls.subjects.length > 0) {
-        document.getElementById('grades-section').classList.remove('hidden');
-        const subSel = document.getElementById('grade-subject-select');
-        subSel.innerHTML = "";
-        cls.subjects.forEach(s => subSel.add(new Option(s.name, s.name)));
-        renderGradesGrid();
-    } else {
-        document.getElementById('grades-section').classList.add('hidden');
-    }
 }
-
 function supprimerEleve(id) {
     if(confirm("Supprimer cet élève ?")) {
         const key = getCurrentClassKey();
         appState.classes[key].students = appState.classes[key].students.filter(s => s.id !== id);
         saveToStorage(); render();
     }
+}
+function escapeHTML(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 // --- GESTION DES MATIÈRES ---
@@ -708,7 +895,7 @@ function envoyerRelanceWhatsApp(prenom, nom, mois, montant, phone) {
         return;
     }
     const msg = `Bonjour, ceci est un rappel de l'établissement concernant le solde de la mensualité du mois de *${mois}* pour *${prenom} ${nom}* d'un montant de *${montant.toLocaleString()} FCFA*. Merci de bien vouloir régulariser la situation.`;
-    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const cleanPhone = normaliserTelephone(phone);
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
@@ -740,7 +927,16 @@ function lancerTransitionClasse() {
     }
 
     if (confirm(`Voulez-vous transférer les élèves de ${currentKey} vers ${nextKey} pour l'année prochaine ?`)) {
-        const studentsToMove = appState.classes[currentKey].students;
+        const studentsToMove =
+    appState.classes[currentKey].students.map(student => ({
+        ...student,
+        id: crypto.randomUUID
+            ? crypto.randomUUID()
+            : 'st_' + Date.now() + Math.random(),
+        registrationAmount: 0,
+        grades: {},
+        mensualites: {}
+    }));
         appState.classes[nextKey].students.push(...studentsToMove);
         appState.classes[currentKey].students = [];
         saveToStorage();
@@ -813,20 +1009,65 @@ function renderGradesGrid() {
         tbody.appendChild(tr);
     });
 }
-
-function updateGrade(studentId, subjectName, field, val) {
+    
+function updateGrade(studentId, subjectName, field, value) {
     const key = getCurrentClassKey();
     const cls = appState.classes[key];
-    const st = cls.students.find(s => s.id === studentId);
-    if (st) {
-        if (!st.grades[appState.currentSemester]) st.grades[appState.currentSemester] = {};
-        if (!st.grades[appState.currentSemester][subjectName]) st.grades[appState.currentSemester][subjectName] = {};
-        
-        st.grades[appState.currentSemester][subjectName][field] = val === '' ? '' : parseFloat(val);
-        saveToStorage();
+
+    const student = cls.students.find(
+        item => item.id === studentId
+    );
+
+    if (!student) return;
+
+    const note = getGradeObject(student, subjectName);
+
+    if (value === '') {
+        note[field] = '';
+    } else {
+        const number = parseFloat(value);
+
+        if (Number.isNaN(number) || number < 0 || number > 20) {
+            showToast(
+                'La note doit être comprise entre 0 et 20',
+                'error'
+            );
+            return;
+        }
+
+        note[field] = number;
     }
+
+    saveToStorage();
+    render();
 }
 
+function openSettingsModal() {
+    document.getElementById('settings-year').value =
+        appState.currentYear;
+
+    document.getElementById('settings-semester').value =
+        appState.currentSemester;
+
+    document.getElementById('settings-appscript').value =
+        appState.syncUrl || '';
+
+    openModal('settings-modal');
+}
+
+function goToNextSubject() {
+    const select =
+        document.getElementById('grade-subject-select');
+
+    if (!select || !select.options.length) {
+        return;
+    }
+
+    select.selectedIndex =
+        (select.selectedIndex + 1) % select.options.length;
+
+    renderGradesGrid();
+}
 function calculerEtAfficherBilansFinanciers() {
     let ins = 0, mens = 0;
     Object.values(appState.classes).forEach(c => {
@@ -841,6 +1082,49 @@ function calculerEtAfficherBilansFinanciers() {
     document.getElementById('bilan-mens').textContent = mens.toLocaleString() + " F";
     document.getElementById('bilan-global').textContent = (ins + mens).toLocaleString() + " F";
 }
+    function printAllReportCards() {
+    const key = getCurrentClassKey();
+    const cls = appState.classes[key];
+
+    if (!cls || !cls.students.length) {
+        showToast(
+            'Aucun élève à imprimer',
+            'error'
+        );
+        return;
+    }
+
+    const content = document.createElement('div');
+
+    content.style.padding = '25px';
+    content.style.background = '#ffffff';
+    content.style.color = '#111827';
+
+    content.innerHTML = `
+        <h1 style="text-align:center">
+            GestNotes
+        </h1>
+
+        <h2 style="text-align:center">
+            Bulletins scolaires
+        </h2>
+
+        <p style="text-align:center">
+            Année : ${escapeHTML(appState.currentYear)}
+            — Classe : ${escapeHTML(key)}
+        </p>
+    `;
+
+    cls.students.forEach(student => {
+        const moyenne =
+            calculerMoyenneEleve(student, cls);
+
+        const section = document.createElement('section');
+
+        section.style.marginTop = '30px';
+        section.style.pageBreakInside = 'avoid';
+
+        let rows = '';
 </script>
 </body>
 </html>
