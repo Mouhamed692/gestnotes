@@ -254,11 +254,11 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
                         <i class="fa-solid fa-file-code text-indigo-600"></i> Liaison avec votre fichier bulletin.html externe
                     </div>
                     <p class="text-indigo-800 leading-relaxed">
-                        Le bulletin interne a été désactivé. Tous les boutons d'impression de l'application ouvrent directement votre fichier <strong>bulletin.html</strong> en lui envoyant automatiquement les données de chaque élève.
+                        Le bulletin interne a été désactivé. Tous les boutons d'impression de l'application ouvrent directement votre fichier <strong>bulletin.html</strong> en lui envoyant automatiquement les données de chaque élève via <strong>IndexedDB</strong>.
                     </p>
                     <div class="mt-3 flex items-center gap-1.5 text-emerald-800 font-bold">
                         <i class="fa-solid fa-circle-check text-emerald-600"></i>
-                        <span>Liaison active : bulletin.html connecté</span>
+                        <span>Liaison IndexedDB active : bulletin.html connecté</span>
                     </div>
                 </div>
 
@@ -510,9 +510,82 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
 <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <!-- =========================================================================
-     LOGIQUE JAVASCRIPT AVEC LIAISON DIRECTE BULLETIN.HTML & TRANSITIONS
+     LOGIQUE JAVASCRIPT AVEC INDEXEDDB HORS-LIGNE & LIAISON DIRECTE BULLETIN.HTML
      ========================================================================= -->
 <script>
+// =========================================================================
+// MODULE INDEXEDDB NATIF (100% Hors-Ligne sans dépendances)
+// =========================================================================
+const IDB_CONFIG = {
+    name: 'gestnotes_db',
+    version: 1,
+    store: 'keyval'
+};
+
+function openIDB() {
+    return new Promise((resolve) => {
+        if (!window.indexedDB) return resolve(null);
+        const req = indexedDB.open(IDB_CONFIG.name, IDB_CONFIG.version);
+        req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(IDB_CONFIG.store)) {
+                db.createObjectStore(IDB_CONFIG.store);
+            }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => resolve(null);
+    });
+}
+
+async function idbSet(key, value) {
+    // Écriture miroir dans localStorage
+    try {
+        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+    } catch(e) {}
+
+    const db = await openIDB();
+    if (!db) return;
+    return new Promise((resolve) => {
+        try {
+            const tx = db.transaction(IDB_CONFIG.store, 'readwrite');
+            const store = tx.objectStore(IDB_CONFIG.store);
+            store.put(value, key);
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => resolve(false);
+        } catch(e) {
+            resolve(false);
+        }
+    });
+}
+
+async function idbGet(key) {
+    const db = await openIDB();
+    if (db) {
+        const val = await new Promise((resolve) => {
+            try {
+                const tx = db.transaction(IDB_CONFIG.store, 'readonly');
+                const store = tx.objectStore(IDB_CONFIG.store);
+                const req = store.get(key);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => resolve(null);
+            } catch(e) {
+                resolve(null);
+            }
+        });
+        if (val !== undefined && val !== null) return val;
+    }
+    // Fallback localStorage
+    try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : null;
+    } catch(e) {
+        return null;
+    }
+}
+
+// =========================================================================
+// DONNÉES & CONSTANTES
+// =========================================================================
 const classNames = [
     "CI", "CP", "CE1", "CE2", "CM1", "CM2",
     "6ème", "5ème", "4ème", "3ème",
@@ -559,14 +632,14 @@ let currentActiveStudentId = null;
 let html5QrScanner = null;
 let currentReceiptData = null;
 
-// Initialisation au chargement
+// Initialisation au chargement via IndexedDB
 window.addEventListener('DOMContentLoaded', initApp);
 
-function initApp() {
+async function initApp() {
     try {
-        const saved = localStorage.getItem("gestnotes_state_v2");
-        if (saved) {
-            appState = JSON.parse(saved);
+        const saved = (await idbGet("gestnotes_state_v2")) || (await idbGet("gestnotes_state"));
+        if (saved && saved.classes) {
+            appState = saved;
         }
     } catch(e) {
         console.warn("Storage local", e);
@@ -594,8 +667,9 @@ function buildEmptyState() {
     });
 }
 
-function saveToStorage() {
-    localStorage.setItem("gestnotes_state_v2", JSON.stringify(appState));
+async function saveToStorage() {
+    await idbSet("gestnotes_state_v2", appState);
+    await idbSet("gestnotes_state", appState);
     calculerEtAfficherBilansFinanciers();
 }
 
@@ -709,14 +783,14 @@ function calculerMoyenneEleve(student, classe) {
 }
 
 // =========================================================================
-// LIAISON EXCLUSIVE AVEC LE FICHIER EXTERNE BULLETIN.HTML
+// LIAISON EXCLUSIVE AVEC LE FICHIER EXTERNE BULLETIN.HTML (VIA INDEXEDDB)
 // =========================================================================
-function ouvrirLiaisonBulletinExterne(studentId = null) {
+async function ouvrirLiaisonBulletinExterne(studentId = null) {
     const key = getCurrentClassKey();
     const cls = appState.classes[key];
     if (!cls) return;
 
-    // Préparation du payload de données pour bulletin.html
+    // Préparation des élèves ciblés
     const targetStudents = studentId 
         ? cls.students.filter(s => s.id === studentId)
         : cls.students;
@@ -726,6 +800,7 @@ function ouvrirLiaisonBulletinExterne(studentId = null) {
         return;
     }
 
+    // Objet de transmission complet formaté pour bulletin.html
     const payload = {
         selectedClass: appState.selectedClass,
         selectedSection: appState.selectedSection,
@@ -734,18 +809,24 @@ function ouvrirLiaisonBulletinExterne(studentId = null) {
         subjects: cls.subjects || [],
         students: targetStudents,
         allClassStudents: cls.students,
-        targetStudentId: studentId
+        targetStudentId: studentId,
+        student: studentId ? targetStudents[0] : null,
+        classes: appState.classes
     };
 
-    // Stockage local pour transmission instantanée à bulletin.html
-    localStorage.setItem('gestnotes_bulletin_transfert', JSON.stringify(payload));
+    // Écriture synchrone dans TOUTES les clés d'IndexedDB et localStorage
+    await idbSet('gestnotes_bulletin_data', payload);
+    await idbSet('gestnotes_bulletin_transfert', payload);
+    await idbSet('gestnotes_state', appState);
+    await idbSet('gestnotes_state_v2', appState);
 
     // Ouverture directe du fichier externe bulletin.html
-    const win = window.open(`bulletin.html?ts=${Date.now()}${studentId ? `&st=${studentId}` : ''}`, '_blank');
+    const queryParam = studentId ? `?st=${encodeURIComponent(studentId)}&ts=${Date.now()}` : `?class=${encodeURIComponent(key)}&ts=${Date.now()}`;
+    const win = window.open(`bulletin.html${queryParam}`, '_blank');
     if (!win) {
         showToast("Veuillez autoriser les fenêtres pop-up pour ouvrir bulletin.html", "error");
     } else {
-        showToast(`bulletin.html ouvert pour ${targetStudents.length} élève(s) ✅`);
+        showToast(`Données transmises ! bulletin.html ouvert pour ${targetStudents.length} élève(s) ✅`);
     }
 }
 
@@ -757,10 +838,10 @@ function chargerFichierBulletin(event) {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
         const content = e.target.result;
         if (content) {
-            localStorage.setItem('gestnotes_custom_bulletin_html', content);
+            await idbSet('gestnotes_custom_bulletin_html', content);
             showToast("Votre fichier bulletin.html a été enregistré et lié ! ✅");
         }
     };
@@ -770,7 +851,7 @@ function chargerFichierBulletin(event) {
 // =========================================================================
 // TRANSITION & PASSAGE DE CLASSE DU PREVIEW
 // =========================================================================
-function lancerTransitionClasseActive() {
+async function lancerTransitionClasseActive() {
     const currentKey = getCurrentClassKey();
     const [lvl, sec] = currentKey.split('-');
     const nextLvl = progressionMap[lvl];
@@ -797,14 +878,14 @@ function lancerTransitionClasseActive() {
         }));
         appState.classes[nextKey].students.push(...promoted);
         appState.classes[currentKey].students = [];
-        saveToStorage();
+        await saveToStorage();
         closeModal('settings-modal');
         render();
         showToast(`Transition de ${currentKey} vers ${nextKey} réussie 🚀`, "success");
     }
 }
 
-function lancerTransitionToutesLesClasses() {
+async function lancerTransitionToutesLesClasses() {
     if (!confirm("Attention : Promouvoir TOUTES les classes de l'école vers le niveau supérieur pour la nouvelle année ?")) return;
 
     const orderedLevels = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première"];
@@ -832,7 +913,7 @@ function lancerTransitionToutesLesClasses() {
         });
     });
 
-    saveToStorage();
+    await saveToStorage();
     closeModal('settings-modal');
     render();
     showToast("Transition globale effectuée avec succès 🚀", "success");
@@ -932,13 +1013,13 @@ function renderGradesGrid() {
     });
 }
 
-function updateNote(studentId, subjectName, field, value) {
+async function updateNote(studentId, subjectName, field, value) {
     const key = getCurrentClassKey();
     const st = appState.classes[key].students.find(s => s.id === studentId);
     if (st) {
         if (!st.grades[appState.currentSemester][subjectName]) st.grades[appState.currentSemester][subjectName] = {};
         st.grades[appState.currentSemester][subjectName][field] = value === '' ? '' : parseFloat(value);
-        saveToStorage();
+        await saveToStorage();
     }
 }
 
@@ -971,7 +1052,7 @@ function updateRegSections() {
     (sectionsByClass[document.getElementById('reg-class').value] || [""]).forEach(s => rSec.add(new Option(s || "Générale", s)));
 }
 
-function validerInscriptionOuChangement(event) {
+async function validerInscriptionOuChangement(event) {
     event.preventDefault();
     const fn = document.getElementById('reg-firstname').value.trim();
     const ln = document.getElementById('reg-lastname').value.trim();
@@ -992,13 +1073,13 @@ function validerInscriptionOuChangement(event) {
         mensualites: {}
     };
     appState.classes[targetKey].students.push(newSt);
-    saveToStorage();
+    await saveToStorage();
     closeModal('registration-modal');
     render();
     showToast("Élève inscrit avec succès ✅");
 }
 
-function validerAjoutRapideEleve() {
+async function validerAjoutRapideEleve() {
     const fn = document.getElementById('add-fast-firstname').value.trim();
     const ln = document.getElementById('add-fast-lastname').value.trim();
     if (!fn || !ln) {
@@ -1015,17 +1096,17 @@ function validerAjoutRapideEleve() {
         grades: {},
         mensualites: {}
     });
-    saveToStorage();
+    await saveToStorage();
     closeModal('add-student-modal');
     render();
     showToast("Élève ajouté !");
 }
 
-function supprimerEleve(id) {
+async function supprimerEleve(id) {
     if (confirm("Supprimer cet élève définitivement ?")) {
         const key = getCurrentClassKey();
         appState.classes[key].students = appState.classes[key].students.filter(s => s.id !== id);
-        saveToStorage();
+        await saveToStorage();
         render();
         showToast("Élève supprimé.");
     }
@@ -1084,7 +1165,7 @@ function ouvrirModalMensualites(studentId) {
     openModal('mensualites-modal');
 }
 
-function togglePaiementMois(mois) {
+async function togglePaiementMois(mois) {
     const key = getCurrentClassKey();
     const st = appState.classes[key].students.find(s => s.id === currentActiveStudentId);
     if (!st) return;
@@ -1095,7 +1176,7 @@ function togglePaiementMois(mois) {
         montant: appState.classes[key].tarifMensuel || 10000,
         date: new Date().toLocaleDateString('fr-FR')
     };
-    saveToStorage();
+    await saveToStorage();
     ouvrirModalMensualites(currentActiveStudentId);
 }
 
@@ -1313,12 +1394,12 @@ function importData(event) {
     const file = event.target.files[0];
     if (!file) return;
     const r = new FileReader();
-    r.onload = function(e) {
+    r.onload = async function(e) {
         try {
             const imp = JSON.parse(e.target.result);
             if (imp && imp.classes) {
                 appState = imp;
-                saveToStorage();
+                await saveToStorage();
                 location.reload();
             }
         } catch (err) {
@@ -1352,10 +1433,10 @@ function openTarifModal() {
     openModal('tarif-modal');
 }
 
-function saveTarifClasse() {
+async function saveTarifClasse() {
     const key = getCurrentClassKey();
     appState.classes[key].tarifMensuel = parseInt(document.getElementById('tarif-class-amount').value) || 0;
-    saveToStorage();
+    await saveToStorage();
     closeModal('tarif-modal');
     render();
     showToast("Tarif mis à jour !");
@@ -1389,7 +1470,7 @@ function loadStandardSubjects() {
     list.forEach(m => addNewSubjectRow(m.name, m.coef));
 }
 
-function saveSubjectsList() {
+async function saveSubjectsList() {
     const key = getCurrentClassKey();
     const rows = document.querySelectorAll('.subject-row');
     const newSubjects = [];
@@ -1399,17 +1480,17 @@ function saveSubjectsList() {
         if (n) newSubjects.push({ name: n, coef: c });
     });
     appState.classes[key].subjects = newSubjects;
-    saveToStorage();
+    await saveToStorage();
     closeModal('subjects-modal');
     render();
     showToast("Matières enregistrées ✅");
 }
 
-function saveSettings() {
+async function saveSettings() {
     appState.currentYear = document.getElementById('settings-year').value;
     appState.currentSemester = parseInt(document.getElementById('settings-semester').value);
     appState.syncUrl = document.getElementById('settings-appscript').value;
-    saveToStorage();
+    await saveToStorage();
     closeModal('settings-modal');
     updateHeaderDisplays();
     render();
