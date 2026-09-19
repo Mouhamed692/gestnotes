@@ -32,9 +32,6 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background
 table { border-collapse: collapse; }
 td, th { padding: 8px 6px; text-align: center; border: 1px solid #e2e8f0; }
 td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
-@media print {
-  .no-print { display: none !important; }
-}
 </style>
 </head>
 
@@ -64,7 +61,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
             </div>
         </div>
 
-        <button onclick="openModal('settings-modal')" class="p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10 text-white" title="Configuration">
+        <button onclick="openModal('settings-modal')" class="p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10 text-white" title="Configuration & Paramètres">
             <i class="fa-solid fa-gear text-lg"></i>
         </button>
     </div>
@@ -97,10 +94,10 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
                 <i class="fa-solid fa-user-plus"></i> <span>Inscription</span>
             </button>
 
-            <button onclick="document.getElementById('importInput').click()" class="bg-slate-700 hover:bg-slate-800 text-white py-3 px-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-sm text-xs sm:text-sm">
-                <i class="fa-solid fa-file-import"></i> <span>Importer Notes</span>
+            <!-- BOUTON LIAISON BULLETIN.HTML -->
+            <button onclick="ouvrirLiaisonBulletinExterne()" class="bg-violet-700 hover:bg-violet-800 text-white py-3 px-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-sm text-xs sm:text-sm" title="Ouvrir votre fichier bulletin.html">
+                <i class="fa-solid fa-file-code text-violet-300"></i> <span>bulletin.html</span>
             </button>
-            <input type="file" id="importInput" class="hidden" accept=".csv,.txt" onchange="importerNotesAuto(this)">
         </div>
     </div>
 
@@ -166,8 +163,9 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
         <div class="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
             <h2 class="text-base sm:text-lg font-bold">Liste des élèves <span id="class-badge" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full ml-2"></span></h2>
             <div class="flex gap-2">
-                <button onclick="printAllReportCards()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-print"></i> Tous les Bulletins
+                <!-- BOUTON OUVRIR BULLETINS CLASSE VERS BULLETIN.HTML -->
+                <button onclick="ouvrirBulletinExterneTous()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm" title="Ouvrir et imprimer tous les bulletins avec bulletin.html">
+                    <i class="fa-solid fa-file-invoice"></i> Bulletins (bulletin.html)
                 </button>
             </div>
         </div>
@@ -190,7 +188,127 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
     </section>
 </main>
 
-<!-- MODAL 1 : SCANNER DE REÇU DE PAIEMENT HORS-LIGNE -->
+<!-- MODAL CONFIGURATION MULTI-ONGLETS DU PREVIEW (GÉNÉRAL & SYNC, BULLETIN.HTML, TRANSITION) -->
+<div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden">
+        
+        <!-- En-tête du modal -->
+        <div class="p-5 border-b border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="p-2 bg-indigo-50 text-indigo-700 rounded-xl">
+                    <i class="fa-solid fa-gear text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Configuration & Paramètres</h3>
+                    <p class="text-xs text-slate-500">GestNotes Administration</p>
+                </div>
+            </div>
+            <button onclick="closeModal('settings-modal')" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+
+        <!-- Onglets du Preview -->
+        <div class="flex border-b border-slate-200 px-5 bg-slate-50/50">
+            <button type="button" onclick="changerOngletSettings('general')" id="tab-btn-general" class="py-3 px-4 text-xs font-bold border-b-2 border-indigo-600 text-indigo-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-gear"></i> Général & Sync Drive
+            </button>
+            <button type="button" onclick="changerOngletSettings('bulletin')" id="tab-btn-bulletin" class="py-3 px-4 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-file-code"></i> bulletin.html
+            </button>
+            <button type="button" onclick="changerOngletSettings('transition')" id="tab-btn-transition" class="py-3 px-4 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-users"></i> Transition Annuelle
+            </button>
+        </div>
+
+        <!-- Contenu des 3 Onglets -->
+        <div class="p-5 space-y-4 overflow-y-auto flex-1">
+            
+            <!-- 1. ONGLET GÉNÉRAL & SYNC DRIVE -->
+            <div id="tab-content-general" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Année académique en cours</label>
+                    <input type="text" id="settings-year" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-medium">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Période courante</label>
+                    <select id="settings-semester" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-medium">
+                        <option value="1">1er Semestre / 1ère Période</option>
+                        <option value="2">2ème Semestre / 2ème Période</option>
+                    </select>
+                </div>
+                <div class="border-t pt-3">
+                    <label class="block font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                        <i class="fa-brands fa-google-drive text-amber-600"></i> URL Google Apps Script (Sync Drive)
+                    </label>
+                    <input type="url" id="settings-appscript" placeholder="https://script.google.com/macros/s/..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-mono text-xs">
+                    <p class="text-[11px] text-slate-500 mt-1">Sauvegardez et restaurez vos élèves, notes et paiements directement sur votre Google Drive.</p>
+                </div>
+                <button type="button" onclick="syncWithDrive()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-brands fa-google-drive"></i> Synchroniser maintenant sur Google Drive
+                </button>
+            </div>
+
+            <!-- 2. ONGLET LIAISON BULLETIN.HTML EXTERNE -->
+            <div id="tab-content-bulletin" class="space-y-4 text-xs hidden">
+                <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+                    <div class="font-bold text-indigo-900 flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-file-code text-indigo-600"></i> Liaison avec votre fichier bulletin.html externe
+                    </div>
+                    <p class="text-indigo-800 leading-relaxed">
+                        Le bulletin interne a été désactivé. Tous les boutons d'impression de l'application ouvrent directement votre fichier <strong>bulletin.html</strong> en lui envoyant automatiquement les données de chaque élève.
+                    </p>
+                    <div class="mt-3 flex items-center gap-1.5 text-emerald-800 font-bold">
+                        <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                        <span>Liaison active : bulletin.html connecté</span>
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-3">
+                    <div>
+                        <h4 class="font-bold text-slate-800">Remplacer ou Charger votre fichier bulletin.html</h4>
+                        <p class="text-[11px] text-slate-500">Sélectionnez votre fichier .html pour l'associer directement à l'application.</p>
+                    </div>
+                    <input type="file" id="bulletinFileInput" accept=".html,.htm" onchange="chargerFichierBulletin(event)" class="hidden">
+                    <button type="button" onclick="document.getElementById('bulletinFileInput').click()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-upload"></i> Charger un nouveau bulletin.html
+                    </button>
+                </div>
+
+                <button type="button" onclick="ouvrirLiaisonBulletinExterne()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Tester l'ouverture de bulletin.html
+                </button>
+            </div>
+
+            <!-- 3. ONGLET TRANSITION ET PASSAGE DE CLASSE -->
+            <div id="tab-content-transition" class="space-y-4 text-xs hidden">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <div class="font-bold text-amber-900 flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-graduation-cap text-amber-700"></i> Transition de Fin d'Année
+                    </div>
+                    <p class="text-amber-800 leading-relaxed">
+                        Passez automatiquement les élèves vers le niveau supérieur (ex: 6ème vers 5ème, 3ème vers Seconde) pour démarrer la nouvelle année scolaire.
+                    </p>
+                </div>
+
+                <div class="space-y-2 pt-1">
+                    <button type="button" onclick="lancerTransitionClasseActive()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-3 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-arrow-right"></i> Promouvoir la classe active (<span id="trans-active-class-lbl"></span>)
+                    </button>
+                    <button type="button" onclick="lancerTransitionToutesLesClasses()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-3 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-school"></i> Promouvoir TOUTES les classes de l'école
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bas de page modal -->
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
+            <button onclick="closeModal('settings-modal')" class="px-4 py-2 text-xs font-semibold text-slate-600">Fermer</button>
+            <button onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2 rounded-xl text-xs shadow-sm">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SCANNER DE REÇU DE PAIEMENT HORS-LIGNE -->
 <div id="scanner-modal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-3 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden">
         <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-4 flex items-center justify-between">
@@ -200,16 +318,15 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
                 </div>
                 <div>
                     <h3 class="font-bold text-sm sm:text-base">Scanner & Vérifier un Reçu</h3>
-                    <p class="text-[11px] text-blue-200">Vérification de sécurité autonome</p>
+                    <p class="text-[11px] text-blue-200">Contrôle d'authenticité hors-ligne</p>
                 </div>
             </div>
             <button onclick="fermerScannerModal()" class="text-white/80 hover:text-white p-1.5"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
 
         <div class="p-4 sm:p-5 space-y-4 overflow-y-auto bg-slate-50">
-            <!-- Zone Caméra QR Reader -->
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">1. Scanner avec la Caméra</h4>
+                <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Scanner avec la Caméra</h4>
                 <div id="reader-container" class="max-w-[280px] mx-auto overflow-hidden rounded-xl border-2 border-indigo-500 bg-black min-h-[160px] flex items-center justify-center text-white text-xs">
                     <div id="qr-reader" style="width: 100%;"></div>
                 </div>
@@ -221,9 +338,8 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
                 </button>
             </div>
 
-            <!-- Zone Saisie / Collage Manuel -->
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">2. Ou collez le code / texte du reçu</label>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Ou collez le numéro / code du reçu</label>
                 <div class="flex gap-2">
                     <input type="text" id="manual-scan-input" placeholder="Ex: REC-..., Nom élève ou mois..." class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-500">
                     <button onclick="verifierCodeReçu(document.getElementById('manual-scan-input').value)" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">
@@ -232,7 +348,6 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
                 </div>
             </div>
 
-            <!-- Résultat de la vérification -->
             <div id="scan-result-box" class="hidden"></div>
         </div>
 
@@ -242,7 +357,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
     </div>
 </div>
 
-<!-- MODAL 2 : AFFICHAGE DU REÇU OFFICIEL & QR CODE HORS-LIGNE -->
+<!-- MODAL REÇU AVEC QR CODE HORS-LIGNE -->
 <div id="receipt-view-modal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-3 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden">
         <div class="bg-indigo-900 text-white p-4 flex justify-between items-center">
@@ -347,34 +462,6 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
     </div>
 </div>
 
-<!-- MODAL CONFIGURATION -->
-<div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 border border-slate-200 max-h-[90vh] overflow-y-auto">
-        <h3 class="text-base font-bold mb-4 flex items-center gap-2 text-indigo-900"><i class="fa-solid fa-gear"></i> Configuration & Paramètres</h3>
-        <div class="space-y-4 text-xs">
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Année académique</label>
-                <input type="text" id="settings-year" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-            </div>
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Période courante</label>
-                <select id="settings-semester" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                    <option value="1">1ère Période / Semestre 1</option>
-                    <option value="2">2ème Période / Semestre 2</option>
-                </select>
-            </div>
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">URL Google AppScript (Sync Drive)</label>
-                <input type="text" id="settings-appscript" placeholder="https://script.google.com/macros/s/..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-            </div>
-        </div>
-        <div class="mt-6 flex justify-end gap-2">
-            <button onclick="closeModal('settings-modal')" class="px-4 py-2 text-xs font-semibold">Annuler</button>
-            <button onclick="saveSettings()" class="bg-indigo-900 text-white px-4 py-2 rounded-xl text-xs font-bold">Enregistrer</button>
-        </div>
-    </div>
-</div>
-
 <!-- MODAL MATIÈRES -->
 <div id="subjects-modal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 flex flex-col max-h-[85vh]">
@@ -423,7 +510,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
 <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <!-- =========================================================================
-     LOGIQUE JAVASCRIPT CORRIGÉE ET SÉCURISÉE
+     LOGIQUE JAVASCRIPT AVEC LIAISON DIRECTE BULLETIN.HTML & TRANSITIONS
      ========================================================================= -->
 <script>
 const classNames = [
@@ -432,42 +519,32 @@ const classNames = [
     "Seconde", "Première", "Terminale"
 ];
 
+const progressionMap = {
+    "CI": "CP", "CP": "CE1", "CE1": "CE2", "CE2": "CM1", "CM1": "CM2", "CM2": "6ème",
+    "6ème": "5ème", "5ème": "4ème", "4ème": "3ème", "3ème": "Seconde",
+    "Seconde": "Première", "Première": "Terminale"
+};
+
 const sectionsByClass = {
-    "CI": [""],
-    "CP": [""],
-    "CE1": [""],
-    "CE2": [""],
-    "CM1": [""],
-    "CM2": [""],
-    "6ème": ["A", "B", "C"],
-    "5ème": ["A", "B", "C"],
-    "4ème": ["A", "B", "C"],
-    "3ème": ["A", "B", "C"],
-    "Seconde": ["L1", "L2", "S1", "S2"],
-    "Première": ["L1", "L2", "S1", "S2"],
-    "Terminale": ["L1", "L2", "S1", "S2"]
+    "CI": [""], "CP": [""], "CE1": [""], "CE2": [""], "CM1": [""], "CM2": [""],
+    "6ème": ["A", "B", "C"], "5ème": ["A", "B", "C"], "4ème": ["A", "B", "C"], "3ème": ["A", "B", "C"],
+    "Seconde": ["L1", "L2", "S1", "S2"], "Première": ["L1", "L2", "S1", "S2"], "Terminale": ["L1", "L2", "S1", "S2"]
 };
 
 const MOIS_SCOLAIRES = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
 
 const MATIERES_COLLEGE_LYCEE = [
-    { name: "Français", coef: 4 },
-    { name: "Mathématiques", coef: 4 },
-    { name: "Anglais", coef: 2 },
-    { name: "Histoire-Géo", coef: 2 },
-    { name: "SVT", coef: 2 },
-    { name: "Physique-Chimie", coef: 2 },
-    { name: "Philosophie", coef: 3 }
+    { name: "Français", coef: 4 }, { name: "Mathématiques", coef: 4 },
+    { name: "Anglais", coef: 2 }, { name: "Histoire-Géo", coef: 2 },
+    { name: "SVT", coef: 2 }, { name: "Physique-Chimie", coef: 2 }, { name: "Philosophie", coef: 3 }
 ];
 
 const MATIERES_PRIME = [
-    { name: "Élocution / Lecture", coef: 1 },
-    { name: "Dictée / Orthographe", coef: 1 },
-    { name: "Calcul / Mathématiques", coef: 1 },
-    { name: "Étude du Milieu", coef: 1 }
+    { name: "Élocution / Lecture", coef: 1 }, { name: "Dictée / Orthographe", coef: 1 },
+    { name: "Calcul / Mathématiques", coef: 1 }, { name: "Étude du Milieu", coef: 1 }
 ];
 
-// État initial propre
+// État de l'application
 let appState = {
     currentYear: "2024-2025",
     currentSemester: 1,
@@ -485,14 +562,14 @@ let currentReceiptData = null;
 // Initialisation au chargement
 window.addEventListener('DOMContentLoaded', initApp);
 
-async function initApp() {
+function initApp() {
     try {
         const saved = localStorage.getItem("gestnotes_state_v2");
         if (saved) {
             appState = JSON.parse(saved);
         }
     } catch(e) {
-        console.warn("Storage local réinitialisé", e);
+        console.warn("Storage local", e);
     }
     buildEmptyState();
     populateFilters();
@@ -555,6 +632,8 @@ function updateSectionFilterOptions() {
 function updateHeaderDisplays() {
     document.getElementById('display-year').textContent = appState.currentYear;
     document.getElementById('display-semester').textContent = appState.currentSemester === 1 ? "1er Semestre" : "2ème Semestre";
+    const activeLbl = document.getElementById('trans-active-class-lbl');
+    if (activeLbl) activeLbl.textContent = getCurrentClassKey();
 }
 
 function onClassChange() {
@@ -570,7 +649,15 @@ function onSectionChange() {
     render();
 }
 
-function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function openModal(id) { 
+    document.getElementById(id).classList.remove('hidden'); 
+    if (id === 'settings-modal') {
+        document.getElementById('settings-year').value = appState.currentYear;
+        document.getElementById('settings-semester').value = appState.currentSemester;
+        document.getElementById('settings-appscript').value = appState.syncUrl || '';
+        document.getElementById('trans-active-class-lbl').textContent = getCurrentClassKey();
+    }
+}
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
 function showToast(message, type = 'success') {
@@ -582,7 +669,23 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 3200);
 }
 
-// Calcul de la moyenne générale d'un élève
+// GESTION DES ONGLETS DU MODAL PARAMÈTRES
+function changerOngletSettings(onglet) {
+    const tabs = ['general', 'bulletin', 'transition'];
+    tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const content = document.getElementById(`tab-content-${t}`);
+        if (t === onglet) {
+            btn.className = "py-3 px-4 text-xs font-bold border-b-2 border-indigo-600 text-indigo-700 flex items-center gap-1.5";
+            content.classList.remove('hidden');
+        } else {
+            btn.className = "py-3 px-4 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5";
+            content.classList.add('hidden');
+        }
+    });
+}
+
+// Calcul de la moyenne d'un élève
 function calculerMoyenneEleve(student, classe) {
     if (!classe.subjects || classe.subjects.length === 0) return null;
     let totalPoints = 0;
@@ -605,7 +708,137 @@ function calculerMoyenneEleve(student, classe) {
     return totalCoefficients > 0 ? (totalPoints / totalCoefficients) : null;
 }
 
-// Rendu principal de la liste des élèves
+// =========================================================================
+// LIAISON EXCLUSIVE AVEC LE FICHIER EXTERNE BULLETIN.HTML
+// =========================================================================
+function ouvrirLiaisonBulletinExterne(studentId = null) {
+    const key = getCurrentClassKey();
+    const cls = appState.classes[key];
+    if (!cls) return;
+
+    // Préparation du payload de données pour bulletin.html
+    const targetStudents = studentId 
+        ? cls.students.filter(s => s.id === studentId)
+        : cls.students;
+
+    if (targetStudents.length === 0) {
+        showToast("Aucun élève à transmettre à bulletin.html", "error");
+        return;
+    }
+
+    const payload = {
+        selectedClass: appState.selectedClass,
+        selectedSection: appState.selectedSection,
+        currentYear: appState.currentYear,
+        currentSemester: appState.currentSemester,
+        subjects: cls.subjects || [],
+        students: targetStudents,
+        allClassStudents: cls.students,
+        targetStudentId: studentId
+    };
+
+    // Stockage local pour transmission instantanée à bulletin.html
+    localStorage.setItem('gestnotes_bulletin_transfert', JSON.stringify(payload));
+
+    // Ouverture directe du fichier externe bulletin.html
+    const win = window.open(`bulletin.html?ts=${Date.now()}${studentId ? `&st=${studentId}` : ''}`, '_blank');
+    if (!win) {
+        showToast("Veuillez autoriser les fenêtres pop-up pour ouvrir bulletin.html", "error");
+    } else {
+        showToast(`bulletin.html ouvert pour ${targetStudents.length} élève(s) ✅`);
+    }
+}
+
+function ouvrirBulletinExterneTous() {
+    ouvrirLiaisonBulletinExterne(null);
+}
+
+function chargerFichierBulletin(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const content = e.target.result;
+        if (content) {
+            localStorage.setItem('gestnotes_custom_bulletin_html', content);
+            showToast("Votre fichier bulletin.html a été enregistré et lié ! ✅");
+        }
+    };
+    reader.readAsText(file);
+}
+
+// =========================================================================
+// TRANSITION & PASSAGE DE CLASSE DU PREVIEW
+// =========================================================================
+function lancerTransitionClasseActive() {
+    const currentKey = getCurrentClassKey();
+    const [lvl, sec] = currentKey.split('-');
+    const nextLvl = progressionMap[lvl];
+
+    if (!nextLvl) {
+        showToast("Impossible de promouvoir la Terminale (Fin de cycle)", "error");
+        return;
+    }
+
+    const nextKey = `${nextLvl}-${sec || ''}`;
+    if (!appState.classes[nextKey]) {
+        showToast(`La classe de destination ${nextKey} n'existe pas`, "error");
+        return;
+    }
+
+    if (confirm(`Promouvoir tous les élèves de ${currentKey} vers ${nextKey} pour l'année prochaine ?`)) {
+        const students = appState.classes[currentKey].students || [];
+        const promoted = students.map(s => ({
+            ...s,
+            id: 'st_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            registrationAmount: 0,
+            grades: {},
+            mensualites: {}
+        }));
+        appState.classes[nextKey].students.push(...promoted);
+        appState.classes[currentKey].students = [];
+        saveToStorage();
+        closeModal('settings-modal');
+        render();
+        showToast(`Transition de ${currentKey} vers ${nextKey} réussie 🚀`, "success");
+    }
+}
+
+function lancerTransitionToutesLesClasses() {
+    if (!confirm("Attention : Promouvoir TOUTES les classes de l'école vers le niveau supérieur pour la nouvelle année ?")) return;
+
+    const orderedLevels = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première"];
+    
+    orderedLevels.reverse().forEach(lvl => {
+        const nextLvl = progressionMap[lvl];
+        if (!nextLvl) return;
+        const sections = sectionsByClass[lvl] || [""];
+        sections.forEach(sec => {
+            const srcKey = `${lvl}-${sec}`;
+            const destKey = `${nextLvl}-${sec}`;
+            if (appState.classes[srcKey] && appState.classes[destKey]) {
+                const students = appState.classes[srcKey].students || [];
+                if (students.length > 0) {
+                    const promoted = students.map(s => ({
+                        ...s,
+                        registrationAmount: 0,
+                        grades: {},
+                        mensualites: {}
+                    }));
+                    appState.classes[destKey].students.push(...promoted);
+                    appState.classes[srcKey].students = [];
+                }
+            }
+        });
+    });
+
+    saveToStorage();
+    closeModal('settings-modal');
+    render();
+    showToast("Transition globale effectuée avec succès 🚀", "success");
+}
+
+// Rendu principal
 function render() {
     const key = getCurrentClassKey();
     const cls = appState.classes[key];
@@ -620,7 +853,7 @@ function render() {
     const emptyState = document.getElementById('empty-state');
     if (emptyState) emptyState.classList.toggle('hidden', cls.students.length > 0);
 
-    cls.students.forEach((student, index) => {
+    cls.students.forEach((student) => {
         const moy = calculerMoyenneEleve(student, cls);
         const moyText = moy !== null ? `${moy.toFixed(2)}/20` : '—';
         const moyClass = moy !== null && moy < 10 ? 'text-rose-600 font-bold' : 'text-emerald-700 font-bold';
@@ -638,8 +871,9 @@ function render() {
                     <button onclick="ouvrirModalMensualites('${student.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 border border-indigo-200" title="Suivi des mensualités & reçus">
                         <i class="fa-solid fa-money-check-dollar"></i> Mensualités
                     </button>
-                    <button onclick="imprimerBulletinIndividuel('${student.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold" title="Imprimer le bulletin">
-                        <i class="fa-solid fa-print"></i>
+                    <!-- BOUTON OUVRIR SUR BULLETIN.HTML EXTERNE -->
+                    <button onclick="ouvrirLiaisonBulletinExterne('${student.id}')" class="bg-violet-50 hover:bg-violet-100 text-violet-700 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-violet-200 flex items-center gap-1" title="Ouvrir avec bulletin.html">
+                        <i class="fa-solid fa-file-code"></i> Bulletin
                     </button>
                     <button onclick="supprimerEleve('${student.id}')" class="text-rose-500 hover:bg-rose-50 px-2 py-1.5 rounded-lg text-xs" title="Supprimer">
                         <i class="fa-solid fa-trash"></i>
@@ -797,7 +1031,7 @@ function supprimerEleve(id) {
     }
 }
 
-// Suivi financier & Reçus
+// Mensualités & Reçus
 function ouvrirModalMensualites(studentId) {
     currentActiveStudentId = studentId;
     const key = getCurrentClassKey();
@@ -836,9 +1070,6 @@ function ouvrirModalMensualites(studentId) {
                         <button onclick="afficherReçuModal('${st.id}', '${mois}', ${dataMois.montant || cls.tarifMensuel || 0})" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1">
                             <i class="fa-solid fa-qrcode"></i> Reçu & QR
                         </button>
-                        <button onclick="envoyerRecuWhatsApp('${st.firstName}', '${st.lastName}', '${mois}', ${dataMois.montant || cls.tarifMensuel || 0}, '${st.phone}')" class="bg-emerald-700 text-white px-2 py-1 rounded text-[11px] font-bold">
-                            <i class="fa-brands fa-whatsapp"></i>
-                        </button>
                     ` : `
                         <button onclick="envoyerRelanceWhatsApp('${st.firstName}', '${st.lastName}', '${mois}', ${dataMois.montant || cls.tarifMensuel || 0}, '${st.phone}')" class="bg-amber-600 text-white px-2 py-1 rounded text-[11px] font-bold">
                             Relance
@@ -868,7 +1099,7 @@ function togglePaiementMois(mois) {
     ouvrirModalMensualites(currentActiveStudentId);
 }
 
-// Affichage et Génération du Reçu avec QR Code Hors-Ligne
+// Reçu avec QR Code Hors-Ligne
 function afficherReçuModal(studentId, mois, montant) {
     const key = getCurrentClassKey();
     const cls = appState.classes[key];
@@ -896,7 +1127,6 @@ function afficherReçuModal(studentId, mois, montant) {
         date: dateToday
     };
 
-    // Génération du QR Code Hors-Ligne lisible par smartphone sans internet
     const qrContainer = document.getElementById('receipt-qrcode-target');
     qrContainer.innerHTML = "";
     const qrText = `REÇU SCOLAIRE OFFICIEL\nN°: ${receiptNum}\nÉlève: ${st.firstName} ${st.lastName}\nClasse: ${key}\nMois: ${mois}\nMontant: ${montant} FCFA\nStatut: PAYÉ ✅\nDate: ${dateToday}`;
@@ -949,7 +1179,7 @@ function imprimerReçuActif() {
     w.document.close();
 }
 
-// SCANNER DE REÇUS DE PAIEMENT
+// Scanner de Reçus
 function ouvrirScannerModal() {
     document.getElementById('scan-result-box').classList.add('hidden');
     document.getElementById('manual-scan-input').value = '';
@@ -962,8 +1192,8 @@ function fermerScannerModal() {
 }
 
 function demarrerCameraScanner() {
-    if (typeof Html5QrcodeScanner === 'undefined') {
-        showToast("Lecteur caméra non supporté ici. Utilisez la recherche de reçu.", "info");
+    if (typeof Html5Qrcode === 'undefined') {
+        showToast("Lecteur caméra non chargé. Utilisez la recherche de code.", "info");
         return;
     }
     document.getElementById('btn-start-scanner').classList.add('hidden');
@@ -1069,84 +1299,7 @@ function calculerEtAfficherBilansFinanciers() {
     document.getElementById('bilan-global').textContent = (ins + mens).toLocaleString() + " F";
 }
 
-// Impression des bulletins scolaires
-function printAllReportCards() {
-    const key = getCurrentClassKey();
-    const cls = appState.classes[key];
-    if (!cls || !cls.students.length) {
-        showToast("Aucun élève dans cette classe", "error");
-        return;
-    }
-
-    const w = window.open('', '_blank');
-    let html = `<html><head><title>Bulletins - ${key}</title><style>
-        @page { size: A4 portrait; margin: 10mm; }
-        body { font-family: sans-serif; font-size: 12px; }
-        .b-card { border: 2px solid #1e3a8a; border-radius: 8px; padding: 15px; margin-bottom: 25px; page-break-after: always; }
-        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
-        th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; }
-        th { background: #1e3a8a; color: white; }
-    </style></head><body>`;
-
-    cls.students.forEach(st => {
-        const moy = calculerMoyenneEleve(st, cls);
-        html += `
-            <div class="b-card">
-                <div style="text-align:center; font-weight:bold; font-size:16px; color:#1e3a8a;">BULLETIN DE NOTES &bull; ${appState.currentYear}</div>
-                <div style="margin: 10px 0;"><strong>Élève :</strong> ${st.firstName} ${st.lastName} &nbsp;|&nbsp; <strong>Classe :</strong> ${key}</div>
-                <table>
-                    <tr><th style="text-align:left;">Matière</th><th>Devoirs</th><th>Compo</th><th>Coef</th></tr>`;
-        (cls.subjects || []).forEach(sub => {
-            const g = st.grades?.[appState.currentSemester]?.[sub.name] || {};
-            html += `<tr><td style="text-align:left;">${sub.name}</td><td>${g.dev1 || '—'}</td><td>${g.compo || '—'}</td><td>${sub.coef}</td></tr>`;
-        });
-        html += `</table>
-                <div style="font-weight:bold; font-size:14px; margin-top:10px;">Moyenne Générale : ${moy !== null ? moy.toFixed(2) + '/20' : '—'}</div>
-            </div>`;
-    });
-
-    html += `<script>window.print();<\/script></body></html>`;
-    w.document.write(html);
-    w.document.close();
-}
-
-function imprimerBulletinIndividuel(studentId) {
-    const key = getCurrentClassKey();
-    const cls = appState.classes[key];
-    const st = cls.students.find(s => s.id === studentId);
-    if (!st) return;
-
-    const moy = calculerMoyenneEleve(st, cls);
-    const w = window.open('', '_blank');
-    w.document.write(`
-        <html><head><title>Bulletin - ${st.firstName} ${st.lastName}</title><style>
-          body { font-family: sans-serif; padding: 20px; font-size: 13px; }
-          .b-card { border: 2px solid #1e3a8a; border-radius: 8px; padding: 20px; max-width: 650px; margin: 0 auto; }
-          table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-          th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; }
-          th { background: #1e3a8a; color: white; }
-        </style></head><body>
-        <div class="b-card">
-            <h2 style="text-align:center; color:#1e3a8a; margin-top:0;">BULLETIN SCOLAIRE OFFICIEL</h2>
-            <p><strong>Élève :</strong> ${st.firstName} ${st.lastName} &nbsp;|&nbsp; <strong>Classe :</strong> ${key} (${appState.currentYear})</p>
-            <table>
-                <tr><th style="text-align:left;">Matière</th><th>Devoirs</th><th>Composition</th><th>Coef</th></tr>
-                ${(cls.subjects || []).map(s => {
-                    const g = st.grades?.[appState.currentSemester]?.[s.name] || {};
-                    return `<tr><td style="text-align:left;">${s.name}</td><td>${g.dev1 || '—'}</td><td>${g.compo || '—'}</td><td>${s.coef}</td></tr>`;
-                }).join('')}
-            </table>
-            <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:12px; border-radius:6px; font-weight:bold; font-size:15px; color:#1e3a8a;">
-                Moyenne Générale : ${moy !== null ? moy.toFixed(2) + ' / 20' : '—'}
-            </div>
-        </div>
-        <script>window.print();<\/script>
-        </body></html>
-    `);
-    w.document.close();
-}
-
-// Export / Import
+// Export / Import / Drive
 function exportData() {
     const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
     const a = document.createElement('a');
@@ -1179,6 +1332,7 @@ function syncWithDrive() {
     if (!appState.syncUrl) {
         showToast("Configurez l'URL Apps Script dans les paramètres", "error");
         openModal('settings-modal');
+        changerOngletSettings('general');
         return;
     }
     showToast("Synchronisation en cours...", "info");
@@ -1259,7 +1413,7 @@ function saveSettings() {
     closeModal('settings-modal');
     updateHeaderDisplays();
     render();
-    showToast("Paramètres sauvegardés !");
+    showToast("Paramètres sauvegardés avec succès !");
 }
 </script>
 </body>
