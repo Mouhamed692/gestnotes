@@ -95,8 +95,8 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
             </button>
 
             <!-- BOUTON LIAISON BULLETIN.HTML -->
-            <button onclick="ouvrirLiaisonBulletinExterne()" class="bg-violet-700 hover:bg-violet-800 text-white py-3 px-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-sm text-xs sm:text-sm" title="Ouvrir votre fichier bulletin.html">
-                <i class="fa-solid fa-file-code text-violet-300"></i> <span>bulletin.html</span>
+            <button onclick="ouvrirLiaisonBulletinExterne()" class="bg-violet-700 hover:bg-violet-800 text-white py-3 px-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-sm text-xs sm:text-sm" title="Ouvrir tous les bulletins dans bulletin.html">
+                <i class="fa-solid fa-file-invoice text-violet-300"></i> <span>bulletin.html</span>
             </button>
         </div>
     </div>
@@ -163,8 +163,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
         <div class="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
             <h2 class="text-base sm:text-lg font-bold">Liste des élèves <span id="class-badge" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full ml-2"></span></h2>
             <div class="flex gap-2">
-                <!-- BOUTON OUVRIR BULLETINS CLASSE VERS BULLETIN.HTML -->
-                <button onclick="ouvrirBulletinExterneTous()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm" title="Ouvrir et imprimer tous les bulletins avec bulletin.html">
+                <button onclick="ouvrirLiaisonBulletinExterne(null)" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm" title="Ouvrir tous les bulletins dans bulletin.html">
                     <i class="fa-solid fa-file-invoice"></i> Bulletins (bulletin.html)
                 </button>
             </div>
@@ -188,11 +187,10 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
     </section>
 </main>
 
-<!-- MODAL CONFIGURATION MULTI-ONGLETS DU PREVIEW (GÉNÉRAL & SYNC, BULLETIN.HTML, TRANSITION) -->
+<!-- MODAL CONFIGURATION MULTI-ONGLETS -->
 <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden">
         
-        <!-- En-tête du modal -->
         <div class="p-5 border-b border-slate-200 flex items-center justify-between">
             <div class="flex items-center gap-2.5">
                 <div class="p-2 bg-indigo-50 text-indigo-700 rounded-xl">
@@ -206,7 +204,6 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
             <button onclick="closeModal('settings-modal')" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
 
-        <!-- Onglets du Preview -->
         <div class="flex border-b border-slate-200 px-5 bg-slate-50/50">
             <button type="button" onclick="changerOngletSettings('general')" id="tab-btn-general" class="py-3 px-4 text-xs font-bold border-b-2 border-indigo-600 text-indigo-700 flex items-center gap-1.5">
                 <i class="fa-solid fa-gear"></i> Général & Sync Drive
@@ -219,10 +216,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
             </button>
         </div>
 
-        <!-- Contenu des 3 Onglets -->
         <div class="p-5 space-y-4 overflow-y-auto flex-1">
-            
-            <!-- 1. ONGLET GÉNÉRAL & SYNC DRIVE -->
             <div id="tab-content-general" class="space-y-4 text-xs">
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">Année académique en cours</label>
@@ -240,52 +234,39 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
                         <i class="fa-brands fa-google-drive text-amber-600"></i> URL Google Apps Script (Sync Drive)
                     </label>
                     <input type="url" id="settings-appscript" placeholder="https://script.google.com/macros/s/..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-mono text-xs">
-                    <p class="text-[11px] text-slate-500 mt-1">Sauvegardez et restaurez vos élèves, notes et paiements directement sur votre Google Drive.</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Sauvegardez et restaurez vos données directement sur votre Google Drive.</p>
                 </div>
                 <button type="button" onclick="syncWithDrive()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm">
                     <i class="fa-brands fa-google-drive"></i> Synchroniser maintenant sur Google Drive
                 </button>
             </div>
 
-            <!-- 2. ONGLET LIAISON BULLETIN.HTML EXTERNE -->
             <div id="tab-content-bulletin" class="space-y-4 text-xs hidden">
                 <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
                     <div class="font-bold text-indigo-900 flex items-center gap-2 mb-1">
-                        <i class="fa-solid fa-file-code text-indigo-600"></i> Liaison avec votre fichier bulletin.html externe
+                        <i class="fa-solid fa-file-code text-indigo-600"></i> Liaison directe avec bulletin.html
                     </div>
                     <p class="text-indigo-800 leading-relaxed">
-                        Le bulletin interne a été désactivé. Tous les boutons d'impression de l'application ouvrent directement votre fichier <strong>bulletin.html</strong> en lui envoyant automatiquement les données de chaque élève via <strong>IndexedDB</strong>.
+                        Chaque clic sur <strong>« bulletin.html »</strong> transmet directement les élèves, notes, moyennes et rangs via la base locale <strong>IndexedDB</strong>.
                     </p>
                     <div class="mt-3 flex items-center gap-1.5 text-emerald-800 font-bold">
                         <i class="fa-solid fa-circle-check text-emerald-600"></i>
-                        <span>Liaison IndexedDB active : bulletin.html connecté</span>
+                        <span>Liaison IndexedDB active</span>
                     </div>
                 </div>
 
-                <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-3">
-                    <div>
-                        <h4 class="font-bold text-slate-800">Remplacer ou Charger votre fichier bulletin.html</h4>
-                        <p class="text-[11px] text-slate-500">Sélectionnez votre fichier .html pour l'associer directement à l'application.</p>
-                    </div>
-                    <input type="file" id="bulletinFileInput" accept=".html,.htm" onchange="chargerFichierBulletin(event)" class="hidden">
-                    <button type="button" onclick="document.getElementById('bulletinFileInput').click()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-upload"></i> Charger un nouveau bulletin.html
-                    </button>
-                </div>
-
-                <button type="button" onclick="ouvrirLiaisonBulletinExterne()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Tester l'ouverture de bulletin.html
+                <button type="button" onclick="ouvrirLiaisonBulletinExterne(null)" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Ouvrir les bulletins de la classe active
                 </button>
             </div>
 
-            <!-- 3. ONGLET TRANSITION ET PASSAGE DE CLASSE -->
             <div id="tab-content-transition" class="space-y-4 text-xs hidden">
                 <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
                     <div class="font-bold text-amber-900 flex items-center gap-2 mb-1">
                         <i class="fa-solid fa-graduation-cap text-amber-700"></i> Transition de Fin d'Année
                     </div>
                     <p class="text-amber-800 leading-relaxed">
-                        Passez automatiquement les élèves vers le niveau supérieur (ex: 6ème vers 5ème, 3ème vers Seconde) pour démarrer la nouvelle année scolaire.
+                        Passez automatiquement les élèves vers le niveau supérieur (ex: 6ème vers 5ème, 3ème vers Seconde).
                     </p>
                 </div>
 
@@ -300,7 +281,6 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
             </div>
         </div>
 
-        <!-- Bas de page modal -->
         <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
             <button onclick="closeModal('settings-modal')" class="px-4 py-2 text-xs font-semibold text-slate-600">Fermer</button>
             <button onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2 rounded-xl text-xs shadow-sm">Enregistrer</button>
@@ -308,7 +288,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
     </div>
 </div>
 
-<!-- MODAL SCANNER DE REÇU DE PAIEMENT HORS-LIGNE -->
+<!-- MODAL SCANNER DE REÇU -->
 <div id="scanner-modal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-3 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden">
         <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-4 flex items-center justify-between">
@@ -357,7 +337,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
     </div>
 </div>
 
-<!-- MODAL REÇU AVEC QR CODE HORS-LIGNE -->
+<!-- MODAL REÇU AVEC QR CODE -->
 <div id="receipt-view-modal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-3 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden">
         <div class="bg-indigo-900 text-white p-4 flex justify-between items-center">
@@ -365,7 +345,7 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
             <button onclick="closeModal('receipt-view-modal')" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
 
-        <div class="p-5 overflow-y-auto space-y-4 bg-slate-50" id="receipt-printable-content">
+        <div class="p-5 overflow-y-auto space-y-4 bg-slate-50">
             <div class="bg-white p-5 rounded-xl border-2 border-indigo-200 shadow-sm space-y-4">
                 <div class="flex justify-between items-start border-b pb-3">
                     <div>
@@ -510,17 +490,11 @@ td:first-child { text-align: left; padding-left: 10px; font-weight: 500; }
 <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <!-- =========================================================================
-     LOGIQUE JAVASCRIPT AVEC INDEXEDDB HORS-LIGNE & LIAISON DIRECTE BULLETIN.HTML
+     JAVASCRIPT SYNCHRONISÉ AVEC BULLETIN.HTML
      ========================================================================= -->
 <script>
-// =========================================================================
-// MODULE INDEXEDDB NATIF (100% Hors-Ligne sans dépendances)
-// =========================================================================
-const IDB_CONFIG = {
-    name: 'gestnotes_db',
-    version: 1,
-    store: 'keyval'
-};
+// Base IndexedDB autonome
+const IDB_CONFIG = { name: 'gestnotes_db', version: 1, store: 'keyval' };
 
 function openIDB() {
     return new Promise((resolve) => {
@@ -538,7 +512,6 @@ function openIDB() {
 }
 
 async function idbSet(key, value) {
-    // Écriture miroir dans localStorage
     try {
         localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
     } catch(e) {}
@@ -548,13 +521,10 @@ async function idbSet(key, value) {
     return new Promise((resolve) => {
         try {
             const tx = db.transaction(IDB_CONFIG.store, 'readwrite');
-            const store = tx.objectStore(IDB_CONFIG.store);
-            store.put(value, key);
+            tx.objectStore(IDB_CONFIG.store).put(value, key);
             tx.oncomplete = () => resolve(true);
             tx.onerror = () => resolve(false);
-        } catch(e) {
-            resolve(false);
-        }
+        } catch(e) { resolve(false); }
     });
 }
 
@@ -564,28 +534,19 @@ async function idbGet(key) {
         const val = await new Promise((resolve) => {
             try {
                 const tx = db.transaction(IDB_CONFIG.store, 'readonly');
-                const store = tx.objectStore(IDB_CONFIG.store);
-                const req = store.get(key);
+                const req = tx.objectStore(IDB_CONFIG.store).get(key);
                 req.onsuccess = () => resolve(req.result);
                 req.onerror = () => resolve(null);
-            } catch(e) {
-                resolve(null);
-            }
+            } catch(e) { resolve(null); }
         });
         if (val !== undefined && val !== null) return val;
     }
-    // Fallback localStorage
     try {
         const item = localStorage.getItem(key);
         return item ? JSON.parse(item) : null;
-    } catch(e) {
-        return null;
-    }
+    } catch(e) { return null; }
 }
 
-// =========================================================================
-// DONNÉES & CONSTANTES
-// =========================================================================
 const classNames = [
     "CI", "CP", "CE1", "CE2", "CM1", "CM2",
     "6ème", "5ème", "4ème", "3ème",
@@ -607,17 +568,22 @@ const sectionsByClass = {
 const MOIS_SCOLAIRES = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet"];
 
 const MATIERES_COLLEGE_LYCEE = [
-    { name: "Français", coef: 4 }, { name: "Mathématiques", coef: 4 },
-    { name: "Anglais", coef: 2 }, { name: "Histoire-Géo", coef: 2 },
-    { name: "SVT", coef: 2 }, { name: "Physique-Chimie", coef: 2 }, { name: "Philosophie", coef: 3 }
+    { id: "francais", name: "Français", coef: 4 },
+    { id: "maths", name: "Mathématiques", coef: 4 },
+    { id: "anglais", name: "Anglais", coef: 2 },
+    { id: "histgeo", name: "Histoire-Géo", coef: 2 },
+    { id: "svt", name: "SVT", coef: 2 },
+    { id: "pc", name: "Physique-Chimie", coef: 2 },
+    { id: "philo", name: "Philosophie", coef: 3 }
 ];
 
 const MATIERES_PRIME = [
-    { name: "Élocution / Lecture", coef: 1 }, { name: "Dictée / Orthographe", coef: 1 },
-    { name: "Calcul / Mathématiques", coef: 1 }, { name: "Étude du Milieu", coef: 1 }
+    { id: "lecture", name: "Élocution / Lecture", coef: 1 },
+    { id: "dictee", name: "Dictée / Orthographe", coef: 1 },
+    { id: "calcul", name: "Calcul / Mathématiques", coef: 1 },
+    { id: "milieu", name: "Étude du Milieu", coef: 1 }
 ];
 
-// État de l'application
 let appState = {
     currentYear: "2024-2025",
     currentSemester: 1,
@@ -632,18 +598,13 @@ let currentActiveStudentId = null;
 let html5QrScanner = null;
 let currentReceiptData = null;
 
-// Initialisation au chargement via IndexedDB
 window.addEventListener('DOMContentLoaded', initApp);
 
 async function initApp() {
     try {
         const saved = (await idbGet("gestnotes_state_v2")) || (await idbGet("gestnotes_state"));
-        if (saved && saved.classes) {
-            appState = saved;
-        }
-    } catch(e) {
-        console.warn("Storage local", e);
-    }
+        if (saved && saved.classes) appState = saved;
+    } catch(e) { console.warn("Storage restore", e); }
     buildEmptyState();
     populateFilters();
     updateHeaderDisplays();
@@ -657,9 +618,10 @@ function buildEmptyState() {
         sections.forEach(s => {
             const key = `${c}-${s}`;
             if (!appState.classes[key]) {
+                const subList = isPrimary(c) ? MATIERES_PRIME : MATIERES_COLLEGE_LYCEE;
                 appState.classes[key] = { 
                     students: [], 
-                    subjects: isPrimary(c) ? MATIERES_PRIME : MATIERES_COLLEGE_LYCEE, 
+                    subjects: subList.map(m => ({ id: m.id || m.name.toLowerCase(), name: m.name, coef: m.coef })), 
                     tarifMensuel: c.includes('Seconde') || c.includes('Première') || c.includes('Terminale') ? 15000 : 10000 
                 };
             }
@@ -705,7 +667,7 @@ function updateSectionFilterOptions() {
 
 function updateHeaderDisplays() {
     document.getElementById('display-year').textContent = appState.currentYear;
-    document.getElementById('display-semester').textContent = appState.currentSemester === 1 ? "1er Semestre" : "2ème Semestre";
+    document.getElementById('display-semester').textContent = appState.currentSemester === 1 ? "Semestre 1" : "Semestre 2";
     const activeLbl = document.getElementById('trans-active-class-lbl');
     if (activeLbl) activeLbl.textContent = getCurrentClassKey();
 }
@@ -743,7 +705,6 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 3200);
 }
 
-// GESTION DES ONGLETS DU MODAL PARAMÈTRES
 function changerOngletSettings(onglet) {
     const tabs = ['general', 'bulletin', 'transition'];
     tabs.forEach(t => {
@@ -759,14 +720,14 @@ function changerOngletSettings(onglet) {
     });
 }
 
-// Calcul de la moyenne d'un élève
 function calculerMoyenneEleve(student, classe) {
     if (!classe.subjects || classe.subjects.length === 0) return null;
-    let totalPoints = 0;
-    let totalCoefficients = 0;
+    let totalPoints = 0, totalCoefficients = 0;
+    const semKey = "p_" + appState.currentSemester;
 
     classe.subjects.forEach(subject => {
-        const notes = student.grades?.[appState.currentSemester]?.[subject.name];
+        const subId = subject.id || subject.name;
+        const notes = student.grades?.[semKey]?.[subId] || student.grades?.[appState.currentSemester]?.[subject.name];
         if (!notes) return;
         const valeurs = [notes.dev1, notes.dev2, notes.dev3, notes.compo || notes.comp]
             .filter(n => n !== '' && n !== null && n !== undefined && !isNaN(Number(n)))
@@ -783,89 +744,63 @@ function calculerMoyenneEleve(student, classe) {
 }
 
 // =========================================================================
-// LIAISON EXCLUSIVE AVEC LE FICHIER EXTERNE BULLETIN.HTML (VIA INDEXEDDB)
+// LIAISON AVEC BULLETIN.HTML (TRANSMISSION PARFAITEMENT SYNCHRONISÉE)
 // =========================================================================
 async function ouvrirLiaisonBulletinExterne(studentId = null) {
     const key = getCurrentClassKey();
     const cls = appState.classes[key];
-    if (!cls) return;
-
-    // Préparation des élèves ciblés
-    const targetStudents = studentId 
-        ? cls.students.filter(s => s.id === studentId)
-        : cls.students;
-
-    if (targetStudents.length === 0) {
-        showToast("Aucun élève à transmettre à bulletin.html", "error");
+    if (!cls || !cls.students || cls.students.length === 0) {
+        showToast("Aucun élève dans cette classe à afficher dans le bulletin", "error");
         return;
     }
 
-    // Objet de transmission complet formaté pour bulletin.html
-    const payload = {
-        selectedClass: appState.selectedClass,
-        selectedSection: appState.selectedSection,
-        currentYear: appState.currentYear,
-        currentSemester: appState.currentSemester,
-        subjects: cls.subjects || [],
-        students: targetStudents,
-        allClassStudents: cls.students,
-        targetStudentId: studentId,
-        student: studentId ? targetStudents[0] : null,
-        classes: appState.classes
+    // 1. Structure pont exacte attendue par bulletin.html
+    const bridgePayload = {
+        classKey: key,
+        semester: appState.currentSemester,
+        year: appState.currentYear,
+        studentId: studentId ? studentId : "ALL_STUDENTS"
     };
 
-    // Écriture synchrone dans TOUTES les clés d'IndexedDB et localStorage
-    await idbSet('gestnotes_bulletin_data', payload);
-    await idbSet('gestnotes_bulletin_transfert', payload);
-    await idbSet('gestnotes_state', appState);
-    await idbSet('gestnotes_state_v2', appState);
+    // 2. Préparation et normalisation des élèves et matières
+    cls.students.forEach(st => {
+        st.firstname = st.firstname || st.firstName;
+        st.lastname = st.lastname || st.lastName;
+        const semKey = "p_" + appState.currentSemester;
+        if (!st.grades) st.grades = {};
+        if (!st.grades[semKey]) st.grades[semKey] = {};
+        
+        // Copier les notes des matières pour sub.id ET sub.name
+        (cls.subjects || []).forEach(sub => {
+            const subId = sub.id || sub.name;
+            const existing = st.grades[appState.currentSemester]?.[sub.name] || st.grades[semKey]?.[subId] || {};
+            st.grades[semKey][subId] = existing;
+            if (sub.name) st.grades[semKey][sub.name] = existing;
+        });
+    });
 
-    // Ouverture directe du fichier externe bulletin.html
-    const queryParam = studentId ? `?st=${encodeURIComponent(studentId)}&ts=${Date.now()}` : `?class=${encodeURIComponent(key)}&ts=${Date.now()}`;
-    const win = window.open(`bulletin.html${queryParam}`, '_blank');
+    // 3. Sauvegarder dans TOUS les supports (LocalStorage + IndexedDB)
+    localStorage.setItem("gestnotes_bulletin_bridge", JSON.stringify(bridgePayload));
+    await idbSet("gestnotes_state", appState);
+    await idbSet("gestnotes_state_v2", appState);
+
+    // 4. Ouvrir bulletin.html
+    const win = window.open(`bulletin.html?ts=${Date.now()}`, '_blank');
     if (!win) {
-        showToast("Veuillez autoriser les fenêtres pop-up pour ouvrir bulletin.html", "error");
+        showToast("Veuillez autoriser les fenêtres pop-up pour afficher le bulletin", "error");
     } else {
-        showToast(`Données transmises ! bulletin.html ouvert pour ${targetStudents.length} élève(s) ✅`);
+        showToast("Ouverture de bulletin.html en cours... ✅");
     }
 }
 
-function ouvrirBulletinExterneTous() {
-    ouvrirLiaisonBulletinExterne(null);
-}
-
-function chargerFichierBulletin(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        const content = e.target.result;
-        if (content) {
-            await idbSet('gestnotes_custom_bulletin_html', content);
-            showToast("Votre fichier bulletin.html a été enregistré et lié ! ✅");
-        }
-    };
-    reader.readAsText(file);
-}
-
-// =========================================================================
-// TRANSITION & PASSAGE DE CLASSE DU PREVIEW
-// =========================================================================
+// Transition
 async function lancerTransitionClasseActive() {
     const currentKey = getCurrentClassKey();
     const [lvl, sec] = currentKey.split('-');
     const nextLvl = progressionMap[lvl];
-
-    if (!nextLvl) {
-        showToast("Impossible de promouvoir la Terminale (Fin de cycle)", "error");
-        return;
-    }
-
+    if (!nextLvl) { showToast("Impossible de promouvoir la Terminale", "error"); return; }
     const nextKey = `${nextLvl}-${sec || ''}`;
-    if (!appState.classes[nextKey]) {
-        showToast(`La classe de destination ${nextKey} n'existe pas`, "error");
-        return;
-    }
+    if (!appState.classes[nextKey]) { showToast(`La classe ${nextKey} n'existe pas`, "error"); return; }
 
     if (confirm(`Promouvoir tous les élèves de ${currentKey} vers ${nextKey} pour l'année prochaine ?`)) {
         const students = appState.classes[currentKey].students || [];
@@ -881,45 +816,35 @@ async function lancerTransitionClasseActive() {
         await saveToStorage();
         closeModal('settings-modal');
         render();
-        showToast(`Transition de ${currentKey} vers ${nextKey} réussie 🚀`, "success");
+        showToast(`Transition vers ${nextKey} effectuée 🚀`, "success");
     }
 }
 
 async function lancerTransitionToutesLesClasses() {
-    if (!confirm("Attention : Promouvoir TOUTES les classes de l'école vers le niveau supérieur pour la nouvelle année ?")) return;
-
-    const orderedLevels = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première"];
-    
-    orderedLevels.reverse().forEach(lvl => {
+    if (!confirm("Promouvoir TOUTES les classes de l'école vers le niveau supérieur ?")) return;
+    const ordered = ["CI", "CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "Seconde", "Première"];
+    ordered.reverse().forEach(lvl => {
         const nextLvl = progressionMap[lvl];
         if (!nextLvl) return;
-        const sections = sectionsByClass[lvl] || [""];
-        sections.forEach(sec => {
-            const srcKey = `${lvl}-${sec}`;
-            const destKey = `${nextLvl}-${sec}`;
-            if (appState.classes[srcKey] && appState.classes[destKey]) {
-                const students = appState.classes[srcKey].students || [];
-                if (students.length > 0) {
-                    const promoted = students.map(s => ({
-                        ...s,
-                        registrationAmount: 0,
-                        grades: {},
-                        mensualites: {}
-                    }));
-                    appState.classes[destKey].students.push(...promoted);
-                    appState.classes[srcKey].students = [];
+        (sectionsByClass[lvl] || [""]).forEach(sec => {
+            const src = `${lvl}-${sec}`;
+            const dest = `${nextLvl}-${sec}`;
+            if (appState.classes[src] && appState.classes[dest]) {
+                const sts = appState.classes[src].students || [];
+                if (sts.length > 0) {
+                    const promoted = sts.map(s => ({ ...s, registrationAmount: 0, grades: {}, mensualites: {} }));
+                    appState.classes[dest].students.push(...promoted);
+                    appState.classes[src].students = [];
                 }
             }
         });
     });
-
     await saveToStorage();
     closeModal('settings-modal');
     render();
-    showToast("Transition globale effectuée avec succès 🚀", "success");
+    showToast("Transition globale réussie 🚀", "success");
 }
 
-// Rendu principal
 function render() {
     const key = getCurrentClassKey();
     const cls = appState.classes[key];
@@ -930,9 +855,7 @@ function render() {
 
     document.getElementById('class-badge').textContent = key;
     document.getElementById('filter-effectif').value = cls.students.length;
-
-    const emptyState = document.getElementById('empty-state');
-    if (emptyState) emptyState.classList.toggle('hidden', cls.students.length > 0);
+    document.getElementById('empty-state').classList.toggle('hidden', cls.students.length > 0);
 
     cls.students.forEach((student) => {
         const moy = calculerMoyenneEleve(student, cls);
@@ -949,14 +872,13 @@ function render() {
             <td class="p-3.5 text-center ${moyClass} text-xs sm:text-sm">${moyText}</td>
             <td class="p-3.5 text-right">
                 <div class="flex items-center justify-end gap-1.5">
-                    <button onclick="ouvrirModalMensualites('${student.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 border border-indigo-200" title="Suivi des mensualités & reçus">
+                    <button onclick="ouvrirModalMensualites('${student.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 border border-indigo-200">
                         <i class="fa-solid fa-money-check-dollar"></i> Mensualités
                     </button>
-                    <!-- BOUTON OUVRIR SUR BULLETIN.HTML EXTERNE -->
-                    <button onclick="ouvrirLiaisonBulletinExterne('${student.id}')" class="bg-violet-50 hover:bg-violet-100 text-violet-700 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-violet-200 flex items-center gap-1" title="Ouvrir avec bulletin.html">
-                        <i class="fa-solid fa-file-code"></i> Bulletin
+                    <button onclick="ouvrirLiaisonBulletinExterne('${student.id}')" class="bg-violet-50 hover:bg-violet-100 text-violet-700 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-violet-200 flex items-center gap-1" title="Ouvrir le bulletin individuel">
+                        <i class="fa-solid fa-file-invoice"></i> Bulletin
                     </button>
-                    <button onclick="supprimerEleve('${student.id}')" class="text-rose-500 hover:bg-rose-50 px-2 py-1.5 rounded-lg text-xs" title="Supprimer">
+                    <button onclick="supprimerEleve('${student.id}')" class="text-rose-500 hover:bg-rose-50 px-2 py-1.5 rounded-lg text-xs">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
@@ -973,14 +895,10 @@ function renderGradesSubjectSelector() {
     const key = getCurrentClassKey();
     const cls = appState.classes[key];
     const select = document.getElementById('grade-subject-select');
-    const currentVal = select.value;
+    const cur = select.value;
     select.innerHTML = "";
-    (cls.subjects || []).forEach(sub => {
-        select.add(new Option(`${sub.name} (Coef ${sub.coef})`, sub.name));
-    });
-    if (currentVal && Array.from(select.options).some(o => o.value === currentVal)) {
-        select.value = currentVal;
-    }
+    (cls.subjects || []).forEach(sub => select.add(new Option(`${sub.name} (Coef ${sub.coef})`, sub.name)));
+    if (cur && Array.from(select.options).some(o => o.value === cur)) select.value = cur;
 }
 
 function renderGradesGrid() {
@@ -992,33 +910,43 @@ function renderGradesGrid() {
     const searchTerm = document.getElementById('grade-search').value.toLowerCase();
     if (!subjectName) return;
 
+    const subObj = cls.subjects.find(s => s.name === subjectName);
+    const subId = subObj ? (subObj.id || subObj.name) : subjectName;
+    const semKey = "p_" + appState.currentSemester;
+
     cls.students
       .filter(st => `${st.firstName} ${st.lastName}`.toLowerCase().includes(searchTerm))
       .forEach(st => {
         if (!st.grades) st.grades = {};
-        if (!st.grades[appState.currentSemester]) st.grades[appState.currentSemester] = {};
-        if (!st.grades[appState.currentSemester][subjectName]) {
-            st.grades[appState.currentSemester][subjectName] = { dev1: '', dev2: '', dev3: '', compo: '' };
-        }
-        const g = st.grades[appState.currentSemester][subjectName];
+        if (!st.grades[semKey]) st.grades[semKey] = {};
+        if (!st.grades[semKey][subId]) st.grades[semKey][subId] = { dev1: '', dev2: '', dev3: '', compo: '' };
+        
+        const g = st.grades[semKey][subId];
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="p-2 font-medium">${st.firstName} ${st.lastName}</td>
-            <td><input type="number" min="0" max="20" step="0.25" value="${g.dev1 ?? ''}" onchange="updateNote('${st.id}', '${subjectName}', 'dev1', this.value)" class="w-14 border rounded text-center p-1 text-xs"></td>
-            <td><input type="number" min="0" max="20" step="0.25" value="${g.dev2 ?? ''}" onchange="updateNote('${st.id}', '${subjectName}', 'dev2', this.value)" class="w-14 border rounded text-center p-1 text-xs"></td>
-            <td style="display:${showDev3Col ? '' : 'none'};"><input type="number" min="0" max="20" step="0.25" value="${g.dev3 ?? ''}" onchange="updateNote('${st.id}', '${subjectName}', 'dev3', this.value)" class="w-14 border rounded text-center p-1 text-xs"></td>
-            <td><input type="number" min="0" max="20" step="0.25" value="${g.compo ?? ''}" onchange="updateNote('${st.id}', '${subjectName}', 'compo', this.value)" class="w-14 border rounded text-center p-1 text-xs"></td>
+            <td><input type="number" min="0" max="20" step="0.25" value="${g.dev1 ?? ''}" onchange="updateNote('${st.id}', '${subId}', '${subjectName}', 'dev1', this.value)" class="w-14 border rounded text-center p-1 text-xs"></td>
+            <td><input type="number" min="0" max="20" step="0.25" value="${g.dev2 ?? ''}" onchange="updateNote('${st.id}', '${subId}', '${subjectName}', 'dev2', this.value)" class="w-14 border rounded text-center p-1 text-xs"></td>
+            <td style="display:${showDev3Col ? '' : 'none'};"><input type="number" min="0" max="20" step="0.25" value="${g.dev3 ?? ''}" onchange="updateNote('${st.id}', '${subId}', '${subjectName}', 'dev3', this.value)" class="w-14 border rounded text-center p-1 text-xs"></td>
+            <td><input type="number" min="0" max="20" step="0.25" value="${g.compo ?? ''}" onchange="updateNote('${st.id}', '${subId}', '${subjectName}', 'compo', this.value)" class="w-14 border rounded text-center p-1 text-xs"></td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-async function updateNote(studentId, subjectName, field, value) {
+async function updateNote(studentId, subId, subName, field, value) {
     const key = getCurrentClassKey();
     const st = appState.classes[key].students.find(s => s.id === studentId);
     if (st) {
-        if (!st.grades[appState.currentSemester][subjectName]) st.grades[appState.currentSemester][subjectName] = {};
-        st.grades[appState.currentSemester][subjectName][field] = value === '' ? '' : parseFloat(value);
+        const semKey = "p_" + appState.currentSemester;
+        if (!st.grades[semKey]) st.grades[semKey] = {};
+        if (!st.grades[semKey][subId]) st.grades[semKey][subId] = {};
+        if (!st.grades[appState.currentSemester]) st.grades[appState.currentSemester] = {};
+        if (!st.grades[appState.currentSemester][subName]) st.grades[appState.currentSemester][subName] = {};
+
+        const parsed = value === '' ? '' : parseFloat(value);
+        st.grades[semKey][subId][field] = parsed;
+        st.grades[appState.currentSemester][subName][field] = parsed;
         await saveToStorage();
     }
 }
@@ -1036,7 +964,6 @@ function goToNextSubject() {
     renderGradesGrid();
 }
 
-// Inscription
 function openRegistrationModal() {
     const rClass = document.getElementById('reg-class');
     rClass.innerHTML = "";
@@ -1056,15 +983,14 @@ async function validerInscriptionOuChangement(event) {
     event.preventDefault();
     const fn = document.getElementById('reg-firstname').value.trim();
     const ln = document.getElementById('reg-lastname').value.trim();
-    if (!fn || !ln) {
-        showToast("Prénom et Nom sont obligatoires", "error");
-        return;
-    }
+    if (!fn || !ln) { showToast("Prénom et Nom sont obligatoires", "error"); return; }
     const targetKey = `${document.getElementById('reg-class').value}-${document.getElementById('reg-section').value}`;
     const newSt = {
         id: 'st_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
         firstName: fn,
         lastName: ln,
+        firstname: fn,
+        lastname: ln,
         dob: document.getElementById('reg-dob').value,
         pob: document.getElementById('reg-pob').value,
         phone: document.getElementById('reg-phone').value,
@@ -1082,15 +1008,14 @@ async function validerInscriptionOuChangement(event) {
 async function validerAjoutRapideEleve() {
     const fn = document.getElementById('add-fast-firstname').value.trim();
     const ln = document.getElementById('add-fast-lastname').value.trim();
-    if (!fn || !ln) {
-        showToast("Prénom et Nom obligatoires", "error");
-        return;
-    }
+    if (!fn || !ln) { showToast("Prénom et Nom obligatoires", "error"); return; }
     const key = getCurrentClassKey();
     appState.classes[key].students.push({
         id: 'st_' + Date.now(),
         firstName: fn,
         lastName: ln,
+        firstname: fn,
+        lastname: ln,
         phone: document.getElementById('add-fast-phone').value.trim(),
         registrationAmount: 0,
         grades: {},
@@ -1112,7 +1037,7 @@ async function supprimerEleve(id) {
     }
 }
 
-// Mensualités & Reçus
+// Mensualités
 function ouvrirModalMensualites(studentId) {
     currentActiveStudentId = studentId;
     const key = getCurrentClassKey();
@@ -1136,26 +1061,12 @@ function ouvrirModalMensualites(studentId) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="font-bold p-2">${mois}</td>
-            <td class="p-2">
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isPaye ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
-                    ${isPaye ? 'PAYÉ' : 'IMPAYÉ'}
-                </span>
-            </td>
+            <td class="p-2"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isPaye ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${isPaye ? 'PAYÉ' : 'IMPAYÉ'}</span></td>
             <td class="p-2">${(dataMois.montant || cls.tarifMensuel || 0).toLocaleString()} F</td>
             <td class="p-2">
                 <div class="flex items-center justify-center gap-1.5">
-                    <button onclick="togglePaiementMois('${mois}')" class="px-2.5 py-1 rounded text-[11px] font-bold ${isPaye ? 'bg-slate-200 text-slate-700' : 'bg-emerald-600 text-white'}">
-                        ${isPaye ? 'Annuler' : 'Payer'}
-                    </button>
-                    ${isPaye ? `
-                        <button onclick="afficherReçuModal('${st.id}', '${mois}', ${dataMois.montant || cls.tarifMensuel || 0})" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1">
-                            <i class="fa-solid fa-qrcode"></i> Reçu & QR
-                        </button>
-                    ` : `
-                        <button onclick="envoyerRelanceWhatsApp('${st.firstName}', '${st.lastName}', '${mois}', ${dataMois.montant || cls.tarifMensuel || 0}, '${st.phone}')" class="bg-amber-600 text-white px-2 py-1 rounded text-[11px] font-bold">
-                            Relance
-                        </button>
-                    `}
+                    <button onclick="togglePaiementMois('${mois}')" class="px-2.5 py-1 rounded text-[11px] font-bold ${isPaye ? 'bg-slate-200 text-slate-700' : 'bg-emerald-600 text-white'}">${isPaye ? 'Annuler' : 'Payer'}</button>
+                    ${isPaye ? `<button onclick="afficherReçuModal('${st.id}', '${mois}', ${dataMois.montant || cls.tarifMensuel || 0})" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[11px] font-bold flex items-center gap-1"><i class="fa-solid fa-qrcode"></i> Reçu & QR</button>` : ''}
                 </div>
             </td>
         `;
@@ -1170,9 +1081,8 @@ async function togglePaiementMois(mois) {
     const st = appState.classes[key].students.find(s => s.id === currentActiveStudentId);
     if (!st) return;
     const current = st.mensualites[appState.currentYear][mois]?.statut || 'IMPAYE';
-    const nextStatut = current === 'PAYE' ? 'IMPAYE' : 'PAYE';
     st.mensualites[appState.currentYear][mois] = {
-        statut: nextStatut,
+        statut: current === 'PAYE' ? 'IMPAYE' : 'PAYE',
         montant: appState.classes[key].tarifMensuel || 10000,
         date: new Date().toLocaleDateString('fr-FR')
     };
@@ -1180,7 +1090,6 @@ async function togglePaiementMois(mois) {
     ouvrirModalMensualites(currentActiveStudentId);
 }
 
-// Reçu avec QR Code Hors-Ligne
 function afficherReçuModal(studentId, mois, montant) {
     const key = getCurrentClassKey();
     const cls = appState.classes[key];
@@ -1199,122 +1108,34 @@ function afficherReçuModal(studentId, mois, montant) {
     document.getElementById('rec-disp-phone').textContent = st.phone ? '+221 ' + st.phone : '—';
     document.getElementById('rec-disp-amount').textContent = montant.toLocaleString() + ' FCFA';
 
-    currentReceiptData = {
-        number: receiptNum,
-        student: `${st.firstName} ${st.lastName}`,
-        classe: key,
-        mois: mois,
-        montant: montant,
-        date: dateToday
-    };
+    currentReceiptData = { number: receiptNum, student: `${st.firstName} ${st.lastName}`, classe: key, mois: mois, montant: montant, date: dateToday };
 
     const qrContainer = document.getElementById('receipt-qrcode-target');
     qrContainer.innerHTML = "";
-    const qrText = `REÇU SCOLAIRE OFFICIEL\nN°: ${receiptNum}\nÉlève: ${st.firstName} ${st.lastName}\nClasse: ${key}\nMois: ${mois}\nMontant: ${montant} FCFA\nStatut: PAYÉ ✅\nDate: ${dateToday}`;
-    
     new QRCode(qrContainer, {
-        text: qrText,
-        width: 90,
-        height: 90,
-        colorDark: "#1e3a8a",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
+        text: `REÇU SCOLAIRE\nN°: ${receiptNum}\nÉlève: ${st.firstName} ${st.lastName}\nClasse: ${key}\nMois: ${mois}\nMontant: ${montant} FCFA\nStatut: PAYÉ ✅`,
+        width: 90, height: 90, colorDark: "#1e3a8a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M
     });
 
     openModal('receipt-view-modal');
 }
 
 function imprimerReçuActif() {
-    if (!currentReceiptData) return;
-    const w = window.open('', '_blank');
-    w.document.write(`
-        <html><head><title>Reçu - ${currentReceiptData.student}</title>
-        <style>
-          body { font-family: sans-serif; padding: 20px; font-size: 13px; }
-          .rec { border: 2px solid #1e3a8a; border-radius: 8px; padding: 20px; max-width: 500px; margin: 0 auto; }
-          .hdr { border-bottom: 2px solid #1e3a8a; padding-bottom: 8px; margin-bottom: 12px; }
-          .title { font-size: 16px; font-weight: bold; color: #1e3a8a; }
-          .grid { margin: 15px 0; line-height: 1.8; }
-          .box { background: #f0fdf4; border: 1px solid #86efac; padding: 10px; font-size: 16px; font-weight: bold; color: #15803d; }
-        </style></head><body>
-        <div class="rec">
-            <div class="hdr">
-                <div class="title">REÇU DE PAIEMENT SCOLAIRE</div>
-                <div>N° ${currentReceiptData.number} &bull; Date : ${currentReceiptData.date}</div>
-            </div>
-            <div class="grid">
-                <div><strong>Élève :</strong> ${currentReceiptData.student}</div>
-                <div><strong>Classe :</strong> ${currentReceiptData.classe}</div>
-                <div><strong>Mois réglé :</strong> ${currentReceiptData.mois}</div>
-                <div><strong>Année :</strong> ${appState.currentYear}</div>
-            </div>
-            <div class="box">Montant Réglé : ${currentReceiptData.montant.toLocaleString()} FCFA (Soldé)</div>
-            <div style="margin-top: 30px; display: flex; justify-content: space-between;">
-                <div>Le Parent</div>
-                <div>La Comptabilité / Cachet</div>
-            </div>
-        </div>
-        <script>window.print();<\/script>
-        </body></html>
-    `);
-    w.document.close();
+    window.print();
 }
 
-// Scanner de Reçus
 function ouvrirScannerModal() {
     document.getElementById('scan-result-box').classList.add('hidden');
     document.getElementById('manual-scan-input').value = '';
     openModal('scanner-modal');
 }
-
-function fermerScannerModal() {
-    arreterCameraScanner();
-    closeModal('scanner-modal');
-}
-
-function demarrerCameraScanner() {
-    if (typeof Html5Qrcode === 'undefined') {
-        showToast("Lecteur caméra non chargé. Utilisez la recherche de code.", "info");
-        return;
-    }
-    document.getElementById('btn-start-scanner').classList.add('hidden');
-    document.getElementById('btn-stop-scanner').classList.remove('hidden');
-
-    html5QrScanner = new Html5Qrcode("qr-reader");
-    html5QrScanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 200 },
-        (decodedText) => {
-            arreterCameraScanner();
-            verifierCodeReçu(decodedText);
-        },
-        () => {}
-    ).catch(err => {
-        showToast("Caméra inaccessible : " + err, "error");
-        arreterCameraScanner();
-    });
-}
-
-function arreterCameraScanner() {
-    if (html5QrScanner) {
-        html5QrScanner.stop().then(() => {
-            html5QrScanner.clear();
-            html5QrScanner = null;
-        }).catch(() => {});
-    }
-    document.getElementById('btn-start-scanner').classList.remove('hidden');
-    document.getElementById('btn-stop-scanner').classList.add('hidden');
-}
+function fermerScannerModal() { closeModal('scanner-modal'); }
 
 function verifierCodeReçu(code) {
     const q = (code || '').trim().toLowerCase();
     const resultBox = document.getElementById('scan-result-box');
     resultBox.classList.remove('hidden');
-
-    if (!q) {
-        showToast("Veuillez saisir ou scanner un code", "error");
-        return;
-    }
+    if (!q) { showToast("Saisissez un numéro ou un nom", "error"); return; }
 
     let match = null;
     Object.entries(appState.classes).forEach(([cKey, cData]) => {
@@ -1323,15 +1144,8 @@ function verifierCodeReçu(code) {
             const fullName = `${st.firstName} ${st.lastName}`.toLowerCase();
             Object.entries(payments).forEach(([m, p]) => {
                 const rNum = `REC-${appState.currentYear.replace(/[^0-9]/g, '')}-${st.id.slice(-4).toUpperCase()}-${m.slice(0, 3).toUpperCase()}`.toLowerCase();
-                if (q.includes(rNum) || (fullName.includes(q) && p.statut === 'PAYE') || (q.includes(m.toLowerCase()) && q.includes(st.firstName.toLowerCase()))) {
-                    match = {
-                        num: rNum.toUpperCase(),
-                        name: `${st.firstName} ${st.lastName}`,
-                        classe: cKey,
-                        mois: m,
-                        montant: p.montant || cData.tarifMensuel || 0,
-                        date: p.date || 'Payé'
-                    };
+                if (q.includes(rNum) || (fullName.includes(q) && p.statut === 'PAYE')) {
+                    match = { num: rNum.toUpperCase(), name: `${st.firstName} ${st.lastName}`, classe: cKey, mois: m, montant: p.montant || cData.tarifMensuel || 0, date: p.date || 'Payé' };
                 }
             });
         });
@@ -1339,27 +1153,14 @@ function verifierCodeReçu(code) {
 
     if (match) {
         resultBox.innerHTML = `
-            <div class="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 text-emerald-950 text-xs space-y-1.5">
-                <div class="font-black text-emerald-800 text-sm flex items-center gap-1.5 border-b border-emerald-200 pb-1">
-                    <i class="fa-solid fa-circle-check text-emerald-600"></i> REÇU OFFICIEL AUTHENTIQUE & SOLDÉ ✅
-                </div>
-                <p><strong>N° Reçu :</strong> <span class="font-mono font-bold">${match.num}</span></p>
-                <p><strong>Élève :</strong> ${match.name}</p>
-                <p><strong>Classe :</strong> ${match.classe}</p>
-                <p><strong>Période :</strong> Mois de ${match.mois}</p>
-                <p><strong>Montant Réglé :</strong> <span class="text-emerald-700 font-bold">${match.montant.toLocaleString()} FCFA</span></p>
-                <p><strong>Date d'encaissement :</strong> ${match.date}</p>
-            </div>
-        `;
+            <div class="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 text-emerald-950 text-xs space-y-1">
+                <div class="font-black text-emerald-800 text-sm flex items-center gap-1"><i class="fa-solid fa-circle-check text-emerald-600"></i> REÇU OFFICIEL AUTHENTIQUE ✅</div>
+                <p><strong>N° :</strong> ${match.num} &bull; <strong>Élève :</strong> ${match.name}</p>
+                <p><strong>Classe :</strong> ${match.classe} &bull; <strong>Mois :</strong> ${match.mois}</p>
+                <p><strong>Montant :</strong> ${match.montant.toLocaleString()} FCFA</p>
+            </div>`;
     } else {
-        resultBox.innerHTML = `
-            <div class="bg-rose-50 border-2 border-rose-300 rounded-xl p-4 text-rose-950 text-xs">
-                <div class="font-bold text-rose-800 mb-1 flex items-center gap-1">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Reçu Non Trouvé dans la base
-                </div>
-                <span>Aucun paiement enregistré ne correspond à ce code ou élève pour l'année scolaire en cours.</span>
-            </div>
-        `;
+        resultBox.innerHTML = `<div class="bg-rose-50 border-2 border-rose-300 rounded-xl p-4 text-rose-950 text-xs font-bold">Aucun paiement correspondant trouvé.</div>`;
     }
 }
 
@@ -1380,14 +1181,13 @@ function calculerEtAfficherBilansFinanciers() {
     document.getElementById('bilan-global').textContent = (ins + mens).toLocaleString() + " F";
 }
 
-// Export / Import / Drive
 function exportData() {
     const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
     const a = document.createElement('a');
     a.href = dataStr;
     a.download = `gestnotes_backup_${appState.currentYear}.txt`;
     a.click();
-    showToast("Sauvegarde exportée avec succès !");
+    showToast("Fichier exporté !");
 }
 
 function importData(event) {
@@ -1402,29 +1202,17 @@ function importData(event) {
                 await saveToStorage();
                 location.reload();
             }
-        } catch (err) {
-            showToast("Fichier invalide", "error");
-        }
+        } catch (err) { showToast("Fichier invalide", "error"); }
     };
     r.readAsText(file);
 }
 
 function syncWithDrive() {
-    if (!appState.syncUrl) {
-        showToast("Configurez l'URL Apps Script dans les paramètres", "error");
-        openModal('settings-modal');
-        changerOngletSettings('general');
-        return;
-    }
-    showToast("Synchronisation en cours...", "info");
-    fetch(appState.syncUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(appState)
-    }).then(r => {
-        if (!r.ok) throw new Error();
-        showToast("Synchronisé sur Google Drive ✅");
-    }).catch(() => showToast("Erreur de synchronisation Drive", "error"));
+    if (!appState.syncUrl) { showToast("Configurez l'URL Google Apps Script", "error"); openModal('settings-modal'); return; }
+    showToast("Synchronisation Drive en cours...", "info");
+    fetch(appState.syncUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(appState) })
+        .then(r => { if (!r.ok) throw new Error(); showToast("Synchronisé sur Google Drive ✅"); })
+        .catch(() => showToast("Erreur de synchronisation Drive", "error"));
 }
 
 function openTarifModal() {
@@ -1432,7 +1220,6 @@ function openTarifModal() {
     document.getElementById('tarif-class-amount').value = appState.classes[key].tarifMensuel || 0;
     openModal('tarif-modal');
 }
-
 async function saveTarifClasse() {
     const key = getCurrentClassKey();
     appState.classes[key].tarifMensuel = parseInt(document.getElementById('tarif-class-amount').value) || 0;
@@ -1450,7 +1237,6 @@ function openSubjectsModal() {
     (appState.classes[key].subjects || []).forEach(sub => addNewSubjectRow(sub.name, sub.coef));
     openModal('subjects-modal');
 }
-
 function addNewSubjectRow(name = '', coef = 1) {
     const container = document.getElementById('subjects-container');
     const div = document.createElement('div');
@@ -1462,14 +1248,12 @@ function addNewSubjectRow(name = '', coef = 1) {
     `;
     container.appendChild(div);
 }
-
 function loadStandardSubjects() {
     const container = document.getElementById('subjects-container');
     container.innerHTML = "";
     const list = isPrimary(appState.selectedClass) ? MATIERES_PRIME : MATIERES_COLLEGE_LYCEE;
     list.forEach(m => addNewSubjectRow(m.name, m.coef));
 }
-
 async function saveSubjectsList() {
     const key = getCurrentClassKey();
     const rows = document.querySelectorAll('.subject-row');
@@ -1477,7 +1261,7 @@ async function saveSubjectsList() {
     rows.forEach(r => {
         const n = r.querySelector('.subject-name-input').value.trim();
         const c = parseInt(r.querySelector('.subject-coef-input').value) || 1;
-        if (n) newSubjects.push({ name: n, coef: c });
+        if (n) newSubjects.push({ id: n.toLowerCase().replace(/[^a-z0-9]/g, ''), name: n, coef: c });
     });
     appState.classes[key].subjects = newSubjects;
     await saveToStorage();
